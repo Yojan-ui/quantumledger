@@ -3,18 +3,11 @@
     "collect": {
       "startServerCommand": "pnpm --filter @qsetu/web start",
       "startServerReadyPattern": "Ready",
-      "url": [
-        "http://localhost:3000/"
-      ],
+      "url": ["http://localhost:3000/"],
       "numberOfRuns": 3,
       "settings": {
         "throttlingMethod": "devtools",
-        "onlyCategories": [
-          "performance",
-          "accessibility",
-          "best-practices",
-          "seo"
-        ],
+        "onlyCategories": ["performance", "accessibility", "best-practices", "seo"],
         "chromeFlags": "--headless=new --no-sandbox"
       }
     },
