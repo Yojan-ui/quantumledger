@@ -81,3 +81,14 @@ export const IdParams = z.object({ id: z.string().min(1).max(120) });
 export const SdkStepParams = z.object({ step: z.enum(["hello", "finish", "message", "identity"]) });
 
 export const BenchQuery = z.object({ fresh: z.enum(["0", "1"]).optional() });
+
+export const EarlyAccessBody = z.object({
+  kind: z.enum(["early-access", "contact"]).default("early-access"),
+  name: z.string().trim().min(1, "Please tell us your name").max(120),
+  email: z.string().trim().email("That email doesn't look right").max(200),
+  organisation: z.string().trim().min(1, "Which organisation are you with?").max(160),
+  sector: z.enum(["fintech", "healthcare", "education", "government", "other"]),
+  useCase: z.string().trim().min(1, "Tell us what you'd protect first").max(2000),
+  /** Honeypot: must stay empty. */
+  website: z.string().max(0).optional().or(z.literal("")),
+});

@@ -1,34 +1,38 @@
+import type { Metadata } from "next";
+import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero } from "@/components/home/Hero";
-import { Demos, Features, FinalCta, Industries, WhyQSetu } from "@/components/home/Sections";
+import { Proof } from "@/components/home/Proof";
+import { ScanSite } from "@/components/home/ScanSite";
+import { Adapters, Solutions, WhyQSetu } from "@/components/home/Sections";
 import { Story } from "@/components/home/Story";
 import { WhyNow } from "@/components/home/WhyNow";
-import { CHAPTERS } from "@/components/home/chapters";
 import { Footer } from "@/components/ui/Footer";
 import { Nav } from "@/components/ui/Nav";
+import { pageMeta } from "@/lib/meta";
 
+export const metadata: Metadata = pageMeta({
+  title: "Q-Setu: make anything in India quantum-safe, in one line",
+  description:
+    "Your data is being harvested today. Q-Setu adds NIST post-quantum encryption and signatures (ML-KEM, ML-DSA) to any website, server, app or device in one line, before Q-Day.",
+  path: "/",
+  absoluteTitle: true,
+});
+
+/** Nine sections, one question each. */
 export default function Home() {
   return (
     <>
       <Nav />
       <main id="main">
         <Hero />
+        <ScanSite />
         <WhyNow />
-        <div className="sr-only">
-          <h2>The Q-Setu story</h2>
-          <ol>
-            {CHAPTERS.slice(1).map((c) => (
-              <li key={c.id}>
-                {c.title} {c.body}
-              </li>
-            ))}
-          </ol>
-        </div>
         <Story />
-        <Features />
+        <Adapters />
+        <Solutions />
+        <Proof />
         <WhyQSetu />
-        <Industries />
-        <Demos />
-        <FinalCta />
+        <EarlyAccess />
       </main>
       <Footer />
     </>

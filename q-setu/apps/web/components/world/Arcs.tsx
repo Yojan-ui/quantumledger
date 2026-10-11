@@ -134,12 +134,15 @@ export function Arcs() {
       // Traffic lights an arc up (an arc "spawns" with its packet), then it settles back.
       activity.current[i] = Math.max(0, activity.current[i]! - dt * 0.35);
       flash.current[i] = Math.max(0, flash.current[i]! - dt * 1.1);
-      const target = Math.max(
-        params.arcLevel[i]!,
-        Math.min(0.55, 0.12 + activity.current[i]! * 0.45),
-      );
+      // While a scan result is on screen, only its arc speaks: traffic doesn't light other arcs.
+      const quiet = world.scanActive && !!world.scan;
+      const target = quiet
+        ? params.arcLevel[i]!
+        : Math.max(params.arcLevel[i]!, Math.min(0.55, 0.12 + activity.current[i]! * 0.45));
       level[i] = level[i]! + (target - level[i]!) * Math.min(1, dt * 3);
-      const tintTarget = Math.max(params.arcTint[i]!, activity.current[i]! > 0.05 ? 1 : 0);
+      const tintTarget = quiet
+        ? 0
+        : Math.max(params.arcTint[i]!, activity.current[i]! > 0.05 ? 1 : 0);
       tint[i] = tint[i]! + (tintTarget - tint[i]!) * Math.min(1, dt * 3);
       fl[i] = flash.current[i]!;
     }

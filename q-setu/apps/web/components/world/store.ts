@@ -5,7 +5,14 @@
  */
 import type { SectorId } from "@qsetu/sim";
 
-export type WorldMode = "story" | "deploy" | "backdrop";
+export type WorldMode = "story" | "deploy" | "page" | "backdrop";
+
+export interface Pose {
+  lat: number;
+  lon: number;
+  dist: number;
+  spin: number;
+}
 export type NodeState = "vulnerable" | "deploying" | "protected";
 
 export interface Pulse {
@@ -61,6 +68,12 @@ export const world = {
   socketScreen: null as { x: number; y: number } | null,
   /** Seconds-scale breathing for the atmosphere; false under reduced motion. */
   breathe: true,
+  /** Camera pose for content pages (Platform = wide orbit, each solution = its city). */
+  pagePose: null as Pose | null,
+  /** The home-page scan result: where the scanned server is and whether it negotiated hybrid PQ. */
+  scan: null as { lat: number; lon: number; ok: boolean; at: number } | null,
+  /** True while the scan section is the one on screen. */
+  scanActive: false,
 };
 
 const listeners = new Set<Listener>();

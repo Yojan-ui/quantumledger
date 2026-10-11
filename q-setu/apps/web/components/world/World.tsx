@@ -7,6 +7,7 @@ import { Arcs } from "./Arcs";
 import { Globe } from "./Globe";
 import { Nodes } from "./Nodes";
 import { Rig } from "./Rig";
+import { ScanArc } from "./ScanArc";
 import type { Dots } from "./shapes";
 import { world } from "./store";
 
@@ -40,6 +41,7 @@ export function World({ dots }: { dots: Dots }) {
         <Globe dots={dots} />
         <Arcs />
         <Nodes />
+        <ScanArc />
       </group>
     </>
   );

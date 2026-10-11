@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DemoPanels } from "@/components/home/Sections";
+import { DemoPanels } from "@/components/demos/DemoPanels";
 import { Heading, Section, Text } from "@/components/ui";
 import { Footer } from "@/components/ui/Footer";
 import { Nav } from "@/components/ui/Nav";
+import { pageMeta } from "@/lib/meta";
 
-export const metadata: Metadata = { title: "Demos · Q-Setu" };
+export const metadata: Metadata = pageMeta({
+  title: "Demos",
+  description:
+    "Four live demos of Q-Setu: a real hybrid handshake, deploying five adapters, the Q-Day time machine and a tamper-evident ledger.",
+  path: "/demos",
+});
 
 const TOOLS = [
   {

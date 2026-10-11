@@ -10,63 +10,49 @@ export interface Chapter {
   accent: Accent;
 }
 
+export const HERO = {
+  title: "Make anything in India quantum\u2011safe. In one line.",
+  body: "Your data is being harvested today. Q-Setu makes any system in India quantum-safe in one line, before Q-Day.",
+};
+
+/** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */
+export const STEPS: (Chapter & { chapter: number })[] = [
+  {
+    id: "recorded",
+    label: "Step 1 · Recorded today",
+    title: "Encrypted today, recorded today.",
+    body: "Adversaries copy encrypted traffic now and wait. Each pulse is a real packet on this network.",
+    accent: "warn",
+    chapter: 2.3,
+  },
+  {
+    id: "opened",
+    label: "Step 2 · Opened at Q-Day",
+    title: "At Q-Day, the recordings open.",
+    body: "Shor’s algorithm breaks RSA and elliptic curves. Watch recorded classical traffic decrypt in your browser.",
+    accent: "warn",
+    chapter: 3.3,
+  },
+  {
+    id: "sealed",
+    label: "Step 3 · Sealed with Q-Setu",
+    title: "With Q-Setu, they stay noise.",
+    body: "A hybrid X25519 + ML-KEM-768 handshake, once per session. Every message after it is AES-256-GCM.",
+    accent: "accent",
+    chapter: 7.3,
+  },
+];
+
+/** @deprecated kept for the sr-only summary and older imports. */
 export const CHAPTERS: Chapter[] = [
   {
     id: "hero",
     label: "Post-quantum security for India",
-    title: "Make anything in India quantum\u2011safe. In one line.",
-    body: "Your data is being harvested today. Q-Setu makes any system in India quantum-safe in one line, before Q-Day.",
+    title: HERO.title,
+    body: HERO.body,
     accent: "accent",
   },
-  {
-    id: "seal",
-    label: "Seal it yourself",
-    title: "Seal a message in your browser.",
-    body: "Type anything. It is encrypted here with X25519 + ML-KEM-768, then leaves as a single pulse.",
-    accent: "accent",
-  },
-  {
-    id: "harvest",
-    label: "Harvest now",
-    title: "Encrypted today, recorded today.",
-    body: "Adversaries copy traffic now and wait. Each pulse on the arcs is a real packet being recorded.",
-    accent: "warn",
-  },
-  {
-    id: "qday",
-    label: "Decrypt later",
-    title: "At Q-Day, recordings open.",
-    body: "Shor’s algorithm breaks RSA and elliptic curves. This is recorded classical traffic, decrypted in your browser.",
-    accent: "warn",
-  },
-  {
-    id: "sockets",
-    label: "One line, anywhere",
-    title: "Five adapters. One core.",
-    body: "A sidecar, a script tag, an SDK, a device profile and a vault. Each takes one line to adopt.",
-    accent: "accent",
-  },
-  {
-    id: "india",
-    label: "India, protected",
-    title: "Banks to substations, one by one.",
-    body: "Each node switches to hybrid ML-KEM and ML-DSA. Hover a node to see what it protects.",
-    accent: "accent",
-  },
-  {
-    id: "cost",
-    label: "Cost, measured",
-    title: "Pay once per session.",
-    body: "The post-quantum handshake runs once. Every message after it is AES-256-GCM.",
-    accent: "accent",
-  },
-  {
-    id: "close",
-    label: "Every arc, sealed",
-    title: "Recorded traffic stays noise.",
-    body: "When every link speaks Q-Setu, there is nothing left worth harvesting.",
-    accent: "accent",
-  },
+  ...STEPS,
 ];
 
 export const ADAPTERS = [

@@ -1,0 +1,2149 @@
+{
+  "onlinesbi.sbi": {
+    "probe": {
+      "host": "onlinesbi.sbi",
+      "address": "103.209.97.9",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_128_GCM_SHA256",
+      "group": "X25519",
+      "hybridPq": false,
+      "certKey": "RSA 2048 bit",
+      "certSigAlg": "sha256WithRSAEncryption",
+      "issuer": "DigiCert Inc",
+      "validTo": "Nov 29 23:59:59 2026 GMT",
+      "report": "# TLS details for onlinesbi.sbi\nprotocol = TLSv1.3\ncipher = TLS_AES_128_GCM_SHA256\nkey_exchange_group = X25519\ncertificate_key = RSA 2048 bit\ncertificate_signature = sha256WithRSAEncryption"
+    },
+    "score": 30,
+    "grade": "Critical",
+    "summary": {
+      "critical": 2,
+      "high": 1,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_128_GCM_SHA256",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-128",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "ecdh",
+        "line": 4,
+        "column": 22,
+        "match": "X25519",
+        "algorithm": "ECDH",
+        "primitive": "key-agree",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "X25519",
+        "why": "ECDH key agreement is broken by Shor's algorithm, so session keys in harvested traffic can be recovered later.",
+        "replacement": "Hybrid X25519 + ML-KEM-768 (TLS group X25519MLKEM768)"
+      },
+      {
+        "ruleId": "rsa",
+        "line": 5,
+        "column": 19,
+        "match": "RSA",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "2048",
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      },
+      {
+        "ruleId": "rsa",
+        "line": 6,
+        "column": 31,
+        "match": "WithRSAEncryption",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:fca40caa-a66c-4a10-a875-2000b96ec8cc",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:24.749Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "onlinesbi.sbi",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_128_GCM_SHA256",
+          "name": "TLS_AES_128_GCM_SHA256",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_128_GCM_SHA256"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "onlinesbi.sbi",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_128_GCM_SHA256"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdh:X25519",
+          "name": "ECDH",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "key-agree",
+              "parameterSetIdentifier": "X25519",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "onlinesbi.sbi",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "Hybrid X25519 + ML-KEM-768 (TLS group X25519MLKEM768)"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:2048",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "parameterSetIdentifier": "2048",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "onlinesbi.sbi",
+                "line": 5,
+                "offset": 19,
+                "symbol": "RSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "onlinesbi.sbi",
+                "line": 6,
+                "offset": 31,
+                "symbol": "WithRSAEncryption"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "tls-hybrid",
+          "priority": "P1",
+          "title": "Turn on hybrid post-quantum key exchange (X25519MLKEM768)",
+          "fixer": "Config",
+          "effort": "S",
+          "resolves": ["tls-suite:3", "ecdh:4"],
+          "why": "The server negotiated a classical key exchange, so recorded sessions can be decrypted after Q-Day. Data kept 10 years + 0.25 years to migrate exceeds the 9 years to 2035.",
+          "action": "Upgrade the TLS terminator (OpenSSL 3.5+, or a CDN that supports it) and put X25519MLKEM768 first in the supported groups."
+        },
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P1",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["rsa:5", "rsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses X25519 key exchange: traffic recorded today can be decrypted by a future quantum computer.",
+      "Uses RSA 2048 certificates: breakable by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 19.0188,
+      "lon": 73.0421,
+      "label": "Navi Mumbai, India",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:25.444Z"
+  },
+  "www.hdfcbank.com": {
+    "probe": {
+      "host": "www.hdfcbank.com",
+      "address": "104.18.147.40",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "group": "X25519MLKEM768",
+      "hybridPq": true,
+      "certKey": "RSA 2048 bit",
+      "certSigAlg": "sha256WithRSAEncryption",
+      "issuer": "DigiCert Inc",
+      "validTo": "Jan 15 23:59:59 2027 GMT",
+      "report": "# TLS details for www.hdfcbank.com\nprotocol = TLSv1.3\ncipher = TLS_AES_256_GCM_SHA384\nkey_exchange_group = X25519MLKEM768\ncertificate_key = RSA 2048 bit\ncertificate_signature = sha256WithRSAEncryption"
+    },
+    "score": 55,
+    "grade": "At risk",
+    "summary": {
+      "critical": 2,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_256_GCM_SHA384",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-256",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "pqc",
+        "line": 4,
+        "column": 22,
+        "match": "X25519MLKEM768",
+        "algorithm": "Post-quantum algorithm",
+        "primitive": "kem",
+        "severity": "info",
+        "quantumVulnerable": false,
+        "quantumSafe": true,
+        "why": "Quantum-safe algorithm detected (NIST FIPS 203/204/205 family).",
+        "replacement": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+      },
+      {
+        "ruleId": "rsa",
+        "line": 5,
+        "column": 19,
+        "match": "RSA",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "2048",
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      },
+      {
+        "ruleId": "rsa",
+        "line": 6,
+        "column": 31,
+        "match": "WithRSAEncryption",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:2464fee0-b31d-4c7b-b6eb-ac8aa9711535",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:26.165Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "www.hdfcbank.com",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_256_GCM_SHA384",
+          "name": "TLS_AES_256_GCM_SHA384",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_256_GCM_SHA384"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.hdfcbank.com",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_256_GCM_SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:pqc:",
+          "name": "Post-quantum algorithm",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "kem",
+              "nistQuantumSecurityLevel": 3
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.hdfcbank.com",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519MLKEM768"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "info"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:2048",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "parameterSetIdentifier": "2048",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.hdfcbank.com",
+                "line": 5,
+                "offset": 19,
+                "symbol": "RSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.hdfcbank.com",
+                "line": 6,
+                "offset": 31,
+                "symbol": "WithRSAEncryption"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P1",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["rsa:5", "rsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses hybrid post-quantum key exchange (X25519 + ML-KEM-768): recorded traffic stays sealed.",
+      "Uses RSA 2048 certificates: breakable by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 43.6532,
+      "lon": -79.3832,
+      "label": "Toronto, Canada",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:26.490Z"
+  },
+  "www.icicibank.com": {
+    "probe": {
+      "host": "www.icicibank.com",
+      "address": "23.202.229.149",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "group": "X25519MLKEM768",
+      "hybridPq": true,
+      "certKey": "RSA 2048 bit",
+      "certSigAlg": "sha256WithRSAEncryption",
+      "issuer": "Sectigo Limited",
+      "validTo": "Nov  7 23:59:59 2026 GMT",
+      "report": "# TLS details for www.icicibank.com\nprotocol = TLSv1.3\ncipher = TLS_AES_256_GCM_SHA384\nkey_exchange_group = X25519MLKEM768\ncertificate_key = RSA 2048 bit\ncertificate_signature = sha256WithRSAEncryption"
+    },
+    "score": 55,
+    "grade": "At risk",
+    "summary": {
+      "critical": 2,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_256_GCM_SHA384",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-256",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "pqc",
+        "line": 4,
+        "column": 22,
+        "match": "X25519MLKEM768",
+        "algorithm": "Post-quantum algorithm",
+        "primitive": "kem",
+        "severity": "info",
+        "quantumVulnerable": false,
+        "quantumSafe": true,
+        "why": "Quantum-safe algorithm detected (NIST FIPS 203/204/205 family).",
+        "replacement": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+      },
+      {
+        "ruleId": "rsa",
+        "line": 5,
+        "column": 19,
+        "match": "RSA",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "2048",
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      },
+      {
+        "ruleId": "rsa",
+        "line": 6,
+        "column": 31,
+        "match": "WithRSAEncryption",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:0a449cd5-d60d-45f5-afdf-18f452e2dd4d",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:27.386Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "www.icicibank.com",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_256_GCM_SHA384",
+          "name": "TLS_AES_256_GCM_SHA384",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_256_GCM_SHA384"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.icicibank.com",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_256_GCM_SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:pqc:",
+          "name": "Post-quantum algorithm",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "kem",
+              "nistQuantumSecurityLevel": 3
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.icicibank.com",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519MLKEM768"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "info"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:2048",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "parameterSetIdentifier": "2048",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.icicibank.com",
+                "line": 5,
+                "offset": 19,
+                "symbol": "RSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.icicibank.com",
+                "line": 6,
+                "offset": 31,
+                "symbol": "WithRSAEncryption"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P1",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["rsa:5", "rsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses hybrid post-quantum key exchange (X25519 + ML-KEM-768): recorded traffic stays sealed.",
+      "Uses RSA 2048 certificates: breakable by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 13.0895,
+      "lon": 80.2739,
+      "label": "Chennai, India",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:27.737Z"
+  },
+  "www.irctc.co.in": {
+    "probe": {
+      "host": "www.irctc.co.in",
+      "address": "23.201.107.32",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "group": "X25519MLKEM768",
+      "hybridPq": true,
+      "certKey": "ECDSA prime256v1",
+      "certSigAlg": "ecdsa-with-SHA384",
+      "issuer": "DigiCert Inc",
+      "validTo": "Jan 20 23:59:59 2027 GMT",
+      "report": "# TLS details for www.irctc.co.in\nprotocol = TLSv1.3\ncipher = TLS_AES_256_GCM_SHA384\nkey_exchange_group = X25519MLKEM768\ncertificate_key = ECDSA prime256v1\ncertificate_signature = ecdsa-with-SHA384"
+    },
+    "score": 70,
+    "grade": "At risk",
+    "summary": {
+      "critical": 0,
+      "high": 2,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_256_GCM_SHA384",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-256",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "pqc",
+        "line": 4,
+        "column": 22,
+        "match": "X25519MLKEM768",
+        "algorithm": "Post-quantum algorithm",
+        "primitive": "kem",
+        "severity": "info",
+        "quantumVulnerable": false,
+        "quantumSafe": true,
+        "why": "Quantum-safe algorithm detected (NIST FIPS 203/204/205 family).",
+        "replacement": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+      },
+      {
+        "ruleId": "ecdsa",
+        "line": 5,
+        "column": 19,
+        "match": "ECDSA",
+        "algorithm": "ECDSA",
+        "primitive": "signature",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "prime256v1",
+        "why": "Elliptic-curve discrete logs fall to Shor's algorithm, so signatures can be forged once a quantum computer exists.",
+        "replacement": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+      },
+      {
+        "ruleId": "ecdsa",
+        "line": 6,
+        "column": 25,
+        "match": "ecdsa-with-SHA384",
+        "algorithm": "ECDSA",
+        "primitive": "signature",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "Elliptic-curve discrete logs fall to Shor's algorithm, so signatures can be forged once a quantum computer exists.",
+        "replacement": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:f86da9ac-3d99-46e6-a706-0303ef4ae65e",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:28.069Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "www.irctc.co.in",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_256_GCM_SHA384",
+          "name": "TLS_AES_256_GCM_SHA384",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_256_GCM_SHA384"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.irctc.co.in",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_256_GCM_SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:pqc:",
+          "name": "Post-quantum algorithm",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "kem",
+              "nistQuantumSecurityLevel": 3
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.irctc.co.in",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519MLKEM768"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "info"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdsa:prime256v1",
+          "name": "ECDSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "signature",
+              "parameterSetIdentifier": "prime256v1",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.irctc.co.in",
+                "line": 5,
+                "offset": 19,
+                "symbol": "ECDSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdsa:",
+          "name": "ECDSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "signature",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.irctc.co.in",
+                "line": 6,
+                "offset": 25,
+                "symbol": "ecdsa-with-SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P3",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["ecdsa:5", "ecdsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses hybrid post-quantum key exchange (X25519 + ML-KEM-768): recorded traffic stays sealed.",
+      "Uses an ECDSA prime256v1 certificate: its signature can be forged by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 13.0895,
+      "lon": 80.2739,
+      "label": "Chennai, India",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:28.116Z"
+  },
+  "www.digilocker.gov.in": {
+    "probe": {
+      "host": "www.digilocker.gov.in",
+      "address": "18.67.161.109",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_128_GCM_SHA256",
+      "group": "X25519MLKEM768",
+      "hybridPq": true,
+      "certKey": "RSA 2048 bit",
+      "certSigAlg": "sha256WithRSAEncryption",
+      "issuer": "DigiCert Inc",
+      "validTo": "Feb 19 23:59:59 2027 GMT",
+      "report": "# TLS details for www.digilocker.gov.in\nprotocol = TLSv1.3\ncipher = TLS_AES_128_GCM_SHA256\nkey_exchange_group = X25519MLKEM768\ncertificate_key = RSA 2048 bit\ncertificate_signature = sha256WithRSAEncryption"
+    },
+    "score": 55,
+    "grade": "At risk",
+    "summary": {
+      "critical": 2,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_128_GCM_SHA256",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-128",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "pqc",
+        "line": 4,
+        "column": 22,
+        "match": "X25519MLKEM768",
+        "algorithm": "Post-quantum algorithm",
+        "primitive": "kem",
+        "severity": "info",
+        "quantumVulnerable": false,
+        "quantumSafe": true,
+        "why": "Quantum-safe algorithm detected (NIST FIPS 203/204/205 family).",
+        "replacement": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+      },
+      {
+        "ruleId": "rsa",
+        "line": 5,
+        "column": 19,
+        "match": "RSA",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "2048",
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      },
+      {
+        "ruleId": "rsa",
+        "line": 6,
+        "column": 31,
+        "match": "WithRSAEncryption",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:b81d39ad-40d1-499b-a5b8-fe014585c58d",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:28.876Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "www.digilocker.gov.in",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_128_GCM_SHA256",
+          "name": "TLS_AES_128_GCM_SHA256",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_128_GCM_SHA256"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.digilocker.gov.in",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_128_GCM_SHA256"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:pqc:",
+          "name": "Post-quantum algorithm",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "kem",
+              "nistQuantumSecurityLevel": 3
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.digilocker.gov.in",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519MLKEM768"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "info"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:2048",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "parameterSetIdentifier": "2048",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.digilocker.gov.in",
+                "line": 5,
+                "offset": 19,
+                "symbol": "RSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.digilocker.gov.in",
+                "line": 6,
+                "offset": 31,
+                "symbol": "WithRSAEncryption"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P1",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["rsa:5", "rsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses hybrid post-quantum key exchange (X25519 + ML-KEM-768): recorded traffic stays sealed.",
+      "Uses RSA 2048 certificates: breakable by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 1.35208,
+      "lon": 103.82,
+      "label": "Singapore, Singapore",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:29.208Z"
+  },
+  "www.npci.org.in": {
+    "probe": {
+      "host": "www.npci.org.in",
+      "address": "23.202.229.150",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "group": "X25519MLKEM768",
+      "hybridPq": true,
+      "certKey": "ECDSA prime256v1",
+      "certSigAlg": "ecdsa-with-SHA384",
+      "issuer": "DigiCert Inc",
+      "validTo": "Dec 18 23:59:59 2026 GMT",
+      "report": "# TLS details for www.npci.org.in\nprotocol = TLSv1.3\ncipher = TLS_AES_256_GCM_SHA384\nkey_exchange_group = X25519MLKEM768\ncertificate_key = ECDSA prime256v1\ncertificate_signature = ecdsa-with-SHA384"
+    },
+    "score": 70,
+    "grade": "At risk",
+    "summary": {
+      "critical": 0,
+      "high": 2,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_256_GCM_SHA384",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-256",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "pqc",
+        "line": 4,
+        "column": 22,
+        "match": "X25519MLKEM768",
+        "algorithm": "Post-quantum algorithm",
+        "primitive": "kem",
+        "severity": "info",
+        "quantumVulnerable": false,
+        "quantumSafe": true,
+        "why": "Quantum-safe algorithm detected (NIST FIPS 203/204/205 family).",
+        "replacement": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+      },
+      {
+        "ruleId": "ecdsa",
+        "line": 5,
+        "column": 19,
+        "match": "ECDSA",
+        "algorithm": "ECDSA",
+        "primitive": "signature",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "prime256v1",
+        "why": "Elliptic-curve discrete logs fall to Shor's algorithm, so signatures can be forged once a quantum computer exists.",
+        "replacement": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+      },
+      {
+        "ruleId": "ecdsa",
+        "line": 6,
+        "column": 25,
+        "match": "ecdsa-with-SHA384",
+        "algorithm": "ECDSA",
+        "primitive": "signature",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "Elliptic-curve discrete logs fall to Shor's algorithm, so signatures can be forged once a quantum computer exists.",
+        "replacement": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:d2b357d0-4ab3-42f6-9894-aa88984f2eae",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:30.375Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "www.npci.org.in",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_256_GCM_SHA384",
+          "name": "TLS_AES_256_GCM_SHA384",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_256_GCM_SHA384"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.npci.org.in",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_256_GCM_SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:pqc:",
+          "name": "Post-quantum algorithm",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "kem",
+              "nistQuantumSecurityLevel": 3
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.npci.org.in",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519MLKEM768"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "info"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdsa:prime256v1",
+          "name": "ECDSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "signature",
+              "parameterSetIdentifier": "prime256v1",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.npci.org.in",
+                "line": 5,
+                "offset": 19,
+                "symbol": "ECDSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdsa:",
+          "name": "ECDSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "signature",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.npci.org.in",
+                "line": 6,
+                "offset": 25,
+                "symbol": "ecdsa-with-SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P3",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["ecdsa:5", "ecdsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses hybrid post-quantum key exchange (X25519 + ML-KEM-768): recorded traffic stays sealed.",
+      "Uses an ECDSA prime256v1 certificate: its signature can be forged by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 13.0895,
+      "lon": 80.2739,
+      "label": "Chennai, India",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:30.425Z"
+  },
+  "www.axisbank.com": {
+    "probe": {
+      "host": "www.axisbank.com",
+      "address": "23.41.120.20",
+      "protocol": "TLSv1.3",
+      "cipher": "TLS_AES_256_GCM_SHA384",
+      "group": "X25519MLKEM768",
+      "hybridPq": true,
+      "certKey": "RSA 2048 bit",
+      "certSigAlg": "sha256WithRSAEncryption",
+      "issuer": "DigiCert Inc",
+      "validTo": "Jan 15 23:59:59 2027 GMT",
+      "report": "# TLS details for www.axisbank.com\nprotocol = TLSv1.3\ncipher = TLS_AES_256_GCM_SHA384\nkey_exchange_group = X25519MLKEM768\ncertificate_key = RSA 2048 bit\ncertificate_signature = sha256WithRSAEncryption"
+    },
+    "score": 55,
+    "grade": "At risk",
+    "summary": {
+      "critical": 2,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_AES_256_GCM_SHA384",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "low",
+        "quantumVulnerable": false,
+        "quantumSafe": false,
+        "parameter": "kx=negotiated via supported_groups; auth=certificate (separate); cipher=AES-256",
+        "why": "TLS 1.3 suite. The key exchange is chosen separately, so make sure the X25519MLKEM768 group is enabled.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "pqc",
+        "line": 4,
+        "column": 22,
+        "match": "X25519MLKEM768",
+        "algorithm": "Post-quantum algorithm",
+        "primitive": "kem",
+        "severity": "info",
+        "quantumVulnerable": false,
+        "quantumSafe": true,
+        "why": "Quantum-safe algorithm detected (NIST FIPS 203/204/205 family).",
+        "replacement": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+      },
+      {
+        "ruleId": "rsa",
+        "line": 5,
+        "column": 19,
+        "match": "RSA",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "2048",
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      },
+      {
+        "ruleId": "rsa",
+        "line": 6,
+        "column": 31,
+        "match": "WithRSAEncryption",
+        "algorithm": "RSA",
+        "primitive": "pke",
+        "severity": "critical",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "RSA's security rests on integer factoring, which Shor's algorithm solves in polynomial time. Recorded traffic can be decrypted after Q-Day.",
+        "replacement": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:58c6bf34-7812-4768-9b30-66f8e2c1db6c",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-11T15:24:31.550Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "Q-Setu Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "www.axisbank.com",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_AES_256_GCM_SHA384",
+          "name": "TLS_AES_256_GCM_SHA384",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_AES_256_GCM_SHA384"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.axisbank.com",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_AES_256_GCM_SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "low"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:pqc:",
+          "name": "Post-quantum algorithm",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "kem",
+              "nistQuantumSecurityLevel": 3
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.axisbank.com",
+                "line": 4,
+                "offset": 22,
+                "symbol": "X25519MLKEM768"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "info"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "false"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "No change needed. Confirm the parameter sets are NIST category 3 or higher."
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:2048",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "parameterSetIdentifier": "2048",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.axisbank.com",
+                "line": 5,
+                "offset": 19,
+                "symbol": "RSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:rsa:",
+          "name": "RSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "pke",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "www.axisbank.com",
+                "line": 6,
+                "offset": 31,
+                "symbol": "WithRSAEncryption"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "critical"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-KEM-768 (FIPS 203) for key transport; ML-DSA-65 (FIPS 204) for signatures"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with Q-Setu Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P1",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["rsa:5", "rsa:6"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses hybrid post-quantum key exchange (X25519 + ML-KEM-768): recorded traffic stays sealed.",
+      "Uses RSA 2048 certificates: breakable by a future quantum computer.",
+      "Negotiated TLS 1.3 with AES-256-GCM: the symmetric part is already strong."
+    ],
+    "geo": {
+      "lat": 13.0895,
+      "lon": 80.2739,
+      "label": "Chennai, India",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-11T15:24:31.599Z"
+  }
+}

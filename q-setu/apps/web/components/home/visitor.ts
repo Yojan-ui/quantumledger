@@ -1,5 +1,4 @@
 /** The visitor's freshly generated keys (public halves only) and how long they took. */
-import { keyId } from "@qsetu/core";
 import { notify, world } from "@/components/world/store";
 
 export interface VisitorKeys {
@@ -17,13 +16,14 @@ export function generateVisitorKeys(): Promise<VisitorKeys> {
     w.onmessage = (e) => {
       const d = e.data as {
         kemPublicKey: Uint8Array;
+        kid: string;
         hybridPublicKey: Uint8Array;
         timings: VisitorKeys["timings"];
         signatureBytes: number;
       };
       world.key = d.kemPublicKey;
       visitor.keys = {
-        kid: keyId(d.kemPublicKey),
+        kid: d.kid,
         hybridPublicKey: d.hybridPublicKey,
         timings: d.timings,
         signatureBytes: d.signatureBytes,

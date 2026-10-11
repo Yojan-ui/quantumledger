@@ -1,0 +1,144 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Button, Grid, Label, Section, Text } from "@/components/ui";
+import { MaskHeading } from "@/components/ui/MaskHeading";
+import { ScanResult, ScanSkeleton } from "@/components/scan/ScanResult";
+import { world } from "@/components/world/store";
+import { track } from "@/lib/client/analytics";
+import { errText } from "@/lib/client/api";
+import { SUGGESTED_HOSTS, type ScanView } from "@/lib/scan-types";
+
+/**
+ * "Is your bank quantum-safe?" The signature interaction: a real TLS probe of any public site. The
+ * globe turns to the server's region and an arc lights saffron (harvestable) or cyan (hybrid PQ).
+ */
+export function ScanSite() {
+  const ref = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const [result, setResult] = useState<ScanView>();
+
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      ([e]) => {
+        world.scanActive = !!e?.isIntersecting;
+      },
+      { threshold: 0.35 },
+    );
+    if (ref.current) io.observe(ref.current);
+    if (location.hash === "#scan") input.current?.focus({ preventScroll: true });
+    return () => {
+      io.disconnect();
+      world.scanActive = false;
+    };
+  }, []);
+
+  async function run(target = url) {
+    if (!target.trim()) return input.current?.focus();
+    setUrl(target);
+    setBusy(true);
+    setError(undefined);
+    track("scan_run", { source: "home" });
+    try {
+      const res = await fetch("/api/scan/url", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: target }),
+      });
+      const data = (await res.json()) as ScanView;
+      if (!res.ok) throw new Error(errText(data, `Scan failed (${res.status})`));
+      setResult(data);
+      world.scan = {
+        lat: data.geo.lat,
+        lon: data.geo.lon,
+        ok: data.probe.hybridPq,
+        at: performance.now(),
+      };
+    } catch (e) {
+      setError(
+        e instanceof TypeError
+          ? "Couldn't reach the scanner. Check your connection and try again."
+          : (e as Error).message,
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Section id="scan" index="02" label="Scan your site">
+      <div ref={ref}>
+        <Grid className="gap-y-12">
+          <div className="col-span-12 lg:col-span-7">
+            <MaskHeading text="Is your bank quantum\u2011safe?" className="max-w-text" />
+            <Text className="mt-4 max-w-text">
+              Enter any website. We connect to it now and read what it negotiates.
+            </Text>
+            <form
+              className="mt-8 flex flex-col gap-3 md:flex-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void run();
+              }}
+            >
+              <label htmlFor="scan-site" className="sr-only">
+                Enter any website
+              </label>
+              <input
+                ref={input}
+                id="scan-site"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Enter any website"
+                autoComplete="off"
+                inputMode="url"
+                className="h-14 min-w-0 flex-1 rounded-sm border border-line-strong bg-inset px-4 text-h3 text-fg outline-none transition-colors duration-150 placeholder:text-fg-3 focus:border-fg-3"
+              />
+              <Button variant="primary" type="submit" disabled={busy} className="h-14 px-6">
+                {busy ? "Scanning…" : "Scan"}
+              </Button>
+            </form>
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Label as="span">Try</Label>
+              {SUGGESTED_HOSTS.map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => void run(h)}
+                  disabled={busy}
+                  className="font-mono text-small text-fg-2 underline decoration-line-strong underline-offset-4 transition-colors duration-150 hover:text-fg disabled:opacity-40"
+                >
+                  {h.replace(/^www\./, "")}
+                </button>
+              ))}
+            </div>
+            <div className="mt-12 min-h-panel">
+              {busy && <ScanSkeleton />}
+              {!busy && error && (
+                <div className="space-y-3 border-t border-line pt-6" role="alert">
+                  <p className="text-body text-fg">That scan didn’t work.</p>
+                  <Text size="small">{error}</Text>
+                  <Button onClick={() => void run()}>Try again</Button>
+                </div>
+              )}
+              {!busy && !error && result && <ScanResult r={result} />}
+              {!busy && !error && !result && (
+                <Text size="small" className="border-t border-line pt-6 text-fg-3">
+                  Results show a 0–100 readiness score, what was negotiated, and three findings in
+                  plain language. Nothing about you is stored; scanned results are kept by host so
+                  they can be shared.
+                </Text>
+              )}
+            </div>
+          </div>
+          <div className="col-span-12 hidden lg:col-span-5 lg:block">
+            <div data-world-focus className="sticky top-24 h-stage" aria-hidden />
+          </div>
+        </Grid>
+      </div>
+    </Section>
+  );
+}

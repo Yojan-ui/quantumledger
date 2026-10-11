@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui";
 import { Odometer } from "@/components/ui/Odometer";
+import { generateVisitorKeys } from "@/components/home/visitor";
 import { onLive, useMetrics } from "@/lib/client/live";
 import { opColumns } from "@/lib/client/oplines";
 import type { OpEvent } from "@/lib/live/types";
@@ -30,6 +31,27 @@ export function LiveStrip() {
   const [line, setLine] = useState<OpEvent>();
   const metrics = useMetrics();
   const queue = useRef<OpEvent | undefined>(undefined);
+  const streamingRef = useRef(false);
+  // The preloader is real work: this browser generates its own ML-KEM-768 key pair, timed.
+  const [key, setKey] = useState<{ ms?: number; kid?: string }>({});
+  const [streaming, setStreaming] = useState(false);
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout> | undefined;
+    void generateVisitorKeys()
+      .then((k) => {
+        setKey({ ms: k.timings.mlkem, kid: k.kid });
+        t = setTimeout(() => {
+          streamingRef.current = true;
+          setStreaming(true);
+        }, 2200);
+      })
+      .catch(() => {
+        streamingRef.current = true;
+        setStreaming(true);
+      });
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const off = onLive((e) => {
@@ -38,7 +60,7 @@ export function LiveStrip() {
       if (!queue.current || e.op === "REJECT" || queue.current.op !== "REJECT") queue.current = e;
     });
     const t = setInterval(() => {
-      if (queue.current) {
+      if (queue.current && streamingRef.current) {
         setLine(queue.current);
         queue.current = undefined;
       }
@@ -49,12 +71,28 @@ export function LiveStrip() {
     };
   }, []);
 
-  const c = line && opColumns(line);
+  const c = streaming ? line && opColumns(line) : undefined;
   const rate = metrics ? metrics.opsPerSec.toFixed(1) : "0.0";
   return (
     <div className="border-b border-line" aria-label="Live operations">
       <Container className="flex h-8 items-center gap-6 font-mono text-label uppercase text-fg-3">
         <div className="relative h-4 min-w-0 flex-1 overflow-hidden">
+          {!streaming && (
+            <p className="absolute inset-0 flex animate-tick-in gap-4 whitespace-nowrap normal-case">
+              {key.ms === undefined ? (
+                <span>Generating your ML-KEM-768 key…</span>
+              ) : (
+                <>
+                  <span>
+                    Your ML-KEM-768 key <span className="text-fg-2">{key.kid}</span> · generated in
+                    this browser in{" "}
+                    <span className="tabular text-fg-2">{key.ms.toFixed(2)} ms</span>
+                  </span>
+                  <span className="text-accent">✓</span>
+                </>
+              )}
+            </p>
+          )}
           {c && line && (
             <p
               key={line.seq}

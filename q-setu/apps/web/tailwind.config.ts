@@ -85,6 +85,10 @@ export default {
           from: { opacity: "0", transform: "translateY(8px)" },
           to: { opacity: "1", transform: "none" },
         },
+        /** The scan score ring fills from empty. */
+        ring: { from: { strokeDashoffset: "var(--ring-from)" } },
+        /** Skeleton shimmer: an opacity breath on placeholder blocks. */
+        skeleton: { "0%, 100%": { opacity: "0.5" }, "50%": { opacity: "1" } },
         /** The LIVE dot: a slow opacity breath, never a scale. */
         live: { "0%, 100%": { opacity: "1" }, "50%": { opacity: "0.35" } },
       },
@@ -93,6 +97,8 @@ export default {
         "mask-up": "mask-up var(--dur-reveal) var(--ease) both",
         "tick-in": "tick-in var(--dur-ui) var(--ease) both",
         live: "live 2s var(--ease) infinite",
+        ring: "ring var(--dur-reveal) var(--ease) both",
+        skeleton: "skeleton 1.4s var(--ease) infinite",
       },
     },
   },

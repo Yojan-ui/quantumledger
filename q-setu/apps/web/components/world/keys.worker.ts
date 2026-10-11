@@ -3,7 +3,7 @@
  * The preloader's real work: generate an ML-KEM-768 key pair (FIPS 203), a hybrid key for sealing,
  * and an ML-DSA-65 key pair plus one signature (FIPS 204), all timed. Only public keys leave the worker.
  */
-import { getKem, getSig, utf8ToBytes } from "@qsetu/core";
+import { getKem, getSig, keyId, utf8ToBytes } from "@qsetu/core";
 
 self.onmessage = () => {
   const t0 = performance.now();
@@ -16,6 +16,7 @@ self.onmessage = () => {
   const t3 = performance.now();
   postMessage({
     kemPublicKey: kem.publicKey,
+    kid: keyId(kem.publicKey),
     hybridPublicKey: hybrid.publicKey,
     timings: { mlkem: t1 - t0, hybrid: t2 - t1, mldsa: t3 - t2 },
     signatureBytes: signature.length,

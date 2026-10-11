@@ -1,7 +1,7 @@
 "use client";
 
-import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "@/lib/client/motion";
 
 const GLYPHS = "0123456789abcdef";
 

@@ -8,38 +8,38 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
   {
     title: "Product",
     links: [
-      ["Adapters", "/#product"],
-      ["Docs", "/docs"],
-      ["Readiness Scanner", "/demo/scanner"],
-      ["API (OpenAPI)", "/api/docs"],
+      ["Platform", "/platform"],
+      ["Pricing", "/pricing"],
+      ["Readiness scanner", "/demo/scanner"],
+      ["Changelog", "/changelog"],
     ],
   },
   {
-    title: "Demos",
+    title: "Solutions",
     links: [
-      ["How it works", "/demo/how-it-works"],
-      ["Deploy anywhere", "/demo/deploy"],
-      ["Q-Day Time Machine", "/demo/qday"],
-      ["Q-Ledger", "/demo/ledger"],
-      ["One-line web form", "/web-shield-demo/"],
+      ["Fintech", "/solutions/fintech"],
+      ["Healthcare", "/solutions/healthcare"],
+      ["Education", "/solutions/education"],
+      ["Government", "/solutions/government"],
     ],
   },
   {
-    title: "Adapters",
+    title: "Developers",
     links: [
-      ["Shield", "/docs#shield"],
-      ["Web", "/docs#web"],
-      ["SDK", "/docs#sdk"],
-      ["Edge", "/docs#edge"],
-      ["Vault", "/docs#vault"],
+      ["Quickstart", "/docs"],
+      ["Adapters", "/docs/adapters/shield"],
+      ["API reference", "/docs/api"],
+      ["Demos", "/demos"],
     ],
   },
   {
-    title: "Standards",
+    title: "Company",
     links: [
-      ["FIPS 203 · ML-KEM", "https://csrc.nist.gov/pubs/fips/203/final"],
-      ["FIPS 204 · ML-DSA", "https://csrc.nist.gov/pubs/fips/204/final"],
-      ["CycloneDX 1.6", "https://cyclonedx.org/docs/1.6/json/"],
+      ["About", "/about"],
+      ["Security", "/security"],
+      ["Contact", "/contact"],
+      ["Privacy", "/privacy"],
+      ["Terms", "/terms"],
     ],
   },
 ];
@@ -108,8 +108,8 @@ export function Footer() {
             </li>
           </ol>
           <p className="mt-8 text-small text-fg-3">
-            Hackathon prototype. Not affiliated with or endorsed by NIST, NPCI, NHA, MeitY or the
-            National Quantum Mission.
+            Q-Setu is an early-stage project, not yet audited. Not affiliated with or endorsed by
+            NIST, NPCI, NHA, MeitY or the National Quantum Mission.
           </p>
         </div>
       </Container>

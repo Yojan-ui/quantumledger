@@ -4,6 +4,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
+import { easeToken } from "./director";
 import { palette } from "./palette";
 import type { Dots } from "./shapes";
 import { world } from "./store";
@@ -11,11 +12,17 @@ import { world } from "./store";
 const dotVertex = /* glsl */ `
   attribute float aSeed;
   uniform float uPR;
+  uniform float uAssemble;
   varying float vAlpha;
+  float h(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
   void main() {
-    vec4 world = modelMatrix * vec4(position, 1.0);
+    // Assemble: each dot flies in from a scattered position to its place on the Earth.
+    vec3 scatter = normalize(position + vec3(h(position) - 0.5, h(position.yzx) - 0.5, h(position.zxy) - 0.5) * 1.6)
+      * (1.7 + 0.9 * h(position.zyx));
+    vec3 p = mix(scatter, position, uAssemble);
+    vec4 world = modelMatrix * vec4(p, 1.0);
     float facing = dot(normalize(world.xyz), normalize(cameraPosition - world.xyz));
-    vAlpha = smoothstep(0.0, 0.35, facing) * (0.25 + 0.1 * aSeed);
+    vAlpha = mix(0.18, smoothstep(0.0, 0.35, facing), uAssemble) * (0.25 + 0.1 * aSeed);
     vec4 mv = viewMatrix * world;
     gl_Position = projectionMatrix * mv;
     gl_PointSize = 6.0 * uPR / -mv.z;
@@ -52,7 +59,7 @@ export function Globe({ dots }: { dots: Dots }) {
     const m = new THREE.ShaderMaterial({
       vertexShader: dotVertex,
       fragmentShader: dotFragment,
-      uniforms: { uPR: { value: pr }, uColor: { value: c.text } },
+      uniforms: { uPR: { value: pr }, uColor: { value: c.text }, uAssemble: { value: 0 } },
       transparent: true,
       depthWrite: false,
     });
@@ -70,6 +77,14 @@ export function Globe({ dots }: { dots: Dots }) {
       }),
     [c],
   );
+  // The dots assemble once, 900 ms with the motion easing, when the globe first appears.
+  const born = useMemo(() => ({ at: 0 }), []);
+  useFrame(() => {
+    if (!world.focusRect) return;
+    born.at ||= performance.now();
+    const t = world.breathe ? Math.min(1, (performance.now() - born.at) / 900) : 1;
+    points.m.uniforms.uAssemble!.value = easeToken(t);
+  });
   // Idle breathing: the atmosphere rim moves by 2.5% opacity over a 6 s cycle (static when reduced motion).
   useFrame(({ clock }) => {
     rim.uniforms.uRim!.value = world.breathe

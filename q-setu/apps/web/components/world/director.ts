@@ -113,6 +113,23 @@ export function direct(): Params {
     p.nodes = 1;
     return p;
   }
+  if (world.mode === "story" && world.scanActive && world.scan) {
+    // Turn to the scanned site's server region; ScanArc draws its link to India.
+    Object.assign(p, {
+      dist: 3.1,
+      lat: Math.max(-40, Math.min(50, world.scan.lat)),
+      lon: world.scan.lon,
+      spin: 0,
+      accent: world.scan.ok ? "accent" : "warn",
+    });
+    p.arcLevel.fill(0.06);
+    return p;
+  }
+  if (world.mode === "page" && world.pagePose) {
+    Object.assign(p, world.pagePose, { accent: "accent" });
+    INDIA_ARCS.forEach((k) => (p.arcLevel[k] = 0.3));
+    return p;
+  }
   if (world.mode === "backdrop") {
     Object.assign(p, POSES[0]);
     return p;

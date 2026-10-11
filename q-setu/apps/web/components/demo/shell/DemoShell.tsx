@@ -47,7 +47,7 @@ export function DemoShell({
       <header className="sticky top-0 z-40 border-b border-line bg-base">
         <Container className="flex flex-wrap items-center gap-x-6 gap-y-3 py-4">
           <Link
-            href="/demo"
+            href="/demos"
             className="text-small text-fg-3 transition-colors duration-150 hover:text-fg"
           >
             ← Demos
