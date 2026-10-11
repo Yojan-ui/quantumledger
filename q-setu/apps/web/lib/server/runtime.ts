@@ -1,0 +1,161 @@
+import "server-only";
+import { join } from "node:path";
+import { getSig } from "@qsetu/core";
+import type { NetEvent } from "@qsetu/sim";
+import { routeIndex, SECTOR_PATHS, type City } from "@/data/routes";
+import { Bus } from "@/lib/live/bus";
+import { FileKeyStore, KeyManager, loadKek, type KeyPurpose } from "@/lib/live/keystore";
+import { Ledger, type LedgerSigner } from "@/lib/live/ledger";
+import { Mesh } from "@/lib/live/mesh";
+import { Policy } from "@/lib/live/policy";
+import { RateLimiter } from "@/lib/live/rate-limit";
+import { KEM_LABEL } from "@/lib/live/types";
+
+/** Where the ledger database and the wrapped keys live (gitignored). */
+export const DATA_DIR = process.env.QSETU_DATA_DIR ?? join(process.cwd(), ".data");
+/** Scheduled key rotation interval (default 10 minutes). */
+const ROTATE_MS = Number(process.env.QSETU_ROTATE_MS) || 10 * 60_000;
+const ROTATING: KeyPurpose[] = ["ledger", "tx-signing", "mesh-identity"];
+
+export interface Runtime {
+  bus: Bus;
+  policy: Policy;
+  keys: KeyManager;
+  ledger: Ledger;
+  mesh: Mesh;
+  scanLimiter: RateLimiter;
+}
+
+function create(): Runtime {
+  const bus = new Bus();
+  const policy = new Policy();
+  const keys = new KeyManager(new FileKeyStore(join(DATA_DIR, "keystore.json")), loadKek(DATA_DIR));
+
+  const signer: LedgerSigner = {
+    current: () => {
+      const k = keys.active("ledger", "ml-dsa-65");
+      return { keyId: k.meta.id, alg: k.meta.alg };
+    },
+    sign: (m) => {
+      const k = keys.active("ledger", "ml-dsa-65");
+      return {
+        signature: getSig(k.meta.alg).sign(m, k.secretKey),
+        keyId: k.meta.id,
+        alg: k.meta.alg,
+      };
+    },
+    publicKey: (id) => keys.publicKey(id),
+  };
+  const ledger = new Ledger(join(DATA_DIR, "q-ledger.sqlite"), signer);
+
+  ledger.onAppend((e, ms) =>
+    bus.publish({
+      op: "LEDGER",
+      source: "ledger",
+      alg: `sha3-256 · ${e.alg}`,
+      ms,
+      ok: true,
+      detail: `#${e.id} ${e.kind} ${e.subject}`,
+    }),
+  );
+  // Key events go on the bus now and into the ledger right after (the ledger signs with a KMS key).
+  keys.onEvent((e) => {
+    bus.publish({
+      op: e.kind,
+      source: "kms",
+      alg: e.key.alg,
+      ms: e.ms,
+      ok: true,
+      detail: `${e.key.purpose} v${e.key.version}`,
+    });
+    queueMicrotask(() =>
+      ledger.append(e.kind === "KEYGEN" ? "keygen" : "key-rotation", e.key.id, {
+        purpose: e.key.purpose,
+        alg: e.key.alg,
+        version: e.key.version,
+        ...(e.previous ? { previous: e.previous } : {}),
+        store: keys.storeKind,
+      }),
+    );
+  });
+  policy.onChange((next, prev) => {
+    bus.publish({
+      op: "POLICY",
+      source: "policy",
+      alg: `${KEM_LABEL[next.profile]} · ${next.sig}`,
+      ms: 0,
+      ok: true,
+      detail: `g${next.generation}: sessions re-key at their next rotation`,
+    });
+    ledger.append("policy", `g${next.generation}`, {
+      from: `${prev.profile} · ${prev.sig}`,
+      to: `${next.profile} · ${next.sig}`,
+    });
+  });
+
+  if (ledger.count() === 0)
+    ledger.append("genesis", "q-ledger", {
+      note: "Append-only audit log: SHA3-256 chain, ML-DSA-65 signatures.",
+    });
+
+  const mesh = new Mesh(bus, policy, keys, ledger);
+  // Only do work while someone is watching the stream.
+  mesh.start(() => bus.listeners() > 0);
+  setInterval(() => ROTATING.forEach((p) => keys.rotate(p)), ROTATE_MS).unref();
+
+  return { bus, policy, keys, ledger, mesh, scanLimiter: new RateLimiter(6, 60_000) };
+}
+
+// Next.js can bundle each route separately, so the runtime lives on globalThis.
+const g = globalThis as unknown as { __qsetuRuntime?: Runtime };
+
+export function live(): Runtime {
+  return (g.__qsetuRuntime ??= create());
+}
+
+/** Seeds the ledger with real transactions so the demo always has an entry #42 to tamper with. */
+export function ensureLedgerSeeded(min = 48): void {
+  const { ledger, mesh } = live();
+  const missing = min - ledger.count();
+  if (missing > 0) mesh.burst(missing);
+}
+
+export function policyState() {
+  const { policy, mesh } = live();
+  return { ...policy.get(), ...mesh.status() };
+}
+
+/** Bridges a simulator hop (Demos 2 and 3) onto the bus. Classical (insecure) packets are skipped. */
+export function publishNetEvent(e: NetEvent): void {
+  if (e.mode !== "qsetu" || !e.hop || !e.packet) return;
+  const path = SECTOR_PATHS[e.sector];
+  if (!path) return;
+  const [from, to] = (e.hop === "ab" ? [path[0], path[1]] : [path[1], path[2]]) as [City, City];
+  const base = {
+    source: "sim" as const,
+    route: routeIndex(from, to),
+    from,
+    to,
+    sector: e.sector,
+    ms: e.packet.cryptoMs ?? 0,
+    bytes: e.packet.bytes,
+  };
+  if (e.stage === "sent")
+    live().bus.publish({
+      ...base,
+      op: "SEAL",
+      alg: "ml-kem-768+x25519",
+      ok: true,
+      detail: e.recordId,
+    });
+  else if (e.stage === "rejected")
+    live().bus.publish({
+      ...base,
+      op: "REJECT",
+      alg: "ml-dsa-65",
+      ok: false,
+      detail: `${e.recordId} rejected`,
+    });
+  else if (e.stage === "verified" || e.stage === "delivered")
+    live().bus.publish({ ...base, op: "VERIFY", alg: "ml-dsa-65", ok: true, detail: e.recordId });
+}

@@ -1,0 +1,80 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Container } from "@/components/ui";
+import { Odometer } from "@/components/ui/Odometer";
+import { onLive, useMetrics } from "@/lib/client/live";
+import { opColumns } from "@/lib/client/oplines";
+import type { OpEvent } from "@/lib/live/types";
+
+/** Operations worth a ticker line (the mesh also emits OPEN/SIGN; they add nothing a reader needs). */
+const SHOWN = new Set([
+  "SEAL",
+  "VERIFY",
+  "REJECT",
+  "HANDSHAKE",
+  "ROTATE",
+  "POLICY",
+  "LEDGER",
+  "KEYGEN",
+  "SCAN",
+]);
+const EVERY_MS = 450;
+
+/**
+ * The live system strip: a thin mono ticker of real operations from the bus, one new line every
+ * ~450 ms (rejections are never skipped), plus a live ops/sec count. Colours: --text-3, with the
+ * accent only on ✓ and saffron only on ✗. Reduced motion: lines swap without sliding.
+ */
+export function LiveStrip() {
+  const [line, setLine] = useState<OpEvent>();
+  const metrics = useMetrics();
+  const queue = useRef<OpEvent | undefined>(undefined);
+
+  useEffect(() => {
+    const off = onLive((e) => {
+      if (!SHOWN.has(e.op)) return;
+      // Keep the most interesting pending line: a rejection beats anything else.
+      if (!queue.current || e.op === "REJECT" || queue.current.op !== "REJECT") queue.current = e;
+    });
+    const t = setInterval(() => {
+      if (queue.current) {
+        setLine(queue.current);
+        queue.current = undefined;
+      }
+    }, EVERY_MS);
+    return () => {
+      off();
+      clearInterval(t);
+    };
+  }, []);
+
+  const c = line && opColumns(line);
+  const rate = metrics ? metrics.opsPerSec.toFixed(1) : "0.0";
+  return (
+    <div className="border-b border-line" aria-label="Live operations">
+      <Container className="flex h-8 items-center gap-6 font-mono text-label uppercase text-fg-3">
+        <div className="relative h-4 min-w-0 flex-1 overflow-hidden">
+          {c && line && (
+            <p
+              key={line.seq}
+              className="absolute inset-0 flex animate-tick-in gap-4 whitespace-nowrap"
+            >
+              <span>{c.time}</span>
+              <span className="w-16 shrink-0">{c.op}</span>
+              <span className="hidden normal-case md:inline">{c.alg}</span>
+              <span className="hidden md:inline">{c.bytes}</span>
+              <span className="hidden md:inline">{c.ms}</span>
+              <span className={c.failed ? "text-warn" : "text-accent"}>{c.mark}</span>
+              <span className="hidden truncate normal-case lg:inline">{c.detail}</span>
+            </p>
+          )}
+        </div>
+        <p className="flex shrink-0 items-center gap-2 text-fg-2">
+          <span className="block h-dot w-dot animate-live rounded-full bg-accent" aria-hidden />
+          Live · <Odometer value={rate} /> ops/sec
+        </p>
+      </Container>
+    </div>
+  );
+}

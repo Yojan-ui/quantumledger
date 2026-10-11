@@ -1,0 +1,36 @@
+{
+  "name": "q-setu",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n web,legacy,shield-srv,shield-cli -c cyan,gray,yellow,magenta \"pnpm --filter @qsetu/web dev\" \"pnpm --filter @qsetu/legacy-bank dev\" \"pnpm dev:shield-server\" \"pnpm dev:shield-client\"",
+    "build": "pnpm -r build",
+    "start": "pnpm --filter @qsetu/web start",
+    "test": "vitest run",
+    "bench": "tsx scripts/bench.ts",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . && pnpm --filter @qsetu/web lint && pnpm lint:design && prettier --check .",
+    "format": "prettier --write .",
+    "dev:shield-server": "tsx packages/shield-proxy/src/cli.ts --upstream http://127.0.0.1:4000 --listen 8443",
+    "dev:shield-client": "tsx packages/shield-proxy/src/cli.ts --peer http://127.0.0.1:8443 --listen 8080",
+    "dev:web": "pnpm --filter @qsetu/web dev",
+    "test:e2e": "playwright test",
+    "lint:design": "node scripts/lint-design.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.7",
+    "concurrently": "^9.2.0",
+    "@playwright/test": "^1.55.0"
+  }
+}

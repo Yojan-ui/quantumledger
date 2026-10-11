@@ -1,0 +1,10 @@
+node_modules
+.next
+pnpm-lock.yaml
+apps/web/public/bench.json
+dist
+test-results
+playwright-report
+apps/web/public/qsetu.js
+apps/web/data/india-outline.json
+.data

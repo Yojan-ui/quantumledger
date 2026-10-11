@@ -1,0 +1,24 @@
+/*
+ * Q-Setu design tokens: the only colour, motion and depth values allowed anywhere in apps/web.
+ * Enforced by `pnpm lint:design`. Tailwind maps these names in tailwind.config.ts.
+ */
+:root {
+  /* colour (dark only) */
+  --bg: #08090a;
+  --bg-raised: #0f1012;
+  --bg-inset: #050506;
+  --bg-nav: rgba(8, 9, 10, 0.8);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --text: #f7f8f8;
+  --text-2: #a1a4ab;
+  --text-3: #62666d;
+  --accent: #3de0ff; /* protected */
+  --warn: #ff9933; /* vulnerable / India */
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-hover: 150ms;
+  --dur-ui: 300ms;
+  --dur-reveal: 700ms;
+}

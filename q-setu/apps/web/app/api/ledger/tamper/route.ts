@@ -1,0 +1,21 @@
+import { fail, parseBody } from "@/lib/server/api";
+import { ensureLedgerSeeded, live } from "@/lib/server/runtime";
+import { LedgerTamperBody } from "@/lib/server/schemas";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/**
+ * POST /api/ledger/tamper { id = 42, restore? }: DEMO ONLY. Edits one row directly in SQLite,
+ * bypassing the ledger API, the way an insider with database access would. `restore` undoes it.
+ */
+export async function POST(req: Request) {
+  const b = await parseBody(req, LedgerTamperBody);
+  if (!b.ok) return b.res;
+  ensureLedgerSeeded();
+  const { ledger } = live();
+  if (b.data.restore) return Response.json({ restored: ledger.restore() });
+  const r = ledger.tamper(b.data.id);
+  if (!r) return fail("not_found", `No ledger entry #${b.data.id}`, 404);
+  return Response.json({ tampered: r });
+}

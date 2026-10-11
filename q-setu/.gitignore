@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.venv/
+__pycache__/
+next-env.d.ts
+public/qsetu.js
+test-results/
+playwright-report/
+dist/
+.qsetu/
+.data/

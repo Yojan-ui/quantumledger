@@ -1,0 +1,161 @@
+# Q-Setu: make anything in India quantum-safe, in one line
+
+Most post-quantum projects are a library or a slideshow. **Q-Setu is a quantum-safe socket**: one
+core, one crypto-agile algorithm registry and **five adapters**. Any website, API, app, database or
+hardware device can adopt NIST's post-quantum standards without a rewrite. Those standards are
+**ML-KEM** (FIPS 203) for key exchange, hybridised with X25519, and **ML-DSA** (FIPS 204) for
+signatures. The expensive post-quantum handshake runs once per session, and every message after it
+is AES-256-GCM, so the per-message cost is microseconds. Every number in the UI is measured live,
+never quoted.
+
+## The five adapters
+
+| Adapter                                      | For                                       | Integration                                                                                                       |
+| -------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Q-Setu Shield** (sidecar proxy)            | Any server or API, including legacy cores | `npx qsetu-shield --upstream http://localhost:4000 --listen 8443` (zero code change)                              |
+| **Q-Setu Web** (script tag + Service Worker) | Any website                               | `<script src="/qsetu.js" data-key="<key id>" data-endpoint="/api/"></script>`                                     |
+| **Q-Setu SDK** (ESM package)                 | New apps: Node, browser, React Native     | `npm i @qsetu/sdk`, then `createSession` / `seal` / `open` / `sign` / `verify` ([README](packages/sdk/README.md)) |
+| **Q-Setu Edge** (IoT profile)                | Meters, medical devices, POS terminals    | ML-KEM-512 + ML-DSA-44, a 64 KB budget, batch-signed readings                                                     |
+| **Q-Setu Vault** (data at rest)              | Databases and file stores                 | `await vault.put(record)` / `await vault.get(id)`: per-record ML-KEM-wrapped keys, ML-DSA signatures              |
+
+## Architecture
+
+```mermaid
+flowchart TB
+  subgraph core["packages/core: one core"]
+    R["registry.ts<br/>profiles: standard · edge"] --> H["hybrid-kem.ts<br/>X25519 + ML-KEM → HKDF"]
+    R --> S["session.ts<br/>ML-DSA-signed handshake → AES-256-GCM<br/>counters · replay window · key ratchet"]
+    R --> E["envelope.ts<br/>{ v, profile, algIds, kemCt, nonce, ct, sig }"]
+    B[bench.ts] --- SC["scanner.ts<br/>findings · score · CycloneDX CBOM"]
+  end
+  core --> SDK["@qsetu/sdk"] & WEB["@qsetu/web-shield<br/>qsetu.js (page + Service Worker)"] & SH["@qsetu/shield-proxy<br/>Fastify sidecars"] & EDGE["@qsetu/edge<br/>device + gateway"] & VAULT["@qsetu/vault"]
+  SH --> LEG["apps/legacy-bank<br/>plain Express, untouched"]
+  core --> SIM["@qsetu/sim<br/>fintech · healthcare · education<br/>Q-Day adversary · sim/classical (INSECURE_DEMO_ONLY)"]
+  subgraph web["apps/web (Next.js)"]
+    SITE["Landing: one persistent R3F scene<br/>morphing on scroll"]
+    D1[Demo 1 · How it works] & D2[Demo 2 · Deploy anywhere] & D3[Demo 3 · Q-Day] & D4[Demo 4 · Q-Ledger] & SCN[Scanner]
+    BUS["lib/live: event bus · metrics · mesh · policy · KMS · Q-Ledger (SQLite)"]
+    API["/api/*: stream (SSE) · metrics · ledger · policy · keys · plan · scan/url · simulate · qday · shield/run · sdk · vault · certs · docs"]
+  end
+  SDK & WEB & EDGE & VAULT & SIM --> web
+  API --> SH
+```
+
+`@noble/post-quantum`, `@noble/curves`, `@noble/hashes` and `@noble/ciphers` supply every
+primitive. Nothing cryptographic is implemented from scratch, apart from the deliberately insecure
+classical stand-in in `packages/sim/src/classical/`.
+
+## Run it
+
+Requires Node ≥ 20.19 and pnpm 10 (`corepack enable` picks up the pinned version).
+
+```bash
+pnpm install && pnpm dev   # site + legacy app (:4000) + Shield server (:8443) + Shield client (:8080)
+pnpm test                  # 98 unit tests: core, sdk, shield, web-shield, vault, edge, sim, ledger, policy, URL scan
+pnpm bench                 # algorithm table + "1 handshake vs 1,000 messages" session table
+pnpm build                 # type-checks everything, builds the SDK/CLI/qsetu.js, builds the site
+pnpm test:e2e              # Playwright smoke tests (needs `pnpm build` first)
+```
+
+Open these URLs:
+
+- <http://localhost:3000>: the site
+- <http://localhost:3000/demo>: the demo hub
+- <http://localhost:3000/web-shield-demo/>: a plain HTML form protected by one script tag
+
+`pnpm dev` prints every component's logs, labelled. Watch `[legacy-app] POST /api/transfer (plain HTTP, unaware of Q-Setu)`
+while Shield carries it over PQC. With `pnpm start`, the API starts the same Shield stack in-process.
+
+## 3-minute judge script
+
+1. **Hero ticker (25 s).** Open <http://localhost:3000>. Point at the strip under the nav: every line
+   (`SEAL ml-kem-768+x25519 4,6xx B 0.4 ms ✓`, `VERIFY ml-dsa-65 ✓`, `REJECT tampered packet ✗`) is a
+   real operation on this server, and _LIVE · N ops/sec_ is counted, not typed. The globe's pulses are
+   the same packets; their speed follows the measured latency, and a rejected packet snaps saffron.
+   Hover a city for its live counts.
+2. **Why now (25 s).** Scroll once. _Today_: harvest now, decrypt later, with a counter of packets
+   that crossed the network since you arrived. _Aug 2024_: FIPS 203/204/205. _2030 / 35_: NIST's draft
+   deprecation dates. Every claim has a footnote to its primary source. Keep scrolling through
+   _Harvest → Q-Day_: the year runs to 2035 and the classical rows decrypt in your browser.
+3. **Demo 3 · Q-Day (40 s).** Open `/demo/qday` and press **Go to Q-Day**. The classical column's
+   _exposed_ counter rolls up as your browser factors the RSA keys. The Q-Setu column stays at 0 even
+   though the attacker was handed the X25519 secrets. The console on the right shows both halves.
+4. **Demo 2 · Deploy (35 s).** Open `/demo/deploy` and press **Deploy all**. Five real adapters run;
+   then each sealed node keeps working and its ops counter climbs with real traffic.
+5. **Q-Ledger tamper (30 s).** Open `/demo/ledger`. **Verify the chain** (✓ intact). **Tamper with
+   entry #42**: the demo runs a raw SQL `UPDATE`, bypassing the API. **Verify** again: _Broken at entry
+   #42: row edited after it was written_. **Restore**.
+6. **Why Q-Setu table (25 s).** Back on the home page, the comparison against PQC libraries, edge
+   PQ-TLS and doing nothing. Libraries are the foundation (Q-Setu is built on them); Q-Setu is how
+   India deploys them. Optional: in Demo 1, switch the policy to SLH-DSA and watch the console's
+   algorithm IDs change as live sessions re-key, with no restart.
+
+## Live backend
+
+| Endpoint                                     | What it does                                                                                                        |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/stream`                            | SSE from the in-process event bus: one frame per real operation, plus `event: metrics` every second                 |
+| `GET /api/metrics`                           | Rolling 60 s counts and p50/p95 latency per operation, per city and per Demo 2 site                                 |
+| `GET /api/ledger`, `POST /api/ledger/verify` | Q-Ledger: SQLite (`better-sqlite3`), SHA3-256 hash chain, ML-DSA-65 signatures; verify names the first broken entry |
+| `POST /api/scan/url`                         | Probes a public host on 443 offering `X25519MLKEM768`; reports TLS version, cipher, group, certificate; CBOM + plan |
+| `POST /api/plan`                             | Findings → ordered migration checklist (adapter, effort S/M/L, priority by data lifetime); JSON or Markdown         |
+| `POST /api/policy`                           | Hot-swaps `standard` ↔ `edge` or the signature to SLH-DSA; live sessions re-key at their next rotation              |
+| `GET /api/keys`, `POST /api/keys/rotate`     | Demo KMS: keys wrapped with AES-256-GCM in a pluggable `KeyStore` (file now, HSM-ready); rotations go to the ledger |
+| `GET /api/docs`                              | OpenAPI 3.1, generated from the same zod schemas every route validates with                                         |
+
+The live mesh (`apps/web/lib/live/mesh.ts`) runs real hybrid sessions on the globe's 12 routes, but only
+while someone is watching the stream. Every error has one shape: `{ "error": { "code", "message", "issues"? } }`.
+Data lives in `apps/web/.data/` (gitignored); set `QSETU_DATA_DIR`, `QSETU_KMS_KEK` (64 hex chars) and
+`QSETU_ROTATE_MS` to override.
+
+## What's real and what's simulated
+
+**Real:**
+
+- All post-quantum and classical primitives, via the audited `@noble` libraries.
+- The hybrid combiner, the handshake (with forward secrecy and key confirmation), the record layer
+  (replay window, ratcheting rotation every N messages or T minutes) and the envelope.
+- **Every adapter.** Shield nodes really proxy to an Express app. `qsetu.js` really seals form posts
+  in the browser, with pinned keys and signed responses. The SDK really handshakes with `/api/sdk`. Edge
+  really runs in a Web Worker. Vault really detects tampering.
+- The Readiness Scanner, including live TLS probing of public hosts (private and loopback addresses
+  are refused) and its CycloneDX 1.6 CBOM.
+- The QR code is decoded from rendered pixels, and the certificate signatures are real ML-DSA-65.
+- Every benchmark and Compute Meter value, every ticker line, globe pulse and console entry: each is
+  an operation that actually ran, with its measured time.
+- The Q-Ledger chain and its signatures, the KMS key wrapping and rotation, and the policy hot-swap.
+
+**Simulated (and labelled in the UI):**
+
+- **The classical "today" system uses a ~40-bit RSA key** (`sim/classical/`, `INSECURE_DEMO_ONLY`),
+  so the browser can factor it with Pollard's rho, standing in for Shor's algorithm on RSA-2048.
+  The AES-256 payload encryption is real.
+- **A simulated Shor oracle** hands the attacker the X25519 secrets. The simulator keeps copies only
+  for this; real endpoints erase them. The attack then runs the real key schedule and fails.
+- **Edge budgets.** RAM is _accounted_ (the sum of keys, buffers and session state), not a capped heap.
+  CPU is throttled by spinning to emulate a 20× slower device.
+- **Web shield demo keys** come from a public seed so the static page can pin a stable key ID. Set
+  `QSETU_WEB_SHIELD_SEED` in production.
+- Institutions, people and IDs are fictional. The Q-Day year (2033) is illustrative. The "100 ms
+  typical request" behind the overhead percentage is an assumption.
+- Every factual claim lives in `apps/web/data/facts.ts` as `{ claim, source, url, asOf, verified }`,
+  and **only `verified: true` facts are shown**. The NIST, NCSC and NQM facts were checked against
+  their sources on 2026-10-11. The UPI monthly figure and the DST quantum-safe roadmap were found
+  only in secondary reporting, so they stay hidden until the team confirms them on npci.org.in and
+  dst.gov.in.
+- The ledger's _Tamper_ button and `POST /api/ledger/tamper` are demo-only; the KMS keeps its demo
+  KEK on disk unless `QSETU_KMS_KEK` is set.
+- The optional native `liboqs` benchmark was skipped. All numbers come from pure TypeScript, which is
+  slower than native code, so real deployments would do better.
+
+## Roadmap
+
+1. **Hackathon MVP** (this repo): the core, five adapters, three demos and the scanner.
+2. **Pilots:** a bank, a hospital and a university, each running in shadow mode.
+3. **HSM + TLS 1.3:** keys move into HSMs (PKCS#11), and every link uses `X25519MLKEM768`. SLH-DSA
+   (FIPS 205, already in the registry) covers long-lived roots.
+4. **Certification:** independent audit, plus alignment with Indian regulators (RBI, CERT-In) and
+   sector bodies.
+
+The map outline comes from Natural Earth (public domain), India point of view, simplified with
+`scripts/build-india-outline.py`.

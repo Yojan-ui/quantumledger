@@ -1,0 +1,24 @@
+{
+  "name": "@qsetu/legacy-bank",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A deliberately ordinary Express app. Q-Setu Shield protects it without touching this code.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "tsx": "^4.23.15"
+  },
+  "main": "./src/app.ts",
+  "types": "./src/app.ts",
+  "exports": {
+    ".": "./src/app.ts"
+  }
+}

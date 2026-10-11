@@ -1,0 +1,94 @@
+@import "../styles/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    @apply bg-base text-fg antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  body {
+    @apply font-sans text-body text-fg-2;
+  }
+  ::selection {
+    background: var(--line-strong);
+    color: var(--text);
+  }
+  :focus-visible {
+    outline: 1px solid var(--text);
+    outline-offset: 2px;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /*
+   * The only three gradients allowed on the site (enforced by lint:design):
+   * the panel spotlight, the accent hairline, and the globe atmosphere (a shader, not CSS).
+   */
+  .spotlight {
+    position: relative;
+    isolation: isolate;
+  }
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      360px circle at var(--mx, 50%) var(--my, 50%),
+      var(--line-strong),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--dur-ui) var(--ease);
+  }
+  .spotlight:hover::before {
+    /* --line-strong is 14% white; at 0.43 the spotlight peaks at ~6%. */
+    opacity: 0.43;
+  }
+  .hairline-accent {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  [data-magnetic] {
+    transition-property: transform, opacity, background-color, border-color;
+    transition-duration: var(--dur-hover);
+    transition-timing-function: var(--ease);
+  }
+  /* A primary button's one-time shimmer: a solid, skewed band of --bg sweeps across once. */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 24px;
+    background: var(--bg);
+    opacity: 0.12;
+    transform: translateX(-48px) skewX(-20deg);
+    animation: shimmer var(--dur-reveal) var(--ease) 1 both;
+    pointer-events: none;
+  }
+  @keyframes shimmer {
+    to {
+      transform: translateX(280px) skewX(-20deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
