@@ -133,6 +133,9 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
   },
 ];
 
+/** Slides whose content needs the full width (diagram, table, three columns). */
+const WIDE = new Set([1, 2, 4, 5]);
+
 /** /pitch: seven slides from the site's own components. ←/→ (or the buttons) move; the URL hash keeps the slide. */
 export function Deck() {
   const [i, setI] = useState(0);
@@ -169,8 +172,12 @@ export function Deck() {
   return (
     <main id="main" className="flex min-h-svh flex-col">
       {i === 3 && <LiveStrip />}
-      <Container className="flex flex-1 flex-col justify-center py-16">
-        <div key={i} className="animate-reveal space-y-10">
+      <Container className="grid flex-1 grid-cols-12 items-center gap-x-6 py-16">
+        {/* Text-led slides share the screen with the live globe; wide content takes the full width. */}
+        <div
+          key={i}
+          className={`col-span-12 animate-reveal space-y-10 ${WIDE.has(i) ? "" : "lg:col-span-7"}`}
+        >
           <div>
             <Label>
               {String(i + 1).padStart(2, "0")} / {String(n).padStart(2, "0")} — {s.label}
@@ -181,6 +188,14 @@ export function Deck() {
           </div>
           {s.body}
         </div>
+        {!WIDE.has(i) && (
+          <div
+            data-world-focus
+            data-world-drag
+            aria-hidden
+            className="col-span-5 hidden h-stage lg:block"
+          />
+        )}
       </Container>
       <Container className="flex items-center justify-between border-t border-line py-4">
         <span className="flex items-center gap-2 text-small text-fg">

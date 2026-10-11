@@ -75,17 +75,18 @@
     background: var(--bg);
     opacity: 0.12;
     transform: translateX(-48px) skewX(-20deg);
-    animation: shimmer var(--dur-reveal) var(--ease) 1 both;
+    /* No fill: when the sweep ends the band snaps back off-screen to the left. */
+    animation: shimmer var(--dur-reveal) var(--ease) 1;
     pointer-events: none;
   }
   @keyframes shimmer {
     to {
-      transform: translateX(280px) skewX(-20deg);
+      transform: translateX(640px) skewX(-20deg);
     }
   }
-  /* Presenter mode (?present=1): 15% larger, no nav links, footer or command hints. */
-  [data-present] body {
-    zoom: 1.15;
+  /* Presenter mode (?present=1): type 15% larger, no nav links, footer or command hints. */
+  [data-present] {
+    --type-scale: 1.15;
   }
   [data-present] header[data-chrome] nav,
   [data-present] header[data-chrome] [aria-label="Open command menu"],

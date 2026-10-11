@@ -13,6 +13,7 @@ const POSES: Record<string, Pose> = {
   "/solutions/education": { lat: 13.0, lon: 77.6, dist: 1.7, spin: 0 },
   "/solutions/government": { lat: 28.6, lon: 77.2, dist: 1.55, spin: 0 },
   "/about": { lat: 22, lon: 79, dist: 2.4, spin: 0.03 },
+  "/pitch": { lat: 18, lon: 76, dist: 2.9, spin: 0.05 },
 };
 
 /** Maps the route to a world mode. Navigating between pages becomes a camera move in the same world. */

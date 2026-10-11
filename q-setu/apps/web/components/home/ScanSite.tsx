@@ -95,7 +95,7 @@ export function ScanSite() {
                 placeholder="Enter any website"
                 autoComplete="off"
                 inputMode="url"
-                className="h-14 min-w-0 flex-1 rounded-sm border border-line-strong bg-inset px-4 text-h3 text-fg outline-none transition-colors duration-150 placeholder:text-fg-3 focus:border-fg-3"
+                className="h-14 w-full min-w-0 rounded-sm border border-line-strong bg-inset px-4 text-h3 md:flex-1 text-fg outline-none transition-colors duration-150 placeholder:text-fg-3 focus:border-fg-3"
               />
               <Button variant="primary" type="submit" disabled={busy} className="h-14 px-6">
                 {busy ? "Scanning…" : "Scan"}

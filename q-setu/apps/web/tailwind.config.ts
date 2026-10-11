@@ -5,6 +5,8 @@ import type { Config } from "tailwindcss";
  * weights, spaces, radii and durations exist. Values live in styles/tokens.css.
  */
 const px = (n: number) => `${n}px`;
+/** Type sizes scale with --type-scale (1 normally; 1.15 in presenter mode), layout doesn't. */
+const tpx = (n: number) => `calc(${n}px * var(--type-scale, 1))`;
 const space = Object.fromEntries(
   [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 24, 32, 40].map((k) => [k, px(k * 4)]),
 );
@@ -33,15 +35,15 @@ export default {
       mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
     },
     fontSize: {
-      display: [px(72), { lineHeight: px(76), letterSpacing: "-0.035em" }],
-      "display-sm": [px(44), { lineHeight: px(48), letterSpacing: "-0.035em" }],
-      h1: [px(48), { lineHeight: px(52), letterSpacing: "-0.03em" }],
-      "h1-sm": [px(34), { lineHeight: px(38), letterSpacing: "-0.03em" }],
-      h2: [px(28), { lineHeight: px(34), letterSpacing: "-0.02em" }],
-      h3: [px(18), { lineHeight: px(26), letterSpacing: "-0.01em" }],
-      body: [px(16), { lineHeight: px(26) }],
-      small: [px(14), { lineHeight: px(22) }],
-      label: [px(12), { lineHeight: px(16), letterSpacing: "0.08em" }],
+      display: [tpx(72), { lineHeight: tpx(76), letterSpacing: "-0.035em" }],
+      "display-sm": [tpx(44), { lineHeight: tpx(48), letterSpacing: "-0.035em" }],
+      h1: [tpx(48), { lineHeight: tpx(52), letterSpacing: "-0.03em" }],
+      "h1-sm": [tpx(34), { lineHeight: tpx(38), letterSpacing: "-0.03em" }],
+      h2: [tpx(28), { lineHeight: tpx(34), letterSpacing: "-0.02em" }],
+      h3: [tpx(18), { lineHeight: tpx(26), letterSpacing: "-0.01em" }],
+      body: [tpx(16), { lineHeight: tpx(26) }],
+      small: [tpx(14), { lineHeight: tpx(22) }],
+      label: [tpx(12), { lineHeight: tpx(16), letterSpacing: "0.08em" }],
     },
     fontWeight: { normal: "400", medium: "500" },
     spacing: { px: "1px", ...space },

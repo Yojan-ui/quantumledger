@@ -51,41 +51,69 @@ Requires Node ≥ 20.19 and pnpm 10 (`corepack enable` picks up the pinned versi
 
 ```bash
 pnpm install && pnpm dev   # site + legacy app (:4000) + Shield server (:8443) + Shield client (:8080)
-pnpm test                  # 98 unit tests: core, sdk, shield, web-shield, vault, edge, sim, ledger, policy, URL scan
-pnpm bench                 # algorithm table + "1 handshake vs 1,000 messages" session table
-pnpm build                 # type-checks everything, builds the SDK/CLI/qsetu.js, builds the site
-pnpm test:e2e              # Playwright smoke tests (needs `pnpm build` first)
+pnpm test                  # 105 unit tests (the ledger suite runs on SQLite and Postgres via PGlite)
+pnpm build && pnpm start   # production build on :3000
+pnpm test:e2e              # Playwright: every page and demo (after `pnpm build`)
+pnpm test:e2e:offline      # the same site with no outbound network: scans fall back to cached results
+pnpm check:budget          # home page initial JS ≤ 250 KB gzip
+pnpm lhci                  # Lighthouse CI against lighthouserc.json budgets
+pnpm record:demo           # re-records docs/final/demo.mp4 (the 3-minute backup video)
 ```
+
+Copy `apps/web/.env.example` to `apps/web/.env.local` to set anything; everything has a working default locally.
 
 Open these URLs:
 
-- <http://localhost:3000>: the site
-- <http://localhost:3000/demo>: the demo hub
+- <http://localhost:3000>: the site (append `?present=1` for presenter mode)
+- <http://localhost:3000/#scan>: "Is your bank quantum-safe?"
+- <http://localhost:3000/demos>: the four demos and the scanner
+- <http://localhost:3000/pitch>: seven slides, ←/→
+- <http://localhost:3000/docs>: developer docs (quickstart, adapters, concepts, API reference)
+- <http://localhost:3000/admin>: signups (set `ADMIN_PASSWORD`)
 - <http://localhost:3000/web-shield-demo/>: a plain HTML form protected by one script tag
 
 `pnpm dev` prints every component's logs, labelled. Watch `[legacy-app] POST /api/transfer (plain HTTP, unaware of Q-Setu)`
 while Shield carries it over PQC. With `pnpm start`, the API starts the same Shield stack in-process.
 
+## Presenting
+
+- **Presenter mode:** add `?present=1` to any URL. Type gets 15% larger, the nav links and footer hide, and a hint
+  shows in the corner. Turn it off with Esc or `?present=0`.
+
+  | Key   | Action                                                                        |
+  | ----- | ----------------------------------------------------------------------------- |
+  | → / ← | Step the current demo forward or back (on other pages, move between sections) |
+  | 1–5   | How it works · Deploy · Q-Day · Q-Ledger · Scanner                            |
+  | R     | Reset every demo                                                              |
+  | ⌘K    | Jump anywhere, or scan a site                                                 |
+
+- **Reset all:** every demo header has a "Reset all" button (the same as R).
+- **Offline:** start with `NEXT_PUBLIC_OFFLINE=1` (or `QSETU_OFFLINE=1` on the server). Everything runs locally, and
+  URL scans of the suggested Indian sites come from pre-cached real scans, labelled with their date. If the venue
+  network drops without the flag, scans of those sites fall back automatically.
+- **No projector or laptop:** play `docs/final/demo.mp4` (3:05, the full judge flow recorded from the real site).
+- **Slides:** `/pitch`.
+
 ## 3-minute judge script
 
-1. **Hero ticker (25 s).** Open <http://localhost:3000>. Point at the strip under the nav: every line
-   (`SEAL ml-kem-768+x25519 4,6xx B 0.4 ms ✓`, `VERIFY ml-dsa-65 ✓`, `REJECT tampered packet ✗`) is a
-   real operation on this server, and _LIVE · N ops/sec_ is counted, not typed. The globe's pulses are
-   the same packets; their speed follows the measured latency, and a rejected packet snaps saffron.
-   Hover a city for its live counts.
-2. **Why now (25 s).** Scroll once. _Today_: harvest now, decrypt later, with a counter of packets
+1. **Hero (20 s).** Open <http://localhost:3000>. The strip first shows your browser generating its own ML-KEM-768
+   key (timed), then streams real operations. The globe assembles; every pulse is a real packet.
+2. **Is your bank quantum-safe? (30 s).** Type a bank's site, or click `onlinesbi.sbi`. The real TLS probe gives a
+   score ring, the globe turns to the server, and you get three plain findings. Then click `irctc.co.in` for a
+   hybrid post-quantum result. "Share result" gives a link with its own preview card.
+3. **Why now (20 s).** Scroll once. _Today_: harvest now, decrypt later, with a counter of packets
    that crossed the network since you arrived. _Aug 2024_: FIPS 203/204/205. _2030 / 35_: NIST's draft
    deprecation dates. Every claim has a footnote to its primary source. Keep scrolling through
    _Harvest → Q-Day_: the year runs to 2035 and the classical rows decrypt in your browser.
-3. **Demo 3 · Q-Day (40 s).** Open `/demo/qday` and press **Go to Q-Day**. The classical column's
+4. **Demo 3 · Q-Day (35 s).** Open `/demo/qday` and press **Go to Q-Day**. The classical column's
    _exposed_ counter rolls up as your browser factors the RSA keys. The Q-Setu column stays at 0 even
    though the attacker was handed the X25519 secrets. The console on the right shows both halves.
-4. **Demo 2 · Deploy (35 s).** Open `/demo/deploy` and press **Deploy all**. Five real adapters run;
+5. **Demo 2 · Deploy (30 s).** Open `/demo/deploy` and press **Deploy all**. Five real adapters run;
    then each sealed node keeps working and its ops counter climbs with real traffic.
-5. **Q-Ledger tamper (30 s).** Open `/demo/ledger`. **Verify the chain** (✓ intact). **Tamper with
+6. **Q-Ledger tamper (25 s).** Open `/demo/ledger`. **Verify the chain** (✓ intact). **Tamper with
    entry #42**: the demo runs a raw SQL `UPDATE`, bypassing the API. **Verify** again: _Broken at entry
    #42: row edited after it was written_. **Restore**.
-6. **Why Q-Setu table (25 s).** Back on the home page, the comparison against PQC libraries, edge
+7. **Why Q-Setu (20 s).** Back on the home page, the comparison against PQC libraries, edge
    PQ-TLS and doing nothing. Libraries are the foundation (Q-Setu is built on them); Q-Setu is how
    India deploys them. Optional: in Demo 1, switch the policy to SLH-DSA and watch the console's
    algorithm IDs change as live sessions re-key, with no restart.
@@ -180,7 +208,7 @@ docker run -p 3000:3000 \
 
 ## Roadmap
 
-1. **Hackathon MVP** (this repo): the core, five adapters, three demos and the scanner.
+1. **Hackathon MVP** (this repo): the core, five adapters, four demos, the scanner, Q-Ledger and the website.
 2. **Pilots:** a bank, a hospital and a university, each running in shadow mode.
 3. **HSM + TLS 1.3:** keys move into HSMs (PKCS#11), and every link uses `X25519MLKEM768`. SLH-DSA
    (FIPS 205, already in the registry) covers long-lived roots.

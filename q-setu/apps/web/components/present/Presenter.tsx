@@ -71,7 +71,7 @@ function PresenterInner() {
   return (
     <div
       role="status"
-      className="pointer-events-none fixed bottom-4 left-4 z-50 rounded-sm border border-line bg-raised px-3 py-2 font-mono text-label uppercase text-fg-3"
+      className="pointer-events-none fixed right-4 top-20 z-50 rounded-sm border border-line bg-raised px-3 py-2 font-mono text-label uppercase text-fg-3"
     >
       {note ?? "Presenting · ←/→ step · 1–5 demos · R reset · Esc exit"}
     </div>
