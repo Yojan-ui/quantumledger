@@ -3,6 +3,27 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Container, Heading, Text } from "@/components/ui";
+import { resetAll } from "@/lib/client/present";
+
+/** One click (or R in presenter mode) puts every demo back to a clean start. */
+function ResetAll() {
+  const [state, setState] = useState<"idle" | "busy" | "done">("idle");
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        setState("busy");
+        await resetAll();
+        setState("done");
+        setTimeout(() => setState("idle"), 1500);
+      }}
+      title="Reset every demo (R in presenter mode)"
+      className="h-10 px-2 text-small text-fg-3 transition-colors duration-150 hover:text-fg"
+    >
+      {state === "busy" ? "Resetting…" : state === "done" ? "All reset ✓" : "Reset all"}
+    </button>
+  );
+}
 
 interface Props {
   title: string;
@@ -55,7 +76,10 @@ export function DemoShell({
           <Heading as="h1" variant="h3">
             {title}
           </Heading>
-          {controls && <div className="ml-auto flex flex-wrap items-center gap-2">{controls}</div>}
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {controls}
+            <ResetAll />
+          </div>
           <div className="basis-full">
             <Text size="small" className="max-w-text">
               {caption}

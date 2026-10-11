@@ -73,7 +73,7 @@ export function ScanSite() {
       <div ref={ref}>
         <Grid className="gap-y-12">
           <div className="col-span-12 lg:col-span-7">
-            <MaskHeading text="Is your bank quantum\u2011safe?" className="max-w-text" />
+            <MaskHeading text={"Is your bank quantum\u2011safe?"} className="max-w-text" />
             <Text className="mt-4 max-w-text">
               Enter any website. We connect to it now and read what it negotiates.
             </Text>

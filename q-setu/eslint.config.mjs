@@ -9,7 +9,23 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     files: ["scripts/**/*.mjs"],
-    languageOptions: { globals: { console: "readonly", process: "readonly", URL: "readonly" } },
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        URL: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+        performance: "readonly",
+      },
+    },
+  },
+  {
+    // record-demo.mjs passes functions into the page with page.evaluate (browser globals).
+    files: ["scripts/record-demo.mjs"],
+    languageOptions: {
+      globals: { window: "readonly", document: "readonly", requestAnimationFrame: "readonly" },
+    },
   },
   {
     rules: {

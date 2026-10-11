@@ -161,8 +161,8 @@ const MARK: Record<Cell, ReactNode> = {
   no: <span className="text-fg-3">No</span>,
 };
 
-/** An honest comparison: libraries are the foundation (Q-Setu is built on vetted ones). */
-export function WhyQSetu() {
+/** The comparison table on its own (also used by /pitch). Rows stagger in when it scrolls into view. */
+export function ComparisonTable() {
   const table = useRef<HTMLTableElement>(null);
   const [seen, setSeen] = useState(false);
   useEffect(() => {
@@ -176,53 +176,59 @@ export function WhyQSetu() {
     return () => io.disconnect();
   }, []);
   return (
-    <Section id="why-q-setu" index="08" label="Why Q-Setu">
-      <MaskHeading text="Algorithms are solved. Deployment isn’t." className="max-w-text" />
-      <div className="mt-12 overflow-x-auto">
-        <table ref={table} className="w-full min-w-panel table-fixed text-left">
-          <caption className="sr-only">
-            Q-Setu compared with PQC libraries, edge PQ-TLS and doing nothing
-          </caption>
-          <thead>
-            <tr className="border-b border-line">
-              <th className="w-1/3 pb-4">
-                <span className="sr-only">Capability</span>
+    <div className="overflow-x-auto">
+      <table ref={table} className="w-full min-w-panel table-fixed text-left">
+        <caption className="sr-only">
+          Q-Setu compared with PQC libraries, edge PQ-TLS and doing nothing
+        </caption>
+        <thead>
+          <tr className="border-b border-line">
+            <th className="w-1/3 pb-4">
+              <span className="sr-only">Capability</span>
+            </th>
+            {COLS.map((c, i) => (
+              <Label
+                as="th"
+                key={c}
+                tone={i === 0 ? "strong" : "muted"}
+                className="w-1/6 pb-4 pr-4 align-bottom font-normal"
+              >
+                {c}
+              </Label>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {ROWS.map((r, i) => (
+            <tr
+              key={r.k}
+              className={`border-b border-line align-top ${seen ? "animate-reveal" : "opacity-0"}`}
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <th scope="row" className="py-5 pr-6 text-left font-normal">
+                <span className="block text-body text-fg">{r.k}</span>
+                {r.note && <span className="mt-1 block text-small text-fg-3">{r.note}</span>}
               </th>
-              {COLS.map((c, i) => (
-                <Label
-                  as="th"
-                  key={c}
-                  tone={i === 0 ? "strong" : "muted"}
-                  className="w-1/6 pb-4 pr-4 align-bottom font-normal"
-                >
-                  {c}
-                </Label>
+              {r.cells.map((c, i) => (
+                <td key={i} className={`py-5 pr-4 text-small ${i === 0 ? "text-fg" : "text-fg-2"}`}>
+                  {MARK[c]}
+                </td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {ROWS.map((r, i) => (
-              <tr
-                key={r.k}
-                className={`border-b border-line align-top ${seen ? "animate-reveal" : "opacity-0"}`}
-                style={{ animationDelay: `${i * 60}ms` }}
-              >
-                <th scope="row" className="py-5 pr-6 text-left font-normal">
-                  <span className="block text-body text-fg">{r.k}</span>
-                  {r.note && <span className="mt-1 block text-small text-fg-3">{r.note}</span>}
-                </th>
-                {r.cells.map((c, i) => (
-                  <td
-                    key={i}
-                    className={`py-5 pr-4 text-small ${i === 0 ? "text-fg" : "text-fg-2"}`}
-                  >
-                    {MARK[c]}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** 08: an honest comparison. Libraries are the foundation; Q-Setu is built on them. */
+export function WhyQSetu() {
+  return (
+    <Section id="why-q-setu" index="08" label="Why Q-Setu">
+      <MaskHeading text="Algorithms are solved. Deployment isn’t." className="max-w-text" />
+      <div className="mt-12">
+        <ComparisonTable />
       </div>
       <p className="mt-8 max-w-text text-body text-fg-2">
         Libraries give you algorithms. Q-Setu gives India a way to actually deploy them. It is built

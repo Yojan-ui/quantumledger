@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui";
+import { usePresent } from "@/lib/client/present";
 
 interface Props {
   onStep: () => void;
@@ -13,6 +14,8 @@ interface Props {
   playLabel?: string;
   /** Whether Play is this viewport's one primary action. */
   primaryPlay?: boolean;
+  /** Presenter ←: one step back where that's meaningful; otherwise back to the start. */
+  onBack?: () => void;
 }
 
 export function StepControls({
@@ -25,9 +28,22 @@ export function StepControls({
   stepLabel = "Step",
   playLabel = "Play",
   primaryPlay = true,
+  onBack,
 }: Props) {
+  // Presenter mode: → steps, ← goes back, R resets. Real crypto steps can't be un-run, so ← restarts
+  // demos that have no meaningful "previous" state.
+  usePresent({
+    next: () => !busy && !playing && !done && onStep(),
+    prev: () => !playing && (onBack ?? onReset)(),
+    reset: onReset,
+  });
   return (
-    <div className="flex items-center gap-2" role="group" aria-label="Demo controls">
+    <div
+      data-present-target
+      className="flex items-center gap-2"
+      role="group"
+      aria-label="Demo controls"
+    >
       <Button onClick={onStep} disabled={busy || playing || done}>
         {stepLabel}
       </Button>

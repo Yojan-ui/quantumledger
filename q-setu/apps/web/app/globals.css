@@ -83,6 +83,15 @@
       transform: translateX(280px) skewX(-20deg);
     }
   }
+  /* Presenter mode (?present=1): 15% larger, no nav links, footer or command hints. */
+  [data-present] body {
+    zoom: 1.15;
+  }
+  [data-present] header[data-chrome] nav,
+  [data-present] header[data-chrome] [aria-label="Open command menu"],
+  [data-present] footer {
+    display: none;
+  }
   /* ⌘K menu (cmdk renders its own elements; style them with tokens). */
   .cmdk-group [cmdk-group-heading] {
     padding: 8px 12px 4px;

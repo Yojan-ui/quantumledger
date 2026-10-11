@@ -5,6 +5,7 @@ import { SCAN_SAMPLES } from "@qsetu/core/samples";
 import { useEffect, useState } from "react";
 import { Button, Code, Heading, Label, MiniStat, Stat, Text } from "@/components/ui";
 import { errText } from "@/lib/client/api";
+import { usePresent } from "@/lib/client/present";
 import type { Plan } from "@/lib/live/plan";
 
 const LIFETIMES = [1, 5, 10, 25] as const;
@@ -151,6 +152,13 @@ export function Scanner() {
     }
   }
 
+  // Presenter: → scans the URL field, ← and R clear the result.
+  usePresent({
+    next: () => !busy && void scanUrl(),
+    prev: () => (setResult(undefined), setProbe(undefined)),
+    reset: () => (setResult(undefined), setProbe(undefined)),
+  });
+
   function downloadCbom() {
     if (!result) return;
     const blob = new Blob([JSON.stringify(result.cbom, null, 2)], {
@@ -168,7 +176,7 @@ export function Scanner() {
   const field =
     "h-10 min-w-0 rounded-sm border border-line bg-inset px-3 text-small text-fg outline-none transition-colors duration-150 placeholder:text-fg-3 focus:border-line-strong";
   return (
-    <div className="grid grid-cols-1 gap-12 lg:grid-cols-split">
+    <div data-present-target className="grid grid-cols-1 gap-12 lg:grid-cols-split">
       <div className="min-w-0 space-y-6">
         <form
           id="url"

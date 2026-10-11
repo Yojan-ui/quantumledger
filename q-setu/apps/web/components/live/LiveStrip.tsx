@@ -108,6 +108,11 @@ export function LiveStrip() {
             </p>
           )}
         </div>
+        {process.env.NEXT_PUBLIC_OFFLINE === "1" && (
+          <span className="hidden shrink-0 text-fg-3 md:inline">
+            Offline mode · scans from cache
+          </span>
+        )}
         <p className="flex shrink-0 items-center gap-2 text-fg-2">
           <span className="block h-dot w-dot animate-live rounded-full bg-accent" aria-hidden />
           Live · <Odometer value={rate} /> ops/sec

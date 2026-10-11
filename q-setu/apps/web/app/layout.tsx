@@ -54,7 +54,9 @@ const JSON_LD = {
   ],
 };
 
-const PLAUSIBLE = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+// No third-party script at all in offline demo mode.
+const PLAUSIBLE =
+  process.env.NEXT_PUBLIC_OFFLINE === "1" ? undefined : process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

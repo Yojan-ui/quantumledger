@@ -4,7 +4,7 @@ import { MaskHeading } from "@/components/ui/MaskHeading";
 import { fact, footnote } from "@/data/facts";
 
 /** Short forms of verified facts (the full claim and source are in the footer, by footnote). */
-const MOMENTS = [
+export const MOMENTS = [
   {
     when: "Today",
     label: "Harvest now, decrypt later",

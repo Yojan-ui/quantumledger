@@ -8,6 +8,7 @@ import { Button, Code, Heading, Label, Text } from "@/components/ui";
 import { Odometer } from "@/components/ui/Odometer";
 import { errText } from "@/lib/client/api";
 import { onLive } from "@/lib/client/live";
+import { usePresent } from "@/lib/client/present";
 import type { LedgerEntry, VerifyResult } from "@/lib/live/ledger";
 import type { OpEvent } from "@/lib/live/types";
 
@@ -107,6 +108,19 @@ export function LedgerDemo() {
 
   const broken = verify?.broken;
   const isTampered = tampered.includes(TARGET);
+
+  // Presenter: → walks verify → tamper → verify (break) → restore; ← and R restore.
+  usePresent({
+    next: () => {
+      if (busy) return;
+      if (!isTampered && !verify) void doVerify();
+      else if (!isTampered) void doTamper();
+      else if (!broken) void doVerify();
+      else void doRestore();
+    },
+    prev: () => void doRestore(),
+    reset: () => void doRestore(),
+  });
   return (
     <DemoShell
       title="Demo 4 · Q-Ledger"
@@ -136,7 +150,7 @@ export function LedgerDemo() {
         })()
       }
     >
-      <div className="space-y-12">
+      <div data-present-target className="space-y-12">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div>
             <p className="tabular text-h1-sm font-medium text-fg md:text-h1">
@@ -179,7 +193,7 @@ export function LedgerDemo() {
 
         {edit && (
           <div className="space-y-3 border-t border-line pt-8">
-            <Label as="p">What the insider ran, directly against SQLite</Label>
+            <Label as="p">What the insider ran, directly in the database</Label>
             <Code
               code={`UPDATE entries SET payload = json_set(payload, '$.${edit.field}', ${JSON.stringify(edit.after)}) WHERE id = ${TARGET};`}
               copy={false}

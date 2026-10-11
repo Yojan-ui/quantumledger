@@ -61,6 +61,8 @@ test("home: nine sections in order, each with an index label", async ({ page }) 
     "early-access",
   ]);
   await expect(page.getByRole("link", { name: "Try it live" })).toBeVisible();
+  // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
+  expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
   await expect(page.getByRole("link", { name: "Scan your site" })).toBeVisible();
 });
 
@@ -106,8 +108,40 @@ test("SEO: sitemap, robots, security.txt, OG image, 404", async ({ page, request
 
 test("⌘K jumps to any page", async ({ page }) => {
   await page.goto("/about");
-  await page.keyboard.press("ControlOrMeta+k");
+  // Retry the shortcut until the page has hydrated and the menu opens.
+  await expect(async () => {
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(page.getByPlaceholder(/Search pages/)).toBeVisible({ timeout: 1000 });
+  }).toPass();
   await page.getByPlaceholder(/Search pages/).fill("pricing");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/pricing$/);
+});
+
+test("presenter mode: keyboard drives the demos, R resets everything", async ({ page }) => {
+  await page.goto("/demo/ledger?present=1");
+  await expect(page.locator("html")).toHaveAttribute("data-present", "");
+  await expect(page.getByText(/Presenting · ←\/→ step/)).toBeVisible();
+  await page.keyboard.press("ArrowRight"); // verify
+  await expect(page.getByText("Chain intact")).toBeVisible();
+  await page.keyboard.press("ArrowRight"); // tamper with #42
+  await expect(page.getByText(/What the insider ran/)).toBeVisible();
+  await page.keyboard.press("ArrowRight"); // verify: the break is found
+  await expect(page.getByText("Broken at entry #42")).toBeVisible();
+  await page.keyboard.press("r");
+  await expect(page.getByText("Everything reset ✓")).toBeVisible();
+  await page.keyboard.press("3");
+  await expect(page).toHaveURL(/\/demo\/qday/);
+  await page.keyboard.press("ArrowRight"); // +1 year
+  await expect(page.locator("#year")).toHaveValue("2027");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("html")).not.toHaveAttribute("data-present", "");
+});
+
+test("pitch: seven slides with keyboard navigation", async ({ page }) => {
+  await page.goto("/pitch");
+  await expect(page.getByText("1 / 7")).toBeVisible();
+  for (let k = 0; k < 6; k++) await page.keyboard.press("ArrowRight");
+  await expect(page.getByText("7 / 7")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("design partners");
 });

@@ -223,6 +223,7 @@ export function QDayDemo() {
           done={year >= END}
           stepLabel="+1 year"
           playLabel="Go to Q-Day"
+          onBack={() => setYear((y) => Math.max(START, y - 1))}
         />
       }
       meter={<ComputeMeter reading={reading} />}
