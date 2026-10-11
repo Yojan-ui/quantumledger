@@ -1,3 +1,5 @@
+import { createMDX } from "fumadocs-mdx/next";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -13,7 +15,13 @@ const nextConfig = {
     "@qsetu/shield-proxy",
     "@qsetu/legacy-bank",
   ],
-  serverExternalPackages: ["fastify", "express", "better-sqlite3"],
+  serverExternalPackages: [
+    "fastify",
+    "express",
+    "better-sqlite3",
+    "postgres",
+    "@electric-sql/pglite",
+  ],
   async redirects() {
     return [{ source: "/demo", destination: "/demos", permanent: true }];
   },
@@ -35,4 +43,5 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Fumadocs compiles content/docs/*.mdx into the typed `.source` module.
+export default createMDX()(nextConfig);

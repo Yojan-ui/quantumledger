@@ -1,0 +1,16 @@
+---
+title: Sessions
+description: One post-quantum handshake per session, then AES-256-GCM for every message.
+---
+
+1. **ClientHello:** a random value and an X25519 share.
+2. **ServerHello:** the server's X25519 share and an ephemeral ML-KEM public key, signed with ML-DSA. The
+   signature covers the ClientHello too, so shares can't be swapped.
+3. **ClientFinish:** the ML-KEM ciphertext and a key confirmation.
+4. **Messages:** AES-256-GCM, with a per-epoch counter as the nonce and the header as associated data.
+
+The expensive post-quantum work happens once. Each later message costs one AES-GCM call and adds 44
+bytes (a 28-byte header and a 16-byte tag). The live numbers on this server are on the
+[home page](/#proof).
+
+Ephemeral keys give forward secrecy. A 64-message replay window rejects duplicates.

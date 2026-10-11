@@ -110,7 +110,7 @@ export function CommandMenu() {
           <Command.Empty className="px-3 py-6 text-small text-fg-3">No matches.</Command.Empty>
           <Command.Group heading="Scan" className="cmdk-group">
             <Command.Item
-              value={`scan a site ${q}`}
+              value={looksLikeHost ? `scan ${q}` : "scan a site"}
               onSelect={() =>
                 go(
                   looksLikeHost

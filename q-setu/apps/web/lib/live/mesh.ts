@@ -194,7 +194,7 @@ export class Mesh {
         (b) => b.length,
       );
     } catch {
-      this.ledger?.append("reject", record.recordId!, {
+      void this.ledger?.append("reject", record.recordId!, {
         sector,
         from: route.from,
         to: route.to,
@@ -223,7 +223,7 @@ export class Mesh {
     );
     if (ok) this.delivered++;
     if (ok && this.ledger && this.delivered % this.ledgerEvery === 0) {
-      this.ledger.append("tx", record.recordId!, {
+      void this.ledger.append("tx", record.recordId!, {
         sector,
         from: route.from,
         to: route.to,

@@ -8,7 +8,7 @@ import { HERO } from "./chapters";
 
 /**
  * The hero is the pitch: one headline, one subline, two buttons, the globe and the live strip.
- * The headline is server-rendered and rises word by word in pure CSS, so it paints immediately.
+ * The headline is server-rendered and painted on the first frame; covers lift off it word by word.
  */
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -44,13 +44,13 @@ export function Hero() {
             <span aria-hidden>
               {words.map((w, i) => (
                 <Fragment key={i}>
-                  <span className="-mb-2 inline-block overflow-hidden pb-2 align-top">
+                  <span className="relative -mb-2 inline-block overflow-hidden pb-2 align-top">
+                    {w}
+                    {/* The word is painted from the first frame (fast LCP); a --bg cover lifts off it. */}
                     <span
-                      className="inline-block animate-mask-up"
+                      className="absolute inset-0 animate-uncover bg-base"
                       style={{ animationDelay: `${120 + i * 45}ms` }}
-                    >
-                      {w}
-                    </span>
+                    />
                   </span>
                   {i < words.length - 1 && " "}
                 </Fragment>

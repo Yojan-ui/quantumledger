@@ -226,7 +226,7 @@ export function WhyQSetu() {
       </div>
       <p className="mt-8 max-w-text text-body text-fg-2">
         Libraries give you algorithms. Q-Setu gives India a way to actually deploy them. It is built
-        on vetted open-source implementations (noble post-quantum), not new cryptography.
+        on widely used open-source implementations (the @noble libraries), not new cryptography.
       </p>
     </Section>
   );

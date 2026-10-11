@@ -1,13 +1,13 @@
 import { SECTORS } from "@qsetu/sim";
 import type { Certificate } from "@/lib/certs";
 import { issue } from "@/lib/server/certs";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** POST /api/certs/issue: Deccan University issues and ML-DSA-signs a new degree certificate. */
-export function POST() {
+export async function POST() {
   const r = SECTORS.education.generate();
   const cert: Certificate = {
     certificateId: r.recordId!,
@@ -19,7 +19,7 @@ export function POST() {
     university: "Deccan University",
   };
   const signed = issue(cert);
-  live().bus.publish({
+  getBus().publish({
     op: "SIGN",
     source: "certs",
     alg: "ml-dsa-65",

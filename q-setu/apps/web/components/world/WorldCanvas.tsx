@@ -27,17 +27,47 @@ export function WorldCanvas() {
       };
       worker.postMessage({ maskUrl: "/globe/landmask.png", candidates: small ? 60_000 : 120_000 });
     };
+    // The 3D bundle loads after first paint. Desktops start it when the browser is idle; phones and
+    // low-core devices wait for the first interaction (or 4.5 s), so the scene's start-up never
+    // competes with the page becoming usable.
+    const constrained =
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.innerWidth < 768 ||
+      (navigator.hardwareConcurrency ?? 8) <= 4;
+    const events = [
+      "pointerdown",
+      "pointermove",
+      "touchstart",
+      "scroll",
+      "keydown",
+      "wheel",
+    ] as const;
+    let fired = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const go = () => {
+      if (fired) return;
+      fired = true;
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, go));
+      start();
+    };
     const idle = () => {
+      if (constrained) {
+        events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
+        timer = setTimeout(go, 4500);
+        return;
+      }
       const w = window as Window & typeof globalThis;
-      if (typeof w.requestIdleCallback === "function")
-        w.requestIdleCallback(start, { timeout: 1500 });
-      else setTimeout(start, 200);
+      if (typeof w.requestIdleCallback === "function") w.requestIdleCallback(go, { timeout: 1500 });
+      else setTimeout(go, 200);
     };
     if (document.readyState === "complete") idle();
     else window.addEventListener("load", idle, { once: true });
     return () => {
       cancelled = true;
       worker?.terminate();
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, go));
       window.removeEventListener("load", idle);
     };
   }, []);

@@ -1,0 +1,13 @@
+{
+  "title": "Docs",
+  "pages": [
+    "index",
+    "---Adapters---",
+    "...adapters",
+    "---Concepts---",
+    "...concepts",
+    "---Reference---",
+    "api",
+    "security-model"
+  ]
+}

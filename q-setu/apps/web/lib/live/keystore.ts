@@ -62,6 +62,44 @@ export class FileKeyStore implements KeyStore {
   }
 }
 
+/**
+ * Keys in the database (the same one as the ledger), so a redeploy keeps every key and old ledger
+ * entries stay verifiable. Reads are served from memory; writes go through to the database in order.
+ */
+export class DbKeyStore implements KeyStore {
+  readonly kind = "database";
+  private writes: Promise<unknown> = Promise.resolve();
+  private constructor(
+    private readonly keys: Map<string, StoredKey>,
+    private readonly repo: { upsert(id: string, record: string): Promise<void> },
+  ) {}
+
+  static async open(repo: {
+    all(): Promise<{ id: string; record: string }[]>;
+    upsert(id: string, record: string): Promise<void>;
+  }): Promise<DbKeyStore> {
+    const rows = await repo.all();
+    return new DbKeyStore(
+      new Map(rows.map((r) => [r.id, JSON.parse(r.record) as StoredKey])),
+      repo,
+    );
+  }
+
+  list() {
+    return [...this.keys.values()].map((k) => ({ ...k }));
+  }
+
+  put(key: StoredKey) {
+    this.keys.set(key.id, { ...key });
+    const record = JSON.stringify(key);
+    this.writes = this.writes.then(() => this.repo.upsert(key.id, record)).catch(() => {});
+  }
+
+  flush(): Promise<unknown> {
+    return this.writes;
+  }
+}
+
 /** Loads the KEK from the environment, or creates a local demo KEK file (mode 0600). */
 export function loadKek(dir: string): Buffer {
   const env = process.env.QSETU_KMS_KEK;

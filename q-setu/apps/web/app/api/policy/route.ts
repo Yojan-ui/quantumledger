@@ -6,8 +6,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** GET /api/policy: the active crypto policy and how many live links have re-keyed onto it. */
-export function GET() {
-  return Response.json(policyState());
+export async function GET() {
+  return Response.json(await policyState());
 }
 
 /**
@@ -18,6 +18,6 @@ export function GET() {
 export async function POST(req: Request) {
   const b = await parseBody(req, PolicyBody);
   if (!b.ok) return b.res;
-  live().policy.set(b.data);
-  return Response.json(policyState());
+  (await live()).policy.set(b.data);
+  return Response.json(await policyState());
 }

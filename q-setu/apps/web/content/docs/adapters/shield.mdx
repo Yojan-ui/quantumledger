@@ -1,0 +1,37 @@
+---
+title: Shield
+description: A sidecar proxy that makes any server or API quantum-safe with zero code changes.
+---
+
+Shield runs as two small nodes: one **beside your app** (server side) and one **beside its callers**
+(client side). Callers talk plain HTTP to their local node; the two nodes talk a hybrid post-quantum
+session; the app receives plain HTTP from its local node. Nothing in the app changes.
+
+## Run it
+
+```bash
+# Next to the app (it holds an ML-DSA identity; keep the file safe)
+npx qsetu-shield --upstream http://localhost:4000 --listen 8443 --identity shield-identity.json
+
+# Next to the callers (pin the server's identity public key)
+npx qsetu-shield --peer http://bank-dc:8443 --listen 8080 --server-key <base64 public key>
+```
+
+| Flag                       | Side   | Meaning                                                                |
+| -------------------------- | ------ | ---------------------------------------------------------------------- |
+| `--upstream <url>`         | server | The unmodified app Shield protects                                     |
+| `--peer <url>`             | client | The server-side Shield node                                            |
+| `--listen <port>`          | both   | Where this node listens                                                |
+| `--identity <file>`        | server | ML-DSA identity (created on first run)                                 |
+| `--server-key <b64>`       | client | Pinned identity; without it the client trusts on first use (demo only) |
+| `--profile standard\|edge` | server | Algorithm profile (default `standard`)                                 |
+
+## What's protected
+
+Everything between the two nodes: an X25519 + ML-KEM-768 handshake authenticated by ML-DSA-65, then
+AES-256-GCM frames with replay protection and a key ratchet. Traffic between a node and its own app or
+callers stays local (loopback or a trusted segment).
+
+<Callout>
+  In production, always pass `--server-key`. Trust on first use is a demo convenience.
+</Callout>

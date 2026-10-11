@@ -1,6 +1,6 @@
 import type { SectorId } from "@qsetu/sim";
 import { fail, parseBody } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus, live } from "@/lib/server/runtime";
 import { TrafficBody } from "@/lib/server/schemas";
 
 export const runtime = "nodejs";
@@ -12,9 +12,9 @@ export async function POST(req: Request) {
   if (!b.ok) return b.res;
   const [sector, adapter] = b.data.site.split("-") as [SectorId, string];
   try {
-    live().mesh.exercise(b.data.site, sector, adapter);
+    (await live()).mesh.exercise(b.data.site, sector, adapter);
   } catch (e) {
     return fail("internal", (e as Error).message, 500);
   }
-  return Response.json({ site: b.data.site, ops: live().bus.siteCount(b.data.site) });
+  return Response.json({ site: b.data.site, ops: getBus().siteCount(b.data.site) });
 }

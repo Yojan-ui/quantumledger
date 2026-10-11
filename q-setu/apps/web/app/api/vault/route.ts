@@ -1,6 +1,6 @@
 import { SECTORS } from "@qsetu/sim";
 import { parseBody, SectorBody } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 import { getVault } from "@/lib/server/state";
 
 export const runtime = "nodejs";
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     meta: { sector, type: SECTORS[sector].noun },
   });
   const stored = store.raw.get(put.id);
-  live().bus.publish({
+  getBus().publish({
     op: "SEAL",
     source: "vault",
     alg: "ml-kem-768 · ml-dsa-65",

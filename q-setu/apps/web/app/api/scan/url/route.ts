@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * hostnames only; 6 scans per minute per client. Offline, it answers from pre-cached real scans.
  */
 export async function POST(req: Request) {
-  const { scanLimiter, bus } = live();
+  const { scanLimiter, bus } = await live();
   const wait = scanLimiter.take(clientKey(req));
   if (wait)
     return fail("rate_limited", `Too many scans. Try again in ${wait} s.`, 429, {

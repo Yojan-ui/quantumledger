@@ -4,9 +4,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** POST /api/ledger/verify: walks the whole chain (hashes, links, ML-DSA signatures) and names the first break. */
-export function POST() {
-  const { ledger, bus } = live();
-  const r = ledger.verify();
+export async function POST() {
+  const { ledger, bus } = await live();
+  const r = await ledger.verify();
   bus.publish({
     op: r.ok ? "VERIFY" : "REJECT",
     source: "ledger",

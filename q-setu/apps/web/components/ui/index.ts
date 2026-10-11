@@ -5,3 +5,4 @@ export { Panel } from "./Panel";
 export { Code, Accent, Muted } from "./Code";
 export { Stat, MiniStat } from "./Stat";
 export { Reveal } from "./Reveal";
+export { PageShell, PageHero, Block, Lines } from "./Page";

@@ -3,15 +3,17 @@ import { join } from "node:path";
 import { getSig } from "@qsetu/core";
 import type { NetEvent } from "@qsetu/sim";
 import { routeIndex, SECTOR_PATHS, type City } from "@/data/routes";
+import { openFromEnv } from "@/lib/db/connect";
+import type { Repos } from "@/lib/db/repo";
 import { Bus } from "@/lib/live/bus";
-import { FileKeyStore, KeyManager, loadKek, type KeyPurpose } from "@/lib/live/keystore";
+import { DbKeyStore, KeyManager, loadKek, type KeyPurpose } from "@/lib/live/keystore";
 import { Ledger, type LedgerSigner } from "@/lib/live/ledger";
 import { Mesh } from "@/lib/live/mesh";
 import { Policy } from "@/lib/live/policy";
 import { RateLimiter } from "@/lib/live/rate-limit";
 import { KEM_LABEL } from "@/lib/live/types";
 
-/** Where the ledger database and the wrapped keys live (gitignored). */
+/** Where the SQLite database and (if QSETU_KMS_KEK is unset) the demo KEK live. Gitignored. */
 export const DATA_DIR = process.env.QSETU_DATA_DIR ?? join(process.cwd(), ".data");
 /** Scheduled key rotation interval (default 10 minutes). */
 const ROTATE_MS = Number(process.env.QSETU_ROTATE_MS) || 10 * 60_000;
@@ -23,13 +25,23 @@ export interface Runtime {
   keys: KeyManager;
   ledger: Ledger;
   mesh: Mesh;
+  repos: Repos;
   scanLimiter: RateLimiter;
 }
 
-function create(): Runtime {
-  const bus = new Bus();
+// Next.js can bundle each route separately, so singletons live on globalThis.
+const g = globalThis as unknown as { __qsetuBus?: Bus; __qsetuRuntime?: Promise<Runtime> };
+
+/** The live event bus. Synchronous and dependency-free, so anything can publish to it at once. */
+export function getBus(): Bus {
+  return (g.__qsetuBus ??= new Bus());
+}
+
+async function create(): Promise<Runtime> {
+  const bus = getBus();
   const policy = new Policy();
-  const keys = new KeyManager(new FileKeyStore(join(DATA_DIR, "keystore.json")), loadKek(DATA_DIR));
+  const repos = await openFromEnv(DATA_DIR);
+  const keys = new KeyManager(await DbKeyStore.open(repos.kms), loadKek(DATA_DIR));
 
   const signer: LedgerSigner = {
     current: () => {
@@ -46,7 +58,7 @@ function create(): Runtime {
     },
     publicKey: (id) => keys.publicKey(id),
   };
-  const ledger = new Ledger(join(DATA_DIR, "q-ledger.sqlite"), signer);
+  const ledger = new Ledger(repos.ledger, signer);
 
   ledger.onAppend((e, ms) =>
     bus.publish({
@@ -58,7 +70,7 @@ function create(): Runtime {
       detail: `#${e.id} ${e.kind} ${e.subject}`,
     }),
   );
-  // Key events go on the bus now and into the ledger right after (the ledger signs with a KMS key).
+  // Key events go on the bus now and into the ledger's queue (it signs with a KMS key).
   keys.onEvent((e) => {
     bus.publish({
       op: e.kind,
@@ -68,14 +80,15 @@ function create(): Runtime {
       ok: true,
       detail: `${e.key.purpose} v${e.key.version}`,
     });
-    queueMicrotask(() =>
-      ledger.append(e.kind === "KEYGEN" ? "keygen" : "key-rotation", e.key.id, {
-        purpose: e.key.purpose,
-        alg: e.key.alg,
-        version: e.key.version,
-        ...(e.previous ? { previous: e.previous } : {}),
-        store: keys.storeKind,
-      }),
+    queueMicrotask(
+      () =>
+        void ledger.append(e.kind === "KEYGEN" ? "keygen" : "key-rotation", e.key.id, {
+          purpose: e.key.purpose,
+          alg: e.key.alg,
+          version: e.key.version,
+          ...(e.previous ? { previous: e.previous } : {}),
+          store: keys.storeKind,
+        }),
     );
   });
   policy.onChange((next, prev) => {
@@ -87,14 +100,14 @@ function create(): Runtime {
       ok: true,
       detail: `g${next.generation}: sessions re-key at their next rotation`,
     });
-    ledger.append("policy", `g${next.generation}`, {
+    void ledger.append("policy", `g${next.generation}`, {
       from: `${prev.profile} · ${prev.sig}`,
       to: `${next.profile} · ${next.sig}`,
     });
   });
 
-  if (ledger.count() === 0)
-    ledger.append("genesis", "q-ledger", {
+  if ((await ledger.count()) === 0)
+    await ledger.append("genesis", "q-ledger", {
       note: "Append-only audit log: SHA3-256 chain, ML-DSA-65 signatures.",
     });
 
@@ -103,25 +116,30 @@ function create(): Runtime {
   mesh.start(() => bus.listeners() > 0);
   setInterval(() => ROTATING.forEach((p) => keys.rotate(p)), ROTATE_MS).unref();
 
-  return { bus, policy, keys, ledger, mesh, scanLimiter: new RateLimiter(6, 60_000) };
+  return { bus, policy, keys, ledger, mesh, repos, scanLimiter: new RateLimiter(6, 60_000) };
 }
 
-// Next.js can bundle each route separately, so the runtime lives on globalThis.
-const g = globalThis as unknown as { __qsetuRuntime?: Runtime };
-
-export function live(): Runtime {
-  return (g.__qsetuRuntime ??= create());
+/** The whole live runtime (database, KMS, ledger, mesh), created once per process. */
+export function live(): Promise<Runtime> {
+  g.__qsetuRuntime ??= create().catch((e) => {
+    g.__qsetuRuntime = undefined;
+    throw e;
+  });
+  return g.__qsetuRuntime;
 }
 
 /** Seeds the ledger with real transactions so the demo always has an entry #42 to tamper with. */
-export function ensureLedgerSeeded(min = 48): void {
-  const { ledger, mesh } = live();
-  const missing = min - ledger.count();
-  if (missing > 0) mesh.burst(missing);
+export async function ensureLedgerSeeded(min = 48): Promise<void> {
+  const { ledger, mesh } = await live();
+  const missing = min - (await ledger.count());
+  if (missing > 0) {
+    mesh.burst(missing);
+    await ledger.flush();
+  }
 }
 
-export function policyState() {
-  const { policy, mesh } = live();
+export async function policyState() {
+  const { policy, mesh } = await live();
   return { ...policy.get(), ...mesh.status() };
 }
 
@@ -140,16 +158,11 @@ export function publishNetEvent(e: NetEvent): void {
     ms: e.packet.cryptoMs ?? 0,
     bytes: e.packet.bytes,
   };
+  const bus = getBus();
   if (e.stage === "sent")
-    live().bus.publish({
-      ...base,
-      op: "SEAL",
-      alg: "ml-kem-768+x25519",
-      ok: true,
-      detail: e.recordId,
-    });
+    bus.publish({ ...base, op: "SEAL", alg: "ml-kem-768+x25519", ok: true, detail: e.recordId });
   else if (e.stage === "rejected")
-    live().bus.publish({
+    bus.publish({
       ...base,
       op: "REJECT",
       alg: "ml-dsa-65",
@@ -157,5 +170,5 @@ export function publishNetEvent(e: NetEvent): void {
       detail: `${e.recordId} rejected`,
     });
   else if (e.stage === "verified" || e.stage === "delivered")
-    live().bus.publish({ ...base, op: "VERIFY", alg: "ml-dsa-65", ok: true, detail: e.recordId });
+    bus.publish({ ...base, op: "VERIFY", alg: "ml-dsa-65", ok: true, detail: e.recordId });
 }

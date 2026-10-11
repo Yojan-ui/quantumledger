@@ -41,7 +41,7 @@ const RULES = [
   },
   {
     name: "arbitrary Tailwind value",
-    re: /(?<![\w$.])[a-z][\w:-]*-\[[^\]\s]+\]|(?<=["'`\s])\[[a-z-]+:[^\]\s]+\]/g,
+    re: /(?<![\w$.])[a-z][\w:-]*-\[[^\]\s]+\]|(?<=^|["'`\s])\[[a-z-]+:[^\]\s]+\]|(?<=^|["'`\s])\[&[^\]\s]*\]:/g,
     classOnly: true,
   },
   { name: "emoji", re: /\p{Extended_Pictographic}/gu, only: /\.(tsx|html)$/ },

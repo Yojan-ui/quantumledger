@@ -19,18 +19,20 @@
     "dev:shield-client": "tsx packages/shield-proxy/src/cli.ts --peer http://127.0.0.1:8443 --listen 8080",
     "dev:web": "pnpm --filter @qsetu/web dev",
     "test:e2e": "playwright test",
-    "lint:design": "node scripts/lint-design.mjs"
+    "lint:design": "node scripts/lint-design.mjs",
+    "check:budget": "node scripts/check-budget.mjs",
+    "lhci": "lhci autorun"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.55.0",
     "@types/node": "^22.10.0",
+    "concurrently": "^9.2.0",
     "eslint": "^9.39.5",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",
-    "vitest": "^3.2.7",
-    "concurrently": "^9.2.0",
-    "@playwright/test": "^1.55.0"
+    "vitest": "^3.2.7"
   }
 }

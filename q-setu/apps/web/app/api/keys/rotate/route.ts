@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const b = await parseBody(req, KeysRotateBody);
   if (!b.ok) return b.res;
-  const k = live().keys.rotate(b.data.purpose);
+  const k = (await live()).keys.rotate(b.data.purpose);
   if (!k) return fail("not_found", `No active ${b.data.purpose} key yet`, 404);
   return Response.json({ active: k.meta });
 }

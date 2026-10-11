@@ -1,5 +1,5 @@
 import { fail, parseParams } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 import { SdkStepParams } from "@/lib/server/schemas";
 import { getSdkServer } from "@/lib/server/state";
 
@@ -24,7 +24,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ step: string }
   if (!p.ok) return p.res;
   const { step } = p.data;
   const server = getSdkServer();
-  const { bus } = live();
+  const bus = getBus();
   if (step === "identity")
     return Response.json({ publicKey: Buffer.from(server.identity.publicKey).toString("base64") });
   const b = await json(req);

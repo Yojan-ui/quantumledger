@@ -108,6 +108,36 @@ while someone is watching the stream. Every error has one shape: `{ "error": { "
 Data lives in `apps/web/.data/` (gitignored); set `QSETU_DATA_DIR`, `QSETU_KMS_KEK` (64 hex chars) and
 `QSETU_ROTATE_MS` to override.
 
+## Deploy
+
+**Recommended: one Node container** (`Dockerfile`), on Railway, Fly.io, Render or any VM. Q-Setu has
+long-running pieces that serverless platforms can't host: the SSE event bus (`/api/stream`), the live
+mesh that generates real traffic while someone watches, the scheduled KMS rotation, and the Shield demo
+nodes, which bind local ports. One container runs all of them.
+
+```bash
+docker build -t q-setu .
+docker run -p 3000:3000 \
+  -e NEXT_PUBLIC_SITE_URL=https://your-domain.in \
+  -e DATABASE_URL=postgres://...            # Neon / Supabase / Railway Postgres
+  -e QSETU_KMS_KEK=$(openssl rand -hex 32)  # keep this secret and stable
+  -e ADMIN_PASSWORD=... \
+  q-setu
+```
+
+- **Database.** With a `postgres://` `DATABASE_URL`, the ledger, KMS keys, signups and scan results go to
+  Postgres through Drizzle. Tables are created on first start; `drizzle.config.ts` can generate
+  migrations instead. Without it, a SQLite file is used in `QSETU_DATA_DIR` (mount a volume).
+- **Secrets and URLs.** All of them are listed with comments in `apps/web/.env.example`.
+- **Vercel.** The pages, docs, scanner and APIs work, but it isn't recommended. Serverless instances
+  don't share the in-process bus, the mesh only runs while a stream is open on that instance, SSE is cut
+  at the function's maximum duration (the browser reconnects), and the Shield demo can't bind ports.
+  If you use it anyway, use Postgres (SQLite isn't persistent there) and treat the live strip as
+  best-effort.
+- **CI.** `.github/workflows/ci.yml` runs lint, `lint:design`, typecheck, unit tests, the build, the
+  initial-JS budget (`pnpm check:budget`), the Playwright suite and Lighthouse CI (`lighthouserc.json`).
+  GitHub only reads workflows at the repository root, so if q-setu is a subfolder, move the file.
+
 ## What's real and what's simulated
 
 **Real:**

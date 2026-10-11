@@ -80,6 +80,8 @@ export default {
         },
         /** Headline lines rise out of a mask. */
         "mask-up": { from: { transform: "translateY(105%)" }, to: { transform: "none" } },
+        /** A --bg cover lifts off text that is already painted (keeps LCP at first paint). */
+        uncover: { from: { transform: "none" }, to: { transform: "translateY(-101%)" } },
         /** Ticker lines slide in from below. */
         "tick-in": {
           from: { opacity: "0", transform: "translateY(8px)" },
@@ -96,6 +98,7 @@ export default {
         reveal: "reveal var(--dur-reveal) var(--ease) both",
         "mask-up": "mask-up var(--dur-reveal) var(--ease) both",
         "tick-in": "tick-in var(--dur-ui) var(--ease) both",
+        uncover: "uncover var(--dur-reveal) var(--ease) both",
         live: "live 2s var(--ease) infinite",
         ring: "ring var(--dur-reveal) var(--ease) both",
         skeleton: "skeleton 1.4s var(--ease) infinite",

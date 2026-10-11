@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, Text } from "@/components/ui";
 import { track } from "@/lib/client/analytics";
@@ -59,9 +60,9 @@ export function ScanPage({ host, initial }: { host: string; initial?: ScanView }
         >
           Scan again now
         </button>
-        <a href="/#scan" className="text-small text-fg-2 hover:text-fg">
+        <Link href="/#scan" className="text-small text-fg-2 hover:text-fg">
           Scan another site
-        </a>
+        </Link>
       </div>
     </div>
   );

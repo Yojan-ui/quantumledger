@@ -48,7 +48,7 @@ const JSON_LD = {
         "@type": "Offer",
         price: "0",
         priceCurrency: "INR",
-        description: "Community edition, open-source core",
+        description: "Community edition (self-hosted)",
       },
     },
   ],

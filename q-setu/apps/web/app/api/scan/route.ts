@@ -1,6 +1,6 @@
 import { scan } from "@qsetu/core";
 import { parseBody } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 import { ScanBody } from "@/lib/server/schemas";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   if (!b.ok) return b.res;
   const t = performance.now();
   const r = scan(b.data.text, b.data.filename ?? "pasted-input");
-  live().bus.publish({
+  getBus().publish({
     op: "SCAN",
     source: "scanner",
     alg: "cbom",

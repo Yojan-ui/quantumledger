@@ -13,3 +13,8 @@ playwright-report/
 dist/
 .qsetu/
 .data/
+.source/
+.env
+.env.*
+!.env.example
+.lighthouseci/

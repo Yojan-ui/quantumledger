@@ -1,0 +1,27 @@
+---
+title: Web
+description: One script tag seals form posts and fetch bodies in the browser before they leave.
+---
+
+```html
+<script src="/qsetu.js" data-key="<server key id>" data-endpoint="/api/"></script>
+```
+
+That's the whole integration. `qsetu.js` seals every form post and `fetch()` body sent to
+`data-endpoint` with a hybrid X25519 + ML-KEM-768 envelope, and verifies the server's ML-DSA-signed
+reply. It **fails closed**: if the server's key doesn't match the pinned `data-key`, nothing is sent.
+
+## On the server
+
+```ts
+import { isSealed, openSealedBody, signResponse, HEADER_SIGNATURE } from "@qsetu/web-shield";
+
+if (isSealed(req.headers.get("content-type"))) {
+  const { bytes, contentType, nonce } = openSealedBody(await req.text(), keys);
+  // ...handle the plain request, then sign the reply bytes:
+  headers[HEADER_SIGNATURE] = signResponse(replyBytes, nonce, keys);
+}
+```
+
+Publish the public half at a well-known path (the demo serves it from `/api/qsetu/key`) and pin its
+`kid` in `data-key`.

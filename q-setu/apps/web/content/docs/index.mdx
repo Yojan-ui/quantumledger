@@ -1,0 +1,65 @@
+---
+title: Quickstart
+description: Run Q-Setu locally and seal your first request in about five minutes.
+---
+
+<TrackQuickstart />
+
+Q-Setu is a post-quantum layer you add to a system instead of rewriting it. In five minutes you'll run
+the whole stack locally, put **Shield** in front of an unmodified legacy app, and watch a request cross
+the wire as a hybrid X25519 + ML-KEM-768 session.
+
+<Callout>
+  The packages aren't published to npm yet. Until they are, install from this repository. Everything
+  below runs on your machine; nothing calls out to a Q-Setu service.
+</Callout>
+
+## 1. Install (1 minute)
+
+You need Node 20.19 or newer and pnpm 10 (`corepack enable` picks up the pinned version).
+
+```bash
+git clone <your fork of q-setu> && cd q-setu
+pnpm install
+```
+
+## 2. Start everything (1 minute)
+
+```bash
+pnpm dev
+```
+
+This starts four labelled processes: the site on `:3000`, a plain Express "legacy bank" on `:4000`,
+a Shield server node on `:8443` (next to the bank) and a Shield client node on `:8080` (next to
+callers).
+
+## 3. Send a request through Shield (2 minutes)
+
+The legacy app knows nothing about Q-Setu. Call it through the client node:
+
+```bash
+curl -s localhost:8080/api/transfer \
+  -H 'content-type: application/json' \
+  -d '{"payerVPA":"ravi@bharatbank","amountINR":"500.00"}'
+```
+
+In the `pnpm dev` output you'll see the legacy app log a plain `POST /api/transfer`. Between the two
+Shield nodes the request travelled as an ML-DSA-authenticated hybrid session. See the frames:
+
+```bash
+curl -s localhost:8443/qsetu/wire | head
+```
+
+## 4. Check your own site (1 minute)
+
+```bash
+curl -s localhost:3000/api/scan/url -H 'content-type: application/json' \
+  -d '{"url":"example.com"}' | jq '{grade, score, group: .probe.group, plain}'
+```
+
+## Next
+
+- Pick an adapter: [Shield](/docs/adapters/shield), [Web](/docs/adapters/web), [SDK](/docs/adapters/sdk),
+  [Edge](/docs/adapters/edge) or [Vault](/docs/adapters/vault).
+- Understand the design: [hybrid key exchange](/docs/concepts/hybrid-kem) and [sessions](/docs/concepts/sessions).
+- Integrate over HTTP: the [API reference](/docs/api).

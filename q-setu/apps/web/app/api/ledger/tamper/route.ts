@@ -12,10 +12,10 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const b = await parseBody(req, LedgerTamperBody);
   if (!b.ok) return b.res;
-  ensureLedgerSeeded();
-  const { ledger } = live();
-  if (b.data.restore) return Response.json({ restored: ledger.restore() });
-  const r = ledger.tamper(b.data.id);
+  await ensureLedgerSeeded();
+  const { ledger } = await live();
+  if (b.data.restore) return Response.json({ restored: await ledger.restore() });
+  const r = await ledger.tamper(b.data.id);
   if (!r) return fail("not_found", `No ledger entry #${b.data.id}`, 404);
   return Response.json({ tampered: r });
 }

@@ -1,0 +1,15 @@
+---
+title: Hybrid key exchange
+description: X25519 plus ML-KEM-768, combined so the session is safe if either one holds.
+---
+
+Q-Setu runs two key exchanges side by side: X25519 (classical, well studied) and ML-KEM-768 (FIPS 203,
+post-quantum). Both shared secrets go into one HKDF together with the full handshake transcript:
+
+```text
+master = HKDF-SHA256(ss_x25519 ‖ ss_mlkem, "qsetu-v1" ‖ SHA-256(transcript))
+```
+
+An attacker has to break **both** to recover the session key. If a flaw is found in ML-KEM, X25519
+still protects today's traffic; when a quantum computer breaks X25519, ML-KEM still protects
+recordings. This is the same construction as the `X25519MLKEM768` group now deployed in TLS 1.3.

@@ -1,19 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  ButtonLink,
-  Code,
-  Divider,
-  Grid,
-  Heading,
-  Label,
-  Panel,
-  Reveal,
-  Section,
-  Text,
-  TextLink,
-} from "@/components/ui";
+import { Code, Grid, Heading, Label, Text } from "@/components/ui";
 import { MaskHeading } from "@/components/ui/MaskHeading";
 import { world } from "@/components/world/store";
 import {

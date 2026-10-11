@@ -1,0 +1,27 @@
+---
+title: Edge
+description: A post-quantum profile for meters, monitors and POS terminals.
+---
+
+The `edge` profile uses ML-KEM-512 and ML-DSA-44 (NIST categories 1–2): smaller keys and signatures for
+constrained devices. A device does one handshake, then sends AES-GCM readings; batches of readings are
+hash-chained and signed, so a gateway can prove nothing was dropped or altered.
+
+```ts
+import { EdgeDevice, EdgeGateway } from "@qsetu/edge";
+
+const device = new EdgeDevice("meter-17", deviceKeys, gateway.identity.publicKey, {
+  ramBytes: 65_536,
+  cpuSlowdown: 20, // simulate a Cortex-M4-class device running the same JS
+});
+const finish = device.finish(gateway.hello(device.hello()));
+gateway.finish(finish);
+
+const { message, proof } = device.reading({ t: Date.now(), v: 1.24, u: "kWh" });
+gateway.reading(message); // proof arrives every batch (default 16 readings)
+```
+
+<Callout>
+  RAM is accounted (keys, buffers and session state are summed), not enforced by a capped heap. The
+  CPU slowdown spins to emulate a slower device. Real firmware needs a native implementation.
+</Callout>

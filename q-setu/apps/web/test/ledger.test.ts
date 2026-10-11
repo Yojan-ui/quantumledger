@@ -3,99 +3,128 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getSig } from "@qsetu/core";
 import { describe, expect, it } from "vitest";
-import { KeyManager, MemoryKeyStore } from "@/lib/live/keystore";
+import { openPglite, openSqlite } from "@/lib/db/connect";
+import type { Repos } from "@/lib/db/repo";
+import { DbKeyStore, KeyManager, MemoryKeyStore } from "@/lib/live/keystore";
 import { Ledger, type LedgerSigner } from "@/lib/live/ledger";
 
-function setup() {
-  const keys = new KeyManager(new MemoryKeyStore(), Buffer.alloc(32, 7));
-  const signer: LedgerSigner = {
-    current: () => {
-      const k = keys.active("ledger", "ml-dsa-65");
-      return { keyId: k.meta.id, alg: k.meta.alg };
-    },
+function signerFor(keys: KeyManager, alg: "ml-dsa-65" | "ml-dsa-44" = "ml-dsa-65"): LedgerSigner {
+  return {
+    current: () => ({ keyId: keys.active("ledger", alg).meta.id, alg }),
     sign: (m) => {
-      const k = keys.active("ledger", "ml-dsa-65");
-      return {
-        signature: getSig(k.meta.alg).sign(m, k.secretKey),
-        keyId: k.meta.id,
-        alg: k.meta.alg,
-      };
+      const k = keys.active("ledger", alg);
+      return { signature: getSig(alg).sign(m, k.secretKey), keyId: k.meta.id, alg };
     },
     publicKey: (id) => keys.publicKey(id),
   };
-  const ledger = new Ledger(":memory:", signer);
-  for (let i = 1; i <= 12; i++)
-    ledger.append("tx", `r${i}`, { amount: i * 100, sector: "fintech" });
-  return { ledger, keys };
 }
 
-describe("Q-Ledger", () => {
-  it("chains entries with SHA3-256 and verifies ML-DSA-65 signatures", () => {
-    const { ledger } = setup();
-    const v = ledger.verify();
-    expect(v.ok).toBe(true);
-    expect(v.checked).toBe(12);
-    const [newest, prev] = ledger.recent(2);
-    expect(newest!.prev).toBe(prev!.hash);
-    expect(newest!.alg).toBe("ml-dsa-65");
-  });
+// The same suite runs on both production dialects: SQLite (local) and Postgres (PGlite in-process).
+const DIALECTS: [string, () => Promise<Repos>][] = [
+  ["sqlite", () => openSqlite(":memory:")],
+  ["postgres", () => openPglite()],
+];
 
-  it("pinpoints a row edited directly in the database", () => {
-    const { ledger } = setup();
-    const t = ledger.tamper(7);
-    expect(t).toMatchObject({ id: 7, field: "amount", before: 700, after: 70000 });
-    const v = ledger.verify();
-    expect(v.ok).toBe(false);
-    expect(v.broken).toMatchObject({ id: 7, reason: "payload-modified" });
-    expect(v.checked).toBe(7);
-  });
+for (const [name, open] of DIALECTS) {
+  describe(`Q-Ledger on ${name}`, () => {
+    async function setup() {
+      const repos = await open();
+      const keys = new KeyManager(new MemoryKeyStore(), Buffer.alloc(32, 7));
+      const ledger = new Ledger(repos.ledger, signerFor(keys));
+      for (let i = 1; i <= 12; i++)
+        void ledger.append("tx", `r${i}`, { amount: i * 100, sector: "fintech" });
+      await ledger.flush();
+      return { ledger, keys, repos };
+    }
 
-  it("detects a forged hash (re-hashed row breaks the next link or the signature)", () => {
-    const { ledger } = setup();
-    ledger.db.prepare("UPDATE entries SET hash = ? WHERE id = 5").run("ab".repeat(32));
-    const v = ledger.verify();
-    expect(v.broken?.id).toBe(5);
-  });
+    it("chains entries with SHA3-256 and verifies ML-DSA-65 signatures", async () => {
+      const { ledger } = await setup();
+      const v = await ledger.verify();
+      expect(v.ok).toBe(true);
+      expect(v.checked).toBe(12);
+      const [newest, prev] = await ledger.recent(2);
+      expect(newest!.prev).toBe(prev!.hash);
+      expect(newest!.alg).toBe("ml-dsa-65");
+    });
 
-  it("detects a deleted entry and a re-linked chain", () => {
-    const { ledger } = setup();
-    ledger.db.prepare("DELETE FROM entries WHERE id = 3").run();
-    expect(ledger.verify().broken).toMatchObject({ id: 3, reason: "missing-entry" });
-  });
+    it("serialises concurrent appends into one unbroken chain", async () => {
+      const { ledger } = await setup();
+      await Promise.all(
+        Array.from({ length: 10 }, (_, i) => ledger.append("tx", `c${i}`, { n: i })),
+      );
+      const v = await ledger.verify();
+      expect(v).toMatchObject({ ok: true, checked: 22 });
+    });
 
-  it("restores tampered rows, and survives key rotation", () => {
-    const { ledger, keys } = setup();
-    ledger.tamper(4);
-    expect(ledger.restore()).toEqual([4]);
-    keys.rotate("ledger");
-    ledger.append("tx", "after-rotation", { amount: 1 });
-    const v = ledger.verify();
-    expect(v.ok).toBe(true);
-    const ids = new Set(ledger.recent(20).map((e) => e.keyId));
-    expect(ids.size).toBe(2);
-  });
+    it("pinpoints a row edited directly in the database", async () => {
+      const { ledger } = await setup();
+      expect(await ledger.tamper(7)).toMatchObject({
+        id: 7,
+        field: "amount",
+        before: 700,
+        after: 70000,
+      });
+      const v = await ledger.verify();
+      expect(v.ok).toBe(false);
+      expect(v.broken).toMatchObject({ id: 7, reason: "payload-modified" });
+      expect(v.checked).toBe(7);
+    });
 
-  it("persists to SQLite on disk", () => {
-    const dir = mkdtempSync(join(tmpdir(), "qledger-"));
-    const keys = new KeyManager(new MemoryKeyStore(), Buffer.alloc(32, 1));
-    const signer: LedgerSigner = {
-      current: () => ({ keyId: keys.active("ledger", "ml-dsa-44").meta.id, alg: "ml-dsa-44" }),
-      sign: (m) => {
-        const k = keys.active("ledger", "ml-dsa-44");
-        return {
-          signature: getSig("ml-dsa-44").sign(m, k.secretKey),
-          keyId: k.meta.id,
-          alg: "ml-dsa-44",
-        };
-      },
-      publicKey: (id) => keys.publicKey(id),
-    };
-    const a = new Ledger(join(dir, "l.sqlite"), signer);
-    a.append("genesis", "x", {});
-    a.close();
-    const b = new Ledger(join(dir, "l.sqlite"), signer);
-    expect(b.count()).toBe(1);
-    expect(b.verify().ok).toBe(true);
-    b.close();
+    it("detects a forged hash and a deleted entry", async () => {
+      const a = await setup();
+      await a.repos.ledger.raw.setHash(5, "ab".repeat(32));
+      expect((await a.ledger.verify()).broken?.id).toBe(5);
+      const b = await setup();
+      await b.repos.ledger.raw.delete(3);
+      expect((await b.ledger.verify()).broken).toMatchObject({ id: 3, reason: "missing-entry" });
+    });
+
+    it("restores tampered rows, and survives key rotation", async () => {
+      const { ledger, keys } = await setup();
+      await ledger.tamper(4);
+      expect(await ledger.restore()).toEqual([4]);
+      keys.rotate("ledger");
+      await ledger.append("tx", "after-rotation", { amount: 1 });
+      expect((await ledger.verify()).ok).toBe(true);
+      expect(new Set((await ledger.recent(20)).map((e) => e.keyId)).size).toBe(2);
+    });
+
+    it("stores scans and signups", async () => {
+      const { repos } = await setup();
+      await repos.scans.upsert("example.com", '{"score":1}', "2026-10-11T00:00:00Z");
+      await repos.scans.upsert("example.com", '{"score":2}', "2026-10-12T00:00:00Z");
+      expect(await repos.scans.get("example.com")).toMatchObject({ result: '{"score":2}' });
+      await repos.signups.insert({
+        kind: "early-access",
+        name: "A",
+        email: "a@b.in",
+        organisation: "Org",
+        sector: "fintech",
+        useCase: "UPI",
+        createdAt: "2026-10-11T00:00:00Z",
+      });
+      expect(await repos.signups.list()).toHaveLength(1);
+    });
+  });
+}
+
+describe("KMS keys in the database", () => {
+  it("survive a restart, so old ledger entries stay verifiable", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "qsetu-"));
+    const file = join(dir, "db.sqlite");
+    const kek = Buffer.alloc(32, 9);
+    const r1 = await openSqlite(file);
+    const s1 = await DbKeyStore.open(r1.kms);
+    const k1 = new KeyManager(s1, kek);
+    const l1 = new Ledger(r1.ledger, signerFor(k1, "ml-dsa-44"));
+    await l1.append("genesis", "x", {});
+    await s1.flush();
+
+    const r2 = await openSqlite(file);
+    const k2 = new KeyManager(await DbKeyStore.open(r2.kms), kek);
+    const l2 = new Ledger(r2.ledger, signerFor(k2, "ml-dsa-44"));
+    expect(await l2.count()).toBe(1);
+    expect((await l2.verify()).ok).toBe(true);
+    expect(JSON.stringify(k2.list())).not.toMatch(/wrapped/);
   });
 });

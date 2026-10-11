@@ -1,6 +1,6 @@
 import { isSealed, openSealedBody, signResponse, HEADER_SIGNATURE } from "@qsetu/web-shield";
 import { fail } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 import { getWebShieldKeys } from "@/lib/server/state";
 
 export const runtime = "nodejs";
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       };
     }
   } catch (e) {
-    live().bus.publish({
+    getBus().publish({
       op: "REJECT",
       source: "web",
       alg: "ml-kem-768+x25519",
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     return fail("invalid_input", `Rejected: ${(e as Error).message}`, 400);
   }
   if (info.sealed)
-    live().bus.publish({
+    getBus().publish({
       op: "OPEN",
       source: "web",
       alg: "ml-kem-768+x25519",

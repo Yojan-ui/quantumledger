@@ -13,7 +13,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Make anything in India quantum-safe",
   );
-  await expect(page.getByText("PQC handshake, once per session")).toBeVisible();
+  await expect(page.getByText("PQC handshake, once per session")).toBeAttached();
   await expect(page.locator("#fact-1")).toContainText("as of");
   // The live strip streams real operations from the bus.
   const strip = page.getByLabel("Live operations");

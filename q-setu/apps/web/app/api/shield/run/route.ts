@@ -1,6 +1,6 @@
 import { SECTORS } from "@qsetu/sim";
 import { parseBody, SectorBody } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 import { ensureShieldStack, LEGACY, SHIELD_CLIENT, SHIELD_SERVER } from "@/lib/server/shield-stack";
 
 export const runtime = "nodejs";
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     fetch(`${SHIELD_SERVER}/qsetu/wire`).then((r) => r.json()),
     fetch(`${SHIELD_CLIENT}/healthz`).then((r) => r.json()),
   ]);
-  live().bus.publish({
+  getBus().publish({
     op: "SEAL",
     source: "shield",
     alg: "ml-kem-768+x25519",

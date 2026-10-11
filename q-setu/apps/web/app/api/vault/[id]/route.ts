@@ -1,5 +1,5 @@
 import { fail, parseParams } from "@/lib/server/api";
-import { live } from "@/lib/server/runtime";
+import { getBus } from "@/lib/server/runtime";
 import { IdParams } from "@/lib/server/schemas";
 import { getVault } from "@/lib/server/state";
 
@@ -13,7 +13,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const t = performance.now();
   try {
     const r = await getVault().vault.get(p.data.id);
-    live().bus.publish({
+    getBus().publish({
       op: "OPEN",
       source: "vault",
       alg: "ml-kem-768 · ml-dsa-65",
@@ -24,7 +24,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return Response.json(r);
   } catch (e) {
     const reason = (e as { reason?: string }).reason;
-    live().bus.publish({
+    getBus().publish({
       op: "REJECT",
       source: "vault",
       alg: "ml-dsa-65",

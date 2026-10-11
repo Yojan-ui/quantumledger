@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { easeToken } from "@/components/world/director";
+import { easeToken } from "@/lib/ease";
 
 /**
  * Counts from 0 to `to` the first time it scrolls into view (900 ms, motion token easing), with

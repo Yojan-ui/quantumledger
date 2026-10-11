@@ -1,6 +1,6 @@
 import { SECTOR_IDS, type NetEvent } from "@qsetu/sim";
 import { parseQuery } from "@/lib/server/api";
-import { live, policyState } from "@/lib/server/runtime";
+import { getBus, live, policyState } from "@/lib/server/runtime";
 import { StreamQuery } from "@/lib/server/schemas";
 import { getNetwork } from "@/lib/server/state";
 
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  *    an `event: metrics` frame every second carries rolling counts and latency percentiles.
  *  - `sector=fintech|healthcare|education|all`: raw simulator hops (NetEvents), for Demo 3.
  */
-export function GET(req: Request) {
+export async function GET(req: Request) {
   const q = parseQuery(req, StreamQuery);
   if (!q.ok) return q.res;
   const enc = new TextEncoder();
@@ -35,11 +35,16 @@ export function GET(req: Request) {
         for (const net of nets)
           offs.push(net.subscribe((e: NetEvent) => send(`data: ${JSON.stringify(e)}\n\n`)));
       } else {
-        const { bus } = live();
+        const bus = getBus();
+        // Make sure the runtime (and with it the live mesh) is up.
+        void live();
         for (const e of bus.history()) send(`data: ${JSON.stringify(e)}\n\n`);
         offs.push(bus.subscribe((e) => send(`data: ${JSON.stringify(e)}\n\n`)));
         const tick = setInterval(
-          () => send(`event: metrics\ndata: ${JSON.stringify(bus.metrics(policyState()))}\n\n`),
+          () =>
+            void policyState().then((p) =>
+              send(`event: metrics\ndata: ${JSON.stringify(bus.metrics(p))}\n\n`),
+            ),
           1000,
         );
         offs.push(() => clearInterval(tick));

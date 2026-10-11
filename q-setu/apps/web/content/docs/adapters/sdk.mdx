@@ -1,0 +1,35 @@
+---
+title: SDK
+description: Post-quantum sessions, one-shot envelopes and signatures for Node and the browser.
+---
+
+```ts
+import { createSession, generateKeys, publicKeys, seal, openJSON, sign, verify } from "@qsetu/sdk";
+```
+
+## Sessions (chatty traffic)
+
+```ts
+const s = await createSession({ url: "https://bank.example/qsetu", serverKey }); // one PQC handshake
+const reply = await s.send({ payerVPA: "ravi@bharatbank", amountINR: "500.00" }); // then AES-256-GCM
+```
+
+`serverKey` is the server's pinned ML-DSA identity public key. On the server, mount
+`createSessionServer({ identity })`, which gives you `hello`, `finish` and `message` handlers for any
+HTTP framework.
+
+## Envelopes (one-shot messages)
+
+```ts
+const bank = generateKeys(); // standard profile; generateKeys("edge") for devices
+const app = generateKeys();
+const box = seal({ amountINR: "500.00" }, publicKeys(bank), app); // encrypt + sign
+const data = openJSON(box, bank, publicKeys(app)); // verify, then decrypt
+```
+
+## Signatures
+
+```ts
+const sig = sign("mandate:42", app); // ML-DSA-65, detached
+verify("mandate:42", sig, publicKeys(app)); // true
+```

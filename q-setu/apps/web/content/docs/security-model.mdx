@@ -1,0 +1,27 @@
+---
+title: Security model
+description: What Q-Setu defends against, what it doesn't, and what it relies on.
+---
+
+## Defends against
+
+- **Harvest now, decrypt later.** Recorded traffic and stolen backups stay sealed against a future
+  quantum computer (hybrid ML-KEM, per-record wrapped keys).
+- **Forgery after Q-Day.** Records, certificates and log entries carry ML-DSA signatures.
+- **On-path tampering and replay.** AES-GCM authentication, counters and a replay window.
+- **Insiders editing stored data.** Vault signatures and the Q-Ledger hash chain detect any edit.
+
+## Does not defend against
+
+- A compromised endpoint: malware on a client or server sees plaintext.
+- Side channels: the JavaScript implementations do not claim constant-time execution.
+- Denial of service, and weaknesses in the PKI that TLS itself relies on.
+
+## Relies on
+
+- `@noble/post-quantum` for ML-KEM, ML-DSA and SLH-DSA. **Not independently audited** (self-audited
+  by its author).
+- `@noble/curves`, `@noble/hashes` and `@noble/ciphers`, which are independently audited.
+- The secrecy of node identities and KMS keys. Use an HSM in production.
+
+Full details, including what the demos simulate, are on the [security page](/security).

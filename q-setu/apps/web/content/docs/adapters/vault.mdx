@@ -1,0 +1,21 @@
+---
+title: Vault
+description: Per-record keys wrapped with ML-KEM and records signed with ML-DSA, for data at rest.
+---
+
+```ts
+import { createVault, generateVaultKeys } from "@qsetu/vault";
+
+const vault = createVault({ keys: generateVaultKeys("standard"), store }); // store: get/set by id
+const { id } = await vault.put(labReport, { meta: { type: "lab report" } });
+const { data } = await vault.get(id); // verifies the signature, unwraps the key, decrypts
+```
+
+Every record gets its own AES-256 key. That key is wrapped with ML-KEM-768 and the record is signed
+with ML-DSA-65. A stolen backup is just ciphertext, and an edited record fails verification on read.
+
+## Rotation without re-encrypting
+
+```ts
+await vault.rotate(generateVaultKeys("standard")); // re-wraps record keys; payloads stay untouched
+```

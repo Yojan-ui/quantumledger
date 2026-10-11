@@ -1,0 +1,9 @@
+---
+title: API reference
+description: Every HTTP endpoint, generated from the same zod schemas the server validates with.
+---
+
+The raw OpenAPI 3.1 document is at [`/api/docs`](/api/docs). Every error has one shape:
+`{ "error": { "code", "message", "issues"? } }`.
+
+<ApiReference />
