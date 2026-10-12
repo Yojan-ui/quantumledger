@@ -8,6 +8,7 @@ import { Proof } from "@/components/home/Proof";
 import { ScanSite } from "@/components/home/ScanSite";
 import { Adapters, Solutions, WhyQSetu } from "@/components/home/Sections";
 import { Story } from "@/components/home/Story";
+import { WhatsNew } from "@/components/home/WhatsNew";
 import { WhyNow } from "@/components/home/WhyNow";
 import { Footer } from "@/components/ui/Footer";
 import { Nav } from "@/components/ui/Nav";
@@ -37,6 +38,7 @@ export default function Home() {
         <Solutions />
         <Proof />
         <Impact index="07" />
+        <WhatsNew index="08" />
         <WhyQSetu />
         <EarlyAccess />
       </main>
