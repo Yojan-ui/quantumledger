@@ -457,6 +457,14 @@ export function HandshakeDemo() {
         />
       }
       onAutoplay={() => void reel.play().then(() => setTimeout(() => void attackShot(), 800))}
+      tryIt={{
+        hint: "Run a real hybrid handshake in this tab, then let an attacker swap the server's key: the signature check rejects it",
+        disabled: reel.busy || reel.playing,
+        run: async () => {
+          await reel.play();
+          await attackShot();
+        },
+      }}
     >
       <div className="space-y-12">
         <div className="relative overflow-hidden rounded-lg border border-line">

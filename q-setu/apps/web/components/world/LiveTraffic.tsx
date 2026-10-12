@@ -13,9 +13,23 @@ import { useEffect } from "react";
 import { ROUTES } from "@/data/routes";
 import { onLive, onMetrics } from "@/lib/client/live";
 import type { OpEvent } from "@/lib/live/types";
-import { world } from "./store";
+import { world, type PacketInfo } from "./store";
 
 const speedFor = (ms: number) => 1 / (1.1 + Math.min(3, ms / 12));
+
+/** The fields a clicked packet shows: all measured by the bus, none invented. */
+function packetInfo(e: OpEvent, ms = e.ms): PacketInfo {
+  return {
+    seq: e.seq,
+    op: e.op,
+    alg: e.alg,
+    ms,
+    bytes: e.bytes,
+    from: e.from,
+    to: e.to,
+    sim: e.source === "sim",
+  };
+}
 
 export function LiveTraffic() {
   useEffect(() => {
@@ -27,7 +41,13 @@ export function LiveTraffic() {
       const r = ROUTES[e.route]!;
       if (e.source === "sim") {
         if (e.op === "SEAL" && !reduce)
-          world.pulses.push({ arc: e.route, color: "cyan", speed: speedFor(e.ms), arriveAt: r.to });
+          world.pulses.push({
+            arc: e.route,
+            color: "cyan",
+            speed: speedFor(e.ms),
+            arriveAt: r.to,
+            info: packetInfo(e),
+          });
         return;
       }
       if (e.op === "SIGN") pending.set(e.route, e.ms);
@@ -42,6 +62,7 @@ export function LiveTraffic() {
           speed: speedFor(total),
           doomed: e.op === "REJECT",
           arriveAt: e.op === "OPEN" ? r.to : undefined,
+          info: packetInfo(e, total),
         });
         if (world.pulses.length > 64) world.pulses.splice(0, world.pulses.length - 64);
       }

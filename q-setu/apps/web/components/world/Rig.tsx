@@ -4,6 +4,7 @@
  * Camera and globe choreography. Each frame: find the page's visible globe area, ask the director
  * for the pose, ease towards it (critically damped, never bouncy), add slow auto-rotation (faster
  * while the page scrolls), a drag fling with inertia and a slight cursor tilt, and frame the globe inside that area.
+ * After 3 s without a drag the globe springs back to the shot's framing; a double-click re-frames at once.
  */
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
@@ -46,7 +47,7 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     offX: 0,
     offY: 0,
   });
-  const ptr = useRef({ x: 0, y: 0, down: false, lastX: 0, lastT: 0 });
+  const ptr = useRef({ x: 0, y: 0, down: false, lastX: 0, lastT: 0, upAt: 0, reframeAt: 0 });
   /** Scroll velocity (px/s), smoothed; the globe spins faster while the page scrolls. */
   const scroll = useRef({ y: 0, t: 0, v: 0, boost: 0 });
   const reduce = useRef(false);
@@ -74,7 +75,15 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
       ptr.current.lastT = performance.now();
       st.current.dragV = 0;
     };
-    const up = () => (ptr.current.down = false);
+    const up = () => {
+      if (ptr.current.down) ptr.current.upAt = performance.now();
+      ptr.current.down = false;
+    };
+    const dbl = (e: MouseEvent) => {
+      if (!(e.target as Element).closest?.("[data-world-drag]")) return;
+      st.current.dragV = 0;
+      ptr.current.reframeAt = performance.now();
+    };
     const onScroll = () => {
       const now = performance.now();
       const sc = scroll.current;
@@ -87,7 +96,9 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     window.addEventListener("pointermove", move, { passive: true });
     window.addEventListener("pointerdown", down);
     window.addEventListener("pointerup", up);
+    window.addEventListener("dblclick", dbl);
     return () => {
+      window.removeEventListener("dblclick", dbl);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerdown", down);
@@ -136,7 +147,10 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     if (!ptr.current.down) {
       s.drag += s.dragV * dt;
       s.dragV = damp(s.dragV, 0, 1.6, dt);
-      if (p.spin <= 0.005) s.drag = damp(wrap(s.drag), 0, 1.2, dt);
+      const now = performance.now();
+      const reframing = now - ptr.current.reframeAt < 1200;
+      if (reframing || p.spin <= 0.005 || now - ptr.current.upAt > 3000)
+        s.drag = damp(wrap(s.drag), 0, reframing ? 6 : 1.2, dt);
     }
     s.tiltX = damp(s.tiltX, ptr.current.y * 0.04, 2, dt);
     s.tiltY = damp(s.tiltY, ptr.current.x * 0.06, 2, dt);

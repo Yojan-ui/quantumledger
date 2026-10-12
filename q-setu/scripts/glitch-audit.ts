@@ -28,7 +28,7 @@ const ACTIONS: Record<string, string[]> = {
   "/diagnostics": [],
   "/demo/how-it-works": ["Play"],
   "/demo/deploy": ["Play"],
-  "/demo/qday": ["Go to Q-Day"],
+  "/demo/qday": ["Try it"],
   "/demo/ledger": ["Verify the chain", "Tamper with entry #42", "Verify the chain"],
   "/demo/scanner": ["Scan", "Scan live TLS"],
 };

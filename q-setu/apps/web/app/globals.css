@@ -154,6 +154,15 @@
   .lenis.lenis-smooth iframe {
     pointer-events: none;
   }
+  /* Settled async buttons: a 1.2 s outline in the result's colour. */
+  button[data-state="done"] {
+    outline: 1px solid var(--ok);
+    outline-offset: 2px;
+  }
+  button[data-state="error"] {
+    outline: 1px solid var(--danger);
+    outline-offset: 2px;
+  }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);

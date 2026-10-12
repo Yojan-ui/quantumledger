@@ -6,7 +6,8 @@
  * it drifts slowly (2–3% of the distance over 8 s), so the scene never looks frozen.
  * Reduced motion: cuts straight to the shot, no drift.
  *
- * Optional `orbit`: the viewer can drag to orbit and scroll to zoom around the shot's subject, damped
+ * Optional `orbit`: the viewer can drag (and fling) to orbit and scroll to zoom around the shot's subject;
+ * 3 s after the last touch it springs back to the shot's framing. Damped
  * and within limits; a double-click (or the next shot) eases back to the director's framing.
  */
 import { PerspectiveCamera } from "@react-three/drei";
@@ -41,7 +42,19 @@ export function DirectorCamera({
   zoom?: boolean;
 }) {
   // The viewer's orbit offsets (yaw, pitch in radians; zoom as a distance factor) and their targets.
-  const user = useRef({ yaw: 0, pitch: 0, zoom: 1, ty: 0, tp: 0, tz: 1 });
+  // vy/vp: fling velocity (rad/s) after a release; at: the last drag or zoom (3 s idle springs back).
+  const user = useRef({
+    yaw: 0,
+    pitch: 0,
+    zoom: 1,
+    ty: 0,
+    tp: 0,
+    tz: 1,
+    vy: 0,
+    vp: 0,
+    at: 0,
+    held: false,
+  });
   const cam = useRef<THREE.PerspectiveCamera>(null);
   const look = useRef(v(state.shot.camera.target));
   const base = useRef(v(state.shot.camera.position));
@@ -117,25 +130,39 @@ export function DirectorCamera({
     if (!orbit || state.reduce) return;
     const el = orbit();
     if (!el) return;
-    let drag: { x: number; y: number } | null = null;
+    let drag: { x: number; y: number; t: number } | null = null;
     const u = user.current;
     const down = (e: PointerEvent) => {
       if ((e.target as Element).closest("button, a, input")) return;
-      drag = { x: e.clientX, y: e.clientY };
+      drag = { x: e.clientX, y: e.clientY, t: performance.now() };
+      Object.assign(u, { vy: 0, vp: 0, held: true, at: drag.t });
     };
     const move = (e: PointerEvent) => {
       if (!drag) return;
-      u.ty = Math.max(-1.0, Math.min(1.0, u.ty - (e.clientX - drag.x) * 0.006));
-      u.tp = Math.max(-0.45, Math.min(0.5, u.tp + (e.clientY - drag.y) * 0.004));
-      drag = { x: e.clientX, y: e.clientY };
+      const now = performance.now();
+      const dy = -(e.clientX - drag.x) * 0.006;
+      const dp = (e.clientY - drag.y) * 0.004;
+      u.ty = Math.max(-1.0, Math.min(1.0, u.ty + dy));
+      u.tp = Math.max(-0.45, Math.min(0.5, u.tp + dp));
+      // Fling: the pointer's own angular speed, carried on after release.
+      const s = Math.max(8, now - drag.t) / 1000;
+      u.vy = Math.max(-4, Math.min(4, dy / s));
+      u.vp = Math.max(-3, Math.min(3, dp / s));
+      drag = { x: e.clientX, y: e.clientY, t: now };
+      u.at = now;
     };
-    const up = () => (drag = null);
+    const up = () => {
+      if (drag && performance.now() - drag.t > 80) u.vy = u.vp = 0; // held still: no fling
+      drag = null;
+      u.held = false;
+    };
     const wheel = (e: WheelEvent) => {
       if (!zoom) return;
       e.preventDefault();
       u.tz = Math.max(0.6, Math.min(1.6, u.tz * Math.exp(e.deltaY * 0.001)));
+      u.at = performance.now();
     };
-    const dbl = () => Object.assign(u, { ty: 0, tp: 0, tz: 1 });
+    const dbl = () => Object.assign(u, { ty: 0, tp: 0, tz: 1, vy: 0, vp: 0 });
     el.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move, { passive: true });
     window.addEventListener("pointerup", up);
@@ -169,7 +196,22 @@ export function DirectorCamera({
     c.position.copy(base.current).add(sway);
     // The viewer's orbit: rotate the camera's offset from its subject, then scale it.
     const u = user.current;
-    const k = 1 - Math.exp(-8 * Math.min(dt, 0.1));
+    const fdt = Math.min(dt, 0.1);
+    if (!u.held) {
+      // Inertia after a fling, then (3 s after the last drag or zoom) a spring back to the shot.
+      u.ty = Math.max(-1.0, Math.min(1.0, u.ty + u.vy * fdt));
+      u.tp = Math.max(-0.45, Math.min(0.5, u.tp + u.vp * fdt));
+      const decay = Math.exp(-3 * fdt);
+      u.vy *= decay;
+      u.vp *= decay;
+      if (u.at && performance.now() - u.at > 3000) {
+        const back = 1 - Math.exp(-2 * fdt);
+        u.ty -= u.ty * back;
+        u.tp -= u.tp * back;
+        u.tz += (1 - u.tz) * back;
+      }
+    }
+    const k = 1 - Math.exp(-8 * fdt);
     u.yaw += (u.ty - u.yaw) * k;
     u.pitch += (u.tp - u.pitch) * k;
     u.zoom += (u.tz - u.zoom) * k;

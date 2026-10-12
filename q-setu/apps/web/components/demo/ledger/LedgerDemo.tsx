@@ -138,6 +138,18 @@ export function LedgerDemo() {
   const [newest, setNewest] = useState<number[]>([]);
   const [headAt, setHeadAt] = useState(0);
   const [merkle, setMerkle] = useState<{ levels: string[][]; root: string; at: number }>();
+  // Click a block: open that entry as stored (payload, hash, link, ML-DSA signature, key).
+  const [picked, setPicked] = useState<LedgerEntry | "loading">();
+  const pick = useCallback(async (id?: number) => {
+    if (!id) return;
+    setPicked("loading");
+    try {
+      const d = await call<{ entries: LedgerEntry[] }>(`/api/ledger?around=${id}&limit=1`);
+      setPicked(d.entries.find((e) => e.id === id));
+    } catch {
+      setPicked(undefined);
+    }
+  }, []);
   const loadArc = useCallback(async () => {
     const [a, n] = await Promise.all([
       call<{ entries: LedgerEntry[] }>(`/api/ledger?around=${TARGET}&limit=${ARC}`),
@@ -310,7 +322,7 @@ export function LedgerDemo() {
           <Button onClick={doRestore} disabled={!!busy || !isTampered}>
             Restore
           </Button>
-          <Button variant="primary" onClick={doVerify} disabled={!!busy}>
+          <Button onClick={doVerify} disabled={!!busy}>
             {busy === "verify" ? "Verifying…" : "Verify the chain"}
           </Button>
         </>
@@ -324,6 +336,16 @@ export function LedgerDemo() {
         />
       }
       onAutoplay={() => void reel.play()}
+      tryIt={{
+        hint: isTampered
+          ? `Restore entry #${TARGET}, then verify the whole chain`
+          : `Edit entry #${TARGET} in the database, then verify: watch the chain break there`,
+        disabled: !!busy,
+        run: async () => {
+          await (isTampered ? doRestore() : doTamper());
+          await doVerify();
+        },
+      }}
     >
       <div className="space-y-12">
         <div className="relative overflow-hidden rounded-lg border border-line">
@@ -346,6 +368,7 @@ export function LedgerDemo() {
                 restoredAt={restoredAt}
                 headAt={headAt}
                 merkle={merkle}
+                onPick={(i) => void pick(ids[i])}
               />
             )}
           </LazyView>
@@ -360,6 +383,7 @@ export function LedgerDemo() {
             onReplay={() => void reset()}
           />
         </div>
+        <EntryPanel entry={picked} onClose={() => setPicked(undefined)} />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div>
             <p className="tabular text-h1-sm font-medium text-fg md:text-h1">
@@ -487,5 +511,71 @@ export function LedgerDemo() {
         </Label>
       </div>
     </DemoShell>
+  );
+}
+
+/**
+ * The entry behind a clicked block, exactly as the ledger stores it. The space is always reserved
+ * (a one-line hint before the first click), so opening an entry doesn't push the page down.
+ */
+function EntryPanel({
+  entry,
+  onClose,
+}: {
+  entry: LedgerEntry | "loading" | undefined;
+  onClose: () => void;
+}) {
+  if (!entry)
+    return (
+      <Label as="p" className="-mt-8">
+        Click any block to open its entry and signature.
+      </Label>
+    );
+  if (entry === "loading")
+    return (
+      <Label as="p" className="-mt-8" aria-busy>
+        Opening entry…
+      </Label>
+    );
+  // Stored base64: decoded length is the signature's real size (ML-DSA-65: 3,309 B).
+  const pad = entry.sig.endsWith("==") ? 2 : entry.sig.endsWith("=") ? 1 : 0;
+  const sigBytes = Math.floor((entry.sig.length * 3) / 4) - pad;
+  const rows: [string, string][] = [
+    ["kind", entry.kind],
+    ["subject", entry.subject],
+    ["at", new Date(entry.at).toISOString().replace("T", " ").slice(0, 19) + " UTC"],
+    ["payload", JSON.stringify(entry.payload)],
+    ["prev", entry.prev],
+    ["hash", entry.hash],
+    [
+      "signature",
+      `${entry.alg} · ${sigBytes ? `${sigBytes.toLocaleString("en-IN")} B · ` : ""}${entry.sig.slice(0, 48)}…`,
+    ],
+    ["key", entry.keyId],
+  ];
+  return (
+    <section
+      aria-label={`Entry #${entry.id}`}
+      className="-mt-8 border border-line-strong bg-raised font-mono text-label"
+    >
+      <div className="flex items-center justify-between border-b border-line px-4 py-2">
+        <span className="uppercase text-fg">Entry #{entry.id}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="uppercase text-fg-3 transition-colors duration-150 hover:text-fg"
+        >
+          Close
+        </button>
+      </div>
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-1 px-4 py-3 md:grid-cols-entry">
+        {rows.map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt className="uppercase text-fg-3">{k}</dt>
+            <dd className="min-w-0 break-all text-fg-2">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }

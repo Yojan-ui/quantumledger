@@ -9,6 +9,8 @@ import { world } from "@/components/world/store";
 import { STEPS } from "./chapters";
 import { SealedCost } from "./SealedCost";
 import { scrollToY } from "@/lib/client/scroll";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // The Q-Day widget breaks real (tiny) RSA in the browser; its code loads only when the section is near.
 const HarvestQDay = dynamic(() => import("./HarvestQDay"), { ssr: false, loading: () => null });
@@ -17,7 +19,7 @@ const HandshakeCubes = dynamic(() => import("@/components/scenes/HandshakeCubes"
 const N = STEPS.length;
 
 /**
- * "How it works": three pinned steps beside the globe. A native scroll listener (no scroll
+ * "How it works": three pinned steps beside the globe. A ScrollTrigger (no scroll
  * hijacking) maps progress to a step; the director turns the globe to that step's pose. Steps 1–2
  * share one scrubbed widget: a year counter runs 2026 → 2035, then the classical recordings decrypt.
  */
@@ -38,15 +40,13 @@ export function Story() {
   useEffect(() => {
     const el = root.current;
     if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const span = el.offsetHeight - window.innerHeight;
-      const p = Math.min(1, Math.max(0, -r.top / Math.max(1, span)));
+    // Scrubbed by ScrollTrigger, on the same GSAP clock as Lenis (lib/client/scroll).
+    gsap.registerPlugin(ScrollTrigger);
+    const update = (p: number) => {
       if (fill.current) fill.current.style.transform = `scaleX(${p})`;
-      const inView = r.top < window.innerHeight && r.bottom > 0;
-      if (!inView) return;
+      // Only while the section is on screen does it own the globe's chapter.
+      const r = el.getBoundingClientRect();
+      if (r.top >= window.innerHeight || r.bottom <= 0) return;
       const x = Math.min(N - 0.001, p * N);
       const step = STEPS[Math.floor(x)]!;
       world.chapter = step.chapter;
@@ -56,17 +56,22 @@ export function Story() {
       // re-renders a few times per step, not on every scroll frame.
       setV(Math.min(N - 0.001, Math.round(x * 50) / 50));
     };
-    const onScroll = () => (raf ||= requestAnimationFrame(update));
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (self) => update(self.progress),
+        onRefresh: (self) => update(self.progress),
+      });
+    }, el);
     const io = new IntersectionObserver(([e]) => e?.isIntersecting && setNear(true), {
       rootMargin: "100% 0px",
     });
     io.observe(el);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
     return () => {
       io.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(raf);
+      ctx.revert();
     };
   }, []);
 

@@ -305,6 +305,11 @@ export function DeployDemo() {
       meter={<ComputeMeter reading={reading} profile={adapter === "edge" ? "edge" : "standard"} />}
       console={<LiveConsole title="Live console · deployed nodes" filter={consoleFilter} />}
       onAutoplay={() => void reel.play()}
+      tryIt={{
+        hint: "Deploy one adapter, then all of them: watch each system's traffic switch to ML-KEM",
+        disabled: running || reel.busy || reel.playing,
+        run: () => reel.play(),
+      }}
     >
       <div className="grid grid-cols-1 gap-12 xl:grid-cols-demo">
         <aside className="space-y-8">

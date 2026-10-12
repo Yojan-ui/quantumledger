@@ -7,12 +7,12 @@
  * The director still decides which arc a chapter is about; that one stays fully bright.
  */
 import { useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { params } from "./director";
 import { ARCS, arcPoints, toVec3 } from "./geo";
 import { palette } from "./palette";
-import { world } from "./store";
+import { setPinned, world, type PacketInfo } from "./store";
 import { set3 } from "@/components/scenes/geometry";
 
 const SEG = 64;
@@ -62,7 +62,11 @@ interface Live {
   reverse: boolean;
   doomed: boolean;
   arriveAt?: string;
+  info?: PacketInfo;
 }
+
+/** A click within this many CSS px of a packet in flight inspects it. */
+const PICK_PX = 16;
 
 export function Arcs() {
   const pr = useThree((s) => s.viewport.dpr);
@@ -72,6 +76,57 @@ export function Arcs() {
   const spark = useRef(0);
   const activity = useRef(new Float32Array(N));
   const flash = useRef(new Float32Array(N));
+  /** Which live packet each drawn point slot shows this frame (for click-to-inspect). */
+  const slots = useRef<(Live | undefined)[]>([]);
+  const drawn = useRef(0);
+  const group = useRef<THREE.Group>(null);
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+
+  // Click a packet in flight: pin its real bus event (op, algorithm, bytes, latency, route).
+  useEffect(() => {
+    let downAt: { x: number; y: number } | null = null;
+    const v = new THREE.Vector3();
+    const down = (e: PointerEvent) => (downAt = { x: e.clientX, y: e.clientY });
+    const up = (e: PointerEvent) => {
+      const d = downAt;
+      downAt = null;
+      const r = world.focusRect;
+      const g = group.current;
+      if (!d || !r || !g || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 5) return;
+      if ((e.target as Element).closest?.("button, a, input, textarea, select, [role=dialog]"))
+        return;
+      if (e.clientX < r.left || e.clientX > r.left + r.width) return;
+      if (e.clientY < r.top || e.clientY > r.top + r.height) return;
+      const pos = pulses.g.attributes.position!.array as Float32Array;
+      let best: Live | undefined;
+      let bestD = PICK_PX;
+      for (let k = 0; k < drawn.current; k++) {
+        const l = slots.current[k];
+        if (!l?.info) continue;
+        v.set(pos[k * 3]!, pos[k * 3 + 1]!, pos[k * 3 + 2]!).applyMatrix4(g.matrixWorld);
+        // Behind the globe (the far hemisphere from the camera): not clickable.
+        if (v.dot(camera.position) < 0) continue;
+        v.project(camera);
+        const dist = Math.hypot(
+          ((v.x + 1) / 2) * size.width - e.clientX,
+          ((1 - v.y) / 2) * size.height - e.clientY,
+        );
+        if (dist < bestD) {
+          bestD = dist;
+          best = l;
+        }
+      }
+      if (best?.info) setPinned({ kind: "packet", info: best.info, x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("pointerdown", down, { passive: true });
+    window.addEventListener("pointerup", up);
+    return () => {
+      window.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointerup", up);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camera, size]);
 
   const lines = useMemo(() => {
     const pos: number[] = [];
@@ -174,6 +229,7 @@ export function Arcs() {
         reverse: !!q.reverse,
         doomed: !!q.doomed,
         arriveAt: q.arriveAt,
+        info: q.info,
       });
     }
     if (params.sparkArc >= 0) {
@@ -226,18 +282,20 @@ export function Arcs() {
         pointOnArc(l.arc, l.reverse ? 1 - l.t : l.t, tmp);
         set3(pos, k, tmp.x, tmp.y, tmp.z);
         warn[k] = l.doomed ? Math.min(1, l.t * 2) : 0;
+        slots.current[k] = l;
         size[k++] = l.size * Math.min(1, level[l.arc]! * 1.6 + 0.25);
       }
       list[keep++] = l;
     }
     list.length = keep;
+    drawn.current = k;
     pulses.g.attributes.position!.needsUpdate = true;
     pulses.g.attributes.aSize!.needsUpdate = true;
     pulses.g.attributes.aWarn!.needsUpdate = true;
   });
 
   return (
-    <group>
+    <group ref={group}>
       <lineSegments geometry={lines.g} material={lines.m} />
       <points geometry={pulses.g} material={pulses.m} frustumCulled={false} />
     </group>

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { invalidateAreas } from "@/lib/client/gfx";
 
 // drei's View (and with it three.js) loads only when a scene first scrolls near.
 const SceneView = dynamic(() => import("@/components/world/SceneView").then((m) => m.SceneView), {
@@ -73,6 +74,7 @@ export function LazyView({
   // The frame driver renders only while some View is on screen (see lib/client/gfx).
   useEffect(() => {
     ref.current?.toggleAttribute("data-view-on", mounted && onScreen);
+    invalidateAreas();
   }, [mounted, onScreen]);
   const ready = useCallback(() => ref.current?.setAttribute("data-ready", ""), []);
   return (

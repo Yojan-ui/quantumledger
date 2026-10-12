@@ -192,9 +192,21 @@ function setStatus(i: number, s: StageStatus) {
   set({ status, doneAt });
 }
 
-/** The shelf-life inputs (Mosca's X and Y). */
-export const setMosca = (m: Partial<PipelineState["mosca"]>) =>
-  set({ mosca: { ...state.mosca, ...m } });
+/**
+ * The shelf-life inputs (Mosca's X and Y). Slider drags are coalesced to one update per frame: the
+ * scene, gauge and labels move live with the thumb, and never more often than they're drawn.
+ */
+let moscaNext: Partial<PipelineState["mosca"]> | null = null;
+export const setMosca = (m: Partial<PipelineState["mosca"]>) => {
+  const first = !moscaNext;
+  moscaNext = { ...moscaNext, ...m };
+  if (!first) return;
+  requestAnimationFrame(() => {
+    const next = moscaNext;
+    moscaNext = null;
+    if (next) set({ mosca: { ...state.mosca, ...next } });
+  });
+};
 
 /** Shor exposure: the share of the target's public-key primitives a quantum computer breaks. */
 export function shorExposure(s: PipelineState): { pct: number; sim: boolean } {

@@ -7,11 +7,13 @@ import { Interactions } from "@/components/ui/Interactions";
 import { Warmup } from "@/components/ui/Warmup";
 import { Tour } from "@/components/tour/Tour";
 import { Presenter } from "@/components/present/Presenter";
-import { GlobeTooltip } from "@/components/world/GlobeTooltip";
+import { GlobeTooltip, PinnedLabel } from "@/components/world/GlobeTooltip";
 import { LiveTraffic } from "@/components/world/LiveTraffic";
 import { RouteSync } from "@/components/world/RouteSync";
 import { WorldCanvas } from "@/components/world/WorldCanvas";
 import { ServerNote } from "@/components/ui/ServerNote";
+import { Shortcuts } from "@/components/ui/Shortcuts";
+import { ToastHost } from "@/components/ui/ToastHost";
 import { serverToken } from "@/lib/brand/tokens-server";
 import { COPY_MODE_SCRIPT } from "@/lib/copy-mode-script";
 import { SITE_NAME, SITE_URL } from "@/lib/meta";
@@ -97,7 +99,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Warmup />
         <ServerNote />
         <GlobeTooltip />
+        <PinnedLabel />
         <CommandMenu />
+        <Shortcuts />
+        <ToastHost />
         <Presenter />
         <Tour />
         <div className="relative z-10">{children}</div>

@@ -18,7 +18,7 @@ import type { Shot, Step } from "@/components/director/types";
 import { useDirector } from "@/components/director/useDirector";
 import { useFilm } from "@/components/director/useFilm";
 import { LazyView } from "@/components/scenes/LazyView";
-import { Button, Code, Heading, Label, Stat, Text } from "@/components/ui";
+import { Code, Heading, Label, Stat, Text } from "@/components/ui";
 import { LiveConsole } from "@/components/live/LiveConsole";
 import { Odometer } from "@/components/ui/Odometer";
 import { breakInWorker } from "@/lib/client/qday-crypto";
@@ -308,15 +308,11 @@ export function QDayDemo() {
     <DemoShell
       title="Demo 3 · Q-Day Time Machine"
       caption="An adversary records both systems' traffic today. Move the timeline to Q-Day: classical records open, QuantumLedger records stay sealed."
-      controls={
-        <Button
-          variant="primary"
-          onClick={() => (reel.playing ? undefined : reel.play())}
-          disabled={reel.busy || qday}
-        >
-          Go to Q-Day
-        </Button>
-      }
+      tryIt={{
+        hint: "Go to Q-Day: run the clock forward and see which recorded data opens",
+        disabled: reel.busy || qday,
+        run: () => (reel.playing ? undefined : reel.play()),
+      }}
       meter={<ComputeMeter reading={reading} />}
       console={
         <LiveConsole

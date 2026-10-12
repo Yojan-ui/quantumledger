@@ -12,7 +12,7 @@ import { easeToken } from "@/lib/ease";
 import { params } from "./director";
 import { NODES, ROUTE_CITIES, SOCKETS } from "./geo";
 import { palette } from "./palette";
-import { setHover, world } from "./store";
+import { setHover, world, setPinned } from "./store";
 import { burst } from "@/lib/client/burst";
 import { set3 } from "@/components/scenes/geometry";
 
@@ -346,6 +346,8 @@ export function Nodes() {
           e.stopPropagation();
           const city = ROUTE_CITIES[e.instanceId]!;
           const at = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY };
+          // The city's label stays pinned with its live counts while its packet flies.
+          setPinned({ kind: "city", city: city.id, label: city.label, ...at });
           // A real transaction on a route from this city; the bus brings its packet back as an arc.
           void fetch("/api/seal-from", {
             method: "POST",

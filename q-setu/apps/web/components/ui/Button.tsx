@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import {
+  useEffect,
   useRef,
   useState,
   type ButtonHTMLAttributes,
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { shortError, showToast } from "@/lib/client/toast";
 
 type Variant = "primary" | "secondary";
 
@@ -30,7 +32,9 @@ const motion = (variant: Variant) =>
 /**
  * Every button ignores a second click within 350 ms (a double click acts once). If `onClick` returns
  * a promise, the button is busy until it settles: further clicks are ignored and it shows
- * aria-busy (progress cursor, the busy style in globals.css), so async steps can't run twice.
+ * aria-busy (progress cursor, the busy style in globals.css), so async steps can't run twice. When it
+ * settles the button flashes done (data-state="done") or, if it failed, error, and a toast gives a
+ * short message with Retry.
  */
 export function Button({
   variant = "secondary",
@@ -45,6 +49,14 @@ export function Button({
 }) {
   const last = useRef(0);
   const [busy, setBusy] = useState(false);
+  const [state, setState] = useState<"done" | "error">();
+  const flash = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(flash.current), []);
+  const settle = (s: "done" | "error") => {
+    setState(s);
+    clearTimeout(flash.current);
+    flash.current = setTimeout(() => setState(undefined), 1200);
+  };
   const click = (e: MouseEvent<HTMLButtonElement>) => {
     const now = performance.now();
     if (busy || now - last.current < 350) return;
@@ -52,7 +64,15 @@ export function Button({
     const r = onClick?.(e);
     if (r instanceof Promise) {
       setBusy(true);
-      void r.catch(() => {}).finally(() => setBusy(false));
+      setState(undefined);
+      r.then(
+        () => settle("done"),
+        (err: unknown) => {
+          settle("error");
+          // A short message and a retry that runs the same step again (steps are safe to repeat).
+          showToast(shortError(err), () => onClick?.(e));
+        },
+      ).finally(() => setBusy(false));
     }
   };
   return (
@@ -62,6 +82,7 @@ export function Button({
       {...props}
       onClick={onClick && click}
       aria-busy={busy || props["aria-busy"] || undefined}
+      data-state={state}
       className={`${buttonClass(variant)} ${className}`}
     >
       {children}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { Container, Heading, Legend, Text } from "@/components/ui";
+import { Button, Container, Heading, Legend, Text } from "@/components/ui";
 import { resetAll } from "@/lib/client/present";
 
 /** One click (or R in presenter mode) puts every demo back to a clean start. */
@@ -38,6 +38,11 @@ interface Props {
   children: ReactNode;
   /** Called once in embed mode, so preview recordings start by themselves. */
   onAutoplay?: () => void;
+  /**
+   * The demo's one "Try it": the same primary button in the same place on every demo, running that
+   * demo's real sequence. `hint` says what it will do (the button's tooltip and description).
+   */
+  tryIt?: { run: () => unknown; hint: string; disabled?: boolean };
 }
 
 /** Full-screen demo frame: header with caption and controls, the stage, a live console and a docked Compute Meter. */
@@ -49,6 +54,7 @@ export function DemoShell({
   console: side,
   children,
   onAutoplay,
+  tryIt,
 }: Props) {
   // ?embed=1 hides the chrome; used to record the looping previews on the home page.
   const [embed, setEmbed] = useState(false);
@@ -79,6 +85,18 @@ export function DemoShell({
             {title}
           </Heading>
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            {tryIt && (
+              <Button
+                variant="primary"
+                onClick={tryIt.run}
+                disabled={tryIt.disabled}
+                title={tryIt.hint}
+                aria-description={tryIt.hint}
+                data-try-it
+              >
+                Try it
+              </Button>
+            )}
             {controls}
             <ResetAll />
           </div>

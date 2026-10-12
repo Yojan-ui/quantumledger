@@ -88,6 +88,9 @@ export default {
         /** The diagnostics HUD: diagnostics · stage · terminal and risk. */
         hud: "300px minmax(0, 1fr) 340px",
         "hud-compact": "260px minmax(0, 1fr) 300px",
+        /** A key column and its value (the Proof Chain's entry panel). */
+        entry: "96px minmax(0, 1fr)",
+        keys: "128px minmax(0, 1fr)",
       },
       keyframes: {
         reveal: {

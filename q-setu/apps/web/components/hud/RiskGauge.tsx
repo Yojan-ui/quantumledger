@@ -51,20 +51,27 @@ function Slider({
   max: number;
   onChange: (v: number) => void;
 }) {
+  // The thumb follows the pointer at once; the store (and the scene) catch up on the next frame.
+  const [local, setLocal] = useState(value);
+  useEffect(() => setLocal(value), [value]);
   return (
     <label className="block">
       <span className="flex items-baseline justify-between font-mono text-micro uppercase text-fg-3">
         <span>
           {label} <span className="normal-case">{hint}</span>
         </span>
-        <span className="tabular text-fg">{value} yr</span>
+        <span className="tabular text-fg">{local} yr</span>
       </span>
       <input
         type="range"
         min={min}
         max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={local}
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          setLocal(n);
+          onChange(n);
+        }}
         className="mt-1 w-full accent-fg"
       />
     </label>

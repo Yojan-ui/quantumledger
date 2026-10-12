@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 import { startScroll } from "@/lib/client/scroll";
 
-const MAX_PULL = 4;
+/** Magnetic pull: primary buttons (data-shimmer) up to 6px, everything else 4px. */
+const PULL_PRIMARY = 6;
+const PULL = 4;
 const MAX_TILT = 6;
 /** The site's spring: stiffness 400, damping 30, mass 1 (also sampled into --ease-spring). */
 const K = 400;
@@ -21,7 +23,7 @@ interface Tilt {
 /**
  * Site-wide micro-interactions by event delegation, so primitives stay server components:
  *  - [data-spotlight]: sets --mx/--my for the panel's cursor spotlight
- *  - [data-magnetic]: pulls the element up to 4px towards the cursor while hovered
+ *  - [data-magnetic]: pulls the element towards the cursor while hovered (primary 6px, others 4px)
  *  - [data-shimmer]: adds .shimmer once, the first time the element scrolls into view
  *  - [data-tilt]: tilts up to 6° towards the cursor on a spring (stiffness 400, damping 30), with
  *    the spotlight sheen following the cursor
@@ -114,9 +116,10 @@ export function Interactions() {
       if (!mag || (mag as HTMLButtonElement).disabled) return;
       pulled = mag;
       const r = mag.getBoundingClientRect();
-      const dx = ((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * MAX_PULL;
-      const dy = ((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * MAX_PULL;
-      const c = (v: number) => Math.max(-MAX_PULL, Math.min(MAX_PULL, v));
+      const max = mag.hasAttribute("data-shimmer") ? PULL_PRIMARY : PULL;
+      const dx = ((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * max;
+      const dy = ((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * max;
+      const c = (v: number) => Math.max(-max, Math.min(max, v));
       mag.style.transform = `translate(${c(dx).toFixed(1)}px, ${c(dy).toFixed(1)}px)`;
     };
     document.addEventListener("pointermove", move, { passive: true });

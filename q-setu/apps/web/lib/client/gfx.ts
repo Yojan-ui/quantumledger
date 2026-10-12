@@ -43,9 +43,25 @@ export function useGfx<T>(select: (s: typeof state) => T): T {
 }
 
 /** True if any 3D area (the globe's focus area or a mounted View) is on screen. */
+let areas: HTMLElement[] | null = null;
+let watching = false;
+/** Re-query the 3D areas on the next frame (the DOM changed, or a View came on/off screen). */
+export function invalidateAreas() {
+  areas = null;
+}
 export function any3dOnScreen(): boolean {
   const h = window.innerHeight;
-  for (const el of document.querySelectorAll<HTMLElement>("[data-world-focus], [data-view-on]")) {
+  // The element list is cached and re-queried only after the DOM changes; per frame, only the
+  // rectangles are read.
+  if (!watching) {
+    watching = true;
+    new MutationObserver(invalidateAreas).observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+  areas ??= [...document.querySelectorAll<HTMLElement>("[data-world-focus], [data-view-on]")];
+  for (const el of areas) {
     const r = el.getBoundingClientRect();
     if (r.bottom > 0 && r.top < h && r.width > 0 && r.height > 0) return true;
   }

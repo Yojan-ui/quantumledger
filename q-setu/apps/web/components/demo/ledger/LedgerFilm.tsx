@@ -49,6 +49,8 @@ export interface LedgerFilmProps {
   headAt: number;
   /** A SHA3-256 Merkle tree over the four newest entries' hashes (computed in a worker). */
   merkle?: { levels: string[][]; root: string; at: number };
+  /** Clicking block i opens its entry (index into `ids`). */
+  onPick?: (i: number) => void;
 }
 
 export default function LedgerFilm({
@@ -56,6 +58,7 @@ export default function LedgerFilm({
   onSettled,
   active,
   ids,
+  onPick,
   tamperedAt,
   verify,
   restoredAt,
@@ -301,7 +304,16 @@ export default function LedgerFilm({
         <lineBasicMaterial vertexColors transparent depthWrite={false} opacity={0.9} />
       </lineSegments>
       {Array.from({ length: N }, (_, i) => (
-        <group key={i} ref={(g) => void (blocks.current[i] = g)}>
+        <group
+          key={i}
+          ref={(g) => void (blocks.current[i] = g)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPick?.(i);
+          }}
+          onPointerOver={() => onPick && (document.body.style.cursor = "pointer")}
+          onPointerOut={() => (document.body.style.cursor = "")}
+        >
           <mesh geometry={geo} material={mats[i]!.fill} />
           <lineSegments geometry={edges} material={mats[i]!.line} />
         </group>

@@ -27,7 +27,26 @@ export interface Pulse {
   doomed?: boolean;
   /** Ripple this city when the packet arrives. */
   arriveAt?: string;
+  /** The real bus event behind the packet (shown when it's clicked in flight). */
+  info?: PacketInfo;
 }
+
+/** What a packet in flight carries: the measured fields of its bus event. */
+export interface PacketInfo {
+  seq: number;
+  op: string;
+  alg: string;
+  ms: number;
+  bytes?: number;
+  from?: string;
+  to?: string;
+  sim: boolean;
+}
+
+/** A label pinned by a click: a city (its live counts) or a packet in flight (its event). */
+export type Pinned =
+  | { kind: "city"; city: string; label: string; x: number; y: number }
+  | { kind: "packet"; info: PacketInfo; x: number; y: number };
 
 export interface Hover {
   id: string;
@@ -55,6 +74,7 @@ export const world = {
   /** Low-quality mode (fewer particles, lower DPR), set by PerformanceMonitor or small screens. */
   low: false,
   hover: null as Hover | null,
+  pinned: null as Pinned | null,
   /** The visible [data-world-focus] rectangle (CSS px), or null: the world only draws inside it. */
   focusRect: null as { left: number; top: number; width: number; height: number } | null,
   /** The one accent the current chapter may show ("accent" = protected, "warn" = vulnerable). */
@@ -102,6 +122,11 @@ export function subscribe(fn: Listener): () => void {
 }
 export function notify(): void {
   listeners.forEach((fn) => fn());
+}
+
+export function setPinned(p: Pinned | null): void {
+  world.pinned = p;
+  notify();
 }
 
 export function setHover(h: Hover | null): void {

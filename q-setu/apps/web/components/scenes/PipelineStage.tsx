@@ -58,11 +58,14 @@ function Hit({
   at,
   r,
   on,
+  pick,
 }: {
   id: string;
   at: THREE.Vector3 | [number, number, number];
   r: number;
   on: (id: string | null) => void;
+  /** Click: pin (or unpin) this object's label. */
+  pick: (id: string) => void;
 }) {
   return (
     <mesh
@@ -72,6 +75,10 @@ function Hit({
         on(id);
       }}
       onPointerOut={() => on(null)}
+      onClick={(e) => {
+        e.stopPropagation();
+        pick(id);
+      }}
     >
       <sphereGeometry args={[r, 12, 8]} />
       <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
@@ -94,6 +101,10 @@ export default function PipelineStage({
   const entered = useRef<number[]>([0, 0, 0, 0, 0]);
   const sweepResult = useRef(0);
   const [hover, setHover] = useState<string | null>(null);
+  // A clicked object's label stays up (click it again to unpin); hover shows the others.
+  const [pinned, setPinnedId] = useState<string | null>(null);
+  const pick = (id: string) => setPinnedId((p) => (p === id ? null : id));
+  const lit = (id: string) => hover === id || pinned === id;
   const mobile = useMemo(() => typeof window !== "undefined" && window.innerWidth < 768, []);
   const count = mobile ? 1500 : 3000;
 
@@ -144,7 +155,7 @@ export default function PipelineStage({
   const stage = s.stage;
   const settled = director.state.settled;
   const show = (st: number, id?: string) =>
-    (settled && stage === st) || (id !== undefined && hover === id);
+    (settled && stage === st) || (id !== undefined && lit(id));
   const p = s.scan?.probe;
   const m = mosca(s.mosca.x, s.mosca.y);
   const year = new Date().getFullYear();
@@ -194,12 +205,12 @@ export default function PipelineStage({
       />
       <Radar look={look} />
 
-      <Hit id="sphere" at={[0, 0, 0]} r={R} on={setHover} />
-      <Hit id="server" at={SERVER} r={0.6} on={setHover} />
-      <Hit id="client" at={CLIENT} r={0.6} on={setHover} />
-      <Hit id="vault" at={VAULT} r={0.7} on={setHover} />
-      <Hit id="link" at={LINK_MID} r={0.4} on={setHover} />
-      {s.proof && <Hit id="block" at={ROOT} r={0.45} on={setHover} />}
+      <Hit id="sphere" at={[0, 0, 0]} r={R} on={setHover} pick={pick} />
+      <Hit id="server" at={SERVER} r={0.6} on={setHover} pick={pick} />
+      <Hit id="client" at={CLIENT} r={0.6} on={setHover} pick={pick} />
+      <Hit id="vault" at={VAULT} r={0.7} on={setHover} pick={pick} />
+      <Hit id="link" at={LINK_MID} r={0.4} on={setHover} pick={pick} />
+      {s.proof && <Hit id="block" at={ROOT} r={0.45} on={setHover} pick={pick} />}
 
       {/* On phones the drawer below shows these values: labels would escape the small stage. */}
       {!mobile && (
@@ -224,7 +235,7 @@ export default function PipelineStage({
             label="client"
             value={s.patch ? `X25519 share · ${s.patch.clientHelloBytes} B` : "browser / app"}
             role={s.patch ? "kem" : undefined}
-            show={hover === "client"}
+            show={lit("client")}
           />
           {/* 02 SHELF-LIFE: Mosca, from the sliders and the cited estimate. */}
           {m && (
@@ -260,7 +271,7 @@ export default function PipelineStage({
                 : `${p?.group ?? "—"} · recordable`
             }
             role={s.patch ? "kem" : "danger"}
-            show={(!!s.patch && show(2, "link")) || (!s.patch && hover === "link")}
+            show={(!!s.patch && show(2, "link")) || (!s.patch && lit("link"))}
           />
           <Anchor
             position={[VAULT.x - 2.0, VAULT.y + 1.0, VAULT.z]}
