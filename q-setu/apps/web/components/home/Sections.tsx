@@ -5,12 +5,21 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Code, Grid, Heading, Label, Section, SectionLabel, Text, TextLink } from "@/components/ui";
 import dynamic from "next/dynamic";
 import { LazyView } from "@/components/scenes/LazyView";
-import { MaskHeading } from "@/components/ui/MaskHeading";
+import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { SOLUTIONS } from "@/data/solutions";
 import { ADAPTERS } from "./chapters";
 
 const SocketModel = dynamic(() => import("@/components/scenes/SocketModel"), { ssr: false });
+
+/** Simple-mode lines for each adapter (no acronyms). */
+const PLAIN: Record<string, string> = {
+  shield: "Old servers. Nothing in them changes.",
+  web: "Any website. One line of setup.",
+  sdk: "New apps, built quantum-safe from the start.",
+  edge: "Small devices like meters and card machines.",
+  vault: "Stored records, each with its own lock.",
+};
 
 const ONE_LINE: Record<string, string> = {
   shield: "Legacy servers and APIs. Zero code change.",
@@ -41,10 +50,13 @@ export function Adapters() {
   return (
     <section ref={ref} id="adapters" className="relative scroll-mt-14 py-24 md:py-40">
       <div className="mx-auto w-full max-w-container px-5 md:px-6">
-        <SectionLabel index="05" label="Adapters" role="kem" />
+        <SectionLabel index="05" label="Deploy anywhere" role="kem" />
         <Grid className="gap-y-12">
           <div className="col-span-12 lg:col-span-7">
-            <MaskHeading text="Five ways in. Each one line." />
+            <CopyHeading
+              simple="Five ways to add it. Each takes one line."
+              technical="Five adapters. Each one line."
+            />
             <ul className="mt-12 border-b border-line">
               {ADAPTERS.map((a, i) => (
                 <li
@@ -56,11 +68,14 @@ export function Adapters() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                       <Heading as="h3" variant="h3">
-                        Q-Setu {a.name}
+                        Q-Setu{" "}
+                        <Copy simple={a.id === "sdk" ? "for apps" : a.name} technical={a.name} />
                       </Heading>
-                      <Text size="small">{ONE_LINE[a.id]}</Text>
+                      <Text size="small">
+                        <Copy simple={PLAIN[a.id]} technical={ONE_LINE[a.id]} />
+                      </Text>
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-4" data-copy="technical">
                       <Code code={a.code} />
                     </div>
                   </div>
@@ -90,8 +105,12 @@ export function Adapters() {
 /** 06: one row per sector, linking to its solution page. */
 export function Solutions() {
   return (
-    <Section id="solutions" index="06" label="Solutions" role="sig">
-      <MaskHeading text="Built for India’s most sensitive rails." className="max-w-text" />
+    <Section id="solutions" index="06" label="Solutions by sector" role="sig">
+      <CopyHeading
+        simple="Built for the services India relies on most."
+        technical="Built for India’s most sensitive rails."
+        className="max-w-text"
+      />
       <ul className="mt-12 border-b border-line">
         {SOLUTIONS.map((s) => (
           <li key={s.id} className="border-t border-line">
@@ -102,7 +121,12 @@ export function Solutions() {
               <Heading as="h3" variant="h2" className="col-span-12 md:col-span-3">
                 {s.name}
               </Heading>
-              <Text className="col-span-12 md:col-span-7">{s.problem}</Text>
+              <Text className="col-span-12 md:col-span-7">
+                <Copy
+                  simple={s.problem}
+                  technical={`${s.problem} Hybrid ML-KEM for ${s.kem.length} links; ML-DSA for ${s.dsa[0]!.toLowerCase()}.`}
+                />
+              </Text>
               <span className="col-span-12 self-center text-small text-fg-3 transition-colors duration-150 group-hover:text-fg md:col-span-2 md:text-right">
                 {s.name} →
               </span>
@@ -121,6 +145,22 @@ const COLS = [
   "PQ-TLS at the edge",
   "Doing nothing",
 ];
+/** Simple-mode column and row names (no acronyms); notes are technical detail, shown in Technical. */
+const COLS_SIMPLE = [
+  "Q-Setu",
+  "Do-it-yourself crypto toolkits",
+  "Quantum-safe front door only",
+  "Doing nothing",
+];
+const ROWS_SIMPLE: Record<string, string> = {
+  "Finds where you’re vulnerable (scanner + CBOM)": "Finds where you’re exposed",
+  "Low-power device profile": "Works on small, low-power devices",
+  "Tamper-evident, quantum-safe audit trail":
+    "A record of every action that can’t be quietly edited",
+  "Built around Indian sector workflows (UPI, ABDM, APAAR / DigiLocker)":
+    "Built around how India pays, treats patients and issues degrees",
+};
+
 const ROWS: { k: string; cells: [Cell, Cell, Cell, Cell]; note?: string }[] = [
   {
     k: "Works with legacy systems with zero code change",
@@ -193,7 +233,10 @@ export function ComparisonTable() {
     <div className="overflow-x-auto">
       <table ref={table} className="w-full min-w-panel table-fixed text-left">
         <caption className="sr-only">
-          Q-Setu compared with PQC libraries, edge PQ-TLS and doing nothing
+          <Copy
+            simple="Q-Setu compared with do-it-yourself toolkits, a quantum-safe front door only, and doing nothing"
+            technical="Q-Setu compared with PQC libraries, edge PQ-TLS and doing nothing"
+          />
         </caption>
         <thead>
           <tr className="border-b border-line">
@@ -207,7 +250,7 @@ export function ComparisonTable() {
                 tone={i === 0 ? "strong" : "muted"}
                 className="w-1/6 pb-4 pr-4 align-bottom font-normal"
               >
-                {c}
+                <Copy simple={COLS_SIMPLE[i]} technical={c} />
               </Label>
             ))}
           </tr>
@@ -220,8 +263,14 @@ export function ComparisonTable() {
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <th scope="row" className="py-5 pr-6 text-left font-normal">
-                <span className="block text-body text-fg">{r.k}</span>
-                {r.note && <span className="mt-1 block text-small text-fg-3">{r.note}</span>}
+                <span className="block text-body text-fg">
+                  <Copy simple={ROWS_SIMPLE[r.k] ?? r.k} technical={r.k} />
+                </span>
+                {r.note && (
+                  <span data-copy="technical" className="mt-1 block text-small text-fg-3">
+                    {r.note}
+                  </span>
+                )}
               </th>
               {r.cells.map((c, i) => (
                 <td key={i} className={`py-5 pr-4 text-small ${i === 0 ? "text-fg" : "text-fg-2"}`}>
@@ -236,17 +285,23 @@ export function ComparisonTable() {
   );
 }
 
-/** 08: an honest comparison. Libraries are the foundation; Q-Setu is built on them. */
+/** 09: an honest comparison. Libraries are the foundation; Q-Setu is built on them. */
 export function WhyQSetu() {
   return (
-    <Section id="why-q-setu" index="08" label="Why Q-Setu" role="kem">
-      <MaskHeading text="Algorithms are solved. Deployment isn’t." className="max-w-text" />
+    <Section id="why-q-setu" index="09" label="Why Q-Setu" role="kem">
+      <CopyHeading
+        simple="The new locks exist. Fitting them is the hard part."
+        technical="Algorithms are solved. Deployment isn’t."
+        className="max-w-text"
+      />
       <div className="mt-12">
         <ComparisonTable />
       </div>
       <p className="mt-8 max-w-text text-body text-fg-2">
-        Libraries give you algorithms. Q-Setu gives India a way to actually deploy them. It is built
-        on widely used open-source implementations (the @noble libraries), not new cryptography.
+        <Copy
+          simple="Toolkits give you the new locks. Q-Setu gives India a way to fit them, on systems already running. It is built on widely used open-source code, not new inventions."
+          technical="Libraries give you algorithms. Q-Setu gives India a way to actually deploy them. It is built on widely used open-source implementations (the @noble libraries), not new cryptography."
+        />
       </p>
     </Section>
   );

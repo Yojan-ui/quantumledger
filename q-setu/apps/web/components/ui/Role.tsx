@@ -1,43 +1,53 @@
+import type { ReactNode } from "react";
+import { Copy } from "./Copy";
 /**
  * Crypto roles: one colour per meaning, used everywhere (see styles/tokens.css).
  * A dot sits at 60% and brightens to 100% on hover or focus, with a one-line explanation.
  */
 export type Role = "kem" | "sig" | "ok" | "warn" | "danger";
 
-export const ROLES: Record<Role, { label: string; means: string; text: string; bg: string }> = {
+export const ROLES: Record<
+  Role,
+  { label: string; means: string; plain: string; text: string; bg: string }
+> = {
   kem: {
     label: "Encrypted",
     means: "Sealed with ML-KEM: unreadable, even to a future quantum computer.",
+    plain: "Locked with a quantum-safe key: unreadable, even to a future quantum computer.",
     text: "text-kem",
     bg: "bg-kem",
   },
   sig: {
     label: "Signed",
     means: "Signed with ML-DSA: any edit or forgery is detectable.",
+    plain: "Signed with a quantum-safe signature: any edit or forgery shows.",
     text: "text-sig",
     bg: "bg-sig",
   },
   ok: {
     label: "Verified",
     means: "Checked just now and protected.",
+    plain: "Checked just now and protected.",
     text: "text-ok",
     bg: "bg-ok",
   },
   warn: {
     label: "Vulnerable",
     means: "Classical crypto: recordable today, breakable at Q-Day.",
+    plain: "Old-style lock: can be copied today and opened on Q-Day.",
     text: "text-warn",
     bg: "bg-warn",
   },
   danger: {
     label: "Tampered",
     means: "An attack or edit was caught and rejected.",
+    plain: "An attack or edit was caught and rejected.",
     text: "text-danger",
     bg: "bg-danger",
   },
 };
 
-function Tip({ children, align }: { children: string; align: "left" | "right" }) {
+function Tip({ children, align }: { children: ReactNode; align: "left" | "right" }) {
   return (
     <span
       aria-hidden
@@ -78,8 +88,12 @@ export function RoleDot({
         <span className="sr-only">{name}</span>
       )}
       {/* Screen readers get the meaning as text; sighted users get it in the hover/focus tooltip. */}
-      <span className="sr-only">: {r.means}</span>
-      <Tip align={align}>{r.means}</Tip>
+      <span className="sr-only">
+        : <Copy simple={r.plain} technical={r.means} />
+      </span>
+      <Tip align={align}>
+        <Copy simple={r.plain} technical={r.means} />
+      </Tip>
     </span>
   );
 }

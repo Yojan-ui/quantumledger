@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Text } from "@/components/ui";
+import { Copy } from "@/components/ui/Copy";
 import { notify, world } from "@/components/world/store";
 import { METRICS, pct, READINESS, SECTORS, share, type MetricId } from "@/lib/readiness";
 
@@ -104,7 +105,22 @@ export function ReadinessBars({ className = "" }: { className?: string }) {
               onClick={() => setMetric(x.id)}
               className={`h-8 rounded-sm border px-3 font-mono text-label uppercase transition-colors duration-150 ${metric === x.id ? "border-fg text-fg" : "border-line text-fg-3 hover:text-fg"}`}
             >
-              {x.id === "hybridPq" ? "Hybrid PQ" : x.id === "tls13" ? "TLS 1.3" : "RSA-2048 certs"}
+              <Copy
+                simple={
+                  x.id === "hybridPq"
+                    ? "Quantum-safe lock"
+                    : x.id === "tls13"
+                      ? "Newest standard"
+                      : "Old ID keys"
+                }
+                technical={
+                  x.id === "hybridPq"
+                    ? "Hybrid PQ"
+                    : x.id === "tls13"
+                      ? "TLS 1.3"
+                      : "RSA-2048 certs"
+                }
+              />
             </button>
           ))}
         </div>

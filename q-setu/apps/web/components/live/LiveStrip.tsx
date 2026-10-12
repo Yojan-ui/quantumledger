@@ -1,5 +1,6 @@
 "use client";
 
+import { Copy } from "@/components/ui/Copy";
 import { useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui";
 import { Odometer } from "@/components/ui/Odometer";
@@ -80,12 +81,14 @@ export function LiveStrip() {
           {!streaming && (
             <p className="absolute inset-0 flex animate-tick-in gap-4 whitespace-nowrap normal-case">
               {key.ms === undefined ? (
-                <span>Generating your ML-KEM-768 key…</span>
+                <span>
+                  Generating your <Copy simple="quantum-safe" technical="ML-KEM-768" /> key…
+                </span>
               ) : (
                 <>
                   <span>
-                    Your ML-KEM-768 key <span className="text-fg-2">{key.kid}</span> · generated in
-                    this browser in{" "}
+                    Your <Copy simple="quantum-safe" technical="ML-KEM-768" /> key{" "}
+                    <span className="text-fg-2">{key.kid}</span> · generated in this browser in{" "}
                     <span className="tabular text-fg-2">{key.ms.toFixed(2)} ms</span>
                   </span>
                   <span className="text-ok">✓</span>
@@ -100,7 +103,9 @@ export function LiveStrip() {
             >
               <span>{c.time}</span>
               <span className="w-16 shrink-0">{c.op}</span>
-              <span className="hidden normal-case md:inline">{c.alg}</span>
+              <span data-copy="technical" className="hidden normal-case md:inline">
+                {c.alg}
+              </span>
               <span className="hidden md:inline">{c.bytes}</span>
               <span className="hidden md:inline">{c.ms}</span>
               <span className={c.failed ? "text-danger" : "text-ok"}>{c.mark}</span>

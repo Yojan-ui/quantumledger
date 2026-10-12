@@ -6,8 +6,8 @@ test("readiness index: sector totals, methodology, no site names", async ({ page
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("[data-index-headline]")).toHaveText(/^\d+%$/);
   await expect(page.locator("[data-sector]")).toHaveCount(5);
-  await page.getByRole("button", { name: "RSA-2048 certs" }).click();
-  await expect(page.getByRole("button", { name: "RSA-2048 certs" })).toHaveAttribute(
+  await page.getByRole("button", { name: "Old ID keys" }).click();
+  await expect(page.getByRole("button", { name: "Old ID keys" })).toHaveAttribute(
     "aria-pressed",
     "true",
   );

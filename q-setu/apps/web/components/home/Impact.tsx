@@ -313,10 +313,10 @@ export function Impact({ index }: { index: string }) {
             </div>
             {fact("ir8547") && (
               <p className="mt-8 text-small text-fg-3">
-                Risk window: NIST IR 8547 (initial public draft, Nov 2024) proposes deprecating RSA
-                and elliptic-curve algorithms after {RISK_FROM} and disallowing them after {RISK_TO}
-                . It is a draft and a policy deadline, not a prediction of when a quantum computer
-                will exist.
+                <Copy
+                  simple={`Risk window: the US standards body's draft plan (November 2024) proposes retiring today's locks after ${RISK_FROM} and banning them after ${RISK_TO}. It is a draft deadline, not a prediction of when a quantum computer will exist.`}
+                  technical={`Risk window: NIST IR 8547 (initial public draft, Nov 2024) proposes deprecating RSA and elliptic-curve algorithms after ${RISK_FROM} and disallowing them after ${RISK_TO}. It is a draft and a policy deadline, not a prediction of when a quantum computer will exist.`}
+                />
               </p>
             )}
           </div>

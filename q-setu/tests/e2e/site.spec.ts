@@ -46,20 +46,26 @@ for (const [path, h1] of PAGES) {
   });
 }
 
-test("home: nine sections in order, each with an index label", async ({ page }) => {
+test("home: ten sections in order for a first-time visitor", async ({ page }) => {
   await page.goto("/");
   const ids = await page.locator("main > section[id]").evaluateAll((s) => s.map((x) => x.id));
   expect(ids).toEqual([
     "top",
+    "analogy",
+    "index",
     "scan",
-    "why-now",
     "how-it-works",
     "adapters",
     "solutions",
-    "proof",
+    "impact",
+    "whats-new",
     "why-q-setu",
     "early-access",
   ]);
+  // Every numbered section label, 02–10, in order (the hero is 01 and the scan box is part of 03).
+  const labels = await page.locator("main > section [class*=uppercase]").allInnerTexts();
+  const nums = labels.map((t) => /^(\d{2}) —/.exec(t)?.[1]).filter(Boolean);
+  expect([...new Set(nums)]).toEqual(["02", "03", "04", "05", "06", "07", "08", "09", "10"]);
   await expect(page.getByRole("link", { name: "Try it live" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);

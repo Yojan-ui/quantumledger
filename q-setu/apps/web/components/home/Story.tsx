@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { Container, Label, Legend, ROLES, SectionLabel, Text } from "@/components/ui";
+import { Container, Label, Legend, ROLES, SectionLabel, Text, TextLink } from "@/components/ui";
+import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { LazyView } from "@/components/scenes/LazyView";
-import { MaskHeading } from "@/components/ui/MaskHeading";
 import { world } from "@/components/world/store";
 import { STEPS } from "./chapters";
 import { SealedCost } from "./SealedCost";
@@ -124,9 +124,14 @@ export function Story() {
               <div className="animate-reveal">
                 <Label>{step.label}</Label>
               </div>
-              <MaskHeading text={step.title} className="mt-4" delay={60} />
+              <CopyHeading simple={step.simpleTitle} technical={step.title} className="mt-4" />
               <div className="mt-4 max-w-text animate-reveal" style={{ animationDelay: "240ms" }}>
-                <Text>{step.body}</Text>
+                <Text>
+                  <Copy simple={step.simpleBody} technical={step.body} />
+                </Text>
+                <TextLink href="/demo/how-it-works" className="mt-4 inline-block">
+                  Watch the handshake, step by step →
+                </TextLink>
               </div>
               {active === 2 && (
                 <div className="mt-6 animate-reveal space-y-6" style={{ animationDelay: "300ms" }}>

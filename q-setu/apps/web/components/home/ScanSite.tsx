@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button, Grid, Label, Section, Text } from "@/components/ui";
-import { MaskHeading } from "@/components/ui/MaskHeading";
+import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { ScanResult, ScanSkeleton } from "@/components/scan/ScanResult";
 import { world } from "@/components/world/store";
 import { burst } from "@/lib/client/burst";
@@ -77,13 +77,20 @@ export function ScanSite() {
   }
 
   return (
-    <Section id="scan" index="02" label="Scan your site" role="warn">
+    <Section id="scan" label="Scan any site" role="warn">
       <div ref={ref}>
         <Grid className="gap-y-12">
           <div className="col-span-12 lg:col-span-7">
-            <MaskHeading text={"Is your bank quantum\u2011safe?"} className="max-w-text" />
+            <CopyHeading
+              simple={"Is your bank quantum\u2011safe?"}
+              technical="Scan any site's TLS, live."
+              className="max-w-text"
+            />
             <Text className="mt-4 max-w-text">
-              Enter any website. We connect to it now and read what it negotiates.
+              <Copy
+                simple="Enter any website. We connect to it now and check which lock it uses."
+                technical="Enter any host. We open one TLS handshake, offering X25519MLKEM768 first, and read the negotiated group, version and certificate key."
+              />
             </Text>
             <form
               className="mt-8 flex flex-col gap-3 md:flex-row"

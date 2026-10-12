@@ -4,12 +4,10 @@ import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero } from "@/components/home/Hero";
 import { Impact } from "@/components/home/Impact";
 import { IndexSection } from "@/components/home/IndexSection";
-import { Proof } from "@/components/home/Proof";
 import { ScanSite } from "@/components/home/ScanSite";
 import { Adapters, Solutions, WhyQSetu } from "@/components/home/Sections";
 import { Story } from "@/components/home/Story";
 import { WhatsNew } from "@/components/home/WhatsNew";
-import { WhyNow } from "@/components/home/WhyNow";
 import { Footer } from "@/components/ui/Footer";
 import { Nav } from "@/components/ui/Nav";
 import { pageMeta } from "@/lib/meta";
@@ -22,21 +20,22 @@ export const metadata: Metadata = pageMeta({
   absoluteTitle: true,
 });
 
-/** Nine sections, one question each. */
+/**
+ * Ten sections for a first-time visitor: hero, the analogy, the Readiness Index (with the scan box),
+ * how it works, deploy anywhere, solutions, impact, what's new, why Q-Setu, early access.
+ */
 export default function Home() {
   return (
     <>
       <Nav />
       <main id="main">
         <Hero />
-        <Analogy index="01" />
+        <Analogy index="02" />
+        <IndexSection index="03" />
         <ScanSite />
-        <IndexSection index="02" />
-        <WhyNow />
         <Story />
         <Adapters />
         <Solutions />
-        <Proof />
         <Impact index="07" />
         <WhatsNew index="08" />
         <WhyQSetu />

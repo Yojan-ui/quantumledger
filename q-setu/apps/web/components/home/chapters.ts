@@ -18,12 +18,20 @@ export const HERO = {
 };
 
 /** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */
-export const STEPS: (Chapter & { chapter: number; role: "warn" | "kem" | "ok" })[] = [
+export const STEPS: (Chapter & {
+  chapter: number;
+  role: "warn" | "kem" | "ok";
+  simpleTitle: string;
+  simpleBody: string;
+})[] = [
   {
     id: "recorded",
     label: "Step 1 · Recorded today",
     title: "Encrypted today, recorded today.",
     body: "Adversaries copy encrypted traffic now and wait. Each pulse is a real packet on this network.",
+    simpleTitle: "Copied today, kept for later.",
+    simpleBody:
+      "Someone can copy locked messages as they travel and keep them. Each pulse is a real message on this network.",
     accent: "warn",
     chapter: 2.3,
     role: "warn",
@@ -33,6 +41,9 @@ export const STEPS: (Chapter & { chapter: number; role: "warn" | "kem" | "ok" })
     label: "Step 2 · Opened at Q-Day",
     title: "At Q-Day, the recordings open.",
     body: "Shor’s algorithm breaks RSA and elliptic curves. Watch recorded classical traffic decrypt in your browser.",
+    simpleTitle: "One day, the copies open.",
+    simpleBody:
+      "When a big enough quantum computer exists, those copies can be unlocked. Watch it happen to old-style locks, in your browser.",
     accent: "warn",
     chapter: 3.3,
     role: "warn",
@@ -42,6 +53,9 @@ export const STEPS: (Chapter & { chapter: number; role: "warn" | "kem" | "ok" })
     label: "Step 3 · Sealed with Q-Setu",
     title: "With Q-Setu, they stay noise.",
     body: "A hybrid X25519 + ML-KEM-768 handshake, once per session. Every message after it is AES-256-GCM.",
+    simpleTitle: "With Q-Setu, the copies stay useless.",
+    simpleBody:
+      "Q-Setu adds a new lock that even a quantum computer can't open, once per connection. Everything sent after it stays scrambled.",
     accent: "accent",
     chapter: 7.3,
     role: "kem",
