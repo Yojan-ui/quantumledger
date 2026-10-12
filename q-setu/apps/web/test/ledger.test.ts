@@ -79,6 +79,35 @@ for (const [name, open] of DIALECTS) {
       expect((await b.ledger.verify()).broken).toMatchObject({ id: 3, reason: "missing-entry" });
     });
 
+    it("re-checks everything after a verify: edits, forged hashes and forged signatures", async () => {
+      const { ledger, repos } = await setup();
+      expect((await ledger.verify()).ok).toBe(true);
+      // Payload edit: caught by the re-hash, even though #6's signature was already checked.
+      await ledger.tamper(6);
+      expect((await ledger.verify()).broken).toMatchObject({ id: 6, reason: "payload-modified" });
+      await ledger.restore();
+      expect((await ledger.verify()).ok).toBe(true);
+      // A signature swapped for another entry's: different bytes, so it is verified again and fails.
+      const [e3, e4] = await ledger.range(3, 4);
+      await repos.ledger.raw.setSig(4, e3!.sig);
+      expect((await ledger.verify()).broken).toMatchObject({ id: 4, reason: "bad-signature" });
+      await repos.ledger.raw.setSig(4, e4!.sig);
+      expect((await ledger.verify()).ok).toBe(true);
+    });
+
+    it("a fresh process checks every signature itself", async () => {
+      const { ledger, keys, repos } = await setup();
+      const rows = await ledger.range(2, 5);
+      const e2 = rows[0]!;
+      const e5 = rows[3]!;
+      await repos.ledger.raw.setSig(5, e2.sig);
+      // Same database, new Ledger: nothing remembered, so the forged signature on #5 is found.
+      const other = new Ledger(repos.ledger, signerFor(keys));
+      expect((await other.verify()).broken).toMatchObject({ id: 5, reason: "bad-signature" });
+      await repos.ledger.raw.setSig(5, e5.sig);
+      expect((await other.verify()).ok).toBe(true);
+    });
+
     it("restores tampered rows, and survives key rotation", async () => {
       const { ledger, keys } = await setup();
       await ledger.tamper(4);

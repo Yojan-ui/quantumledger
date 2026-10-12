@@ -8,10 +8,9 @@ in autoplay at 1440×900 by `node scripts/record-demos.mjs <dir>`, against the p
 | 1 · How it works | 37.0 s | 34.6 s | Play (six shots), then Attack it                                         |
 | 2 · Deploy       | 35.1 s | 23.3 s | Play: survey, descend, target, integrate (a real deploy), deploy all     |
 | 3 · Q-Day        | 28.0 s | 21.9 s | Go to Q-Day: record, time-lapse, climax (the real attack), aftermath     |
-| 4 · Q-Ledger     | 45.6 s | 76.6 s | Play: verify, tamper #42, verify (break found), restore and verify again |
+| 4 · Q-Ledger     | 45.6 s | 24.4 s | Play: verify, tamper #42, verify (break found), restore and verify again |
 
-Demo 4 is longer because it now runs the whole sequence, including a final verify, and every verify is real (see "Known
-issue" below).
+Every verify in these recordings is real (see "Ledger verify speed" below).
 
 Crypto, backend and demo logic are unchanged. Every shot runs the same real operations as before (handshake steps,
 adapter deploys, the Q-Day factoring, ledger verify, tamper and restore); the director only decides where the camera is
@@ -122,11 +121,21 @@ at #42.
 - One e2e assertion changed. The presenter test pressed → on Q-Day and expected exactly 2027, but → now advances the
   film (a time-lapse), so it checks that the year has left 2026.
 
-## Known issue (not caused by this change)
+## Ledger verify speed (follow-up)
 
-The local ledger has grown to about 12,500 entries from days of live traffic, and a full verify takes about 22 s on
-this machine. Shots wait for real verification, so Demo 4's film waits too. Worth a follow-up, for example verifying
-from the last signed checkpoint.
+The local ledger has grown to about 14,600 entries from live traffic. A full verify took about 22 s, almost all of it
+one ML-DSA check per row (about 1.8 ms each), and Demo 4's film waited on it.
+
+- Every verify still re-hashes every row and checks every link, so an edited row is still caught at that exact row.
+- The ML-DSA result is remembered per server process for the exact bytes it passed on: entry ID, hash, key ID and a
+  SHA3-256 digest of the signature. A row whose hash, key or signature changes is checked again. Entries the server
+  signs itself are remembered when they're written. The memory is server-side, out of reach of database access.
+- At startup the server checks every signature once in the background, yielding as it goes. A verify that arrives
+  meanwhile waits for it rather than repeating it.
+- Result: 1.2 s per verify once warm (was 22 s), and the server stays responsive during the warm-up. Demo 4's e2e test
+  went from 48 s to 4.3 s.
+- New tests cover an edit after a verify, a signature swapped in from another entry, and a fresh process that checks
+  every signature itself.
 
 A second finding from the recordings: a stale second server process on the same `.data` directory, left from recording
 the "before" videos, made verification report "signed by an unknown key". Each process caches its own key store. With

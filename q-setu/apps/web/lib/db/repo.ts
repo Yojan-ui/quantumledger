@@ -48,6 +48,7 @@ export interface Repos {
     /** Test hooks: raw edits an attacker with database access could make. */
     raw: {
       setHash(id: number, hash: string): Promise<void>;
+      setSig(id: number, sig: string): Promise<void>;
       delete(id: number): Promise<void>;
     };
   };
@@ -109,6 +110,7 @@ export function makeRepos(db: AnyDrizzle, t: Tables, dialect: Repos["dialect"]):
       clearBackups: async () => void (await db.delete(B)),
       raw: {
         setHash: async (id, hash) => void (await db.update(L).set({ hash }).where(eq(L.id, id))),
+        setSig: async (id, sig) => void (await db.update(L).set({ sig }).where(eq(L.id, id))),
         delete: async (id) => void (await db.delete(L).where(eq(L.id, id))),
       },
     },

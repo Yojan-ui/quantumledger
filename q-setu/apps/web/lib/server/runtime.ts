@@ -115,6 +115,9 @@ async function create(): Promise<Runtime> {
   // Only do work while someone is watching the stream.
   mesh.start(() => bus.listeners() > 0);
   setInterval(() => ROTATING.forEach((p) => keys.rotate(p)), ROTATE_MS).unref();
+  // Warm-up: check every existing signature once, in the background (it yields as it goes), so the
+  // first "Verify the chain" in a demo only re-hashes. Its result is discarded; verifies stay real.
+  setTimeout(() => void ledger.warm(), 2000).unref();
 
   return { bus, policy, keys, ledger, mesh, repos, scanLimiter: new RateLimiter(6, 60_000) };
 }

@@ -8,6 +8,12 @@
  * `prev`; re-computing the hash doesn't help without the ledger's signing key. `verify()` walks the
  * whole chain and names the first entry that fails, and why. Appends are serialised, so concurrent
  * writers in one process can never fork the chain.
+ *
+ * Every verify re-hashes every row and checks every link. The ML-DSA check (about 1.8 ms each, nearly
+ * all of the cost) is remembered per process for the exact bytes it passed on: entry ID, hash, key ID
+ * and a SHA3-256 digest of the signature. A row whose hash, key or signature changes misses that
+ * memory and is checked again. The memory lives in the server process, where an attacker with database
+ * access can't reach it.
  */
 import { sha3_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex, encodeParts, getSig, hexToBytes, utf8ToBytes, type SigId } from "@qsetu/core";
@@ -52,6 +58,12 @@ export interface VerifyResult {
 
 const GENESIS = "0".repeat(64);
 const PAGE = 1000;
+/** Yield to the event loop after this many fresh signature checks, so a long verify never blocks requests. */
+const YIELD_EVERY = 25;
+
+/** What a signature check vouched for: the row's ID, hash, key, and a digest of the signature itself. */
+const sigKey = (r: Pick<LedgerRow, "id" | "hash" | "keyId" | "sig">) =>
+  `${r.id}|${r.hash}|${r.keyId}|${bytesToHex(sha3_256(utf8ToBytes(r.sig)))}`;
 
 export function entryHash(
   r: Pick<LedgerRow, "id" | "at" | "kind" | "subject" | "payload" | "prev" | "keyId">,
@@ -80,6 +92,9 @@ const toEntry = (r: LedgerRow): LedgerEntry => ({
 export class Ledger {
   private readonly listeners = new Set<(e: LedgerEntry, ms: number) => void>();
   private queue: Promise<unknown> = Promise.resolve();
+  /** Signatures already verified (or produced) by this process; see sigKey. */
+  private readonly verifiedSigs = new Set<string>();
+  private warming: Promise<unknown> = Promise.resolve();
 
   constructor(
     readonly repo: Repos["ledger"],
@@ -122,6 +137,8 @@ export class Ledger {
     row.hash = entryHash(row);
     row.sig = Buffer.from(this.signer.sign(hexToBytes(row.hash)).signature).toString("base64");
     await this.repo.insert(row);
+    // This process just produced the signature with the KMS key, so it is valid for these exact bytes.
+    this.verifiedSigs.add(sigKey(row));
     const e = toEntry(row);
     const ms = performance.now() - t;
     this.listeners.forEach((fn) => fn(e, ms));
@@ -147,13 +164,28 @@ export class Ledger {
     return r && toEntry(r);
   }
 
+  /**
+   * Checks every existing signature once in the background (result discarded), so later verifies
+   * only re-hash. A verify that starts meanwhile waits for it rather than repeating its work.
+   */
+  warm(): Promise<unknown> {
+    this.warming = this.walk().catch(() => {});
+    return this.warming;
+  }
+
   /** Walks every entry from genesis: recomputes hashes, checks links and ML-DSA signatures. */
   async verify(): Promise<VerifyResult> {
+    await this.warming;
+    return this.walk();
+  }
+
+  private async walk(): Promise<VerifyResult> {
     await this.flush();
     const t = performance.now();
     let prev = GENESIS;
     let expectId = 1;
     let checked = 0;
+    let fresh = 0;
     const done = (broken?: VerifyResult["broken"]): VerifyResult => ({
       ok: !broken,
       checked,
@@ -196,18 +228,23 @@ export class Ledger {
             reason: "unknown-key",
             detail: `Entry #${r.id} is signed by an unknown key.`,
           });
-        if (
-          !getSig(key.alg).verify(
-            new Uint8Array(Buffer.from(r.sig, "base64")),
-            hexToBytes(r.hash),
-            key.publicKey,
+        const seen = sigKey(r);
+        if (!this.verifiedSigs.has(seen)) {
+          if (
+            !getSig(key.alg).verify(
+              new Uint8Array(Buffer.from(r.sig, "base64")),
+              hexToBytes(r.hash),
+              key.publicKey,
+            )
           )
-        )
-          return done({
-            id: r.id,
-            reason: "bad-signature",
-            detail: `Entry #${r.id}: ${getSig(key.alg).name} signature does not verify.`,
-          });
+            return done({
+              id: r.id,
+              reason: "bad-signature",
+              detail: `Entry #${r.id}: ${getSig(key.alg).name} signature does not verify.`,
+            });
+          this.verifiedSigs.add(seen);
+          if (++fresh % YIELD_EVERY === 0) await new Promise((res) => setImmediate(res));
+        }
         prev = r.hash;
         expectId++;
       }
