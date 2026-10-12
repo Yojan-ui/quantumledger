@@ -71,10 +71,12 @@ export function WorldCanvas() {
     // The 3D bundle loads after first paint. Desktops start it when the browser is idle; phones and
     // low-core devices wait for the first interaction (or 4.5 s), so the scene's start-up never
     // competes with the page becoming usable.
+    // The diagnostics HUD is the page's subject: its 3D stage starts at once, phones included.
     const constrained =
-      window.matchMedia("(pointer: coarse)").matches ||
-      window.innerWidth < 768 ||
-      (navigator.hardwareConcurrency ?? 8) <= 4;
+      !document.querySelector("[data-hud-stage]") &&
+      (window.matchMedia("(pointer: coarse)").matches ||
+        window.innerWidth < 768 ||
+        (navigator.hardwareConcurrency ?? 8) <= 4);
     const events = [
       "pointerdown",
       "pointermove",

@@ -25,6 +25,18 @@ function Stage() {
   );
 }
 
+function waitForCanvas(ms = 5000): Promise<void> {
+  return new Promise((resolve) => {
+    const t0 = performance.now();
+    const check = () => {
+      if (document.querySelector("canvas:not([aria-hidden])") || performance.now() - t0 > ms)
+        resolve();
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
 export function DiagnosticsApp({
   compact = false,
   autostart = true,
@@ -45,7 +57,11 @@ export function DiagnosticsApp({
         const s = getPipeline();
         if (s.stage >= 0 || s.autoplay) return; // already running (navigated back)
         actions.setDomain(domain || "");
-        void (domain ? actions.detect(domain, false) : actions.detect(EXAMPLE_DOMAIN, true))
+        // Wait (up to 5 s) for the 3D canvas, so the first stage plays on screen, not before it.
+        void waitForCanvas()
+          .then(() =>
+            domain ? actions.detect(domain, false) : actions.detect(EXAMPLE_DOMAIN, true),
+          )
           .then(() => autoplay())
           .catch(() => {});
       },

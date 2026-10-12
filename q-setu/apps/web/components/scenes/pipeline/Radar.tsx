@@ -60,7 +60,7 @@ export function Radar({
         depthWrite: false,
         side: THREE.DoubleSide,
       }),
-    [],
+    [radius],
   );
   useFrame(() => {
     const L = look.current;

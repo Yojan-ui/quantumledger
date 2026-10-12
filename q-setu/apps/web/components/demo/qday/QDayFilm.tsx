@@ -78,8 +78,10 @@ export default function QDayFilm({
     L.dim = () => (state.shot.id === "split" || state.shot.id === "timelapse" ? 1 : 0.45);
     // One falling copy per new real recording (at most a few per frame).
     for (let k = 0; seen.current < recorded && k < 3; k++, seen.current++) tap(taps.current, L.now);
-    if (recorded < seen.current)
-      (Object.assign(taps.current, { drops: [], next: 0, count: 0 }), (seen.current = 0));
+    if (recorded < seen.current) {
+      Object.assign(taps.current, { drops: [], next: 0, count: 0 });
+      seen.current = 0;
+    }
     taps.current.count = recorded;
   }, -1);
   // Mixed in sRGB (a 3–4.5% tint), not linear space, where the same mix would glow.

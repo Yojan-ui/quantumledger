@@ -112,7 +112,7 @@ export default function PipelineStage({
       sweepStart.current = performance.now() + (director.state.reduce ? 0 : CAMERA_MS);
     if (rescan === "idle") sweepStart.current = sweepResult.current = 0;
     if (rescan === "done" || rescan === "failed") sweepResult.current = performance.now();
-  }, [rescan]);
+  }, [rescan, director.state.reduce]);
   // A new scan resets the wiretap counter.
   useEffect(() => {
     if (s.status[0] === "running") Object.assign(taps.current, { drops: [], next: 0, count: 0 });
@@ -185,8 +185,8 @@ export default function PipelineStage({
       <Background look={look} progress={doneCount / 5} />
       <Swarm look={look} count={count} />
       <Link look={look} onCopy={() => tap(taps.current, performance.now())} />
-      <Vault look={look} taps={taps} />
-      <Mosca look={look} x={s.mosca.x} y={s.mosca.y} count={mobile ? 500 : 900} />
+      <Vault look={look} taps={taps} labelled={!mobile} labelIn={[0, 2, 4]} />
+      <Mosca look={look} x={s.mosca.x} y={s.mosca.y} count={mobile ? 500 : 900} compact={mobile} />
       <Merkle
         look={look}
         previous={s.proof?.previous.length ?? 0}
@@ -201,88 +201,93 @@ export default function PipelineStage({
       <Hit id="link" at={LINK_MID} r={0.4} on={setHover} />
       {s.proof && <Hit id="block" at={ROOT} r={0.45} on={setHover} />}
 
-      {/* 01 HARVESTING: the real scan values. */}
-      <Anchor
-        position={[0, R + 0.35, 0]}
-        label={p ? `${p.protocol ?? "TLS"} · ${p.group}` : "target"}
-        value={p ? `${p.host}${s.cached ? " (cached real scan)" : ""}` : "awaiting scan"}
-        role={p?.hybridPq ? "ok" : "danger"}
-        show={!!p && show(0, "sphere")}
-      />
-      <Anchor
-        position={[SERVER.x, 0.75, 0]}
-        label={s.patch ? `${L.sig} (sim)` : "server certificate"}
-        value={s.patch ? "patched certificate key" : (p?.certKey ?? "—")}
-        role={s.patch ? "sig" : "danger"}
-        show={!!p && show(0, "server")}
-      />
-      <Anchor
-        position={[CLIENT.x, 0.75, 0]}
-        label="client"
-        value={s.patch ? `X25519 share · ${s.patch.clientHelloBytes} B` : "browser / app"}
-        role={s.patch ? "kem" : undefined}
-        show={hover === "client"}
-      />
-      {/* 02 SHELF-LIFE: Mosca, from the sliders and the cited estimate. */}
-      {m && (
-        <Anchor
-          position={[2.6, -0.2, 0.6]}
-          label={`${s.mosca.x} + ${s.mosca.y} = ${m.sum} ${m.exposed ? ">" : "≤"} Z`}
-          value={`Z ${m.z.low}–${m.z.high} yr (estimate) · risk ${s.risk ?? "—"}/100`}
-          role={m.exposed ? "danger" : "ok"}
-          show={s.risk !== undefined && show(1, "sphere")}
-        />
-      )}
-      {m && (
-        <Anchor
-          position={[-R * 1.42, 0.55, 0]}
-          label="Estimated Q-Day"
-          value={`${year + m.z.low}–${year + m.z.high} (estimate)`}
-          role="warn"
-          side="down"
-          show={s.risk !== undefined && show(1)}
-        />
-      )}
-      {/* 03 LATTICE: the real handshake's sizes and timings. */}
-      <Anchor
-        position={[LINK_MID.x, LINK_MID.y + 0.3, LINK_MID.z]}
-        label={
-          s.patch
-            ? `${s.patch.kem} ciphertext · ${s.patch.ciphertextBytes} B`
-            : "classical key exchange"
-        }
-        value={
-          s.patch
-            ? `HKDF-SHA256(X25519 ‖ ML-KEM) → session ${s.patch.sessionId.slice(0, 8)} · ${s.patch.ms.toFixed(1)} ms`
-            : `${p?.group ?? "—"} · recordable`
-        }
-        role={s.patch ? "kem" : "danger"}
-        show={(!!s.patch && show(2, "link")) || (!s.patch && hover === "link")}
-      />
-      <Anchor
-        position={[VAULT.x - 1.6, VAULT.y + 0.2, VAULT.z]}
-        label="WIRETAP DISSOLVED"
-        value="new captures unreadable"
-        role="kem"
-        show={!!s.patch && show(2, "vault")}
-      />
-      {/* 04 ANCHORED: the real Merkle root, block and signature. */}
-      {s.proof && (
+      {/* On phones the drawer below shows these values: labels would escape the small stage. */}
+      {!mobile && (
         <>
+          {/* 01 HARVESTING: the real scan values. */}
           <Anchor
-            position={[ROOT.x - 1.6, ROOT.y + 0.1, 0]}
-            label={`Merkle root ${hex(s.proof.root)}`}
-            value="scan · CBOM · policy · transcript"
-            role="sig"
-            show={show(3)}
+            position={[0, R + 0.35, 0]}
+            label={p ? `${p.protocol ?? "TLS"} · ${p.group}` : "target"}
+            value={p ? `${p.host}${s.cached ? " (cached real scan)" : ""}` : "awaiting scan"}
+            role={p?.hybridPq ? "ok" : "danger"}
+            show={!!p && show(0, "sphere")}
           />
           <Anchor
-            position={[ROOT.x + 1.4, ROOT.y + 0.4, 0]}
-            label={`Block #${s.proof.anchorId} · ${s.proof.alg}`}
-            value={`hash ${hex(s.proof.blockHash, 12)}`}
-            role={failed ? "danger" : s.sweep?.ok ? "ok" : "sig"}
-            show={show(3, "block")}
+            position={[SERVER.x, 0.75, 0]}
+            label={s.patch ? `${L.sig} (sim)` : "server certificate"}
+            value={s.patch ? "patched certificate key" : (p?.certKey ?? "—")}
+            role={s.patch ? "sig" : "danger"}
+            show={!!p && show(0, "server")}
           />
+          <Anchor
+            position={[CLIENT.x, 0.75, 0]}
+            label="client"
+            value={s.patch ? `X25519 share · ${s.patch.clientHelloBytes} B` : "browser / app"}
+            role={s.patch ? "kem" : undefined}
+            show={hover === "client"}
+          />
+          {/* 02 SHELF-LIFE: Mosca, from the sliders and the cited estimate. */}
+          {m && (
+            <Anchor
+              position={[2.6, -0.2, 0.6]}
+              label={`${s.mosca.x} + ${s.mosca.y} = ${m.sum} ${m.exposed ? ">" : "≤"} Z`}
+              value={`Z ${m.z.low}–${m.z.high} yr (estimate) · risk ${s.risk ?? "—"}/100`}
+              role={m.exposed ? "danger" : "ok"}
+              show={s.risk !== undefined && show(1, "sphere")}
+            />
+          )}
+          {m && (
+            <Anchor
+              position={[-R * 1.42, 0.55, 0]}
+              label="Estimated Q-Day"
+              value={`${year + m.z.low}–${year + m.z.high} (estimate)`}
+              role="warn"
+              side="down"
+              show={s.risk !== undefined && show(1)}
+            />
+          )}
+          {/* 03 LATTICE: the real handshake's sizes and timings. */}
+          <Anchor
+            position={[LINK_MID.x, LINK_MID.y + 0.3, LINK_MID.z]}
+            label={
+              s.patch
+                ? `${s.patch.kem} ciphertext · ${s.patch.ciphertextBytes} B`
+                : "classical key exchange"
+            }
+            value={
+              s.patch
+                ? `HKDF-SHA256(X25519 ‖ ML-KEM) → session ${s.patch.sessionId.slice(0, 8)} · ${s.patch.ms.toFixed(1)} ms`
+                : `${p?.group ?? "—"} · recordable`
+            }
+            role={s.patch ? "kem" : "danger"}
+            show={(!!s.patch && show(2, "link")) || (!s.patch && hover === "link")}
+          />
+          <Anchor
+            position={[VAULT.x - 2.0, VAULT.y + 1.0, VAULT.z]}
+            label="WIRETAP DISSOLVED"
+            value="new captures unreadable"
+            role="kem"
+            show={!!s.patch && show(2, "vault")}
+          />
+          {/* 04 ANCHORED: the real Merkle root, block and signature. */}
+          {s.proof && (
+            <>
+              <Anchor
+                position={[ROOT.x - 1.6, ROOT.y + 0.1, 0]}
+                label={`Merkle root ${hex(s.proof.root)}`}
+                value="scan · CBOM · policy · transcript"
+                role="sig"
+                show={show(3)}
+              />
+              <Anchor
+                position={[ROOT.x + 1.4, ROOT.y + 0.4, 0]}
+                label={`Block #${s.proof.anchorId} · ${s.proof.alg}`}
+                value={`hash ${hex(s.proof.blockHash, 12)}`}
+                role={failed ? "danger" : s.sweep?.ok ? "ok" : "sig"}
+                show={show(3, "block")}
+              />
+            </>
+          )}
         </>
       )}
       {/* 05 VERIFIED, or where the sweep stopped. */}

@@ -1,0 +1,73 @@
+{
+  "measuredAt": "2026-10-12T15:04:51.717Z",
+  "base": "http://localhost:3000",
+  "runs": {
+    "390": {
+      "seconds": 23.152,
+      "fps": {
+        "AWAITING TARGET": {
+          "fps": 44,
+          "p95FrameMs": 16.8,
+          "under50fps": 1.4
+        },
+        "HARVESTING": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "under50fps": 0
+        },
+        "SHELF-LIFE EXPIRING": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "under50fps": 0
+        },
+        "LATTICE CRYPTOGRAPHY ENGAGED": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "under50fps": 0
+        },
+        "STATE ANCHORED TO PROOF CHAIN": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "under50fps": 0
+        },
+        "VERIFIED": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "under50fps": 0
+        }
+      },
+      "oldBrand": 0
+    },
+    "1440": {
+      "seconds": 22.605,
+      "fps": {
+        "HARVESTING": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "under50fps": 0
+        },
+        "SHELF-LIFE EXPIRING": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "under50fps": 0
+        },
+        "LATTICE CRYPTOGRAPHY ENGAGED": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "under50fps": 0
+        },
+        "STATE ANCHORED TO PROOF CHAIN": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "under50fps": 0
+        },
+        "VERIFIED": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "under50fps": 0
+        }
+      },
+      "oldBrand": 0
+    }
+  }
+}

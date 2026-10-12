@@ -31,6 +31,8 @@ export function Vault({
   tapFrom = LINK_MID,
   label = "packets copied (sim)",
   labelAt,
+  labelled = true,
+  labelIn,
 }: {
   look: React.RefObject<Look>;
   taps: React.RefObject<Taps>;
@@ -40,7 +42,12 @@ export function Vault({
   /** What the counter counts. */
   label?: string;
   labelAt?: [number, number, number];
+  /** Show the counter label (off on phones, where labels would escape the small stage). */
+  labelled?: boolean;
+  /** The stages whose shots frame the cylinder (its label hides in the others). */
+  labelIn?: number[];
 }) {
+  const labelBox = useRef<HTMLDivElement>(null);
   const cyl = useMemo(
     () => new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16, 3, true)),
     [],
@@ -103,6 +110,8 @@ export function Vault({
     });
     copyMat.opacity = 0.9 * L.dim("vault");
     // The counter rolls only while recording; it freezes once the wiretap is dissolved.
+    if (labelBox.current)
+      labelBox.current.style.opacity = !labelIn || labelIn.includes(L.stage) ? "1" : "0";
     if (counter.current && shown.current !== T.count) {
       shown.current = T.count;
       counter.current.textContent = T.count.toLocaleString("en-IN");
@@ -122,24 +131,27 @@ export function Vault({
           visible={false}
         />
       ))}
-      <Html
-        position={labelAt ?? [at.x - 2.1, at.y + 0.5, at.z]}
-        zIndexRange={[20, 0]}
-        style={{ pointerEvents: "none" }}
-      >
-        <div
-          aria-hidden
-          className="whitespace-nowrap rounded-sm border border-line bg-base px-2 py-1 font-mono text-micro uppercase text-danger"
+      {labelled && (
+        <Html
+          position={labelAt ?? [at.x + 1.1, at.y + 1.1, at.z]}
+          zIndexRange={[20, 0]}
+          style={{ pointerEvents: "none" }}
         >
-          adversary storage
-          <span className="block normal-case text-fg">
-            <span ref={counter} className="tabular">
-              0
-            </span>{" "}
-            {label}
-          </span>
-        </div>
-      </Html>
+          <div
+            ref={labelBox}
+            aria-hidden
+            className="whitespace-nowrap rounded-sm border border-line bg-base px-2 py-1 font-mono text-micro uppercase text-danger transition-opacity duration-300"
+          >
+            adversary storage
+            <span className="block normal-case text-fg">
+              <span ref={counter} className="tabular">
+                0
+              </span>{" "}
+              {label}
+            </span>
+          </div>
+        </Html>
+      )}
     </group>
   );
 }

@@ -22,11 +22,14 @@ export function Mosca({
   x,
   y,
   count,
+  compact = false,
 }: {
   look: React.RefObject<Look>;
   x: number;
   y: number;
   count: number;
+  /** Phones: the text sits lower and smaller, clear of the stage title. */
+  compact?: boolean;
 }) {
   const m = mosca(x, y);
   const sets = useMemo(() => {
@@ -93,7 +96,8 @@ export function Mosca({
       p[i] = formed + (target[i]! - sets.q[i]!) * res;
     }
     pts.g.attributes.position!.needsUpdate = true;
-    pts.p.position.set(0, R + 0.95 + L.lift, 0.6);
+    pts.p.position.set(0, R + (compact ? 0.55 : 0.95) + L.lift, 0.6);
+    pts.p.scale.setScalar(compact ? 0.75 : 1);
     pts.mat.color.copy(L.c.warn).lerp(verdict === "gt" ? L.c.danger : L.c.ok, res);
     pts.mat.opacity =
       (onStage ? 0.95 : scored && L.since.patch === Infinity ? 0.12 : 0) * L.dim("mosca");

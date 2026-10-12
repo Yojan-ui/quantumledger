@@ -70,7 +70,8 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   await expect(page.getByRole("button", { name: "Take the 3-minute tour" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Scan any site" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open full diagnostics" })).toBeVisible();
+  await expect(page.locator("#top [data-hud]")).toBeVisible();
 });
 
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {
@@ -140,7 +141,8 @@ test("presenter mode: keyboard drives the demos, R resets everything", async ({ 
   await expect(page.getByText("Broken at entry #42")).toBeVisible();
   await page.keyboard.press("r");
   await expect(page.getByText("Everything reset ✓")).toBeVisible();
-  await page.keyboard.press("3");
+  // 1 is the diagnostics HUD; 2–6 the demos (4 = Q-Day).
+  await page.keyboard.press("4");
   await expect(page).toHaveURL(/\/demo\/qday/);
   // Presenter mode plays the Q-Day film (→ also advances it): the timeline leaves 2026.
   await page.keyboard.press("ArrowRight");
