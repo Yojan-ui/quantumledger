@@ -1,0 +1,46 @@
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+.venv/
+venv/
+.pnpm-store/
+
+# ── Build output ──────────────────────────────────────────
+dist/
+build/
+.next/
+out/
+target/
+__pycache__/
+*.pyc
+*.tsbuildinfo
+.turbo/
+
+# ── Environment and secrets ───────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.kek
+id_rsa*
+id_ed25519*
+secrets/
+credentials*.json
+service-account*.json
+
+# ── Logs ──────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# ── OS and editors ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
