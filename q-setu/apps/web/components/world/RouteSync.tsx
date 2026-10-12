@@ -14,6 +14,8 @@ const POSES: Record<string, Pose> = {
   "/solutions/government": { lat: 28.6, lon: 77.2, dist: 1.55, spin: 0 },
   "/about": { lat: 22, lon: 79, dist: 2.4, spin: 0.03 },
   "/pitch": { lat: 18, lon: 76, dist: 2.9, spin: 0.05 },
+  "/index": { lat: 20, lon: 80, dist: 2.25, spin: 0 },
+  "/readiness-index": { lat: 20, lon: 80, dist: 2.25, spin: 0 },
 };
 
 /** Maps the route to a world mode. Navigating between pages becomes a camera move in the same world. */
@@ -36,6 +38,7 @@ export function RouteSync() {
       mode === "page" ? "kem" : mode === "deploy" ? "ok" : mode === "story" ? "kem" : null;
     if (mode !== "story") world.chapter = 0;
     world.hover = null;
+    world.index = null;
     notify();
   }, [path]);
   return null;

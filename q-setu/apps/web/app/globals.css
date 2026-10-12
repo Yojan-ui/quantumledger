@@ -95,6 +95,14 @@
   .glow-danger {
     --glow: var(--danger);
   }
+  /*
+   * Simple / Technical copy (the nav toggle sets html[data-copy-mode]). Simple is the default: no
+   * acronyms. Each pair of spans holds both versions; only one is ever shown or read aloud.
+   */
+  html:not([data-copy-mode="technical"]) [data-copy="technical"],
+  html[data-copy-mode="technical"] [data-copy="simple"] {
+    display: none;
+  }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);

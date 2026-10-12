@@ -118,6 +118,12 @@ export function direct(): Params {
     p.arcLevel.fill(0.06);
     return p;
   }
+  if (world.index && (world.mode === "story" || world.mode === "page")) {
+    // The Readiness Index: face India; the sector bars stand up out of it.
+    Object.assign(p, { dist: 2.25, lat: 20, lon: 80, spin: 0, accent: "accent" });
+    p.arcLevel.fill(0.05);
+    return p;
+  }
   if (world.mode === "page" && world.pagePose) {
     Object.assign(p, world.pagePose, { accent: "accent" });
     INDIA_ARCS.forEach((k) => (p.arcLevel[k] = 0.3));

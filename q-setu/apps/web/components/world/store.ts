@@ -85,6 +85,13 @@ export const world = {
   /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */
   cityOps: {} as Record<string, number>,
   /** Audience packets from the room (phones), drained by RoomArcs: city of origin, colour, verdict. */
+  /**
+   * The Readiness Index section: one bar per sector rising out of India (heights 0..1, `good` = taller
+   * is better), shown while the section is on screen. `at` restarts the rise when the measure changes.
+   */
+  index: null as null | { values: number[]; good: boolean; at: number },
+  /** Screen positions (CSS px) of the index bars' tips, written by the scene each frame. */
+  indexScreen: [] as (null | { x: number; y: number })[],
   roomShots: [] as { city: string; colour: number; ok: boolean; at: number }[],
 };
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero } from "@/components/home/Hero";
+import { IndexSection } from "@/components/home/IndexSection";
 import { Proof } from "@/components/home/Proof";
 import { ScanSite } from "@/components/home/ScanSite";
 import { Adapters, Solutions, WhyQSetu } from "@/components/home/Sections";
@@ -26,6 +27,7 @@ export default function Home() {
       <main id="main">
         <Hero />
         <ScanSite />
+        <IndexSection index="02" />
         <WhyNow />
         <Story />
         <Adapters />

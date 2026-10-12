@@ -27,7 +27,11 @@ const nextConfig = {
   },
   async rewrites() {
     // The plain-HTML Web shield demo lives in public/; serve its folder URL too.
-    return [{ source: "/web-shield-demo", destination: "/web-shield-demo/index.html" }];
+    return [
+      { source: "/web-shield-demo", destination: "/web-shield-demo/index.html" },
+      // Next.js reserves an app route named "index"; the Readiness Index lives at /index anyway.
+      { source: "/index", destination: "/readiness-index" },
+    ];
   },
   async headers() {
     // qsetu.js doubles as the Web shield's Service Worker; let it control the whole origin.

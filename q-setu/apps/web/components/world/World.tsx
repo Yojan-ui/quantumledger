@@ -5,6 +5,7 @@ import { useRef } from "react";
 import type * as THREE from "three";
 import { Arcs } from "./Arcs";
 import { Globe } from "./Globe";
+import { IndexBars } from "./IndexBars";
 import { Nodes } from "./Nodes";
 import { Rig } from "./Rig";
 import { RoomArcs } from "./RoomArcs";
@@ -46,6 +47,7 @@ export function World({ dots }: { dots: Dots }) {
         <Nodes />
         <ScanArc />
         <RoomArcs />
+        <IndexBars />
       </group>
     </>
   );

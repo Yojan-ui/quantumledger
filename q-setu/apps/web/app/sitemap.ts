@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/solutions",
     ...SOLUTIONS.map((s) => `/solutions/${s.id}`),
     "/demos",
+    "/index",
     "/demo/how-it-works",
     "/demo/deploy",
     "/demo/qday",
