@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * `node scripts/record-demos.mjs <outDir>`: records each demo, played the way a presenter would
- * (autoplay / Play, then the demo's key action), as <outDir>/<demo>.webm at 1440×900.
+ * (the film's Play, then the demo's key action), as <outDir>/<demo>.webm at 1440×900.
  */
 import { mkdirSync, renameSync, rmSync } from "node:fs";
 import { chromium } from "@playwright/test";
@@ -17,16 +17,26 @@ async function press(page, name) {
   if (await b.count()) await b.click().catch(() => {});
 }
 
+/** Waits (up to `ms`) until `text` is on the page: each film is recorded until its real work ends. */
+const until = (page, text, ms = 120_000) =>
+  page
+    .getByText(text)
+    .first()
+    .waitFor({ timeout: ms })
+    .catch(() => {});
+
 const DEMOS = [
   [
     "1-how-it-works",
     "/demo/how-it-works",
     async (p) => {
       await wait(3000);
-      await press(p, /^(Play|Autoplay)$/);
-      await wait(26000);
+      await press(p, /^Play$/);
+      await until(p, /messages over AES-256-GCM/);
+      await wait(4000);
       await press(p, /Attack it/);
-      await wait(7000);
+      await until(p, /verification failed/);
+      await wait(5000);
     },
   ],
   [
@@ -34,8 +44,9 @@ const DEMOS = [
     "/demo/deploy",
     async (p) => {
       await wait(4000);
-      await press(p, /^Deploy all$/);
-      await wait(30000);
+      await press(p, /^Play$/);
+      await until(p, /5 \/ 5/);
+      await wait(5000);
     },
   ],
   [
@@ -44,7 +55,8 @@ const DEMOS = [
     async (p) => {
       await wait(5000);
       await press(p, /Go to Q-Day/);
-      await wait(22000);
+      await until(p, "Exposed · Q-Setu");
+      await wait(9000);
     },
   ],
   [
@@ -52,13 +64,9 @@ const DEMOS = [
     "/demo/ledger",
     async (p) => {
       await wait(5000);
-      await press(p, /^Verify the chain$/);
-      await wait(5000);
-      await press(p, /Tamper with entry #42/);
-      await wait(5000);
-      await press(p, /^Verify the chain$/);
-      await wait(7000);
-      await press(p, /^Restore$/);
+      await press(p, /^Play$/);
+      await until(p, /The original row is restored/);
+      await until(p, "✓ Chain intact");
       await wait(4000);
     },
   ],
@@ -69,7 +77,9 @@ const browser = await chromium.launch({
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
 });
 await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
-for (const [name, path, act] of DEMOS) {
+// ONLY=3-qday,4-ledger re-records just those.
+const only = process.env.ONLY?.split(",");
+for (const [name, path, act] of DEMOS.filter(([n]) => !only || only.includes(n))) {
   const tmp = `${out}/.tmp-${name}`;
   rmSync(tmp, { recursive: true, force: true });
   const ctx = await browser.newContext({

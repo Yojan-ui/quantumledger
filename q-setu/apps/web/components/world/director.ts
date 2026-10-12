@@ -90,7 +90,12 @@ export function direct(): Params {
   p.accent = world.accent;
 
   if (world.mode === "deploy") {
-    Object.assign(p, { dist: 1.6, lat: 21, lon: 80, spin: 0, accent: "accent" });
+    Object.assign(p, world.shot?.pose ?? { dist: 1.6, lat: 21, lon: 80, spin: 0 }, {
+      accent: "accent",
+    });
+    // A held shot drifts very slightly (±0.4° over 8 s), so the map never looks frozen.
+    if (world.shot && world.breathe)
+      p.lon += 0.4 * Math.sin((performance.now() / 8000) * 2 * Math.PI);
     const nodes = NODES.filter((n) => n.sector === world.sector);
     const done = nodes.filter((n) => world.nodeStates[n.id] === "protected").length / nodes.length;
     NODES.forEach((n, i) => (p.nodeSafe[i] = world.nodeStates[n.id] === "protected" ? 1 : 0));

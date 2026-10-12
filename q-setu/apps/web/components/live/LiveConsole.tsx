@@ -15,11 +15,14 @@ export function LiveConsole({
   title = "Live console",
   filter,
   max = 160,
+  highlight,
 }: {
   title?: string;
   /** Must be stable (module-level), e.g. `(e) => e.source === "ledger"`. */
   filter?: (e: OpEvent) => boolean;
   max?: number;
+  /** Lines that belong to what the stage is showing right now (the director's current shot). */
+  highlight?: (e: OpEvent) => boolean;
 }) {
   const [paused, setPaused] = useState(false);
   const list = useLiveEvents(filter, max, paused);
@@ -73,7 +76,10 @@ export function LiveConsole({
           {list.map((e) => {
             const c = opColumns(e);
             return (
-              <li key={`${e.source}-${e.seq}`} className="text-fg-3">
+              <li
+                key={`${e.source}-${e.seq}`}
+                className={`-mx-2 rounded-sm px-2 transition-colors duration-300 ${highlight?.(e) ? "bg-raised text-fg-2" : "text-fg-3"}`}
+              >
                 <p className="flex gap-3">
                   <span>{c.time}</span>
                   <span className={`w-16 shrink-0 ${c.failed ? "text-danger" : "text-fg-2"}`}>

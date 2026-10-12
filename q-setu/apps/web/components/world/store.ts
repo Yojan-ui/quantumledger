@@ -76,6 +76,12 @@ export const world = {
   scanActive: false,
   /** Role colour of the soft glow behind the globe (null = none). Set by the section on screen. */
   glow: null as null | "kem" | "sig" | "ok" | "warn" | "danger",
+  /** Demo 2's directed shot: camera pose, land relief (0..1), the node in focus and its dot model. */
+  shot: null as null | { pose: Pose; extrude: number; focus: string | null; model: boolean },
+  /** Screen position (CSS px) of the focused node, written by the scene each frame (null = off stage). */
+  focusScreen: null as { x: number; y: number } | null,
+  /** Demo 2's "all sealed" wave: when it started (performance.now()), 0 = none. */
+  waveAt: 0,
   /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */
   cityOps: {} as Record<string, number>,
 };

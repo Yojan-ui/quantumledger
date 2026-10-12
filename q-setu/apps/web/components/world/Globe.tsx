@@ -13,13 +13,15 @@ const dotVertex = /* glsl */ `
   attribute float aSeed;
   uniform float uPR;
   uniform float uAssemble;
+  uniform float uExtrude;
   varying float vAlpha;
   float h(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
   void main() {
     // Assemble: each dot flies in from a scattered position to its place on the Earth.
     vec3 scatter = normalize(position + vec3(h(position) - 0.5, h(position.yzx) - 0.5, h(position.zxy) - 0.5) * 1.6)
       * (1.7 + 0.9 * h(position.zyx));
-    vec3 p = mix(scatter, position, uAssemble);
+    // Relief (Demo 2's descent): land dots rise slightly off the sphere, each by its own amount.
+    vec3 p = mix(scatter, position * (1.0 + uExtrude * (0.004 + 0.014 * aSeed)), uAssemble);
     vec4 world = modelMatrix * vec4(p, 1.0);
     float facing = dot(normalize(world.xyz), normalize(cameraPosition - world.xyz));
     vAlpha = mix(0.18, smoothstep(0.0, 0.35, facing), uAssemble) * (0.25 + 0.1 * aSeed);
@@ -79,7 +81,12 @@ export function Globe({ dots }: { dots: Dots }) {
     const m = new THREE.ShaderMaterial({
       vertexShader: dotVertex,
       fragmentShader: dotFragment,
-      uniforms: { uPR: { value: pr }, uColor: { value: c.text }, uAssemble: { value: 0 } },
+      uniforms: {
+        uPR: { value: pr },
+        uColor: { value: c.text },
+        uAssemble: { value: 0 },
+        uExtrude: { value: 0 },
+      },
       transparent: true,
       depthWrite: false,
     });
@@ -112,7 +119,10 @@ export function Globe({ dots }: { dots: Dots }) {
   );
   // The dots assemble once, 900 ms with the motion easing, when the globe first appears.
   const born = useMemo(() => ({ at: 0 }), []);
-  useFrame(() => {
+  useFrame((_, dt) => {
+    const ex = points.m.uniforms.uExtrude!;
+    ex.value +=
+      ((world.mode === "deploy" ? (world.shot?.extrude ?? 0) : 0) - ex.value) * Math.min(1, dt * 2);
     if (!world.focusRect) return;
     born.at ||= performance.now();
     const t = world.breathe ? Math.min(1, (performance.now() - born.at) / 900) : 1;

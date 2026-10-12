@@ -11,12 +11,15 @@ import {
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
-import { SceneView } from "@/components/world/SceneView";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
 import { SectorSwitcher } from "@/components/demo/shell/SectorSwitcher";
-import { StepControls } from "@/components/demo/shell/StepControls";
-import { Code, Heading, Label, Stat, Text } from "@/components/ui";
+import { DirectorHUD } from "@/components/director/HUD";
+import type { Shot, Step } from "@/components/director/types";
+import { useDirector } from "@/components/director/useDirector";
+import { useFilm } from "@/components/director/useFilm";
+import { LazyView } from "@/components/scenes/LazyView";
+import { Button, Code, Heading, Label, Stat, Text } from "@/components/ui";
 import { LiveConsole } from "@/components/live/LiveConsole";
 import { Odometer } from "@/components/ui/Odometer";
 import { pushLocal } from "@/lib/client/live";
@@ -26,13 +29,58 @@ import type { OpEvent } from "@/lib/live/types";
 /** The simulator's real hops on the server, and the Q-Day attack running in this tab. */
 const consoleFilter = (e: OpEvent) => e.source === "sim" || e.source === "browser";
 
-const QDayScene = dynamic(() => import("./QDayScene"), { ssr: false, loading: () => null });
+const QDayFilm = dynamic(() => import("./QDayFilm"), { ssr: false, loading: () => null });
 
 const START = 2026;
 const END = 2035;
 /** Illustrative. Nobody knows the real date of a cryptographically relevant quantum computer. */
 const Q_DAY = 2033;
 const ROWS = 7;
+
+const STEP_BAR: Step[] = [
+  { label: "Record", role: "warn" },
+  { label: "Wait", role: "warn" },
+  { label: "Q-Day", role: "danger" },
+  { label: "Aftermath", role: "kem" },
+];
+
+const SHOTS: Shot[] = [
+  {
+    id: "split",
+    camera: { position: [0, 0.7, 8], target: [0, -0.3, -0.6], fov: 40 },
+    step: 0,
+    caption: "An adversary records both systems' encrypted traffic, today.",
+  },
+  {
+    id: "timelapse",
+    camera: { position: [-2.2, 1.6, 8.6], target: [0, 0, -1], fov: 40 },
+    focus: "orb",
+    step: 1,
+    caption: "Years pass; the recordings are kept, unreadable for now.",
+  },
+  {
+    id: "climax",
+    camera: { position: [0, 0.4, 5.6], target: [0, -0.15, -0.4], fov: 40 },
+    step: 2,
+    caption: "Q-Day: classical keys fall, and the recorded data opens.",
+  },
+  {
+    id: "aftermath",
+    camera: { position: [0, 1.4, 8.4], target: [0, -0.35, -0.4], fov: 40 },
+    step: 3,
+    caption: "Classical records are exposed; Q-Setu records stay sealed.",
+  },
+];
+
+/** The console lines behind each shot. */
+const HIGHLIGHT: Record<string, (e: OpEvent) => boolean> = {
+  split: (e) => e.source === "sim",
+  timelapse: (e) => e.source === "sim",
+  climax: (e) => e.source === "browser" && e.op === "OPEN",
+  aftermath: (e) => e.source === "browser" && e.op === "REJECT",
+};
+
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface Row {
   recordId: string;
@@ -49,8 +97,6 @@ export function QDayDemo() {
   const [qsetuOutcomes, setQsetuOutcomes] = useState<QDayOutcome[]>();
   const [reading, setReading] = useState<MeterReading>();
   const [attacking, setAttacking] = useState(false);
-  const playing = useRef(false);
-  const [isPlaying, setPlaying] = useState(false);
   const qday = year >= Q_DAY;
 
   const refresh = useCallback(async (s: SectorId) => {
@@ -179,29 +225,67 @@ export function QDayDemo() {
   const firstQsetu = qsetuOutcomes?.[0];
 
   function reset() {
-    playing.current = false;
-    setPlaying(false);
+    take.current++;
     setYear(START);
     setBroken(new Map());
     setQsetuOutcomes(undefined);
     setReading(undefined);
+    setBreakAt(0);
+    reel.stop();
+    director.replay();
   }
 
-  async function play() {
-    if (playing.current) {
-      playing.current = false;
-      setPlaying(false);
-      return;
-    }
-    playing.current = true;
-    setPlaying(true);
-    for (let y = year + 1; y <= Q_DAY && playing.current; y++) {
-      setYear(y);
-      await new Promise((r) => setTimeout(r, 650));
-    }
-    playing.current = false;
-    setPlaying(false);
-  }
+  // ── Staging. The time-lapse rolls the real timeline; the climax waits for the real attack. ──
+  const [breakAt, setBreakAt] = useState(0);
+  const take = useRef(0);
+  const yearRef = useRef(year);
+  yearRef.current = year;
+  const attacked = useRef(false);
+  attacked.current = !!qsetuOutcomes;
+  const director = useDirector(SHOTS);
+  const reel = useFilm(director, {
+    last: SHOTS.length - 1,
+    need: async (i) => {
+      const id = SHOTS[i]!.id;
+      const mine = take.current;
+      if (id === "timelapse")
+        for (let y = yearRef.current + 1; y < Q_DAY && take.current === mine; y++) {
+          setYear(y);
+          await wait(420);
+        }
+      if (id === "climax") {
+        setYear((y) => Math.max(y, Q_DAY));
+        // Hold the climax until the browser has really broken the classical records.
+        for (let k = 0; k < 300 && !attacked.current && take.current === mine; k++) await wait(100);
+      }
+    },
+    hold: (id) => (id === "climax" ? 2600 : undefined),
+    // Dolly in, a 300 ms beat, then the shock wave.
+    onArrive: (id) => id === "climax" && setBreakAt(performance.now() + 300),
+    restart: () => reset(),
+  });
+  // Dragging the timeline past Q-Day cuts to the climax too.
+  useEffect(() => {
+    if (qday && director.state.index < 2) void reel.to(2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qday]);
+  const [small, setSmall] = useState(false);
+  useEffect(() => setSmall(window.matchMedia("(max-width: 767px)").matches), []);
+  // Presenter mode starts the film by itself.
+  useEffect(() => {
+    if (!document.documentElement.hasAttribute("data-present")) return;
+    const t = setTimeout(() => void reel.play(), 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const leaks = useMemo(
+    () =>
+      [...broken.values()]
+        .filter((o) => o.status === "decrypted" && o.plaintext)
+        .slice(0, 3)
+        .map((o) => SECTORS[sector].reveal(o.plaintext!).headline),
+    [broken, sector],
+  );
 
   const switchSector = (s: SectorId) => {
     reset();
@@ -215,23 +299,66 @@ export function QDayDemo() {
       title="Demo 3 · Q-Day Time Machine"
       caption="An adversary records both systems' traffic today. Move the timeline to Q-Day: classical records open, Q-Setu records stay sealed."
       controls={
-        <StepControls
-          onStep={() => setYear((y) => Math.min(END, y + 1))}
-          onPlay={play}
-          onReset={reset}
-          playing={isPlaying}
-          done={year >= END}
-          stepLabel="+1 year"
-          playLabel="Go to Q-Day"
-          onBack={() => setYear((y) => Math.max(START, y - 1))}
-        />
+        <Button
+          variant="primary"
+          onClick={() => void (reel.playing ? undefined : reel.play())}
+          disabled={reel.busy || qday}
+        >
+          Go to Q-Day
+        </Button>
       }
       meter={<ComputeMeter reading={reading} />}
-      console={<LiveConsole title="Live console · recording and attack" filter={consoleFilter} />}
-      onAutoplay={() => void play()}
+      console={
+        <LiveConsole
+          title="Live console · recording and attack"
+          filter={consoleFilter}
+          highlight={HIGHLIGHT[director.state.shot.id]}
+        />
+      }
+      onAutoplay={() => void reel.play()}
     >
+      <div className="relative mb-12 overflow-hidden rounded-lg border border-line">
+        <LazyView
+          className="h-stage-sm md:h-stage"
+          label={`Two corridors of recorded packets, classical and Q-Setu, watched by an adversary. Year ${year}. ${qday ? "Q-Day: classical packets break open; Q-Setu packets stay whole." : "Recording traffic."}`}
+        >
+          {(onScreen) => (
+            <QDayFilm
+              state={director.state}
+              onSettled={reel.onSettled}
+              active={onScreen}
+              progress={Math.min(1, (year - START) / (Q_DAY - START))}
+              recorded={harvest.classical}
+              breakAt={qday ? breakAt : 0}
+              leaks={leaks}
+              exposed={exposed}
+              qExposed={qsetuOutcomes ? qExposed : undefined}
+              small={small}
+            />
+          )}
+        </LazyView>
+        <div className="pointer-events-none absolute left-4 top-4 md:left-6 md:top-6" aria-hidden>
+          <span
+            className={`tabular block font-mono text-h2 transition-colors duration-300 ${qday ? "text-warn" : "text-fg"}`}
+          >
+            <Odometer value={String(year)} />
+          </span>
+          <Label>{qday ? "Q-Day (illustrative)" : "Recording"}</Label>
+        </div>
+        <DirectorHUD
+          director={director}
+          steps={STEP_BAR}
+          playing={reel.playing}
+          busy={reel.busy}
+          onToggle={() => void reel.play()}
+          onNext={() => void reel.next()}
+          onPrev={reel.prev}
+          onReplay={reset}
+        />
+      </div>
+
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <SectorSwitcher value={sector} onChange={switchSector} disabled={isPlaying || attacking} />
+        <SectorSwitcher value={sector} onChange={switchSector} disabled={reel.busy || attacking} />
         <Label as="p">
           <span aria-live="polite">
             Recorded so far: {harvest.classical} classical · {harvest.qsetu} Q-Setu packets
@@ -264,25 +391,8 @@ export function QDayDemo() {
           })}
         </Column>
 
-        <div className="overflow-hidden rounded-lg border border-line lg:col-span-4">
-          <div
-            className="relative h-stage-sm"
-            role="img"
-            aria-label={`Adversary recording packets. Year ${year}. ${qday ? "Q-Day: the adversary attacks everything it recorded." : "Recording traffic."}`}
-          >
-            <SceneView className="absolute inset-0">
-              <QDayScene
-                progress={(year - START) / (Q_DAY - START)}
-                qday={qday}
-                harvest={harvest}
-              />
-            </SceneView>
-            <p className="pointer-events-none absolute left-4 top-4">
-              <span className="tabular block text-h2 font-medium text-fg">{year}</span>
-              {qday && <Label>Q-Day (illustrative)</Label>}
-            </p>
-          </div>
-          <div className="border-t border-line p-4">
+        <div className="self-start rounded-lg border border-line lg:col-span-4">
+          <div className="p-4">
             <label htmlFor="year" className="font-mono text-label uppercase text-fg-3">
               Timeline
             </label>

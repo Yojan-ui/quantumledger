@@ -8,6 +8,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { easeToken } from "@/lib/ease";
 import { params } from "./director";
 import { NODES, ROUTE_CITIES, SOCKETS } from "./geo";
 import { palette } from "./palette";
@@ -35,6 +36,25 @@ function placePillar(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, h
   mesh.setMatrixAt(i, o.matrix);
 }
 
+/** Demo 2: west → east rank of each node within its sector, for the 80 ms "all sealed" wave. */
+const RANK = NODES.map((n) => NODES.filter((m) => m.sector === n.sector && m.lon < n.lon).length);
+const RING_DROP_MS = 650;
+
+/** A node's "dot model" when the camera flies to it: a small shell of points around the node. */
+function modelGeometry() {
+  const pts: number[] = [];
+  const N = 90;
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2;
+    const r = Math.sqrt(1 - y * y);
+    const th = i * 2.399963;
+    pts.push(Math.cos(th) * r, y, Math.sin(th) * r);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+  return g;
+}
+
 const CITY_INDEX = new Map<string, number>(ROUTE_CITIES.map((c, i) => [c.id, i]));
 
 export function Nodes() {
@@ -60,6 +80,11 @@ export function Nodes() {
   const vis = useRef(0);
   const sockVis = useRef(0);
   const col = useMemo(() => new THREE.Color(), []);
+  const model = useRef<THREE.Points>(null);
+  const modelGeo = useMemo(modelGeometry, []);
+  const modelVis = useRef(0);
+  const dropAt = useRef(new Float64Array(NODES.length));
+  const focusVis = useRef(0);
 
   useFrame((_, dt) => {
     const k = Math.min(1, dt * 3);
@@ -71,14 +96,66 @@ export function Nodes() {
     const ct = cities.current;
     const rp = ripples.current;
     if (!d || !r || !s || !ct || !rp) return;
+    const deploy = world.mode === "deploy";
+    const focus = deploy ? (world.shot?.focus ?? null) : null;
+    const now = performance.now();
+    focusVis.current += ((focus ? 1 : 0) - focusVis.current) * k;
+    modelVis.current += ((focus && world.shot?.model ? 1 : 0) - modelVis.current) * k;
     NODES.forEach((n, i) => {
+      const was = safe.current[i]! > 0.5;
       safe.current[i]! += (params.nodeSafe[i]! - safe.current[i]!) * k;
+      // Demo 2: a node that just became sealed drops a KEM ring onto itself.
+      if (!was && safe.current[i]! > 0.5) dropAt.current[i] = now;
       const on = world.mode !== "deploy" || n.sector === world.sector ? 1 : 0;
-      place(d, i, n.pos, 0.011 * vis.current * on);
-      col.copy(c.text3).lerp(c.accent, safe.current[i]!);
+      // Focus pull: the node in focus grows, the others shrink and dim.
+      const isFocus = n.id === focus;
+      const f = isFocus ? 1 + 0.6 * focusVis.current : 1 - 0.35 * focusVis.current;
+      place(d, i, n.pos, 0.011 * vis.current * on * f);
+      // On the deploy map a node is saffron (harvestable) until it's sealed, then OK.
+      if (deploy) col.copy(c.warn).lerp(c.ok, safe.current[i]!);
+      else col.copy(c.text3).lerp(c.accent, safe.current[i]!);
+      if (!isFocus) col.multiplyScalar(1 - 0.5 * focusVis.current);
       d.setColorAt(i, col);
-      place(r, i, n.pos, 0.024 * vis.current * on * (safe.current[i]! > 0.5 ? 1 : 0));
+      const drop = dropAt.current[i]
+        ? easeToken(Math.min(1, (now - dropAt.current[i]!) / RING_DROP_MS))
+        : 1;
+      const wave =
+        deploy && world.waveAt
+          ? Math.max(
+              0,
+              Math.sin(
+                Math.PI * Math.min(1, Math.max(0, (now - world.waveAt - RANK[i]! * 80) / 500)),
+              ),
+            )
+          : 0;
+      place(
+        r,
+        i,
+        n.pos,
+        0.024 *
+          vis.current *
+          on *
+          (safe.current[i]! > 0.5 ? 1 : 0) *
+          (1 + 2.5 * (1 - drop) + 0.8 * wave),
+      );
+      if (isFocus && model.current) {
+        model.current.position.copy(n.pos).multiplyScalar(1.02);
+        model.current.scale.setScalar(Math.max(0.0001, 0.032 * easeToken(modelVis.current)));
+        (model.current.material as THREE.PointsMaterial).color.copy(col);
+      }
     });
+    if (model.current) model.current.visible = modelVis.current > 0.01;
+
+    // Where the focused node is on screen (for its anchored label), if it's inside the stage.
+    const fi = focus ? NODES.findIndex((n) => n.id === focus) : -1;
+    const fr = world.focusRect;
+    if (fi >= 0 && fr) {
+      v.copy(NODES[fi]!.pos).applyMatrix4(d.matrixWorld).project(camera);
+      const x = ((v.x + 1) / 2) * size.width;
+      const y = ((1 - v.y) / 2) * size.height;
+      const inside = x > fr.left && x < fr.left + fr.width && y > fr.top && y < fr.top + fr.height;
+      world.focusScreen = inside && v.z < 1 ? { x, y } : null;
+    } else world.focusScreen = null;
     SOCKETS.forEach((pos, i) => {
       const on = i === world.socket;
       place(s, i, pos, (on ? 0.03 : 0.018) * sockVis.current);
@@ -112,7 +189,6 @@ export function Nodes() {
     }
 
     // Ripples: one ring per arrival, expanding and fading over RIPPLE_MS.
-    const now = performance.now();
     while (world.ripples.length) {
       const q = world.ripples.shift()!;
       const ci = CITY_INDEX.get(q.city);
@@ -158,6 +234,9 @@ export function Nodes() {
         <circleGeometry args={[1, 24]} />
         <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />
       </instancedMesh>
+      <points ref={model} geometry={modelGeo} visible={false} raycast={() => null}>
+        <pointsMaterial size={0.006} sizeAttenuation transparent opacity={0.9} depthWrite={false} />
+      </points>
       <instancedMesh ref={rings} args={[undefined, undefined, NODES.length]} raycast={() => null}>
         <ringGeometry args={[0.85, 1, 48]} />
         <meshBasicMaterial

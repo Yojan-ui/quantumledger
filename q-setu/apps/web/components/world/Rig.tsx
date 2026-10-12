@@ -98,7 +98,9 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     camera.setViewOffset(size.width, size.height, s.offX, s.offY, size.width, size.height);
     // Distance at which the globe's diameter is 85% of the area's shorter side (fov 36°: tan 18° ≈ 0.3249).
     const fitDist = size.height / (0.85 * Math.max(160, Math.min(r.width, r.height)) * 0.3249);
-    s.dist = damp(s.dist, (p.dist / 3) * fitDist, reduce.current ? 50 : 2.2, dt);
+    // A directed shot (Demo 2) is already eased by its tween: follow it closely.
+    const shot = world.mode === "deploy" && !!world.shot;
+    s.dist = damp(s.dist, (p.dist / 3) * fitDist, reduce.current ? 50 : shot ? 12 : 2.2, dt);
     camera.position.set(0, 0, s.dist);
     camera.lookAt(0, 0, 0);
 
@@ -112,8 +114,9 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     s.tiltX = damp(s.tiltX, ptr.current.y * 0.04, 2, dt);
     s.tiltY = damp(s.tiltY, ptr.current.x * 0.06, 2, dt);
     const f = facing(p.lat, p.lon);
-    s.rx = damp(s.rx, f.x, 2, dt);
-    s.ry = s.ry + wrap(f.y + s.spin + s.drag - s.ry) * (1 - Math.exp(-2 * dt));
+    const follow = shot ? 12 : 2;
+    s.rx = damp(s.rx, f.x, follow, dt);
+    s.ry = s.ry + wrap(f.y + s.spin + s.drag - s.ry) * (1 - Math.exp(-follow * dt));
     const g = globe.current;
     if (g) {
       g.rotation.set(s.rx + s.tiltX, s.ry + s.tiltY, 0);

@@ -132,8 +132,9 @@ test("presenter mode: keyboard drives the demos, R resets everything", async ({ 
   await expect(page.getByText("Everything reset ✓")).toBeVisible();
   await page.keyboard.press("3");
   await expect(page).toHaveURL(/\/demo\/qday/);
-  await page.keyboard.press("ArrowRight"); // +1 year
-  await expect(page.locator("#year")).toHaveValue("2027");
+  // Presenter mode plays the Q-Day film (→ also advances it): the timeline leaves 2026.
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#year")).not.toHaveValue("2026");
   await page.keyboard.press("Escape");
   await expect(page.locator("html")).not.toHaveAttribute("data-present", "");
 });

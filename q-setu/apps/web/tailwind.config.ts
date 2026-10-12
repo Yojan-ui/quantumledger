@@ -58,7 +58,7 @@ export default {
     transitionDuration: { 150: "var(--dur-hover)", 300: "var(--dur-ui)", 700: "var(--dur-reveal)" },
     transitionTimingFunction: { DEFAULT: "var(--ease)" },
     extend: {
-      maxWidth: { container: px(1200), text: px(560) },
+      maxWidth: { container: px(1200), text: px(560), label: px(320) },
       /** The 6px LIVE dot. */
       width: { dot: px(6), console: px(360), socket: px(120) },
       height: {

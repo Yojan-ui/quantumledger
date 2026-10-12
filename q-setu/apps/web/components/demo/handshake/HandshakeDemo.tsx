@@ -16,23 +16,36 @@ import {
 } from "@qsetu/core";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import { DirectorHUD } from "@/components/director/HUD";
+import type { Shot, Step } from "@/components/director/types";
+import { useDirector } from "@/components/director/useDirector";
+import { useFilm } from "@/components/director/useFilm";
 import { LiveConsole } from "@/components/live/LiveConsole";
-import { SceneView } from "@/components/world/SceneView";
+import { LazyView } from "@/components/scenes/LazyView";
 import { Button, Label, Text } from "@/components/ui";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
-import { StepControls } from "@/components/demo/shell/StepControls";
 import { hexPreview, us } from "@/lib/format";
 import { errText } from "@/lib/client/api";
 import { pushLocal, useMetrics } from "@/lib/client/live";
 import { useStepper } from "@/lib/client/useStepper";
 import type { OpEvent, PolicyState } from "@/lib/live/types";
-import type { ScenePacket } from "./HandshakeScene";
+import type { Film } from "./HandshakeFilm";
 
-const HandshakeScene = dynamic(() => import("./HandshakeScene"), {
-  ssr: false,
-  loading: () => null,
-});
+const HandshakeFilm = dynamic(() => import("./HandshakeFilm"), { ssr: false, loading: () => null });
+
+/** One handshake packet, for the accessible byte list. */
+interface ScenePacket {
+  id: string;
+  dir: "c2s" | "s2c";
+  kind: "hello" | "signed" | "finish" | "msg" | "attack";
+  label: string;
+  bytes: number;
+  hex: string;
+  alg: string;
+  startedAt: number;
+  durationMs: number;
+}
 
 const STEPS = [
   { title: "Hello", body: "Client sends a random value and an X25519 key share." },
@@ -51,6 +64,80 @@ const STEPS = [
 ];
 
 const TRAVEL = 1500;
+
+const STEP_BAR: Step[] = [
+  { label: "Hello", role: "kem" },
+  { label: "Signed key", role: "sig" },
+  { label: "Shared secret", role: "ok" },
+  { label: "Messages", role: "kem" },
+];
+
+/** The film: six shots, then the attack (reached only through "Attack it"). */
+const SHOTS: Shot[] = [
+  {
+    id: "establish",
+    camera: { position: [0, 1.6, 9], target: [0, 0, 0], fov: 38 },
+    caption: "Client and server share no secret yet; anything sent is public.",
+  },
+  {
+    id: "client",
+    camera: { position: [-2.2, 0.8, 4.6], target: [-2.6, 0.35, 0], fov: 38 },
+    focus: "client",
+    step: 0,
+    caption: "The client creates a one-time X25519 key share.",
+  },
+  {
+    id: "packet",
+    camera: { position: [0, 1.6, 4.2], target: [0, 0.9, 0], fov: 40 },
+    focus: "packet",
+    step: 0,
+    caption: "The ClientHello carries that share to the server, in the open.",
+  },
+  {
+    id: "server",
+    camera: { position: [2.2, 0.7, 4.8], target: [2.6, 0.3, 0], fov: 38 },
+    focus: "server",
+    step: 1,
+    caption: "The server signs a fresh ML-KEM key; the client checks the signature.",
+  },
+  {
+    id: "merge",
+    camera: { position: [3.2, 1.2, 2.6], target: [0, 0.1, 0], fov: 40 },
+    focus: "merge",
+    step: 2,
+    caption: "Classical and post-quantum secrets merge through HKDF into one key.",
+  },
+  {
+    id: "pullback",
+    camera: { position: [0, 2.4, 8.5], target: [0, 0, 0], fov: 38 },
+    step: 3,
+    caption: "Every message is now sealed with AES-256-GCM, in microseconds.",
+  },
+  {
+    id: "attack",
+    camera: { position: [0.6, 1.4, 4.4], target: [2.2, 0.4, 0], fov: 40 },
+    focus: "server",
+    step: 1,
+    caption: "A forged ML-KEM key fails the ML-DSA signature check.",
+  },
+];
+const FILM = SHOTS.length - 1;
+const ATTACK = SHOTS.length - 1;
+/** The crypto step (index into STEPS) that must really have run before each shot is shown. */
+const NEED = [-1, 0, 0, 2, 2, 3];
+/** Shots whose subject moves hold a little longer than the minimum. */
+const HOLD: Record<string, number> = { packet: 1900, merge: 2000, server: 1800 };
+
+const mine = (e: OpEvent) => e.source === "browser";
+/** The console lines behind each shot. */
+const HIGHLIGHT: Record<string, (e: OpEvent) => boolean> = {
+  client: (e) => mine(e) && e.op === "HANDSHAKE" && e.detail === "ClientHello",
+  packet: (e) => mine(e) && e.op === "HANDSHAKE" && e.detail === "ClientHello",
+  server: (e) => mine(e) && (e.op === "SIGN" || e.op === "VERIFY"),
+  merge: (e) => mine(e) && e.op === "HANDSHAKE" && /established/.test(e.detail ?? ""),
+  pullback: (e) => mine(e) && e.op === "SEAL",
+  attack: (e) => mine(e) && e.op === "REJECT",
+};
 
 /** Crypto-agility presets for POST /api/policy (server mesh) and this tab's own handshake. */
 const POLICIES = [
@@ -88,9 +175,9 @@ export function HandshakeDemo() {
   const live = useRef<Live>(undefined);
   const [packets, setPackets] = useState<ScenePacket[]>([]);
   const [log, setLog] = useState<{ text: string; tone?: "ok" | "bad" }[]>([]);
-  const [keyAt, setKeyAt] = useState<number>();
   const [reading, setReading] = useState<MeterReading>();
-  const [hover, setHover] = useState<ScenePacket>();
+  const [film, setFilm] = useState<Film>({});
+  const patch = (f: Partial<Film>) => setFilm((x) => ({ ...x, ...f }));
   const seq = useRef(0);
   const metrics = useMetrics();
   const [policy, setPolicy] = useState<PolicyState>();
@@ -123,6 +210,7 @@ export function HandshakeDemo() {
       if (!r.ok) throw new Error(errText(data));
       setPolicy(data);
       reset();
+      patch({ rekeyAt: performance.now() });
       say(
         `Policy g${data.generation}: ${body.profile} · ${body.sig}. Live server sessions re-key at their next rotation; nothing restarts.`,
         "ok",
@@ -161,6 +249,10 @@ export function HandshakeDemo() {
       });
       L.client = c.state;
       L.hello = c.hello;
+      patch({
+        shareHex: hexPreview(c.hello.x25519, 8),
+        helloBytes: handshakeBytes.clientHello(c.hello),
+      });
       setReading({
         label: "Step 1 · ClientHello",
         cpuMs: cpu,
@@ -192,6 +284,11 @@ export function HandshakeDemo() {
       L.serverHello = s.serverHello;
       L.pending = s.pending;
       const b = handshakeBytes.serverHello(s.serverHello);
+      patch({
+        signedAt: performance.now(),
+        kemPkBytes: s.serverHello.kemPublicKey.length,
+        sigBytes: s.serverHello.signature.length,
+      });
       setReading({
         label: `Step 2 · ServerHello (${kemName} keygen + ${sigName} sign)`,
         cpuMs: cpu,
@@ -220,7 +317,7 @@ export function HandshakeDemo() {
         detail: "server hello verified",
       });
       say(`Client verified ${sigName} signature ✓ (pinned server key)`, "ok");
-      setKeyAt(performance.now());
+      patch({ verified: true });
       await send({
         dir: "c2s",
         kind: "finish",
@@ -234,6 +331,7 @@ export function HandshakeDemo() {
       const ts = performance.now() - t2;
       L.clientSession = f.session;
       L.serverSession = server;
+      patch({ sessionId: server.id, finishBytes: handshakeBytes.clientFinish(f.finish) });
       pushLocal({
         op: "HANDSHAKE",
         alg: `${kemName}+x25519`.toLowerCase(),
@@ -260,6 +358,7 @@ export function HandshakeDemo() {
       const opened = sealed.map((m) => L.serverSession!.open(m));
       const per = ((performance.now() - t) / msgs.length) * 1000;
       const first = sealed[0]!;
+      patch({ sparks: true, perUs: per, perSecond: 1e6 / per });
       pushLocal({
         op: "SEAL",
         alg: `${kemName}+x25519`.toLowerCase(),
@@ -334,6 +433,7 @@ export function HandshakeDemo() {
         detail: "tampered ServerHello",
       });
       say(`✕ ${(e as Error).message}`, "bad");
+      patch({ attackRejected: true });
       setReading({
         label: "Attack · ML-DSA-65 verification",
         cpuMs: performance.now() - t,
@@ -347,57 +447,93 @@ export function HandshakeDemo() {
     live.current = { identity: live.current?.identity ?? createIdentity(profile) };
     setPackets([]);
     setLog([]);
-    setKeyAt(undefined);
     setReading(undefined);
+    setFilm({});
+    reel.stop();
+    director.replay();
   }
+
+  // ── Staging: the director moves the camera; each shot first waits for its real crypto. ──
+  const director = useDirector(SHOTS);
+  const stepAt = useRef(-1);
+  stepAt.current = stepper.index;
+  const reel = useFilm(director, {
+    last: FILM - 1,
+    need: async (i) => {
+      let k = stepAt.current;
+      while (k < (NEED[i] ?? -1)) {
+        await stepper.step();
+        k++;
+      }
+    },
+    hold: (id) => HOLD[id],
+    // The packet and the merge are re-staged each time their shot is reached, from real values.
+    onArrive: (id) => {
+      if (id === "packet") patch({ packetAt: performance.now() });
+      if (id === "merge") patch({ mergeAt: performance.now() });
+    },
+    restart: () => reset(),
+  });
+  const attackShot = () =>
+    reel.detour(ATTACK, async () => {
+      patch({ attackAt: performance.now(), attackRejected: false });
+      await attack();
+    });
+
+  // Presenter mode starts the film by itself.
+  useEffect(() => {
+    if (!document.documentElement.hasAttribute("data-present")) return;
+    const t = setTimeout(() => void reel.play(), 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <DemoShell
       title="Demo 1 · How it works"
       caption="The real Q-Setu handshake, running in your browser: one signed hybrid key exchange, then fast symmetric messages. Hover a packet for its bytes."
       controls={
-        <>
-          <Button onClick={attack} disabled={stepper.playing}>
-            Attack it
-          </Button>
-          <StepControls {...stepper} onStep={stepper.step} onPlay={stepper.play} onReset={reset} />
-        </>
+        <Button onClick={() => void attackShot()} disabled={reel.busy}>
+          Attack it
+        </Button>
       }
       meter={<ComputeMeter reading={reading} profile={profile} />}
-      console={<LiveConsole title="Live console · this tab + server" filter={consoleFilter} />}
-      onAutoplay={() => void stepper.play().then(() => setTimeout(() => void attack(), 800))}
+      console={
+        <LiveConsole
+          title="Live console · this tab + server"
+          filter={consoleFilter}
+          highlight={HIGHLIGHT[director.state.shot.id]}
+        />
+      }
+      onAutoplay={() => void reel.play().then(() => setTimeout(() => void attackShot(), 800))}
     >
       <div className="space-y-12">
-        <div
-          className="relative h-stage-sm overflow-hidden rounded-lg border border-line md:h-stage"
-          role="img"
-          aria-label="Client and server exchanging Q-Setu handshake packets along two curved links"
-        >
-          <SceneView className="absolute inset-0">
-            <HandshakeScene
-              packets={packets}
-              keyAt={keyAt}
-              keyed={stepper.index >= 2}
-              onHover={setHover}
-            />
-          </SceneView>
-          <div className="pointer-events-none absolute bottom-4 left-4">
-            <p className="text-small text-fg">Client</p>
-            <Label as="p">Browser · app · device</Label>
-          </div>
-          <div className="pointer-events-none absolute bottom-4 right-4 text-right">
-            <p className="text-small text-fg">Server</p>
-            <Label as="p">ML-DSA identity</Label>
-          </div>
-          {hover && (
-            <div className="pointer-events-none absolute left-4 top-4 max-w-text rounded-sm border border-line bg-inset p-3">
-              <p className="text-small text-fg">{hover.label}</p>
-              <Label as="p">
-                {hover.alg} · {hover.bytes} bytes
-              </Label>
-              <p className="mt-1 break-all font-mono text-small text-fg-3">{hover.hex}</p>
-            </div>
-          )}
+        <div className="relative overflow-hidden rounded-lg border border-line">
+          <LazyView
+            className="h-stage-sm md:h-stage"
+            label="The Q-Setu handshake as a short film: client and server exchange a signed hybrid key, then sealed messages"
+          >
+            {(onScreen) => (
+              <HandshakeFilm
+                state={director.state}
+                onSettled={reel.onSettled}
+                film={film}
+                kemName={kemName}
+                sigName={sigName}
+                active={onScreen}
+              />
+            )}
+          </LazyView>
+          <DirectorHUD
+            director={director}
+            steps={STEP_BAR}
+            playing={reel.playing}
+            busy={reel.busy}
+            onToggle={() => void reel.play()}
+            onNext={() => void reel.next()}
+            onPrev={reel.prev}
+            onReplay={reset}
+          />
         </div>
         <section aria-labelledby="agility" className="rounded-lg border border-line p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -459,7 +595,7 @@ export function HandshakeDemo() {
               aria-live="polite"
             >
               {log.length === 0 && (
-                <li className="text-fg-3">Press Step or Play to start the handshake.</li>
+                <li className="text-fg-3">Press Next or Play to start the handshake.</li>
               )}
               {log.map((l, i) => (
                 <li
