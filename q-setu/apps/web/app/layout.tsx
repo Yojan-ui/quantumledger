@@ -5,6 +5,7 @@ import Script from "next/script";
 import { CommandMenu } from "@/components/ui/CommandMenu";
 import { Interactions } from "@/components/ui/Interactions";
 import { Warmup } from "@/components/ui/Warmup";
+import { Tour } from "@/components/tour/Tour";
 import { Presenter } from "@/components/present/Presenter";
 import { GlobeTooltip } from "@/components/world/GlobeTooltip";
 import { LiveTraffic } from "@/components/world/LiveTraffic";
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GlobeTooltip />
         <CommandMenu />
         <Presenter />
+        <Tour />
         <div className="relative z-10">{children}</div>
       </body>
     </html>

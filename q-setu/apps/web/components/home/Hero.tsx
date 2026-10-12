@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
-import { ButtonLink, Container, Legend, Text } from "@/components/ui";
+import { Button, ButtonLink, Container, Legend, Text } from "@/components/ui";
+import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { HERO } from "./chapters";
@@ -74,7 +75,9 @@ export function Hero() {
             className="mt-8 flex flex-wrap gap-3 animate-reveal"
             style={{ animationDelay: "600ms" }}
           >
-            <ButtonLink href="/demos">Try it live</ButtonLink>
+            <Button variant="primary" onClick={startTour} data-tour-start>
+              Take the 3-minute tour
+            </Button>
             <ButtonLink href="/#scan" variant="secondary">
               Scan any site
             </ButtonLink>

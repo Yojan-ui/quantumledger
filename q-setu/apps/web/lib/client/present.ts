@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 
 /** Presenter-mode commands, broadcast to whatever demo is on screen. */
-export type PresentCommand = "next" | "prev" | "reset";
+/** `play` starts a film's autoplay if it isn't already playing (used by the judge tour). */
+export type PresentCommand = "next" | "prev" | "reset" | "play";
 const EVENT = "qsetu:present";
 
 export const sendPresent = (cmd: PresentCommand) =>

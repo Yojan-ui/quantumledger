@@ -36,10 +36,20 @@ export function DirectorHUD({
   const { shot, index } = director.state;
   const step = shot.step ?? -1;
 
-  usePresent({ next: onNext, prev: onPrev, reset: onReplay });
+  usePresent({
+    next: onNext,
+    prev: onPrev,
+    reset: onReplay,
+    play: () => {
+      if (!playing) onToggle();
+    },
+  });
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if (document.documentElement.hasAttribute("data-present") || typing(e.target)) return;
+      // In presenter mode or the judge tour, the page-level controller owns the keys.
+      const root = document.documentElement;
+      if (root.hasAttribute("data-present") || root.hasAttribute("data-tour") || typing(e.target))
+        return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "ArrowRight") onNext();
       else if (e.key === "ArrowLeft") onPrev();
@@ -54,7 +64,13 @@ export function DirectorHUD({
   }, [onNext, onPrev, onToggle, onReplay]);
 
   return (
-    <div data-present-target className="pointer-events-none absolute inset-x-0 bottom-0 p-4 md:p-6">
+    <div
+      data-present-target
+      data-shot={shot.id}
+      data-settled={director.state.settled}
+      data-playing={playing}
+      className="pointer-events-none absolute inset-x-0 bottom-0 p-4 md:p-6"
+    >
       {/* Caption: one line, revealed through a mask on every shot change. */}
       <p className="overflow-hidden pb-1 text-h3 font-medium text-fg" aria-live="polite">
         <span key={`${index}-${director.state.take}`} className="block animate-mask-up">

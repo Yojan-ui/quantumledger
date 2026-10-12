@@ -54,6 +54,8 @@ function PresenterInner() {
     };
     const key = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;
+      // The judge tour owns → and Esc while it runs.
+      if (document.documentElement.hasAttribute("data-tour")) return;
       if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
         e.preventDefault();
         const dir = e.key === "ArrowRight" ? 1 : -1;
