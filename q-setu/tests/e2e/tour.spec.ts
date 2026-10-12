@@ -2,9 +2,18 @@ import { expect, test } from "@playwright/test";
 
 // The judge tour: one click starts it; → skips through all eight steps across the demo pages.
 test("judge tour drives the site and → skips ahead", async ({ page }) => {
+  test.setTimeout(180_000);
   await page.goto("/");
   await page.getByRole("button", { name: "Take the 3-minute tour" }).click();
   const bar = page.locator("[data-tour-bar]");
+  await expect(bar).toHaveAttribute("data-tour-step", "diagnostics");
+  await expect(page).toHaveURL(/\/diagnostics/);
+  // → steps the pipeline first; Escape-free skipping continues once it has run.
+  await page
+    .locator('[data-stage="rescan"][data-status="done"]')
+    .first()
+    .waitFor({ timeout: 90_000 });
+  await page.keyboard.press("ArrowRight");
   await expect(bar).toHaveAttribute("data-tour-step", "hero");
   await expect(page.locator("[data-tour-caption]")).toContainText("quantum-safe");
   const order = ["phone", "index", "qday", "deploy", "ledger", "impact", "cta"];
@@ -20,6 +29,6 @@ test("judge tour drives the site and → skips ahead", async ({ page }) => {
 
 test("?tour=1 starts the tour", async ({ page }) => {
   await page.goto("/?tour=1");
-  await expect(page.locator("[data-tour-bar]")).toHaveAttribute("data-tour-step", "hero");
+  await expect(page.locator("[data-tour-bar]")).toHaveAttribute("data-tour-step", "diagnostics");
   await page.keyboard.press("Escape");
 });

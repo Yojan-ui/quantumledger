@@ -6,6 +6,7 @@
  * Secret keys, client state and sessions stay inside this worker.
  */
 import { sha3_256 } from "@noble/hashes/sha3.js";
+import { merkle } from "@/lib/merkle";
 import {
   bytesToHex,
   concatBytes,
@@ -39,7 +40,8 @@ export type HandshakeIn =
   | { rid: number; op: "finish" }
   | { rid: number; op: "messages"; n: number }
   | { rid: number; op: "attack"; profile: ProfileId }
-  | { rid: number; op: "sha3"; text: string };
+  | { rid: number; op: "sha3"; text: string }
+  | { rid: number; op: "merkle"; leaves: string[] };
 
 function timed<T>(fn: () => T): [T, number] {
   const t = performance.now();
@@ -113,6 +115,8 @@ function handle(m: HandshakeIn): unknown {
         })),
       };
     }
+    case "merkle":
+      return merkle(m.leaves);
     case "sha3":
       return bytesToHex(sha3_256(utf8ToBytes(m.text)));
     case "attack": {

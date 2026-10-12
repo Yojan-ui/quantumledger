@@ -30,7 +30,21 @@ const fragment = /* glsl */ `
   }
 `;
 
-export function Radar({ look }: { look: React.RefObject<Look> }) {
+export function Radar({
+  look,
+  center = [0, -1.95, 0],
+  radius = 6.5,
+  angle,
+  on,
+}: {
+  look: React.RefObject<Look>;
+  center?: [number, number, number];
+  radius?: number;
+  /** The sweep line's angle in radians (default: the pipeline sweep's progress × 2π). */
+  angle?: (L: Look) => number;
+  /** Whether the disc shows (default: the RESCAN stage, or a sweep in progress). */
+  on?: (L: Look) => boolean;
+}) {
   const mat = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -39,7 +53,7 @@ export function Radar({ look }: { look: React.RefObject<Look> }) {
         uniforms: {
           uAngle: { value: 0 },
           uOn: { value: 0 },
-          uR: { value: 6.5 },
+          uR: { value: radius },
           uColor: { value: new THREE.Color() },
         },
         transparent: true,
@@ -52,14 +66,14 @@ export function Radar({ look }: { look: React.RefObject<Look> }) {
     const L = look.current;
     if (!L?.active) return;
     const u = mat.uniforms;
-    const on = L.stage === 4 || L.sweep > 0 ? 1 : 0;
-    u.uOn!.value += (on * L.dim("radar") - u.uOn!.value) * 0.1;
-    u.uAngle!.value = L.sweep * Math.PI * 2;
+    const visible = on ? on(L) : L.stage === 4 || L.sweep > 0;
+    u.uOn!.value += ((visible ? 1 : 0) * L.dim("radar") - u.uOn!.value) * 0.1;
+    u.uAngle!.value = angle ? angle(L) : L.sweep * Math.PI * 2;
     (u.uColor!.value as THREE.Color).copy(L.sweepOk === false ? L.c.danger : L.c.ok);
   });
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.95, 0]} material={mat}>
-      <circleGeometry args={[6.5, 96]} />
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={center} material={mat}>
+      <circleGeometry args={[radius, 96]} />
     </mesh>
   );
 }

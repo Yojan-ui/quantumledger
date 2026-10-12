@@ -22,6 +22,7 @@ import { Button, Code, Heading, Label, Stat, Text } from "@/components/ui";
 import { LiveConsole } from "@/components/live/LiveConsole";
 import { Odometer } from "@/components/ui/Odometer";
 import { breakInWorker } from "@/lib/client/qday-crypto";
+import { zRange } from "@/lib/mosca";
 import { pushLocal } from "@/lib/client/live";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
@@ -31,10 +32,15 @@ const consoleFilter = (e: OpEvent) => e.source === "sim" || e.source === "browse
 
 const QDayFilm = dynamic(() => import("./QDayFilm"), { ssr: false, loading: () => null });
 
-const START = 2026;
-const END = 2035;
-/** Illustrative. Nobody knows the real date of a cryptographically relevant quantum computer. */
-const Q_DAY = 2033;
+const START = new Date().getFullYear();
+/**
+ * Q-Day for the time machine: today + the low end of Z, the cited estimate of years until a
+ * cryptographically relevant quantum computer (facts.ts). An estimate, labelled as one: nobody knows
+ * the real date. The slider runs to the high end.
+ */
+const Z = zRange()!;
+const Q_DAY = START + Z.low;
+const END = START + Z.high;
 const ROWS = 7;
 
 const STEP_BAR: Step[] = [
@@ -336,6 +342,7 @@ export function QDayDemo() {
               exposed={exposed}
               qExposed={qsetuOutcomes ? qExposed : undefined}
               small={small}
+              qDayYear={Q_DAY}
             />
           )}
         </LazyView>
@@ -345,7 +352,7 @@ export function QDayDemo() {
           >
             <Odometer value={String(year)} />
           </span>
-          <Label>{qday ? "Q-Day (illustrative)" : "Recording"}</Label>
+          <Label>{qday ? "Q-Day (estimate)" : "Recording"}</Label>
         </div>
         <DirectorHUD
           director={director}
@@ -480,8 +487,10 @@ export function QDayDemo() {
             with its best guess for the ML-KEM share. The AES-GCM tag check fails.
           </Text>
           <Text size="small">
-            The Q-Day year is illustrative. Nobody knows when a cryptographically relevant quantum
-            computer will exist.
+            The Q-Day year is an estimate: today plus {Z.low} years, the low end of the range in{" "}
+            {Z.source}, {Z.asOf.slice(0, 7)}. Its experts judge a cryptographically relevant quantum
+            computer &ldquo;quite possible&rdquo; within {Z.low} years and &ldquo;likely&rdquo;
+            within {Z.high}. Nobody knows the real date.
           </Text>
         </div>
       </details>

@@ -123,3 +123,59 @@ export function Mosca({
     </>
   );
 }
+
+/**
+ * The countdown ring on its own (reused by the Q-Day film): a horizontal ring around `center` whose
+ * --warn arc drains as `remaining()` falls from 1 to 0; what has drained shows in --danger.
+ */
+export function CountdownRing({
+  look,
+  center,
+  radius,
+  remaining,
+  show,
+}: {
+  look: React.RefObject<Look>;
+  center: [number, number, number];
+  radius: number;
+  remaining: () => number;
+  show: () => boolean;
+}) {
+  const ring = useMemo(() => {
+    const mk = () => {
+      const g = new THREE.BufferGeometry().setFromPoints(
+        Array.from({ length: RING_N + 1 }, (_, i) => {
+          const a = (i / RING_N) * Math.PI * 2 + Math.PI / 2;
+          return new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius);
+        }),
+      );
+      return new THREE.Line(
+        g,
+        new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
+      );
+    };
+    return { safe: mk(), gone: mk() };
+  }, [radius]);
+  useFrame(() => {
+    const L = look.current;
+    if (!L?.active) return;
+    const n = Math.round(RING_N * Math.max(0, Math.min(1, remaining())));
+    ring.safe.geometry.setDrawRange(0, n + 1);
+    ring.gone.geometry.setDrawRange(n, RING_N - n + 1);
+    const on = show() ? 0.9 : 0;
+    for (const [line, col] of [
+      [ring.safe, L.c.warn],
+      [ring.gone, L.c.danger],
+    ] as const) {
+      const m = line.material as THREE.LineBasicMaterial;
+      m.color.copy(col);
+      m.opacity += (on - m.opacity) * 0.1;
+    }
+  });
+  return (
+    <group position={center}>
+      <primitive object={ring.safe} />
+      <primitive object={ring.gone} />
+    </group>
+  );
+}

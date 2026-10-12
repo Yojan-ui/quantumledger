@@ -9,34 +9,10 @@
  * Verification (the "sweep"): a fresh ML-DSA check of the checkpoint, then a walk of only what came
  * after it, then the Merkle root recomputed from the stored leaves. Fast however long the chain is.
  */
-import { sha3_256 } from "@noble/hashes/sha3.js";
-import { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } from "@qsetu/core";
 import type { Ledger, LedgerEntry, VerifyResult } from "./ledger";
 
-export interface MerkleTree {
-  /** Leaf hashes, then each level up, ending with [root]. */
-  levels: string[][];
-  root: string;
-}
-
-export const leafHash = (data: string) =>
-  bytesToHex(sha3_256(concatBytes(new Uint8Array([0]), utf8ToBytes(data))));
-const nodeHash = (l: string, r: string) =>
-  bytesToHex(sha3_256(concatBytes(new Uint8Array([1]), hexToBytes(l), hexToBytes(r))));
-
-export function merkle(data: string[]): MerkleTree {
-  if (!data.length) throw new Error("A Merkle tree needs at least one leaf");
-  const levels = [data.map(leafHash)];
-  while (levels.at(-1)!.length > 1) {
-    const cur = levels.at(-1)!;
-    const next: string[] = [];
-    // An odd node is promoted unchanged (no duplication, so no second-preimage ambiguity).
-    for (let i = 0; i < cur.length; i += 2)
-      next.push(i + 1 < cur.length ? nodeHash(cur[i]!, cur[i + 1]!) : cur[i]!);
-    levels.push(next);
-  }
-  return { levels, root: levels.at(-1)![0]! };
-}
+export { leafHash, merkle, type MerkleTree } from "@/lib/merkle";
+import { merkle, type MerkleTree } from "@/lib/merkle";
 
 export interface AnchorInput {
   domain: string;
@@ -63,11 +39,7 @@ export async function anchorProof(ledger: Ledger, input: AnchorInput): Promise<A
   const tree = merkle(data);
   await ledger.flush();
   const head = (await ledger.recent(4)).reverse();
-  const last = head.at(-1);
-  const checkpoint = await ledger.append("checkpoint", `#${last?.id ?? 0}`, {
-    upTo: last?.id ?? 0,
-    head: last?.hash ?? "0".repeat(64),
-  });
+  const checkpoint = await ledger.checkpoint();
   const anchor = await ledger.append("anchor", input.domain, {
     domain: input.domain,
     root: tree.root,

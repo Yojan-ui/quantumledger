@@ -11,8 +11,15 @@ const KEY = "qsetu:present";
 const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
   ssr: false,
 });
-/** 1–5 jump between the demos. */
-const DEMOS = ["/demo/how-it-works", "/demo/deploy", "/demo/qday", "/demo/ledger", "/demo/scanner"];
+/** 1–6 jump between the diagnostics HUD and the demos. */
+const DEMOS = [
+  "/diagnostics",
+  "/demo/how-it-works",
+  "/demo/deploy",
+  "/demo/qday",
+  "/demo/ledger",
+  "/demo/scanner",
+];
 
 const typing = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
@@ -37,9 +44,14 @@ function PresenterInner() {
   // ?present=1 turns presenter mode on for the session; ?present=0 or Esc turns it off.
   useEffect(() => {
     const q = params.get("present");
-    if (q === "1") sessionStorage.setItem(KEY, "1");
+    if (q === "1") {
+      sessionStorage.setItem(KEY, "1");
+      // Presenter mode opens on the diagnostics HUD (from the home page).
+      if (path === "/") router.replace("/diagnostics");
+    }
     if (q === "0") sessionStorage.removeItem(KEY);
     setOn(sessionStorage.getItem(KEY) === "1");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   useEffect(() => {
@@ -62,7 +74,7 @@ function PresenterInner() {
         if (path === "/pitch") return; // the pitch deck handles its own arrows
         if (demoOnPage()) sendPresent(dir > 0 ? "next" : "prev");
         else stepSections(dir);
-      } else if (/^[1-5]$/.test(e.key)) {
+      } else if (/^[1-6]$/.test(e.key)) {
         router.push(DEMOS[Number(e.key) - 1]!);
       } else if (e.key === "r" || e.key === "R") {
         flash("Resetting every demo…");
@@ -87,7 +99,8 @@ function PresenterInner() {
         role="status"
         className="pointer-events-none fixed right-4 top-20 z-50 rounded-sm border border-line bg-raised px-3 py-2 font-mono text-label uppercase text-fg-3"
       >
-        {note ?? "Presenting · ←/→ step · 1–5 demos · Q join code · R reset · Esc exit"}
+        {note ??
+          "Presenting · ←/→ step · 1 diagnostics · 2–6 demos · Q join code · R reset · Esc exit"}
       </div>
     </>
   );

@@ -2,7 +2,7 @@
 
 /**
  * The one-click judge tour ("Take the 3-minute tour", or ?tour=1). It drives the real site, in
- * order: hero (and the four-step analogy) → a phone joins → the Readiness Index → the Q-Day film → the deploy film → the ledger
+ * order: the diagnostics pipeline → hero (and the four-step analogy) → a phone joins → the Readiness Index → the Q-Day film → the deploy film → the ledger
  * tamper film → the impact calculator → the call to action. Each demo step starts that film's
  * autoplay and moves on when the film reaches its last shot (or a time limit). → skips a step,
  * Esc ends the tour. Everything it shows is local: the room, the cached index and the demos all
@@ -13,6 +13,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sendPresent } from "@/lib/client/present";
 import { onRoom } from "@/lib/client/room";
+import { stepForward } from "@/components/hud/HudShell";
+import { actions, autoplay, getPipeline, nextStage } from "@/lib/client/pipeline";
 import { pct, READINESS, share } from "@/lib/readiness";
 
 const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
@@ -55,6 +57,24 @@ function typeInto(el: HTMLInputElement | null, value: string) {
 
 const STEPS: TourStep[] = [
   {
+    id: "diagnostics",
+    title: "PQC diagnostics",
+    caption:
+      "One domain, five stages: detect, score, fix, prove, verify. Each step is real crypto.",
+    ms: 26000,
+    run: async (c) => {
+      await c.go("/diagnostics");
+      // Start (or continue) the pipeline; → steps through its stages while it runs.
+      await c.wait(1200);
+      // A run that already finished (say, in the home page hero) is replayed for the tour.
+      if (nextStage(getPipeline()) < 0) await actions.replay();
+      const s = getPipeline();
+      if (nextStage(s) >= 0 && !s.autoplay) void autoplay();
+      await c.until(() => nextStage(getPipeline()) < 0 && !getPipeline().autoplay, 45000);
+      await c.wait(2500);
+    },
+  },
+  {
     id: "hero",
     title: "QuantumLedger",
     caption:
@@ -76,7 +96,7 @@ const STEPS: TourStep[] = [
     run: async (c) => {
       // Count from the start of the step: a quick phone can seal before the page has scrolled.
       const before = c.sealed();
-      await c.go("/", "top");
+      await c.go("/", "join-live");
       c.setQr(true);
       const arrived = await c.until(() => c.sealed() > before, 20000);
       if (arrived) await c.wait(3500);
@@ -164,6 +184,8 @@ export function Tour() {
   const pathRef = useRef(path);
   pathRef.current = path;
   const [step, setStep] = useState(-1);
+  const stepRef = useRef(-1);
+  stepRef.current = step;
   const [qr, setQr] = useState(false);
   const [stepStart, setStepStart] = useState(0);
   const [now, setNow] = useState(0);
@@ -300,6 +322,12 @@ export function Tour() {
       if (e.key === "ArrowRight") {
         e.preventDefault();
         e.stopImmediatePropagation();
+        // On the diagnostics stop, → steps the pipeline until it has run; then it moves on.
+        if (STEPS[stepRef.current]?.id === "diagnostics" && nextStage(getPipeline()) >= 0) {
+          actions.setAutoplay(false);
+          stepForward();
+          return;
+        }
         abort.current?.abort();
       } else if (e.key === "Escape") {
         e.stopImmediatePropagation();

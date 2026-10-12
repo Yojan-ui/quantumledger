@@ -148,7 +148,21 @@ async function create(): Promise<Runtime> {
   setInterval(() => ROTATING.forEach((p) => keys.rotate(p)), ROTATE_MS).unref();
   // Warm-up: check every existing signature once, in the background (it yields as it goes), so the
   // first "Verify the chain" in a demo only re-hashes. Its result is discarded; verifies stay real.
-  setTimeout(() => void ledger.warm(), 2000).unref();
+  // Once the whole chain has verified, a signed checkpoint lets later verifies skip re-checking the
+  // signatures it covers (they still re-hash every entry and check every link).
+  setTimeout(
+    () => void ledger.warm().then((r) => (r?.ok ? ledger.checkpoint() : undefined)),
+    2000,
+  ).unref();
+  // And one every 250 entries, so the uncovered tail stays short.
+  let sinceCheckpoint = 0;
+  ledger.onAppend((e) => {
+    if (e.kind === "checkpoint") sinceCheckpoint = 0;
+    else if (++sinceCheckpoint >= 250) {
+      sinceCheckpoint = 0;
+      void ledger.checkpoint();
+    }
+  });
 
   return { bus, policy, keys, ledger, mesh, repos, scanLimiter: new RateLimiter(6, 60_000) };
 }

@@ -51,6 +51,7 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   const ids = await page.locator("main > section[id]").evaluateAll((s) => s.map((x) => x.id));
   expect(ids).toEqual([
     "top",
+    "join-live",
     "analogy",
     "index",
     "scan",

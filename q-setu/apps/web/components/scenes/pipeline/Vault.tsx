@@ -27,9 +27,19 @@ export interface Taps {
 export function Vault({
   look,
   taps,
+  at = VAULT,
+  tapFrom = LINK_MID,
+  label = "packets copied (sim)",
+  labelAt,
 }: {
   look: React.RefObject<Look>;
   taps: React.RefObject<Taps>;
+  /** Where the cylinder stands and where its tap beam reaches (defaults: the pipeline stage). */
+  at?: THREE.Vector3;
+  tapFrom?: THREE.Vector3;
+  /** What the counter counts. */
+  label?: string;
+  labelAt?: [number, number, number];
 }) {
   const cyl = useMemo(
     () => new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16, 3, true)),
@@ -39,14 +49,14 @@ export function Vault({
     () => new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
     [],
   );
-  const top = useMemo(() => VAULT.clone().add(new THREE.Vector3(0, 0.6, 0)), []);
+  const top = useMemo(() => at.clone().add(new THREE.Vector3(0, 0.6, 0)), [at]);
   const beam = useMemo(() => {
-    const g = new THREE.BufferGeometry().setFromPoints([top, LINK_MID]);
+    const g = new THREE.BufferGeometry().setFromPoints([top, tapFrom]);
     return new THREE.Line(
       g,
       new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
     );
-  }, [top]);
+  }, [top, tapFrom]);
   const copyGeo = useMemo(
     () => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.14, 0.14, 0.14)),
     [],
@@ -71,7 +81,7 @@ export function Vault({
     // The tap beam pulses while recording and pulls back into the cylinder when it snaps.
     const bm = beam.material as THREE.LineBasicMaterial;
     const pos = beam.geometry.attributes.position!.array as Float32Array;
-    const end = LINK_MID.clone().lerp(top, easeToken(snap));
+    const end = tapFrom.clone().lerp(top, easeToken(snap));
     pos.set([end.x, end.y, end.z], 3);
     beam.geometry.attributes.position!.needsUpdate = true;
     bm.color.copy(L.c.danger);
@@ -88,7 +98,7 @@ export function Vault({
       const k = t0 ? (L.now - t0) / DROP_MS : 2;
       c.visible = k >= 0 && k < 1 && !L.reduce;
       if (!c.visible) return;
-      c.position.copy(LINK_MID).lerp(VAULT, easeToken(k));
+      c.position.copy(tapFrom).lerp(at, easeToken(k));
       c.rotation.set(k * 4, k * 3, 0);
     });
     copyMat.opacity = 0.9 * L.dim("vault");
@@ -101,7 +111,7 @@ export function Vault({
 
   return (
     <group>
-      <lineSegments geometry={cyl} material={cylMat} position={VAULT} />
+      <lineSegments geometry={cyl} material={cylMat} position={at} />
       <primitive object={beam} />
       {Array.from({ length: POOL }, (_, i) => (
         <lineSegments
@@ -113,7 +123,7 @@ export function Vault({
         />
       ))}
       <Html
-        position={[VAULT.x - 2.1, VAULT.y + 0.5, VAULT.z]}
+        position={labelAt ?? [at.x - 2.1, at.y + 0.5, at.z]}
         zIndexRange={[20, 0]}
         style={{ pointerEvents: "none" }}
       >
@@ -126,7 +136,7 @@ export function Vault({
             <span ref={counter} className="tabular">
               0
             </span>{" "}
-            packets copied (sim)
+            {label}
           </span>
         </div>
       </Html>

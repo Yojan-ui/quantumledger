@@ -12,6 +12,7 @@ import { LiveConsole } from "@/components/live/LiveConsole";
 import { LazyView } from "@/components/scenes/LazyView";
 import { Button, Code, Heading, Label, Text } from "@/components/ui";
 import { Odometer } from "@/components/ui/Odometer";
+import { hs } from "@/lib/client/handshake-crypto";
 import { errText } from "@/lib/client/api";
 import { onLive } from "@/lib/client/live";
 import type { LedgerEntry, VerifyResult } from "@/lib/live/ledger";
@@ -43,8 +44,8 @@ const SHOTS: Shot[] = [
     id: "verify",
     camera: { position: [0, 3.4, 8.6], target: [0, -0.2, -1.6], fov: 50 },
     step: 1,
-    caption: "Verification re-hashes every entry and checks every signature.",
-    simple: "Checking re-reads every entry and every signature.",
+    caption: "Verification re-hashes every entry; a signed checkpoint vouches for the signatures.",
+    simple: "Checking re-reads every entry and every seal, sweeping the chain.",
   },
   {
     id: "tamper",
@@ -136,12 +137,22 @@ export function LedgerDemo() {
   const [around, setAround] = useState<number[]>([]);
   const [newest, setNewest] = useState<number[]>([]);
   const [headAt, setHeadAt] = useState(0);
+  const [merkle, setMerkle] = useState<{ levels: string[][]; root: string; at: number }>();
   const loadArc = useCallback(async () => {
     const [a, n] = await Promise.all([
       call<{ entries: LedgerEntry[] }>(`/api/ledger?around=${TARGET}&limit=${ARC}`),
       call<{ entries: LedgerEntry[] }>(`/api/ledger?limit=${ARC}`),
     ]);
     setAround(a.entries.map((e) => e.id));
+    // A Merkle tree over the four newest entries' real hashes, computed in the worker.
+    const four = n.entries
+      .slice(0, 4)
+      .reverse()
+      .map((e) => e.hash);
+    if (four.length === 4)
+      void hs
+        .merkle(four)
+        .then((t) => setMerkle((m) => (m?.root === t.root ? m : { ...t, at: performance.now() })));
     setNewest((old) => {
       const ids = n.entries.map((e) => e.id).reverse();
       if (old.length && ids.at(-1) !== old.at(-1)) setHeadAt(performance.now());
@@ -334,6 +345,7 @@ export function LedgerDemo() {
                 }
                 restoredAt={restoredAt}
                 headAt={headAt}
+                merkle={merkle}
               />
             )}
           </LazyView>
@@ -360,7 +372,8 @@ export function LedgerDemo() {
           <div className="md:col-span-2" aria-live="polite">
             {!verify && (
               <Text className="pt-2">
-                Press Verify to re-hash every entry and check every signature.
+                Press Verify to re-hash every entry, check every link and verify the signed
+                checkpoints and every signature after the last one.
               </Text>
             )}
             {verify?.ok && (

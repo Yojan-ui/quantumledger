@@ -229,7 +229,7 @@ async function run(i: number, fn: () => Promise<void>) {
 
 export const actions = {
   /** 01 DETECT: a real TLS probe of the domain (or the labelled cached example). */
-  detect: (domain = state.domain || EXAMPLE_DOMAIN, cachedOnly = !state.domain) =>
+  detect: (domain = state.domain || EXAMPLE_DOMAIN, cachedOnly = !state.domain || state.cached) =>
     run(0, async () => {
       // A new target clears every later stage.
       set({
@@ -476,7 +476,8 @@ export const actions = {
     if (level !== state.level) set({ level });
   },
 
-  setDomain: (domain: string) => set({ domain }),
+  /** A domain the visitor typed: probed live (it clears the cached example's flag). */
+  setDomain: (domain: string) => set({ domain, cached: false }),
   /** ← / →: look at another stage that has already run (the camera only; nothing re-runs). */
   view: (i: number) => {
     const last = state.status.lastIndexOf("done");

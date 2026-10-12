@@ -41,7 +41,11 @@ function placePillar(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, h
 const RANK = NODES.map((n) => NODES.filter((m) => m.sector === n.sector && m.lon < n.lon).length);
 const RING_DROP_MS = 650;
 
-/** A node's "dot model" when the camera flies to it: a small shell of points around the node. */
+/**
+ * A node's "dot model" when the camera flies to it: a small shell of points around the node. When
+ * the node's adapter deploys (the real deploy succeeded) the shell snaps onto a regular lattice:
+ * Stage 3 of the diagnostics stage, on the map.
+ */
 function modelGeometry() {
   const pts: number[] = [];
   const N = 90;
@@ -51,10 +55,23 @@ function modelGeometry() {
     const th = i * 2.399963;
     pts.push(Math.cos(th) * r, y, Math.sin(th) * r);
   }
+  const lattice: number[] = [];
+  for (let x = -0.75; x <= 0.76; x += 0.5)
+    for (let y = -0.75; y <= 0.76; y += 0.5)
+      for (let z = -0.75; z <= 0.76; z += 0.5)
+        if (x * x + y * y + z * z <= 1.2) lattice.push(x, y, z);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+  g.userData.shell = new Float32Array(pts);
+  g.userData.lattice = new Float32Array(
+    Array.from({ length: N * 3 }, (_, i) => lattice[i % lattice.length]!),
+  );
   return g;
 }
+
+const LATTICE_MS = 1200;
+const SHATTER_MS = 800;
+const SHARDS = 16;
 
 const CITY_INDEX = new Map<string, number>(ROUTE_CITIES.map((c, i) => [c.id, i]));
 
@@ -82,6 +99,12 @@ export function Nodes() {
   const sockVis = useRef(0);
   const col = useMemo(() => new THREE.Color(), []);
   const model = useRef<THREE.Points>(null);
+  const shards = useRef<THREE.Points>(null);
+  const shardGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(SHARDS * 3), 3));
+    return g;
+  }, []);
   const modelGeo = useMemo(modelGeometry, []);
   const modelVis = useRef(0);
   const dropAt = useRef(new Float64Array(NODES.length));
@@ -142,7 +165,36 @@ export function Nodes() {
       if (isFocus && model.current) {
         model.current.position.copy(n.pos).multiplyScalar(1.02);
         model.current.scale.setScalar(Math.max(0.0001, 0.032 * easeToken(modelVis.current)));
-        (model.current.material as THREE.PointsMaterial).color.copy(col);
+        // The lattice swap: from the moment this node's deploy succeeded (its ring drop).
+        const sealed = safe.current[i]! > 0.5;
+        const since = dropAt.current[i] ? now - dropAt.current[i]! : sealed ? Infinity : -1;
+        const m = since < 0 ? 0 : world.breathe ? easeToken(Math.min(1, since / LATTICE_MS)) : 1;
+        const g = model.current.geometry;
+        const p = g.attributes.position!.array as Float32Array;
+        const sh = g.userData.shell as Float32Array;
+        const la = g.userData.lattice as Float32Array;
+        for (let j = 0; j < p.length; j++) p[j] = sh[j]! + (la[j]! - sh[j]!) * m;
+        g.attributes.position!.needsUpdate = true;
+        (model.current.material as THREE.PointsMaterial).color
+          .copy(c.warn)
+          .lerp(c.kem, m)
+          .lerp(c.ok, Math.max(0, m * 2 - 1) * 0.6);
+        // The old link shatters: red shards fly off the node.
+        if (shards.current) {
+          const k2 = since >= 0 && since < SHATTER_MS && world.breathe ? since / SHATTER_MS : -1;
+          shards.current.visible = k2 >= 0;
+          if (k2 >= 0) {
+            const sp = shards.current.geometry.attributes.position!.array as Float32Array;
+            const e = easeToken(k2);
+            for (let s = 0; s < SHARDS; s++) {
+              const a = (s / SHARDS) * Math.PI * 2;
+              v.set(Math.cos(a), Math.sin(a * 1.7), Math.sin(a)).multiplyScalar(0.06 * e);
+              sp.set([n.pos.x * 1.02 + v.x, n.pos.y * 1.02 + v.y, n.pos.z * 1.02 + v.z], s * 3);
+            }
+            shards.current.geometry.attributes.position!.needsUpdate = true;
+            (shards.current.material as THREE.PointsMaterial).opacity = 1 - k2;
+          }
+        }
       }
     });
     if (model.current) model.current.visible = modelVis.current > 0.01;
@@ -235,6 +287,21 @@ export function Nodes() {
         <circleGeometry args={[1, 24]} />
         <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />
       </instancedMesh>
+      <points
+        ref={shards}
+        geometry={shardGeo}
+        visible={false}
+        raycast={() => null}
+        frustumCulled={false}
+      >
+        <pointsMaterial
+          color={c.danger}
+          size={0.012}
+          transparent
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </points>
       <points ref={model} geometry={modelGeo} visible={false} raycast={() => null}>
         <pointsMaterial size={0.006} sizeAttenuation transparent opacity={0.9} depthWrite={false} />
       </points>

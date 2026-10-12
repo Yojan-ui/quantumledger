@@ -31,6 +31,7 @@ export const hs = {
       sharedSecretBytes: number;
     }>("finish"),
   sha3: (text: string) => call<string>("sha3", { text }),
+  merkle: (leaves: string[]) => call<{ levels: string[][]; root: string }>("merkle", { leaves }),
   messages: (n: number) =>
     call<{
       per: number;

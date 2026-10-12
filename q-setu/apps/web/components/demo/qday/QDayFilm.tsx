@@ -16,6 +16,9 @@ import type { DirectorState } from "@/components/director/types";
 import { span } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { makeLook, type Look } from "@/components/scenes/pipeline/look";
+import { CountdownRing } from "@/components/scenes/pipeline/Mosca";
+import { tap, Vault, type Taps } from "@/components/scenes/pipeline/Vault";
 
 const LEN = 9;
 const ROW = 0.8;
@@ -40,6 +43,8 @@ export interface QDayFilmProps {
   exposed: number;
   qExposed: number | undefined;
   small: boolean;
+  /** The estimated Q-Day year (from facts.ts), for the countdown's label. */
+  qDayYear: number;
 }
 
 export default function QDayFilm({
@@ -53,8 +58,30 @@ export default function QDayFilm({
   exposed,
   qExposed,
   small,
+  qDayYear,
 }: QDayFilmProps) {
   const c = useMemo(palette, []);
+  // Stages 1 and 2 of the diagnostics stage open this film: the adversary's storage cylinder (its
+  // counter is the simulator's real recordings) and the countdown ring draining toward Q-Day.
+  const look = useRef<Look>(makeLook(c));
+  const taps = useRef<Taps>({ drops: [], next: 0, count: 0 });
+  const vaultAt = useMemo(() => new THREE.Vector3(-3.4, -1.6, 0.4), []);
+  const tapAt = useMemo(() => new THREE.Vector3(-1.8, ROW, 0), []);
+  const seen = useRef(0);
+  useFrame(() => {
+    const L = look.current;
+    L.active = active;
+    L.reduce = state.reduce;
+    L.now = performance.now();
+    L.stage = 0;
+    L.since = { ...L.since, scan: 0, patch: Infinity };
+    L.dim = () => (state.shot.id === "split" || state.shot.id === "timelapse" ? 1 : 0.45);
+    // One falling copy per new real recording (at most a few per frame).
+    for (let k = 0; seen.current < recorded && k < 3; k++, seen.current++) tap(taps.current, L.now);
+    if (recorded < seen.current)
+      (Object.assign(taps.current, { drops: [], next: 0, count: 0 }), (seen.current = 0));
+    taps.current.count = recorded;
+  }, -1);
   // Mixed in sRGB (a 3–4.5% tint), not linear space, where the same mix would glow.
   const tint = (to: THREE.Color, k: number) =>
     c.bg
@@ -253,6 +280,29 @@ export default function QDayFilm({
         />
       ))}
 
+      <Vault
+        look={look}
+        taps={taps}
+        at={vaultAt}
+        tapFrom={tapAt}
+        label="records recorded (simulated network)"
+        labelAt={[vaultAt.x + 1.9, vaultAt.y - 0.2, vaultAt.z]}
+      />
+      <CountdownRing
+        look={look}
+        center={[ORB.x, ORB.y, ORB.z]}
+        radius={1.55}
+        remaining={() => 1 - progress}
+        show={() => state.shot.id === "split" || state.shot.id === "timelapse"}
+      />
+      <Anchor
+        position={[ORB.x - 1.6, ORB.y - 0.4, ORB.z]}
+        label="Estimated Q-Day"
+        value={`${qDayYear} (estimate)`}
+        role="warn"
+        side="down"
+        show={show && id === "timelapse"}
+      />
       {/* The adversary: an orb recording both corridors through saffron tendrils. */}
       <mesh ref={orb} position={ORB}>
         <icosahedronGeometry args={[1, 2]} />

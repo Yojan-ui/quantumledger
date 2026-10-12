@@ -168,15 +168,40 @@ export class Ledger {
    * Checks every existing signature once in the background (result discarded), so later verifies
    * only re-hash. A verify that starts meanwhile waits for it rather than repeating its work.
    */
-  warm(): Promise<unknown> {
-    this.warming = this.walk().catch(() => {});
-    return this.warming;
+  warm(): Promise<VerifyResult | undefined> {
+    const run = this.walk(1, false).catch(() => undefined);
+    this.warming = run;
+    return run;
   }
 
   /** Walks every entry from genesis: recomputes hashes, checks links and ML-DSA signatures. */
   async verify(): Promise<VerifyResult> {
+    return this.walk(1, true);
+  }
+
+  /** The same walk, but every signature checked (or remembered), without checkpoint coverage. */
+  async verifyFull(): Promise<VerifyResult> {
     await this.warming;
-    return this.walk();
+    return this.walk(1, false);
+  }
+
+  /**
+   * Appends a signed checkpoint: the hash and ID of the entry right before it. Written inside the
+   * append queue, so "right before" holds. Verification trusts the chain up to a checkpoint whose
+   * own ML-DSA signature verifies and whose head matches the recomputed hash there: every earlier
+   * entry is still re-hashed and link-checked, and an edit can't be re-hashed through the chain
+   * without changing the checkpoint and breaking its signature.
+   */
+  checkpoint(): Promise<LedgerEntry> {
+    const run = this.queue.then(async () => {
+      const last = await this.repo.last();
+      return this.appendNow("checkpoint", `#${last?.id ?? 0}`, {
+        upTo: last?.id ?? 0,
+        head: last?.hash ?? GENESIS,
+      });
+    });
+    this.queue = run.catch(() => {});
+    return run;
   }
 
   /**
@@ -245,7 +270,7 @@ export class Ledger {
     return done();
   }
 
-  private async walk(from = 1): Promise<VerifyResult> {
+  private async walk(from = 1, checkpoints = false): Promise<VerifyResult> {
     await this.flush();
     const t = performance.now();
     let prev = GENESIS;
@@ -268,6 +293,8 @@ export class Ledger {
     let expectId = from;
     let checked = 0;
     let fresh = 0;
+    /** Rows whose signatures are still to check; a valid checkpoint covers them. */
+    let pending: LedgerRow[] = [];
     const done = (broken?: VerifyResult["broken"]): VerifyResult => ({
       ok: !broken,
       checked,
@@ -310,6 +337,24 @@ export class Ledger {
             reason: "unknown-key",
             detail: `Entry #${r.id} is signed by an unknown key.`,
           });
+        // A checkpoint for exactly this point in the chain, with a good signature, covers every
+        // signature still pending before it.
+        if (checkpoints && r.kind === "checkpoint") {
+          const p = JSON.parse(r.payload) as { upTo?: number; head?: string };
+          if (p.upTo === r.id - 1 && p.head === prev) {
+            if (!this.checkSig(r, key)) return done(this.badSig(r, key));
+            pending = [];
+            prev = r.hash;
+            expectId++;
+            continue;
+          }
+        }
+        if (checkpoints && !this.verifiedSigs.has(sigKey(r))) {
+          pending.push(r);
+          prev = r.hash;
+          expectId++;
+          continue;
+        }
         const seen = sigKey(r);
         if (!this.verifiedSigs.has(seen)) {
           if (
@@ -332,7 +377,33 @@ export class Ledger {
       }
       after = page.at(-1)!.id;
     }
+    // The tail after the last checkpoint (and anything no checkpoint covered): checked now.
+    for (const r of pending) {
+      const key = this.signer.publicKey(r.keyId)!;
+      if (!this.checkSig(r, key)) return done(this.badSig(r, key));
+      this.verifiedSigs.add(sigKey(r));
+      if (++fresh % YIELD_EVERY === 0) await new Promise((res) => setImmediate(res));
+    }
     return done();
+  }
+
+  private checkSig(r: LedgerRow, key: { alg: SigId; publicKey: Uint8Array }): boolean {
+    if (this.verifiedSigs.has(sigKey(r))) return true;
+    const ok = getSig(key.alg).verify(
+      new Uint8Array(Buffer.from(r.sig, "base64")),
+      hexToBytes(r.hash),
+      key.publicKey,
+    );
+    if (ok) this.verifiedSigs.add(sigKey(r));
+    return ok;
+  }
+
+  private badSig(r: LedgerRow, key: { alg: SigId }): NonNullable<VerifyResult["broken"]> {
+    return {
+      id: r.id,
+      reason: "bad-signature",
+      detail: `Entry #${r.id}: ${getSig(key.alg).name} signature does not verify.`,
+    };
   }
 
   /**

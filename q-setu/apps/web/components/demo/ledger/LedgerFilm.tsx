@@ -15,6 +15,8 @@ import type { DirectorState } from "@/components/director/types";
 import { span } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { makeLook, type Look } from "@/components/scenes/pipeline/look";
+import { Radar } from "@/components/scenes/pipeline/Radar";
 
 export const N = 12;
 /** Index on the arc of the entry the insider edits. */
@@ -45,6 +47,8 @@ export interface LedgerFilmProps {
   restoredAt: number;
   /** When the newest entry arrived (for its scale-in). */
   headAt: number;
+  /** A SHA3-256 Merkle tree over the four newest entries' hashes (computed in a worker). */
+  merkle?: { levels: string[][]; root: string; at: number };
 }
 
 export default function LedgerFilm({
@@ -56,8 +60,47 @@ export default function LedgerFilm({
   verify,
   restoredAt,
   headAt,
+  merkle,
 }: LedgerFilmProps) {
   const c = useMemo(palette, []);
+  // Stage 5's radar, under the arc: its line follows the verification scan and stops at a break.
+  const look = useRef<Look>(makeLook(c));
+  const scannedRef = useRef(-1);
+  // Stage 4's Merkle build over the four newest blocks.
+  const nodes = useRef<(THREE.Group | null)[]>([]);
+  const nodeGeo = useMemo(
+    () => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.16, 0.16, 0.16)),
+    [],
+  );
+  const nodeMats = useMemo(
+    () =>
+      Array.from(
+        { length: 7 },
+        () =>
+          new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
+      ),
+    [],
+  );
+  const treeEdges = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(6 * 6), 3));
+    return new THREE.LineSegments(
+      g,
+      new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
+    );
+  }, []);
+  const treeAt = useMemo(() => {
+    const leaves = [8, 9, 10, 11].map((i) => blockPos(i).add(new THREE.Vector3(0, 0.6, 0)));
+    const mid = [
+      leaves[0]!.clone().lerp(leaves[1]!, 0.5),
+      leaves[2]!.clone().lerp(leaves[3]!, 0.5),
+    ].map((v) => v.add(new THREE.Vector3(0, 0.42, 0)));
+    const root = mid[0]!
+      .clone()
+      .lerp(mid[1]!, 0.5)
+      .add(new THREE.Vector3(0, 0.42, 0));
+    return [...leaves, ...mid, root];
+  }, []);
   const geo = useMemo(() => new THREE.BoxGeometry(0.62, 0.44, 0.44), []);
   const edges = useMemo(() => new THREE.EdgesGeometry(geo), [geo]);
   const blocks = useRef<(THREE.Group | null)[]>([]);
@@ -98,6 +141,44 @@ export default function LedgerFilm({
         ? N
         : Math.min(broken >= 0 ? broken + 1 : N, (now - verify.at) / STEP_MS)
       : -1;
+    scannedRef.current = scanned;
+    const L = look.current;
+    L.active = active;
+    L.reduce = reduce;
+    L.sweepOk = verify ? broken < 0 : undefined;
+    L.dim = () => 1;
+    // The Merkle build: leaves rise from the newest blocks, pair up, hash to the root (Stage 4).
+    const mt = merkle ? now - merkle.at : -1;
+    treeAt.forEach((at, k) => {
+      const g = nodes.current[k];
+      if (!g) return;
+      const delay = k < 4 ? k * 110 : k < 6 ? 650 + (k - 4) * 110 : 1000;
+      const e = mt < 0 ? 0 : reduce ? 1 : easeToken(span(mt - delay, 0, 450));
+      g.visible = e > 0;
+      g.scale.setScalar(Math.max(0.001, e));
+      if (k < 4) g.position.copy(blockPos(8 + k, q)).lerp(at, e);
+      else g.position.copy(at);
+      const flash = mt >= 0 && !reduce ? Math.max(0, 1 - Math.abs(mt - delay - 300) / 250) : 0;
+      nodeMats[k]!.color.copy(c.sig).lerp(c.text, flash);
+      nodeMats[k]!.opacity = state.shot.id === "chain" ? 0.95 : 0.35;
+    });
+    const tp = treeEdges.geometry.attributes.position!.array as Float32Array;
+    [
+      [0, 4],
+      [1, 4],
+      [2, 5],
+      [3, 5],
+      [4, 6],
+      [5, 6],
+    ].forEach(([a, b], j) => {
+      const A = nodes.current[a!]?.position;
+      const B = nodes.current[b!]?.position;
+      if (A && B) tp.set([A.x, A.y, A.z, B.x, B.y, B.z], j * 6);
+    });
+    treeEdges.geometry.attributes.position!.needsUpdate = true;
+    const tm = treeEdges.material as THREE.LineBasicMaterial;
+    tm.color.copy(c.sig);
+    tm.opacity = mt > 700 ? (state.shot.id === "chain" ? 0.6 : 0.2) : 0;
     const pos = linkGeo.attributes.position!.array as Float32Array;
     const lc = linkGeo.attributes.color!.array as Float32Array;
     for (let i = 0; i < N; i++) {
@@ -169,6 +250,31 @@ export default function LedgerFilm({
     <>
       <DirectorCamera state={state} onSettled={onSettled} drift={0.02} />
       <fog attach="fog" args={[c.bg, 8, 20]} />
+      {/* The radar disc: the arc's blocks sit on a circle round (0, 0, -7), from 210° to 330°. */}
+      <Radar
+        look={look}
+        center={[0, -0.62, -R]}
+        radius={R + 0.8}
+        angle={() =>
+          ((210 + 120 * Math.max(0, Math.min(1, (scannedRef.current + 0.5) / N))) * Math.PI) / 180
+        }
+        on={() => !!verify && (id === "verify" || id === "broken" || id === "restore")}
+      />
+      {treeAt.map((_, k) => (
+        <group key={k} ref={(g) => void (nodes.current[k] = g)} visible={false}>
+          <lineSegments geometry={nodeGeo} material={nodeMats[k]} />
+        </group>
+      ))}
+      <primitive object={treeEdges} />
+      {merkle && (
+        <Anchor
+          position={[treeAt[6]!.x, treeAt[6]!.y + 0.35, treeAt[6]!.z]}
+          label={`Merkle root ${merkle.root.slice(0, 10)}…`}
+          value="SHA3-256 over the 4 newest entries"
+          role="sig"
+          show={show && id === "chain"}
+        />
+      )}
       <ambientLight intensity={0.5} />
       <directionalLight position={[2, 5, 5]} intensity={0.8} />
       <directionalLight position={[0, 2, -8]} intensity={0.3} color={c.sig} />

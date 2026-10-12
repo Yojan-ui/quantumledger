@@ -6,6 +6,8 @@
  *   client key share (X25519) → KEM packet along the tube → SIG ring around the server's ML-KEM key
  *   → classical + post-quantum halves fuse through the HKDF lens → AES-GCM sparks between the cubes.
  * Real bus events (seal / verify / reject / rotate) ripple the object they belong to.
+ * Once the session exists (the real HKDF merge), the endpoints become the diagnostics stage's
+ * glowing icospheres and a flowing --kem particle arc joins them (Stage 3).
  */
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -48,6 +50,8 @@ const TUBE = new THREE.CubicBezierCurve3(
 const PACKET_MS = 1600;
 const ATTACK_MS = 1500;
 const SPARKS = 48;
+const ARC_N = 260;
+const ARC_LUT = TUBE.getSpacedPoints(160);
 
 const browserOnly = (e: { source: string }) => e.source === "browser";
 
@@ -95,6 +99,54 @@ export default function HandshakeFilm({
     }),
     [c],
   );
+  // Stage 3's endpoints and arc.
+  const ico = useMemo(() => new THREE.IcosahedronGeometry(0.42, 1), []);
+  const icoEdges = useMemo(() => new THREE.EdgesGeometry(ico), [ico]);
+  const icoFill = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: c.kem,
+        transparent: true,
+        opacity: 0.3,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    [c],
+  );
+  const icoLine = useMemo(
+    () =>
+      new THREE.LineBasicMaterial({
+        color: c.text,
+        transparent: true,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    [c],
+  );
+  const icoA = useRef<THREE.Group>(null);
+  const icoB = useRef<THREE.Group>(null);
+  const arc = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(ARC_N * 3), 3));
+    const m = new THREE.PointsMaterial({
+      color: c.kem,
+      size: 0.035,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      toneMapped: false,
+    });
+    const p = new THREE.Points(g, m);
+    p.frustumCulled = false;
+    const seed = Array.from({ length: ARC_N }, (_, i) => [
+      (i * 0.6180339) % 1,
+      Math.sin(i * 12.9898) * 0.06,
+      Math.cos(i * 78.233) * 0.06,
+      0.6 + ((i * 0.37) % 0.8),
+    ]);
+    return { p, g, m, seed };
+  }, [c]);
+  const arcV = useMemo(() => new THREE.Vector3(), []);
   const clientG = useRef<THREE.Group>(null);
   const serverG = useRef<THREE.Group>(null);
   const share = useRef<THREE.Points>(null);
@@ -144,6 +196,36 @@ export default function HandshakeFilm({
       // Re-key on a policy hot-swap: a quick quarter turn.
       clientG.current.rotation.set(0.45, 0.6 + (Math.PI / 2) * rekey, 0);
       serverG.current.rotation.set(0.45, -0.6 - (Math.PI / 2) * rekey, 0);
+      // Stage 3: once the session is derived, the cubes become icospheres and the arc flows.
+      const fused = film.mergeAt
+        ? state.reduce
+          ? 1
+          : easeToken(Math.min(1, (performance.now() - film.mergeAt) / 1200))
+        : film.sessionId
+          ? 1
+          : 0;
+      const cubeScale = Math.max(0.0001, 1 - fused);
+      clientG.current.children[0]?.scale.setScalar(cubeScale);
+      serverG.current.children[0]?.scale.setScalar(cubeScale);
+      for (const g of [icoA.current, icoB.current]) {
+        if (!g) continue;
+        g.scale.setScalar(Math.max(0.0001, fused));
+        g.rotation.y += state.reduce ? 0 : dt * 0.5;
+      }
+      arc.p.visible = fused > 0;
+      if (fused > 0) {
+        const ap = arc.g.attributes.position!.array as Float32Array;
+        const t = state.reduce ? 0 : performance.now() / 1000;
+        for (let i = 0; i < ARC_N; i++) {
+          const [s0, ox, oz, sp] = arc.seed[i]!;
+          const x = ((s0! + t * 0.2 * sp!) % 1) * fused * (ARC_LUT.length - 1);
+          const k = Math.floor(x);
+          arcV.copy(ARC_LUT[k]!).lerp(ARC_LUT[Math.min(k + 1, ARC_LUT.length - 1)]!, x - k);
+          ap.set([arcV.x + ox!, arcV.y + ox! * 0.5, arcV.z + oz!], i * 3);
+        }
+        arc.g.attributes.position!.needsUpdate = true;
+        arc.m.opacity = 0.85 * fused;
+      }
     }
     if (share.current) {
       const s = film.shareHex ? 1 : 0;
@@ -248,10 +330,19 @@ export default function HandshakeFilm({
 
       <group ref={clientG} position={CLIENT}>
         <lineSegments geometry={cube} material={mats.client} />
+        <group ref={icoA} scale={0.0001}>
+          <mesh geometry={ico} material={icoFill} />
+          <lineSegments geometry={icoEdges} material={icoLine} />
+        </group>
       </group>
       <group ref={serverG} position={SERVER}>
         <lineSegments geometry={cube} material={mats.server} />
+        <group ref={icoB} scale={0.0001}>
+          <mesh geometry={ico} material={icoFill} />
+          <lineSegments geometry={icoEdges} material={icoLine} />
+        </group>
       </group>
+      <primitive object={arc.p} />
       <mesh geometry={tubeGeo} material={mats.tube} />
 
       <points ref={share} geometry={shareGeo} position={[-2.6, 1.05, 0]} scale={0.0001}>

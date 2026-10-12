@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Analogy } from "@/components/home/Analogy";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
-import { Hero } from "@/components/home/Hero";
+import { Hero, JoinLive } from "@/components/home/Hero";
 import { Impact } from "@/components/home/Impact";
 import { IndexSection } from "@/components/home/IndexSection";
 import { ScanSite } from "@/components/home/ScanSite";
@@ -30,6 +30,7 @@ export default function Home() {
       <Nav />
       <main id="main">
         <Hero />
+        <JoinLive />
         <Analogy index="02" />
         <IndexSection index="03" />
         <ScanSite />

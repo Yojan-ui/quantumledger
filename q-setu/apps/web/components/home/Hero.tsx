@@ -4,7 +4,8 @@ import dynamic from "next/dynamic";
 import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
-import { Button, ButtonLink, Container, Legend, Text } from "@/components/ui";
+import { Button, ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
+import { DiagnosticsApp } from "@/components/hud/DiagnosticsApp";
 import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
@@ -17,8 +18,9 @@ const RoomQR = dynamic(() => import("@/components/room/RoomQR").then((m) => m.Ro
 });
 
 /**
- * The hero is the pitch: one headline, one subline, two buttons, the globe and the live strip.
- * The headline is server-rendered and painted on the first frame; covers lift off it word by word.
+ * The hero is the pitch: one headline, one subline, two buttons and the diagnostics HUD in compact
+ * form. The headline is server-rendered and painted on the first frame; covers lift off it word by
+ * word. JoinLive follows it: the phone QR and the globe the audience's packets land on.
  */
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -40,20 +42,11 @@ export function Hero() {
 
   const words = HERO.title.split(" ");
   return (
-    <section
-      ref={ref}
-      id="top"
-      className="relative flex min-h-story flex-col"
-      aria-label="QuantumLedger"
-    >
+    <section ref={ref} id="top" className="relative flex flex-col" aria-label="QuantumLedger">
       <LiveStrip />
-      <Container className="grid flex-1 grid-cols-12 content-start gap-x-6 md:content-center">
-        <div className="relative col-span-12 md:order-2 md:col-span-5 md:col-start-8">
-          <div data-world-focus data-world-drag className="h-globe md:h-stage" aria-hidden />
-          <Legend align="right" className="absolute bottom-0 left-0 md:-bottom-4" />
-        </div>
-        <div data-hero className="col-span-12 pb-16 pt-6 md:order-1 md:col-span-7 md:py-24">
-          <h1 className="text-display-sm font-medium text-fg md:text-display">
+      <Container className="pb-16 pt-10 md:pt-16">
+        <div data-hero className="grid grid-cols-12 items-end gap-x-6 gap-y-6">
+          <h1 className="col-span-12 text-display-sm font-medium text-fg md:col-span-7 md:text-display">
             <span className="sr-only">{HERO.title.replace(/‑/g, "-")}</span>
             <span aria-hidden>
               {words.map((w, i) => (
@@ -71,29 +64,67 @@ export function Hero() {
               ))}
             </span>
           </h1>
-          <div className="mt-6 max-w-text animate-reveal" style={{ animationDelay: "520ms" }}>
+          <div
+            className="col-span-12 animate-reveal md:col-span-5"
+            style={{ animationDelay: "520ms" }}
+          >
             <Text>
               <Copy simple={HERO.body} technical={HERO.technical} />
             </Text>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button variant="primary" onClick={startTour} data-tour-start>
+                Take the 3-minute tour
+              </Button>
+              <ButtonLink href="/diagnostics" variant="secondary">
+                Open full diagnostics
+              </ButtonLink>
+            </div>
           </div>
-          <div
-            className="mt-8 flex flex-wrap gap-3 animate-reveal"
-            style={{ animationDelay: "600ms" }}
-          >
-            <Button variant="primary" onClick={startTour} data-tour-start>
-              Take the 3-minute tour
-            </Button>
-            <ButtonLink href="/#scan" variant="secondary">
-              Scan any site
-            </ButtonLink>
-          </div>
-          <div className="mt-10 animate-reveal" style={{ animationDelay: "680ms" }}>
+        </div>
+        {/* The diagnostics HUD, compact: enter any domain, or watch the labelled cached example. */}
+        <div className="mt-10 animate-reveal md:h-hud-compact" style={{ animationDelay: "640ms" }}>
+          <DiagnosticsApp compact />
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/** Join live from your phone: the room QR, the counter and the globe its arcs land on. */
+export function JoinLive() {
+  useEffect(() => {
+    const el = document.getElementById("join-live");
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e?.isIntersecting) return;
+        world.chapter = 0;
+        world.accent = "accent";
+        world.glow = "kem";
+      },
+      { threshold: 0.3 },
+    );
+    if (el) io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <section id="join-live" className="relative scroll-mt-14 py-16 md:py-24" aria-label="Join live">
+      <Container className="grid grid-cols-12 items-center gap-x-6 gap-y-8">
+        <div className="col-span-12 md:col-span-6">
+          <SectionLabel label="Join live" role="kem" />
+          <p className="max-w-text text-h2 font-medium text-fg">
+            Seal a message from your phone and watch it land on the globe.
+          </p>
+          <div className="mt-8">
             <RoomQR className="hidden md:flex" />
             <ButtonLink href="/join" variant="secondary" className="md:hidden">
               Join live on this phone
             </ButtonLink>
             <RoomFeed className="mt-5" />
           </div>
+        </div>
+        <div className="relative col-span-12 md:col-span-6">
+          <div data-world-focus data-world-drag className="h-globe md:h-stage" aria-hidden />
+          <Legend align="right" className="absolute bottom-0 left-0 md:-bottom-4" />
         </div>
       </Container>
     </section>

@@ -77,3 +77,21 @@ describe("Proof Chain anchors", () => {
     expect((await ledger.verify()).broken?.id).toBe(5);
   });
 });
+
+describe("signed checkpoints", () => {
+  it("cover earlier signatures but still catch an edited row", async () => {
+    const ledger = await setup();
+    await ledger.checkpoint();
+    for (let i = 0; i < 5; i++) await ledger.append("tx", `late${i}`, { amount: i });
+    const ok = await ledger.verify();
+    expect(ok.ok).toBe(true);
+    expect(ok.checked).toBe(36);
+    // An edit before the checkpoint is still caught (the chain is re-hashed end to end).
+    await ledger.tamper(3);
+    expect((await ledger.verify()).broken).toMatchObject({ id: 3, reason: "payload-modified" });
+    await ledger.restore();
+    // A forged signature after the checkpoint is caught by the tail check.
+    await ledger.repo.raw.setSig(34, Buffer.from(new Uint8Array(3309)).toString("base64"));
+    expect((await ledger.verify()).broken).toMatchObject({ id: 34, reason: "bad-signature" });
+  });
+});
