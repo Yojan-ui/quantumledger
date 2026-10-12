@@ -1,10 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
+import { RoomFeed } from "@/components/room/RoomFeed";
 import { ButtonLink, Container, Legend, Text } from "@/components/ui";
 import { world } from "@/components/world/store";
 import { HERO } from "./chapters";
+
+// The QR encoder loads after first paint; the hero's text never waits for it.
+const RoomQR = dynamic(() => import("@/components/room/RoomQR").then((m) => m.RoomQR), {
+  ssr: false,
+  loading: () => <div className="hidden h-32 md:block" aria-hidden />,
+});
 
 /**
  * The hero is the pitch: one headline, one subline, two buttons, the globe and the live strip.
@@ -65,8 +73,15 @@ export function Hero() {
           >
             <ButtonLink href="/demos">Try it live</ButtonLink>
             <ButtonLink href="/#scan" variant="secondary">
-              Scan your site
+              Scan any site
             </ButtonLink>
+          </div>
+          <div className="mt-10 animate-reveal" style={{ animationDelay: "680ms" }}>
+            <RoomQR className="hidden md:flex" />
+            <ButtonLink href="/join" variant="secondary" className="md:hidden">
+              Join live on this phone
+            </ButtonLink>
+            <RoomFeed className="mt-5" />
           </div>
         </div>
       </Container>

@@ -27,7 +27,8 @@ export type Source =
   | "kms"
   | "policy"
   | "scanner"
-  | "browser";
+  | "browser"
+  | "room";
 
 export interface OpEvent {
   /** Monotonic per process. */

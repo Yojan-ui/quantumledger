@@ -84,6 +84,8 @@ export const world = {
   waveAt: 0,
   /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */
   cityOps: {} as Record<string, number>,
+  /** Audience packets from the room (phones), drained by RoomArcs: city of origin, colour, verdict. */
+  roomShots: [] as { city: string; colour: number; ok: boolean; at: number }[],
 };
 
 const listeners = new Set<Listener>();

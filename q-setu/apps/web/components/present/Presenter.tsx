@@ -1,10 +1,16 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import { demoOnPage, resetAll, sendPresent } from "@/lib/client/present";
 
 const KEY = "qsetu:present";
+
+/** Q in presenter mode: a large join code for the room, with the live counter under it. */
+const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
+  ssr: false,
+});
 /** 1–5 jump between the demos. */
 const DEMOS = ["/demo/how-it-works", "/demo/deploy", "/demo/qday", "/demo/ledger", "/demo/scanner"];
 
@@ -26,6 +32,7 @@ function PresenterInner() {
   const path = usePathname();
   const [on, setOn] = useState(false);
   const [note, setNote] = useState<string>();
+  const [qr, setQr] = useState(false);
 
   // ?present=1 turns presenter mode on for the session; ?present=0 or Esc turns it off.
   useEffect(() => {
@@ -58,23 +65,29 @@ function PresenterInner() {
       } else if (e.key === "r" || e.key === "R") {
         flash("Resetting every demo…");
         void resetAll().then(() => flash("Everything reset ✓"));
+      } else if (e.key === "q" || e.key === "Q") {
+        setQr((v) => !v);
       } else if (e.key === "Escape") {
+        if (qr) return setQr(false);
         sessionStorage.removeItem(KEY);
         setOn(false);
       }
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [on, path, router]);
+  }, [on, path, router, qr]);
 
   if (!on) return null;
   return (
-    <div
-      role="status"
-      className="pointer-events-none fixed right-4 top-20 z-50 rounded-sm border border-line bg-raised px-3 py-2 font-mono text-label uppercase text-fg-3"
-    >
-      {note ?? "Presenting · ←/→ step · 1–5 demos · R reset · Esc exit"}
-    </div>
+    <>
+      {qr && <RoomPanel onClose={() => setQr(false)} />}
+      <div
+        role="status"
+        className="pointer-events-none fixed right-4 top-20 z-50 rounded-sm border border-line bg-raised px-3 py-2 font-mono text-label uppercase text-fg-3"
+      >
+        {note ?? "Presenting · ←/→ step · 1–5 demos · Q join code · R reset · Esc exit"}
+      </div>
+    </>
   );
 }
 

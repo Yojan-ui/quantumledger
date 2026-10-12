@@ -92,3 +92,30 @@ export const EarlyAccessBody = z.object({
   /** Honeypot: must stay empty. */
   website: z.string().max(0).optional().or(z.literal("")),
 });
+
+const B64 = z.string().regex(/^[A-Za-z0-9+/]*={0,2}$/, "Expected base64");
+
+export const RoomJoinBody = z.object({
+  publicKey: B64.max(4096).meta({ description: "The phone's X25519 + ML-KEM-768 public key" }),
+});
+
+export const RoomSendBody = z.object({
+  id: z.string().regex(/^[0-9a-f]{32}$/, "Unknown visitor"),
+  sealMs: z.number().min(0).max(60_000).default(0),
+  envelope: z.object({
+    v: z.number(),
+    profile: z.enum(["standard", "edge"]),
+    algIds: z.object({
+      kem: z.string(),
+      sig: z.string().nullable(),
+      kdf: z.string(),
+      aead: z.string(),
+    }),
+    rid: z.string().max(64),
+    sid: z.string().max(64).nullable(),
+    kemCt: B64.max(4096),
+    nonce: B64.max(64),
+    ct: B64.max(2048),
+    sig: B64.max(8192).nullable(),
+  }),
+});

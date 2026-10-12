@@ -52,6 +52,8 @@ function GlobeGlow() {
 export function WorldCanvas() {
   const [dots, setDots] = useState<Dots>();
   useEffect(() => {
+    // The phone page behind the QR code never needs the globe.
+    if (location.pathname.startsWith("/join")) return;
     const c = document.createElement("canvas");
     if (!(c.getContext("webgl2") || c.getContext("webgl"))) return;
     const small = window.innerWidth < 768;

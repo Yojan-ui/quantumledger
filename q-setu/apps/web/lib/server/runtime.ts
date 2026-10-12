@@ -11,6 +11,8 @@ import { Ledger, type LedgerSigner } from "@/lib/live/ledger";
 import { Mesh } from "@/lib/live/mesh";
 import { Policy } from "@/lib/live/policy";
 import { RateLimiter } from "@/lib/live/rate-limit";
+import { Room } from "@/lib/live/room";
+import { ROOM_EMOJI } from "@/data/room";
 import { KEM_LABEL } from "@/lib/live/types";
 
 /** Where the SQLite database and (if QSETU_KMS_KEK is unset) the demo KEK live. Gitignored. */
@@ -30,11 +32,40 @@ export interface Runtime {
 }
 
 // Next.js can bundle each route separately, so singletons live on globalThis.
-const g = globalThis as unknown as { __qsetuBus?: Bus; __qsetuRuntime?: Promise<Runtime> };
+const g = globalThis as unknown as {
+  __qsetuBus?: Bus;
+  __qsetuRuntime?: Promise<Runtime>;
+  __qsetuRoom?: Room;
+};
 
 /** The live event bus. Synchronous and dependency-free, so anything can publish to it at once. */
 export function getBus(): Bus {
   return (g.__qsetuBus ??= new Bus());
+}
+
+/**
+ * The audience room (phones sealing messages to this server). In memory and per process: its key
+ * pair is created at start-up and never stored. Opened and rejected packets go on the bus too.
+ */
+export function getRoom(): Room {
+  if (g.__qsetuRoom) return g.__qsetuRoom;
+  const room = (g.__qsetuRoom = new Room(Date.now, Math.random, ROOM_EMOJI));
+  room.subscribe((e) => {
+    if (e.kind === "join") return;
+    getBus().publish({
+      op: e.kind === "sealed" ? "OPEN" : "REJECT",
+      source: "room",
+      alg: "ml-kem-768+x25519",
+      ms: e.openMs,
+      bytes: e.bytes,
+      ok: e.kind === "sealed",
+      detail:
+        e.kind === "sealed"
+          ? `${e.visitor.name}'s message opened`
+          : `${e.visitor.name}'s tampered packet rejected: ${e.reason}`,
+    });
+  });
+  return room;
 }
 
 async function create(): Promise<Runtime> {
