@@ -22,6 +22,8 @@ const scanDate = (iso: string) =>
 /** One mono label per bar, pinned to the bar's tip on screen (the scene writes world.indexScreen). */
 function BarLabels({ values }: { values: number[] }) {
   const refs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => setNarrow(window.innerWidth < 768), []);
   useEffect(() => {
     let raf = 0;
     const tick = () => {
@@ -31,12 +33,14 @@ function BarLabels({ values }: { values: number[] }) {
         const p = world.index ? world.indexScreen[i] : null;
         if (!el) return;
         el.style.opacity = p ? "1" : "0";
-        if (p) el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -100%)`;
+        // Narrow globes: alternate labels sit one line higher so neighbours don't collide.
+        const lift = narrow && i % 2 ? 18 : 0;
+        if (p) el.style.transform = `translate(${p.x}px, ${p.y - lift}px) translate(-50%, -100%)`;
       });
     };
     tick();
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [narrow]);
   return createPortal(
     <div aria-hidden className="pointer-events-none fixed left-0 top-0 z-20">
       {SECTORS.map((s, i) => (
@@ -45,7 +49,7 @@ function BarLabels({ values }: { values: number[] }) {
           ref={(el) => void (refs.current[i] = el)}
           className="absolute left-0 top-0 whitespace-nowrap rounded-sm bg-base px-1 text-center font-mono text-label text-fg-2 opacity-0 transition-opacity duration-150"
         >
-          {s.short}
+          {narrow ? s.short.slice(0, 3) : s.short}
           <br />
           <span className="text-fg">{pct(values[i] ?? 0)}</span>
         </span>
@@ -175,7 +179,8 @@ export function ReadinessBars({ className = "" }: { className?: string }) {
         </Text>
       </div>
       {on && <BarLabels values={values} />}
-      <div className="relative col-span-12 md:col-span-6">
+      {/* On phones the globe comes first, so the bars are seen before the list. */}
+      <div className="relative order-first col-span-12 md:order-none md:col-span-6">
         <div
           data-world-focus
           data-world-drag

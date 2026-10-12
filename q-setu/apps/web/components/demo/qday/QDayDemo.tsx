@@ -50,6 +50,7 @@ const SHOTS: Shot[] = [
     camera: { position: [0, 0.7, 8], target: [0, -0.3, -0.6], fov: 40 },
     step: 0,
     caption: "An adversary records both systems' encrypted traffic, today.",
+    simple: "An attacker copies both systems' locked messages, today.",
   },
   {
     id: "timelapse",
@@ -57,18 +58,21 @@ const SHOTS: Shot[] = [
     focus: "orb",
     step: 1,
     caption: "Years pass; the recordings are kept, unreadable for now.",
+    simple: "Years pass. The copies wait, still locked.",
   },
   {
     id: "climax",
     camera: { position: [0, 0.4, 5.6], target: [0, -0.15, -0.4], fov: 40 },
     step: 2,
     caption: "Q-Day: classical keys fall, and the recorded data opens.",
+    simple: "Q-Day: the old locks break, and the copies open.",
   },
   {
     id: "aftermath",
     camera: { position: [0, 1.4, 8.4], target: [0, -0.35, -0.4], fov: 40 },
     step: 3,
     caption: "Classical records are exposed; Q-Setu records stay sealed.",
+    simple: "Old-lock records are exposed. Q-Setu records stay locked.",
   },
 ];
 

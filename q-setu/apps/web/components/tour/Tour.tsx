@@ -2,7 +2,7 @@
 
 /**
  * The one-click judge tour ("Take the 3-minute tour", or ?tour=1). It drives the real site, in
- * order: hero → a phone joins → the Readiness Index → the Q-Day film → the deploy film → the ledger
+ * order: hero (and the four-step analogy) → a phone joins → the Readiness Index → the Q-Day film → the deploy film → the ledger
  * tamper film → the impact calculator → the call to action. Each demo step starts that film's
  * autoplay and moves on when the film reaches its last shot (or a time limit). → skips a step,
  * Esc ends the tour. Everything it shows is local: the room, the cached index and the demos all
@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sendPresent } from "@/lib/client/present";
+import { onRoom } from "@/lib/client/room";
 import { pct, READINESS, share } from "@/lib/readiness";
 
 const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
@@ -31,6 +32,8 @@ interface Ctx {
   until: (ok: () => boolean, maxMs: number) => Promise<boolean>;
   film: (lastShot: string, maxMs: number) => Promise<void>;
   setQr: (on: boolean) => void;
+  /** Messages the room has opened since the tour started (from the room's own events). */
+  sealed: () => number;
 }
 
 interface TourStep {
@@ -41,12 +44,6 @@ interface TourStep {
   ms: number;
   run: (c: Ctx) => Promise<void>;
 }
-
-/** The number of messages the room has opened (from the hero's live counter). */
-const sealedCount = () => {
-  const t = document.querySelector("[data-room-feed] .sr-only")?.textContent ?? "0";
-  return Number(t.replace(/\D/g, "")) || 0;
-};
 
 /** Sets a React-controlled input's value as if typed. */
 function typeInto(el: HTMLInputElement | null, value: string) {
@@ -61,9 +58,12 @@ const STEPS: TourStep[] = [
     id: "hero",
     title: "Q-Setu",
     caption: "Q-Setu puts quantum-safe locks on any system in India, in one line.",
-    ms: 8000,
+    ms: 13000,
     run: async (c) => {
       await c.go("/", "top");
+      await c.wait(4000);
+      // Then the four-step analogy: the explanation a non-specialist needs before the demos.
+      await c.go("/", "analogy");
       await c.wait(8000);
     },
   },
@@ -73,10 +73,11 @@ const STEPS: TourStep[] = [
     caption: "Scan the code and seal a message on your phone. We'll wait for the first one.",
     ms: 20000,
     run: async (c) => {
+      // Count from the start of the step: a quick phone can seal before the page has scrolled.
+      const before = c.sealed();
       await c.go("/", "top");
       c.setQr(true);
-      const before = sealedCount();
-      const arrived = await c.until(() => sealedCount() > before, 20000);
+      const arrived = await c.until(() => c.sealed() > before, 20000);
       if (arrived) await c.wait(3500);
       c.setQr(false);
     },
@@ -84,7 +85,7 @@ const STEPS: TourStep[] = [
   {
     id: "index",
     title: "India Quantum Readiness Index",
-    caption: `We checked ${READINESS.all.targets} public Indian sites: ${pct(share(READINESS.all, "hybridPq"))} already use a quantum-safe lock.`,
+    caption: `Of ${READINESS.all.reachable} public Indian sites we reached, ${pct(share(READINESS.all, "hybridPq"))} already use a quantum-safe lock.`,
     ms: 15000,
     run: async (c) => {
       await c.go("/", "index");
@@ -167,6 +168,7 @@ export function Tour() {
   const [now, setNow] = useState(0);
   const abort = useRef<AbortController | null>(null);
   const running = useRef(false);
+  const sealed = useRef(0);
 
   const stop = useCallback(() => {
     abort.current?.abort();
@@ -213,24 +215,31 @@ export function Tour() {
           wait,
           until,
           setQr,
+          sealed: () => sealed.current,
           go: async (to, anchor) => {
-            if (pathRef.current !== to) {
+            const moved = pathRef.current !== to;
+            if (moved) {
               router.push(to);
               await until(() => pathRef.current === to, 15000);
               await wait(600);
             }
+            // Navigation leaves focus on the skip link; the tour isn't keyboard navigation.
+            (document.activeElement as HTMLElement | null)?.blur?.();
             if (anchor) {
               await until(() => !!document.getElementById(anchor), 10000);
+              // Jump on a fresh page (no long scroll across every section); glide within one.
               document
                 .getElementById(anchor)
-                ?.scrollIntoView({ behavior: "smooth", block: "start" });
-              await wait(900);
-            }
+                ?.scrollIntoView({ behavior: moved ? "instant" : "smooth", block: "start" });
+              await wait(moved ? 400 : 900);
+            } else if (moved) window.scrollTo({ top: 0, behavior: "instant" });
           },
           film: async (last, maxMs) => {
             const hud = () =>
               document.querySelector<HTMLElement>("[data-present-target][data-shot]");
             await until(() => !!hud(), 15000);
+            // Bring the film's stage on screen (on a phone it sits below the controls).
+            hud()?.parentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
             await wait(800);
             sendPresent("play");
             const end = performance.now() + maxMs;
@@ -273,6 +282,15 @@ export function Tour() {
     else if (saved !== null) void run(Number(saved) || 0);
     return () => window.removeEventListener(START, begin);
   }, [run]);
+
+  // While the tour runs, count the room's opened messages (the join step waits for one).
+  const on = step >= 0;
+  useEffect(() => {
+    if (!on) return;
+    return onRoom((e) => {
+      if (e.kind === "sealed") sealed.current++;
+    });
+  }, [on]);
 
   // → skips to the next step; Esc ends the tour.
   useEffect(() => {

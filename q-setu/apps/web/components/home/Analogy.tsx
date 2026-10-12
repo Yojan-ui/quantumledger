@@ -11,6 +11,7 @@ import { Container, SectionLabel } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { Term } from "@/components/ui/Term";
 import { LazyView } from "@/components/scenes/LazyView";
+import { footnote } from "@/data/facts";
 
 const AnalogyModel = dynamic(() => import("@/components/scenes/AnalogyModel"), { ssr: false });
 
@@ -40,6 +41,7 @@ const STEPS = [
       </>
     ),
     label: "A glowing key",
+    cite: "ir8547",
   },
   {
     title: { simple: "Thieves copy the boxes now", technical: "Harvest now, decrypt later" },
@@ -96,6 +98,17 @@ export function Analogy({ index }: { index: string }) {
               </h3>
               <p className="mt-2 text-small text-fg-2">
                 <Copy simple={s.simple} technical={s.technical} />
+                {"cite" in s && footnote(s.cite) > 0 && (
+                  <>
+                    {" "}
+                    <a
+                      href={`#fact-${footnote(s.cite)}`}
+                      className="font-mono text-label text-fg-3 underline decoration-line-strong underline-offset-4"
+                    >
+                      [{footnote(s.cite)}]
+                    </a>
+                  </>
+                )}
               </p>
             </li>
           ))}

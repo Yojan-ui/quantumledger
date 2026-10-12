@@ -1,0 +1,253 @@
+{
+  "measuredAt": "2026-10-12T10:58:11.066Z",
+  "base": "http://localhost:3000",
+  "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)",
+  "runs": {
+    "390": {
+      "recorded": {
+        "seconds": 98.63,
+        "steps": [
+          {
+            "step": "hero",
+            "at": 0.045
+          },
+          {
+            "step": "phone",
+            "at": 13.925
+          },
+          {
+            "step": "index",
+            "at": 18.547
+          },
+          {
+            "step": "qday",
+            "at": 34.245
+          },
+          {
+            "step": "deploy",
+            "at": 47.529
+          },
+          {
+            "step": "ledger",
+            "at": 61.419
+          },
+          {
+            "step": "impact",
+            "at": 75.307
+          },
+          {
+            "step": "cta",
+            "at": 88.578
+          }
+        ]
+      },
+      "tour": {
+        "seconds": 98.592,
+        "steps": [
+          {
+            "step": "hero",
+            "at": 0.033
+          },
+          {
+            "step": "phone",
+            "at": 13.918
+          },
+          {
+            "step": "index",
+            "at": 18.5
+          },
+          {
+            "step": "qday",
+            "at": 34.197
+          },
+          {
+            "step": "deploy",
+            "at": 47.47
+          },
+          {
+            "step": "ledger",
+            "at": 61.352
+          },
+          {
+            "step": "impact",
+            "at": 75.54
+          },
+          {
+            "step": "cta",
+            "at": 88.529
+          }
+        ]
+      },
+      "fps": {
+        "hero": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        },
+        "phone": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "index": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        },
+        "qday": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        },
+        "deploy": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "ledger": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        },
+        "impact": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        },
+        "cta": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        }
+      },
+      "inp": {
+        "inpMs": 64,
+        "interactions": 33,
+        "slow": []
+      }
+    },
+    "1440": {
+      "recorded": {
+        "seconds": 98.57,
+        "steps": [
+          {
+            "step": "hero",
+            "at": 0.033
+          },
+          {
+            "step": "phone",
+            "at": 13.923
+          },
+          {
+            "step": "index",
+            "at": 18.529
+          },
+          {
+            "step": "qday",
+            "at": 34.225
+          },
+          {
+            "step": "deploy",
+            "at": 47.498
+          },
+          {
+            "step": "ledger",
+            "at": 61.382
+          },
+          {
+            "step": "impact",
+            "at": 75.554
+          },
+          {
+            "step": "cta",
+            "at": 88.528
+          }
+        ]
+      },
+      "tour": {
+        "seconds": 98.633,
+        "steps": [
+          {
+            "step": "hero",
+            "at": 0.032
+          },
+          {
+            "step": "phone",
+            "at": 13.933
+          },
+          {
+            "step": "index",
+            "at": 18.526
+          },
+          {
+            "step": "qday",
+            "at": 34.231
+          },
+          {
+            "step": "deploy",
+            "at": 47.515
+          },
+          {
+            "step": "ledger",
+            "at": 61.395
+          },
+          {
+            "step": "impact",
+            "at": 75.28
+          },
+          {
+            "step": "cta",
+            "at": 88.568
+          }
+        ]
+      },
+      "fps": {
+        "hero": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0.1
+        },
+        "phone": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "index": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "qday": {
+          "fps": 60,
+          "p95FrameMs": 16.7,
+          "over33ms": 0
+        },
+        "deploy": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "ledger": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "impact": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        },
+        "cta": {
+          "fps": 60,
+          "p95FrameMs": 16.8,
+          "over33ms": 0
+        }
+      },
+      "inp": {
+        "inpMs": 48,
+        "interactions": 39,
+        "slow": []
+      }
+    }
+  }
+}

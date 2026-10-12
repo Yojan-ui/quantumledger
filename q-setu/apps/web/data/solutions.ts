@@ -50,7 +50,7 @@ export const SOLUTIONS: Solution[] = [
     demo: { href: "/demo/deploy", label: "Deploy Q-Setu across a payment network" },
     dataLifetime: "7–10 years (financial records)",
     impact:
-      "Payment records stay sensitive for 7–10 years. Recorded today, they can still be worth reading when a quantum computer arrives.",
+      "Payment records stay sensitive for years. Recorded today, they can still be worth reading when a quantum computer arrives.",
   },
   {
     id: "healthcare",

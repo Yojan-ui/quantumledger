@@ -41,7 +41,7 @@ export default async function SolutionPage({ params }: Props) {
           <TextLink href="/#early-access">Become a design partner →</TextLink>
         </div>
         <p className="mt-6 font-mono text-label uppercase text-fg-3">
-          Data lifetime · {s.dataLifetime}
+          Data lifetime (typical; an estimate) · {s.dataLifetime}
         </p>
       </PageHero>
       <section className="border-b border-line py-16 md:py-24">

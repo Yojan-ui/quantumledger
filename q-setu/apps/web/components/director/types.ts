@@ -10,6 +10,8 @@ export interface Shot {
   focus?: string;
   /** One line, at most 12 words: what is happening to the data right now. */
   caption: string;
+  /** The same line for Simple mode: no acronyms (falls back to `caption`). */
+  simple?: string;
   /** Which HUD step this shot belongs to (index into the demo's steps). */
   step?: number;
   enter?: () => void;

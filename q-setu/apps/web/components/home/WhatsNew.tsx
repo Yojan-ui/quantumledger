@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container, SectionLabel } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { ROLES, type Role } from "@/components/ui/Role";
+import { READINESS } from "@/lib/readiness";
 
 /** What we built that's new, and, just as plainly, what we didn't invent. */
 const NEW: {
@@ -26,8 +27,7 @@ const NEW: {
       simple: "A map of how ready India is",
       technical: "India Quantum Readiness Index",
     },
-    simple:
-      "We checked 100 public Indian websites in five sectors and show how many already use quantum-safe locks.",
+    simple: `We checked ${READINESS.all.targets} public Indian websites in five sectors and show how many already use quantum-safe locks.`,
     technical:
       "Sector aggregates from one TLS handshake per public domain: hybrid key-exchange share, TLS 1.3 share, RSA-2048 certificates.",
     href: "/index",

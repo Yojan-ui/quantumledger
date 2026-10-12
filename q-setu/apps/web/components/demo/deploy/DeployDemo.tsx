@@ -1,6 +1,7 @@
 "use client";
 
 import type { SectorId } from "@qsetu/sim";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
@@ -20,9 +21,14 @@ import { errText } from "@/lib/client/api";
 import { useMetrics } from "@/lib/client/live";
 import type { OpEvent } from "@/lib/live/types";
 import { BEFORE_AFTER, runAdapter, SNIPPETS, type RunResult } from "./adapters";
-import { CertificateFlow } from "./CertificateFlow";
 import { notify, world, type NodeState } from "@/components/world/store";
 import { burst } from "@/lib/client/burst";
+
+// The certificate scenario (QR encode + scan) sits below the film: its code loads on demand.
+const CertificateFlow = dynamic(() => import("./CertificateFlow").then((m) => m.CertificateFlow), {
+  ssr: false,
+  loading: () => null,
+});
 
 /** Adapter work on the server, deployed-node traffic, and anything this tab did. */
 const consoleFilter = (e: OpEvent) =>
@@ -56,6 +62,7 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       extrude: 0,
       zoom: false,
       caption: "This traffic can be recorded today and decrypted after Q-Day.",
+      simple: "Everything crossing these lines can be copied today, opened later.",
     },
     {
       id: "descend",
@@ -65,6 +72,7 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       extrude: 1,
       zoom: false,
       caption: `Each saffron node is a ${sector} system sending harvestable data.`,
+      simple: `Each orange dot is a ${sector} system with old locks.`,
     },
     {
       id: "target",
@@ -74,6 +82,7 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       extrude: 1,
       zoom: true,
       caption: `${site.label}'s data still crosses the network under classical keys.`,
+      simple: `${site.label}'s data still travels under old-style locks.`,
     },
     {
       id: "integrate",
@@ -83,6 +92,7 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       extrude: 1,
       zoom: true,
       caption: "One adapter, and this system's traffic is sealed with ML-KEM.",
+      simple: "One line of setup, and this system gets quantum-safe locks.",
     },
     {
       id: "all",
@@ -92,6 +102,7 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       extrude: 0.5,
       zoom: false,
       caption: `Every ${sector} system now seals its traffic with ML-KEM.`,
+      simple: `Every ${sector} system now uses quantum-safe locks.`,
     },
   ];
 }

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { ROLES } from "@/components/ui/Role";
 import { usePresent } from "@/lib/client/present";
+import { Copy } from "@/components/ui/Copy";
 import type { Director } from "./useDirector";
 import type { Step } from "./types";
 
@@ -74,7 +75,7 @@ export function DirectorHUD({
       {/* Caption: one line, revealed through a mask on every shot change. */}
       <p className="overflow-hidden pb-1 text-h3 font-medium text-fg" aria-live="polite">
         <span key={`${index}-${director.state.take}`} className="block animate-mask-up">
-          {shot.caption}
+          <Copy simple={shot.simple ?? shot.caption} technical={shot.caption} />
         </span>
       </p>
       <div className="pointer-events-auto mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">

@@ -37,12 +37,14 @@ const SHOTS: Shot[] = [
     camera: { position: [3.4, 1.7, 2.6], target: [5.4, 0, -3], fov: 42 },
     step: 0,
     caption: "Each new entry is hashed and signed, chained to the last.",
+    simple: "Each new entry is sealed and linked to the one before.",
   },
   {
     id: "verify",
     camera: { position: [0, 3.4, 8.6], target: [0, -0.2, -1.6], fov: 50 },
     step: 1,
     caption: "Verification re-hashes every entry and checks every signature.",
+    simple: "Checking re-reads every entry and every signature.",
   },
   {
     id: "tamper",
@@ -50,18 +52,21 @@ const SHOTS: Shot[] = [
     focus: "target",
     step: 2,
     caption: `An insider edits entry #${TARGET} directly in the database.`,
+    simple: `Someone inside quietly changes entry #${TARGET} in the database.`,
   },
   {
     id: "broken",
     camera: { position: [-1.2, 2.1, 5], target: [-2.6, -0.1, -1], fov: 44 },
     step: 3,
     caption: `Verification stops at #${TARGET}: its hash no longer matches.`,
+    simple: `The check stops at entry #${TARGET}: it was changed.`,
   },
   {
     id: "restore",
     camera: { position: [0, 3.4, 8.6], target: [0, -0.2, -1.6], fov: 50 },
     step: 4,
     caption: "The original row is restored; the whole chain verifies again.",
+    simple: "The original is put back; every link checks out again.",
   },
 ];
 const SHOT = Object.fromEntries(SHOTS.map((s, i) => [s.id, i]));
@@ -234,6 +239,7 @@ export function LedgerDemo() {
           ? {
               ...s,
               caption: `Verification stops at #${broken.id}: ${FOUND[broken.reason] ?? "it fails"}.`,
+              simple: `The check stops at entry #${broken.id}: it was changed.`,
             }
           : s,
       ),

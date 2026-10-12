@@ -65,6 +65,7 @@ const SHOTS: Shot[] = [
     id: "establish",
     camera: { position: [0, 1.6, 9], target: [0, 0, 0], fov: 38 },
     caption: "Client and server share no secret yet; anything sent is public.",
+    simple: "Your phone and the server share no secret yet.",
   },
   {
     id: "client",
@@ -72,6 +73,7 @@ const SHOTS: Shot[] = [
     focus: "client",
     step: 0,
     caption: "The client creates a one-time X25519 key share.",
+    simple: "Your side makes a one-time half of a key.",
   },
   {
     id: "packet",
@@ -79,6 +81,7 @@ const SHOTS: Shot[] = [
     focus: "packet",
     step: 0,
     caption: "The ClientHello carries that share to the server, in the open.",
+    simple: "That half travels to the server, in the open.",
   },
   {
     id: "server",
@@ -86,6 +89,7 @@ const SHOTS: Shot[] = [
     focus: "server",
     step: 1,
     caption: "The server signs a fresh ML-KEM key; the client checks the signature.",
+    simple: "The server sends a quantum-safe lock, signed; you check the signature.",
   },
   {
     id: "merge",
@@ -93,12 +97,14 @@ const SHOTS: Shot[] = [
     focus: "merge",
     step: 2,
     caption: "Classical and post-quantum secrets merge through HKDF into one key.",
+    simple: "The old and new secrets combine into one shared key.",
   },
   {
     id: "pullback",
     camera: { position: [0, 2.4, 8.5], target: [0, 0, 0], fov: 38 },
     step: 3,
     caption: "Every message is now sealed with AES-256-GCM, in microseconds.",
+    simple: "Every message is now locked, in millionths of a second.",
   },
   {
     id: "attack",
@@ -106,6 +112,7 @@ const SHOTS: Shot[] = [
     focus: "server",
     step: 1,
     caption: "A forged ML-KEM key fails the ML-DSA signature check.",
+    simple: "A swapped-in fake lock fails the signature check.",
   },
 ];
 const FILM = SHOTS.length - 1;

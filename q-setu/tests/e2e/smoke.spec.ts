@@ -13,7 +13,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Make anything in India quantum-safe",
   );
-  await expect(page.getByText("PQC handshake, once per session")).toBeAttached();
+  await expect(page.locator("[data-room-qr] svg")).toBeVisible();
   await expect(page.locator("#fact-1")).toContainText("as of");
   // The live strip streams real operations from the bus.
   const strip = page.getByLabel("Live operations");
@@ -21,7 +21,9 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
   await expect(strip.locator("p").first()).toContainText(
     /SEAL|VERIFY|LEDGER|HANDSHAKE|KEYGEN|REJECT|ROTATE/,
   );
-  await expect(page.getByRole("heading", { name: /The clock started/ })).toBeAttached();
+  // The Readiness Index headline is computed from the measured totals.
+  await expect(page.locator("#index")).toContainText(/\d+% of the Indian sites we checked/);
+  await expect(page.locator("#analogy")).toContainText("Everything has a lock");
   expect(errors).toEqual([]);
 });
 
