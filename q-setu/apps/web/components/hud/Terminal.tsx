@@ -10,6 +10,7 @@ import { useLiveEvents } from "@/lib/client/live";
 import { usePipeline } from "@/lib/client/pipeline";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
+import { sfx } from "@/lib/client/sfx";
 import { HudPanel } from "./HudPanel";
 
 const relevant = (e: OpEvent) =>
@@ -35,9 +36,16 @@ export function Terminal({ className = "" }: { className?: string }) {
   const lines = useLiveEvents(relevant, 80);
   const stage = usePipeline((s) => s.stage);
   const box = useRef<HTMLDivElement>(null);
+  const lastTick = useRef(0);
   useEffect(() => {
     const el = box.current;
     if (el) el.scrollTop = el.scrollHeight;
+    // A soft tick per new line (SFX on only), at most one every 80 ms.
+    const now = performance.now();
+    if (lines.length && now - lastTick.current > 80) {
+      lastTick.current = now;
+      sfx.tick();
+    }
   }, [lines.length]);
   return (
     <HudPanel
