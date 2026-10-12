@@ -19,3 +19,6 @@ dist/
 !.env.example
 .lighthouseci/
 .data-offline/
+
+# Glitch-audit videos (large; regenerate with pnpm audit:glitch)
+docs/smooth/videos-*/
