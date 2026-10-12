@@ -1,0 +1,5 @@
+# Python 3.11+
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+cryptography==44.0.3
+orjson==3.10.18
