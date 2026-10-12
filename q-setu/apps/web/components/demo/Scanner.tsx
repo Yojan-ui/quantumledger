@@ -26,6 +26,8 @@ export function Scanner() {
   const [result, setResult] = useState<ScanResult>();
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  // The host being probed: its result line's slot is held from the click (no shift when it lands).
+  const [probing, setProbing] = useState<string>();
   const [url, setUrl] = useState("https://www.google.com");
   const [probe, setProbe] = useState<{
     host: string;
@@ -108,6 +110,7 @@ export function Scanner() {
 
   async function scanUrl(target = url) {
     setBusy(true);
+    setProbing(target);
     setError(undefined);
     try {
       const res = await fetch("/api/scan/url", {
@@ -129,6 +132,7 @@ export function Scanner() {
       setError((e as Error).message);
     } finally {
       setBusy(false);
+      setProbing(undefined);
     }
   }
 
@@ -200,6 +204,14 @@ export function Scanner() {
             Scan live TLS
           </Button>
         </form>
+        {probing && !probe && (
+          <Code code={probing} copy={false} wrap>
+            <span className="text-fg-3">
+              Probing {probing.replace(/^https?:\/\//, "")}: TLS version, cipher, key exchange and
+              certificate will appear here…
+            </span>
+          </Code>
+        )}
         {probe && (
           <Code
             code={`${probe.host} ${probe.protocol} ${probe.cipher} ${probe.group} ${probe.certKey}`}

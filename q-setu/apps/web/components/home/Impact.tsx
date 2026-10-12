@@ -122,6 +122,7 @@ export function Impact({ index }: { index: string }) {
     return { worst, best, end: Math.max(until, RISK_TO + 5, NOW + 15) };
   }, [until]);
   const span = end - NOW;
+  const fx = (y: number) => (Math.min(end, Math.max(NOW, y)) - NOW) / span;
   const x = (y: number) => `${((Math.min(end, Math.max(NOW, y)) - NOW) / span) * 100}%`;
   const without = systems * codeWeeks;
   const withQ = systems * adapterWeeks;
@@ -208,16 +209,18 @@ export function Impact({ index }: { index: string }) {
                   [{n}]
                 </a>
               </span>
+              {/* Bars animate transform only (scaleX from the left edge), never width or left. */}
               <div
-                className="absolute top-10 h-3 rounded-full bg-kem transition-all duration-300"
-                style={{ left: 0, width: x(until) }}
+                className="absolute inset-x-0 top-10 h-3 origin-left bg-kem transition-transform duration-300"
+                style={{ transform: `scaleX(${fx(until)})` }}
               />
-              {worst > 0 && (
-                <div
-                  className="absolute top-10 h-3 rounded-full bg-danger transition-all duration-300"
-                  style={{ left: x(RISK_FROM), width: `calc(${x(until)} - ${x(RISK_FROM)})` }}
-                />
-              )}
+              <div
+                className="absolute inset-x-0 top-10 h-3 origin-left bg-danger transition duration-300"
+                style={{
+                  opacity: worst > 0 ? 1 : 0,
+                  transform: `translateX(${fx(RISK_FROM) * 100}%) scaleX(${Math.max(0, fx(until) - fx(RISK_FROM))})`,
+                }}
+              />
               <span className="absolute bottom-0 left-0 font-mono text-label text-fg-3">
                 Today · {NOW}
               </span>

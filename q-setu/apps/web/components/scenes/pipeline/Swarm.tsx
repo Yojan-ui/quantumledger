@@ -11,7 +11,9 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { latticePoints, R, rng } from "./geometry";
+import { set3 } from "@/components/scenes/geometry";
 import type { Look } from "./look";
+import { gfx } from "@/lib/client/gfx";
 
 const vertex = /* glsl */ `
   attribute vec4 aSeed; attribute vec3 aLattice;
@@ -90,7 +92,7 @@ export function Swarm({ look, count }: { look: React.RefObject<Look>; count: num
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2;
       const rr = R * 1.45 + (r() - 0.5) * 0.12;
-      p.set([Math.cos(a) * rr, (r() - 0.5) * 0.06, Math.sin(a) * rr], i * 3);
+      set3(p, i, Math.cos(a) * rr, (r() - 0.5) * 0.06, Math.sin(a) * rr);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(p, 3));
@@ -125,6 +127,8 @@ export function Swarm({ look, count }: { look: React.RefObject<Look>; count: num
     (u.uA!.value as THREE.Color).copy(L.swarmA);
     (u.uB!.value as THREE.Color).copy(L.swarmB);
     u.uOpacity!.value = L.dim("swarm");
+    // Quality ladder step 2: half the particles.
+    geo.setDrawRange(0, gfx.quality >= 2 ? geo.attributes.position!.count >> 1 : Infinity);
     if (group.current) group.current.position.y = L.lift;
     icoMat.color.copy(L.sphere);
     icoMat.opacity = 0.18 * L.dim("swarm") + 0.12 * L.morph;

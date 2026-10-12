@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { startScroll } from "@/lib/client/scroll";
 
 const MAX_PULL = 4;
 const MAX_TILT = 6;
@@ -29,6 +30,8 @@ interface Tilt {
  * scale stay (no travel involved).
  */
 export function Interactions() {
+  // Lenis + ScrollTrigger on GSAP's ticker: the site's one scroll clock (lib/client/scroll).
+  useEffect(() => startScroll(), []);
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let pulled: HTMLElement | null = null;

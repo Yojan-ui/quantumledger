@@ -57,7 +57,6 @@ export default {
     borderRadius: { none: "0", sm: px(6), lg: px(12), full: "9999px" },
     borderWidth: { 0: "0", DEFAULT: "1px" },
     boxShadow: { none: "none" },
-    backdropBlur: { nav: px(12), panel: px(8) },
     transitionDuration: { 150: "var(--dur-hover)", 300: "var(--dur-ui)", 700: "var(--dur-reveal)" },
     transitionTimingFunction: { DEFAULT: "var(--ease-spring)", ease: "var(--ease)" },
     extend: {

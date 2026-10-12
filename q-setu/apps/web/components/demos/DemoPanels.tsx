@@ -1,6 +1,7 @@
 "use client";
 
 import { Grid, Heading, Panel, Reveal, Text } from "@/components/ui";
+import { useEffect, useRef } from "react";
 import { track } from "@/lib/client/analytics";
 
 export const DEMOS = [
@@ -41,16 +42,7 @@ export function DemoPanels() {
               className="block h-full"
               onClick={() => track("demo_opened", { demo: d.href })}
             >
-              <video
-                className="aspect-video w-full border-b border-line bg-inset object-cover"
-                src={d.video}
-                muted
-                loop
-                autoPlay
-                playsInline
-                preload="metadata"
-                aria-hidden
-              />
+              <PreviewVideo src={d.video} />
               <div className="p-6">
                 <Heading as="h3" variant="h3">
                   {d.title}
@@ -65,5 +57,39 @@ export function DemoPanels() {
         </Reveal>
       ))}
     </Grid>
+  );
+}
+
+/**
+ * A demo preview that plays only while it's on screen (paused otherwise, so four videos don't
+ * decode at once) and not at all under reduced motion. The 16:9 box is reserved from the start.
+ */
+function PreviewVideo({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting) void v.play().catch(() => {});
+        else v.pause();
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      className="aspect-video w-full border-b border-line bg-inset object-cover"
+      src={src}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      aria-hidden
+    />
   );
 }

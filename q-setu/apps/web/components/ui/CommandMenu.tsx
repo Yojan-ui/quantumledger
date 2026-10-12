@@ -3,6 +3,7 @@
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { lockScroll } from "@/lib/client/scroll";
 
 const OPEN_EVENT = "qsetu:command-menu";
 export const openCommandMenu = () => window.dispatchEvent(new Event(OPEN_EVENT));
@@ -75,6 +76,12 @@ export function CommandMenu() {
       window.removeEventListener(OPEN_EVENT, ext);
     };
   }, []);
+
+  // The page under the menu doesn't scroll while it's open.
+  useEffect(() => {
+    lockScroll(open);
+    return () => lockScroll(false);
+  }, [open]);
 
   const go = (href: string) => {
     setOpen(false);

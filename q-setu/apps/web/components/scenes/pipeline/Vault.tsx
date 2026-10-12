@@ -48,6 +48,7 @@ export function Vault({
   labelIn?: number[];
 }) {
   const labelBox = useRef<HTMLDivElement>(null);
+  const endV = useMemo(() => new THREE.Vector3(), []);
   const cyl = useMemo(
     () => new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16, 3, true)),
     [],
@@ -88,8 +89,10 @@ export function Vault({
     // The tap beam pulses while recording and pulls back into the cylinder when it snaps.
     const bm = beam.material as THREE.LineBasicMaterial;
     const pos = beam.geometry.attributes.position!.array as Float32Array;
-    const end = tapFrom.clone().lerp(top, easeToken(snap));
-    pos.set([end.x, end.y, end.z], 3);
+    const end = endV.copy(tapFrom).lerp(top, easeToken(snap));
+    pos[3] = end.x;
+    pos[4] = end.y;
+    pos[5] = end.z;
     beam.geometry.attributes.position!.needsUpdate = true;
     bm.color.copy(L.c.danger);
     bm.opacity = harvesting

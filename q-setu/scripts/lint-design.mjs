@@ -2,7 +2,7 @@
 /**
  * `pnpm lint:design`: fails if apps/web uses anything outside the design system.
  *  - hex / rgb() / hsl() colours outside styles/tokens.css
- *  - banned Tailwind classes (gradient utilities, shadows, blur outside the Nav, bold weights,
+ *  - banned Tailwind classes (gradient utilities, shadows, backdrop blur, bold weights,
  *    pulse/bounce, clip-text)
  *  - CSS gradients, except the allowed ones in app/globals.css: the panel spotlight (.spotlight),
  *    hairlines between role colours (.hairline-accent, .hairline-roles) and the ambient role tint
@@ -35,10 +35,8 @@ const RULES = [
     re: /(?<![\w-])(?:bg-gradient-\w+|(?:from|via|to)-(?:[a-z]+(?:-\d+)?|\[)|shadow-[\w[]|drop-shadow|font-bold|font-semibold|animate-bounce|animate-pulse|bg-clip-text|text-transparent)/g,
   },
   {
-    name: "blur outside Nav",
+    name: "blur (repaints every frame over moving content)",
     re: /(?<![\w-])(?:backdrop-)?blur(?:-[\w[]+)?(?![\w-])/g,
-    // The nav and the HUD's glass panels are the only translucent surfaces.
-    except: /components\/(ui\/Nav|hud\/HudPanel)\.tsx$/,
     classOnly: true,
   },
   {

@@ -11,7 +11,9 @@ function ResetAll() {
   return (
     <button
       type="button"
+      aria-busy={state === "busy"}
       onClick={async () => {
+        if (state === "busy") return;
         setState("busy");
         await resetAll();
         setState("done");

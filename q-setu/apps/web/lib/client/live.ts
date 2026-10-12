@@ -7,6 +7,7 @@
  */
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { Metrics, OpEvent } from "@/lib/live/types";
+import { openStream } from "@/lib/client/server";
 
 type Listener = (e: OpEvent) => void;
 
@@ -15,7 +16,7 @@ const events: OpEvent[] = [];
 const listeners = new Set<Listener>();
 const metricsListeners = new Set<() => void>();
 let metrics: Metrics | undefined;
-let es: EventSource | undefined;
+let close: (() => void) | undefined;
 let refs = 0;
 let localSeq = 1e9;
 
@@ -26,12 +27,13 @@ function emit(e: OpEvent) {
 }
 
 function connect() {
-  if (es || typeof window === "undefined") return;
-  es = new EventSource("/api/stream");
-  es.onmessage = (m) => emit(JSON.parse(m.data) as OpEvent);
-  es.addEventListener("metrics", (m) => {
-    metrics = JSON.parse((m as MessageEvent<string>).data) as Metrics;
-    metricsListeners.forEach((fn) => fn());
+  if (close || typeof window === "undefined") return;
+  close = openStream("/api/stream", (es) => {
+    es.onmessage = (m) => emit(JSON.parse(m.data) as OpEvent);
+    es.addEventListener("metrics", (m) => {
+      metrics = JSON.parse((m as MessageEvent<string>).data) as Metrics;
+      metricsListeners.forEach((fn) => fn());
+    });
   });
 }
 
@@ -43,8 +45,8 @@ function retain(): () => void {
     // Keep the connection across route changes; close only when nothing has used it for a while.
     setTimeout(() => {
       if (refs === 0) {
-        es?.close();
-        es = undefined;
+        close?.();
+        close = undefined;
       }
     }, 5000);
   };

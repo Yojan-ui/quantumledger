@@ -31,11 +31,23 @@ export default function HandshakeCubes({
   const ring = useRef<THREE.Mesh>(null);
   const pulse = useRef<THREE.Mesh>(null);
   const matA = useMemo(
-    () => new THREE.LineBasicMaterial({ color: c.text3.clone(), transparent: true, opacity: 0.9 }),
+    () =>
+      new THREE.LineBasicMaterial({
+        color: c.text3.clone(),
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.9,
+      }),
     [c],
   );
   const matB = useMemo(
-    () => new THREE.LineBasicMaterial({ color: c.text3.clone(), transparent: true, opacity: 0.9 }),
+    () =>
+      new THREE.LineBasicMaterial({
+        color: c.text3.clone(),
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.9,
+      }),
     [c],
   );
   const shown = useRef(progress);
@@ -97,7 +109,7 @@ export default function HandshakeCubes({
       </mesh>
       <mesh ref={pulse} visible={false}>
         <ringGeometry args={[0.48, 0.5, 64]} />
-        <meshBasicMaterial color={c.ok} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color={c.ok} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
     </>
   );

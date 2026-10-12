@@ -8,6 +8,7 @@ import * as THREE from "three";
 import type { PipelineState } from "@/lib/client/pipeline";
 import { easeToken } from "@/lib/ease";
 import type { palette } from "@/components/world/palette";
+import { gfx } from "@/lib/client/gfx";
 
 export type Palette = ReturnType<typeof palette>;
 export type Part = "swarm" | "link" | "vault" | "mosca" | "merkle" | "radar";
@@ -141,5 +142,6 @@ export function updateLook(
   mix(L.sphere, L.swarmA, c.kem, L.morph);
   L.sphere.lerp(c.ok, L.green(Math.PI / 2));
   const focus = FOCUS[s.stage + 1] ?? FOCUS[0]!;
-  L.dim = (p) => (L.mobile || L.reduce || focus.includes(p) ? 1 : 0.4);
+  // The last step of the quality ladder (lib/client/gfx) drops focus dimming.
+  L.dim = (p) => (L.mobile || L.reduce || gfx.quality >= 3 || focus.includes(p) ? 1 : 0.4);
 }

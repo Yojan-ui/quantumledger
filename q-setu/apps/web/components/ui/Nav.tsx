@@ -71,8 +71,10 @@ export function Nav() {
       setBar({ x: a.offsetLeft, w: a.offsetWidth });
     };
     place();
-    window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
+    // ResizeObserver (not a window resize listener): fires once per layout change, not per pixel.
+    const ro = new ResizeObserver(place);
+    if (list.current) ro.observe(list.current);
+    return () => ro.disconnect();
   }, [path]);
 
   return (
@@ -83,10 +85,7 @@ export function Nav() {
       >
         Skip to content
       </a>
-      <header
-        data-chrome
-        className="sticky top-0 z-40 h-14 border-b border-line bg-nav backdrop-blur-nav"
-      >
+      <header data-chrome className="sticky top-0 z-40 h-14 border-b border-line bg-nav">
         <Container className="flex h-full items-center justify-between gap-6">
           <Logo />
           <nav aria-label="Main" className="hidden md:block">
@@ -107,8 +106,8 @@ export function Nav() {
               })}
               <span
                 aria-hidden
-                className={`absolute -bottom-2 left-0 h-px bg-kem transition-all duration-300 ${bar ? "opacity-100" : "opacity-0"}`}
-                style={{ width: bar?.w ?? 0, transform: `translateX(${bar?.x ?? 0}px)` }}
+                className={`absolute -bottom-2 left-0 h-px w-px origin-left bg-kem transition duration-300 ${bar ? "opacity-100" : "opacity-0"}`}
+                style={{ transform: `translateX(${bar?.x ?? 0}px) scaleX(${bar?.w ?? 0})` }}
               />
             </ul>
           </nav>

@@ -13,7 +13,9 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { CLIENT, LINK, rng, SERVER } from "./geometry";
+import { set3 } from "@/components/scenes/geometry";
 import type { Look } from "./look";
+import { gfx } from "@/lib/client/gfx";
 
 const SHATTER_MS = 900;
 const ARC_N = 420;
@@ -93,7 +95,7 @@ function Endpoint({
     edge.color.copy(L.c.text).lerp(L.c.ok, g);
     edge.opacity = 0.9 * L.dim("link");
     halo.color.copy(fill.color);
-    halo.opacity = 0.05 * k * L.dim("link");
+    halo.opacity = gfx.quality >= 3 ? 0 : 0.05 * k * L.dim("link");
   });
   return (
     <group position={pos}>
@@ -142,8 +144,8 @@ export function Link({ look, onCopy }: { look: React.RefObject<Look>; onCopy: ()
     const v = new THREE.Vector3();
     for (let i = 0; i < SHARDS; i++) {
       at(i / (SHARDS - 1), v);
-      from.set([v.x, v.y, v.z], i * 3);
-      dir.set([(r() - 0.5) * 2.4, (r() - 0.2) * 2, (r() - 0.5) * 2.4], i * 3);
+      set3(from, i, v.x, v.y, v.z);
+      set3(dir, i, (r() - 0.5) * 2.4, (r() - 0.2) * 2, (r() - 0.5) * 2.4);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(from.slice(), 3));
@@ -200,7 +202,7 @@ export function Link({ look, onCopy }: { look: React.RefObject<Look>; onCopy: ()
     for (let i = 0; i < 3; i++) {
       const ph = (t.current * 0.32 + i / 3) % 1;
       at(ph, v);
-      pp.set([v.x, v.y, v.z], i * 3);
+      set3(pp, i, v.x, v.y, v.z);
       if (!fixed && L.stage >= 0 && lastPhase.current[i]! < 0.5 && ph >= 0.5) onCopy();
       lastPhase.current[i] = ph;
     }
@@ -232,7 +234,7 @@ export function Link({ look, onCopy }: { look: React.RefObject<Look>; onCopy: ()
         const [s0, ox, oz, sp] = arc.seed[i]!;
         const tt = ((s0! + t.current * 0.18 * sp!) % 1) * grow;
         at(tt, v);
-        ap.set([v.x + ox!, v.y + ox! * 0.5, v.z + oz!], i * 3);
+        set3(ap, i, v.x + ox!, v.y + ox! * 0.5, v.z + oz!);
       }
       arc.g.attributes.position!.needsUpdate = true;
       arc.m.color.copy(L.c.kem).lerp(L.c.ok, L.green(Math.PI / 2));

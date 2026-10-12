@@ -8,6 +8,7 @@ import { easeToken } from "./director";
 import { palette } from "./palette";
 import type { Dots } from "./shapes";
 import { world } from "./store";
+import { gfx } from "@/lib/client/gfx";
 
 const dotVertex = /* glsl */ `
   attribute float aSeed;
@@ -131,6 +132,9 @@ export function Globe({ dots }: { dots: Dots }) {
   });
   // Idle breathing: the atmosphere rim moves by 2.5% opacity over a 6 s cycle (static when reduced motion).
   useFrame(({ clock }) => {
+    // Quality ladder: the ocean dots go at step 2, the glow rim at step 3.
+    ocean.m.visible = gfx.quality < 2;
+    rim.visible = gfx.quality < 3;
     rim.uniforms.uRim!.value = world.breathe
       ? 0.18 + 0.0125 * Math.sin((clock.elapsedTime * 2 * Math.PI) / 6)
       : 0.18;
@@ -167,12 +171,13 @@ export function Globe({ dots }: { dots: Dots }) {
         <sphereGeometry args={[0.995, 64, 64]} />
         <meshBasicMaterial color={c.bg} />
       </mesh>
-      <lineSegments geometry={graticule}>
+      {/* Explicit draw order for the translucent layers, back to front (no depth fighting). */}
+      <lineSegments geometry={graticule} renderOrder={1}>
         <lineBasicMaterial color={c.text} transparent opacity={0.06} depthWrite={false} />
       </lineSegments>
-      <points geometry={ocean.g} material={ocean.m} />
-      <points geometry={points.g} material={points.m} />
-      <mesh scale={1.06} material={rim}>
+      <points geometry={ocean.g} material={ocean.m} renderOrder={2} />
+      <points geometry={points.g} material={points.m} renderOrder={3} />
+      <mesh scale={1.06} material={rim} renderOrder={4}>
         <sphereGeometry args={[1, 64, 64]} />
       </mesh>
     </group>

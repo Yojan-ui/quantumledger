@@ -112,9 +112,9 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
               {/* The progress hairline: fills as the stage completes. */}
               <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-line">
                 <span
-                  className={`block h-full transition-all ${role.bg}`}
+                  className={`block h-full origin-left transition-transform ${role.bg}`}
                   style={{
-                    width: status === "done" ? "100%" : status === "running" ? "50%" : "0%",
+                    transform: `scaleX(${status === "done" ? 1 : status === "running" ? 0.5 : 0})`,
                     transitionDuration: "600ms",
                   }}
                 />

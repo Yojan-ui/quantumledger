@@ -21,7 +21,7 @@ export function HudPanel({
     <section
       id={id}
       aria-label={label}
-      className={`relative flex min-h-0 flex-col border border-line bg-glass backdrop-blur-panel ${className}`}
+      className={`relative flex min-h-0 flex-col border border-line bg-glass ${className}`}
     >
       {/* Bracket marks: 12px L-shapes at each corner, a shade brighter than the hairline. */}
       <span

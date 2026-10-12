@@ -30,7 +30,7 @@ const ACTIONS: Record<string, string[]> = {
   "/demo/deploy": ["Play"],
   "/demo/qday": ["Go to Q-Day"],
   "/demo/ledger": ["Verify the chain", "Tamper with entry #42", "Verify the chain"],
-  "/demo/scanner": ["Scan"],
+  "/demo/scanner": ["Scan", "Scan live TLS"],
 };
 
 interface Metrics {
@@ -130,7 +130,7 @@ async function act(page: Page, path: string) {
     return;
   }
   for (const n of names) {
-    const b = page.getByRole("button", { name: n }).first();
+    const b = page.getByRole("button", { name: n, exact: true }).first();
     if (await b.count()) {
       await b.click({ timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(2500);
@@ -173,6 +173,8 @@ async function audit(ctx: BrowserContext, path: string, throttle: boolean, tag: 
     const why = r.failure()?.errorText ?? "failed";
     // An EventSource closed by navigation is not a failure.
     if (/ERR_ABORTED/.test(why) && /\/api\/(stream|room\/stream)/.test(r.url())) return;
+    // Chrome aborts a video's first request once it switches to range requests, and on pause.
+    if (/ERR_ABORTED/.test(why) && /\.(webm|mp4)(\?|$)/.test(r.url())) return;
     m.failed.push({ url: r.url().replace(BASE, ""), why });
   });
   page.on("response", (r) => {

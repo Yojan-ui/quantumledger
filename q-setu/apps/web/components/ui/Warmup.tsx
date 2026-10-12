@@ -30,7 +30,9 @@ export function Warmup() {
         : setTimeout(fn, 1200);
     const go = () => {
       DEMOS.forEach((p) => router.prefetch(p));
-      // A second idle slot for the heavier 3D code (fetched and parsed, not mounted).
+      // A second idle slot for the heavier 3D code (fetched and parsed, not mounted). Not on phones:
+      // parsing three.js there is a 100 ms+ task that can land on the user's scroll.
+      if (window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768) return;
       idle(() => {
         void import("@/components/world/SceneView");
         void import("@/components/demo/handshake/HandshakeFilm");

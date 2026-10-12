@@ -1,9 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { setLost } from "@/lib/client/gfx";
 import { world } from "./store";
 import type { Dots } from "./shapes";
+import { usePathname } from "next/navigation";
 
 const WorldScene = dynamic(() => import("./WorldScene"), { ssr: false, loading: () => null });
 
@@ -38,9 +40,8 @@ function GlobeGlow() {
       }
       const size = Math.min(900, Math.max(r.width, r.height) * 1.25);
       d.style.opacity = "1";
-      d.style.width = `${size}px`;
-      d.style.left = `${r.left + r.width / 2 - size / 2}px`;
-      d.style.top = `${r.top + r.height / 2 - size / 2}px`;
+      // Moved and sized by transform only (no layout, no layout shift while the page scrolls).
+      d.style.transform = `translate3d(${r.left + r.width / 2 - size / 2}px, ${r.top + r.height / 2 - size / 2}px, 0) scale(${size / 900})`;
       d.style.setProperty("--glow", `var(--${role})`);
     };
     tick();
@@ -49,13 +50,31 @@ function GlobeGlow() {
   return <div ref={el} className="ambient opacity-0 transition-opacity duration-700" />;
 }
 
+/** Elements that draw into the canvas: the globe's focus areas, demo Views and the HUD stage. */
+const THREE_D = "[data-world-focus], [data-3d], [data-hud-stage]";
+
 export function WorldCanvas() {
   const [dots, setDots] = useState<Dots>();
+  // Bumped when a lost context is restored: the canvas is rebuilt from scratch.
+  const [build, setBuild] = useState(0);
+  const restored = useCallback(() => {
+    setTimeout(() => {
+      setBuild((b) => b + 1);
+      setLost(false);
+    }, 300);
+  }, []);
+  const pathname = usePathname();
+  const started = useRef(false);
   useEffect(() => {
+    if (started.current) return;
     // The phone page behind the QR code never needs the globe.
     if (location.pathname.startsWith("/join")) return;
-    const c = document.createElement("canvas");
-    if (!(c.getContext("webgl2") || c.getContext("webgl"))) return;
+    // Feature-detect without creating a context (a throwaway context still costs a GPU slot).
+    if (
+      typeof WebGL2RenderingContext === "undefined" &&
+      typeof WebGLRenderingContext === "undefined"
+    )
+      return;
     const small = window.innerWidth < 768;
     let worker: Worker | undefined;
     let cancelled = false;
@@ -68,56 +87,63 @@ export function WorldCanvas() {
       };
       worker.postMessage({ maskUrl: "/globe/landmask.png", candidates: small ? 60_000 : 120_000 });
     };
-    // The 3D bundle loads after first paint. Desktops start it when the browser is idle; phones and
-    // low-core devices wait for the first interaction (or 4.5 s), so the scene's start-up never
-    // competes with the page becoming usable.
+    // The 3D bundle loads after first paint, in idle time, and only on pages that have a 3D area.
     // The diagnostics HUD is the page's subject: its 3D stage starts at once, phones included.
+    // Desktops start when idle. Phones and low-core devices wait until a 3D area comes within a
+    // screen of the viewport, so the boot never lands on a page without 3D or on the first scroll.
     const constrained =
-      !document.querySelector("[data-hud-stage]") &&
-      (window.matchMedia("(pointer: coarse)").matches ||
-        window.innerWidth < 768 ||
-        (navigator.hardwareConcurrency ?? 8) <= 4);
-    const events = [
-      "pointerdown",
-      "pointermove",
-      "touchstart",
-      "scroll",
-      "keydown",
-      "wheel",
-    ] as const;
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.innerWidth < 768 ||
+      (navigator.hardwareConcurrency ?? 8) <= 4;
+    const w = window as Window & typeof globalThis;
     let fired = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let io: IntersectionObserver | undefined;
+    let idleId = 0;
     const go = () => {
       if (fired) return;
       fired = true;
-      clearTimeout(timer);
-      events.forEach((e) => window.removeEventListener(e, go));
+      started.current = true;
+      io?.disconnect();
       start();
     };
-    const idle = () => {
-      if (constrained) {
-        events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
-        timer = setTimeout(go, 4500);
-        return;
-      }
-      const w = window as Window & typeof globalThis;
-      if (typeof w.requestIdleCallback === "function") w.requestIdleCallback(go, { timeout: 1500 });
+    const whenIdle = (timeout: number) => {
+      if (typeof w.requestIdleCallback === "function")
+        idleId = w.requestIdleCallback(go, { timeout });
       else setTimeout(go, 200);
     };
+    const begin = () => {
+      if (document.querySelector("[data-hud-stage]")) return go();
+      const areas = document.querySelectorAll(THREE_D);
+      if (!areas.length) return;
+      if (!constrained) return whenIdle(1500);
+      io = new IntersectionObserver(
+        (es) => {
+          if (es.some((e) => e.isIntersecting)) {
+            io?.disconnect();
+            whenIdle(1000);
+          }
+        },
+        { rootMargin: "100% 0px" },
+      );
+      areas.forEach((el) => io!.observe(el));
+    };
+    const idle = () => begin();
     if (document.readyState === "complete") idle();
     else window.addEventListener("load", idle, { once: true });
+    // Re-checked on each route until the world has started (a 3D page reached by client navigation).
+    // Once started, the worker is left to finish: the root layout never unmounts.
     return () => {
-      cancelled = true;
-      worker?.terminate();
-      clearTimeout(timer);
-      events.forEach((e) => window.removeEventListener(e, go));
       window.removeEventListener("load", idle);
+      if (fired) return;
+      cancelled = true;
+      io?.disconnect();
+      if (idleId && typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(idleId);
     };
-  }, []);
+  }, [pathname]);
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <GlobeGlow />
-      {dots && <WorldScene dots={dots} />}
+      {dots && <WorldScene key={build} dots={dots} onRestored={restored} />}
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { Anchor } from "@/components/director/Anchor";
 import { DirectorCamera } from "@/components/director/DirectorCamera";
 import { pulse, useReactions } from "@/components/director/reactions";
 import type { DirectorState } from "@/components/director/types";
-import { latticeCube, span } from "@/components/scenes/geometry";
+import { latticeCube, span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 
@@ -47,6 +47,11 @@ const TUBE = new THREE.CubicBezierCurve3(
   new THREE.Vector3(1, 1.7, 0.3),
   new THREE.Vector3(2.05, 0.35, 0),
 );
+// Fixed points the per-frame code lerps between (allocated once, not every frame).
+const MERGE_A = new THREE.Vector3(-0.05, 0, 0);
+const MERGE_B = new THREE.Vector3(0.05, 0, 0);
+const ATTACK_FROM = new THREE.Vector3(-1, 2.4, 1.2);
+const ATTACK_TO = new THREE.Vector3(2.6 - 0.6, 0.1, 0);
 const PACKET_MS = 1600;
 const ATTACK_MS = 1500;
 const SPARKS = 48;
@@ -89,11 +94,20 @@ export default function HandshakeFilm({
   }, []);
   const mats = useMemo(
     () => ({
-      client: new THREE.LineBasicMaterial({ color: c.text3.clone(), transparent: true }),
-      server: new THREE.LineBasicMaterial({ color: c.text3.clone(), transparent: true }),
+      client: new THREE.LineBasicMaterial({
+        color: c.text3.clone(),
+        transparent: true,
+        depthWrite: false,
+      }),
+      server: new THREE.LineBasicMaterial({
+        color: c.text3.clone(),
+        transparent: true,
+        depthWrite: false,
+      }),
       tube: new THREE.MeshBasicMaterial({
         color: c.text3.clone(),
         transparent: true,
+        depthWrite: false,
         opacity: 0.5,
       }),
     }),
@@ -221,7 +235,7 @@ export default function HandshakeFilm({
           const x = ((s0! + t * 0.2 * sp!) % 1) * fused * (ARC_LUT.length - 1);
           const k = Math.floor(x);
           arcV.copy(ARC_LUT[k]!).lerp(ARC_LUT[Math.min(k + 1, ARC_LUT.length - 1)]!, x - k);
-          ap.set([arcV.x + ox!, arcV.y + ox! * 0.5, arcV.z + oz!], i * 3);
+          set3(ap, i, arcV.x + ox!, arcV.y + ox! * 0.5, arcV.z + oz!);
         }
         arc.g.attributes.position!.needsUpdate = true;
         arc.m.opacity = 0.85 * fused;
@@ -256,8 +270,8 @@ export default function HandshakeFilm({
     if (halfA.current && halfB.current && lens.current && key.current && flash.current) {
       const flying = m > 0 && m < 0.85;
       halfA.current.visible = halfB.current.visible = flying;
-      halfA.current.position.lerpVectors(CLIENT, new THREE.Vector3(-0.05, 0, 0), me);
-      halfB.current.position.lerpVectors(SERVER, new THREE.Vector3(0.05, 0, 0), me);
+      halfA.current.position.lerpVectors(CLIENT, MERGE_A, me);
+      halfB.current.position.lerpVectors(SERVER, MERGE_B, me);
       lens.current.scale.setScalar(
         m > 0 ? Math.min(1, m * 3) * (1 - Math.max(0, m - 0.9) * 10) || 0.0001 : 0.0001,
       );
@@ -293,8 +307,8 @@ export default function HandshakeFilm({
       const t = film.attackAt ? (now - film.attackAt) / ATTACK_MS : -1;
       attackPkt.current.visible = t >= 0 && t < 1;
       attackPkt.current.position.lerpVectors(
-        new THREE.Vector3(-1, 2.4, 1.2),
-        SERVER.clone().add(new THREE.Vector3(-0.6, 0.1, 0)),
+        ATTACK_FROM,
+        ATTACK_TO,
         easeToken(Math.min(1, Math.max(0, t))),
       );
       const s = t >= 1 ? span(now - (film.attackAt! + ATTACK_MS), 0, 1100) : 0;
@@ -325,7 +339,13 @@ export default function HandshakeFilm({
       <directionalLight position={[3, 5, 4]} intensity={0.9} />
       <directionalLight position={[-4, 1, -5]} intensity={0.4} color={c.kem} />
       <gridHelper args={[24, 48, c.text3, c.text3]} position={[0, -1.25, 0]}>
-        <meshBasicMaterial attach="material" color={c.text3} transparent opacity={0.08} />
+        <meshBasicMaterial
+          attach="material"
+          color={c.text3}
+          transparent
+          depthWrite={false}
+          opacity={0.08}
+        />
       </gridHelper>
 
       <group ref={clientG} position={CLIENT}>
@@ -346,7 +366,14 @@ export default function HandshakeFilm({
       <mesh geometry={tubeGeo} material={mats.tube} />
 
       <points ref={share} geometry={shareGeo} position={[-2.6, 1.05, 0]} scale={0.0001}>
-        <pointsMaterial color={c.text} size={0.025} sizeAttenuation transparent opacity={0.9} />
+        <pointsMaterial
+          color={c.text}
+          size={0.025}
+          sizeAttenuation
+          transparent
+          depthWrite={false}
+          opacity={0.9}
+        />
       </points>
       <mesh ref={packet} visible={false}>
         <boxGeometry args={[0.2, 0.12, 0.12]} />
@@ -370,7 +397,7 @@ export default function HandshakeFilm({
       </mesh>
       <mesh ref={lens} rotation={[0, Math.PI / 2, 0]} scale={0.0001}>
         <torusGeometry args={[0.34, 0.006, 8, 64]} />
-        <meshBasicMaterial color={c.text} transparent opacity={0.7} />
+        <meshBasicMaterial color={c.text} transparent depthWrite={false} opacity={0.7} />
       </mesh>
       <mesh ref={key} visible={false}>
         <octahedronGeometry args={[0.22, 0]} />
@@ -378,7 +405,7 @@ export default function HandshakeFilm({
       </mesh>
       <mesh ref={flash} visible={false} rotation={[0, Math.PI / 2, 0]}>
         <ringGeometry args={[0.48, 0.5, 64]} />
-        <meshBasicMaterial color={c.ok} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial color={c.ok} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
       <instancedMesh ref={sparks} args={[undefined, undefined, SPARKS]} visible={false}>
         <sphereGeometry args={[1, 6, 6]} />

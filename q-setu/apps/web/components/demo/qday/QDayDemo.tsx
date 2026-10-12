@@ -26,6 +26,7 @@ import { zRange } from "@/lib/mosca";
 import { pushLocal } from "@/lib/client/live";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
+import { openStream } from "@/lib/client/server";
 
 /** The simulator's real hops on the server, and the Q-Day attack running in this tab. */
 const consoleFilter = (e: OpEvent) => e.source === "sim" || e.source === "browser";
@@ -119,12 +120,13 @@ export function QDayDemo() {
   // Live traffic while we're "before Q-Day": the adversary keeps recording.
   useEffect(() => {
     let live = true;
-    const es = new EventSource(`/api/stream?sector=${sector}`);
-    es.onmessage = (m) => {
-      const e = JSON.parse(m.data) as NetEvent;
-      if (e.stage === "sent") setHarvest((h) => ({ ...h, [e.mode]: h[e.mode] + 1 }));
-      if (e.stage === "delivered" && live) void refresh(sector);
-    };
+    const closeStream = openStream(`/api/stream?sector=${sector}`, (es) => {
+      es.onmessage = (m) => {
+        const e = JSON.parse(m.data) as NetEvent;
+        if (e.stage === "sent") setHarvest((h) => ({ ...h, [e.mode]: h[e.mode] + 1 }));
+        if (e.stage === "delivered" && live) void refresh(sector);
+      };
+    });
     void (async () => {
       await fetch("/api/reset", {
         method: "POST",
@@ -140,7 +142,7 @@ export function QDayDemo() {
     })();
     return () => {
       live = false;
-      es.close();
+      closeStream();
     };
   }, [sector, refresh]);
 
@@ -309,7 +311,7 @@ export function QDayDemo() {
       controls={
         <Button
           variant="primary"
-          onClick={() => void (reel.playing ? undefined : reel.play())}
+          onClick={() => (reel.playing ? undefined : reel.play())}
           disabled={reel.busy || qday}
         >
           Go to Q-Day

@@ -14,15 +14,18 @@ import { NODES, ROUTE_CITIES, SOCKETS } from "./geo";
 import { palette } from "./palette";
 import { setHover, world } from "./store";
 import { burst } from "@/lib/client/burst";
+import { set3 } from "@/components/scenes/geometry";
 
 const o = new THREE.Object3D();
+/** Reused by place(): the point straight out from the surface (no allocation per instance per frame). */
+const outward = new THREE.Vector3();
 const v = new THREE.Vector3();
 const RIPPLE_MS = 900;
 const MAX_RIPPLES = 16;
 
 function place(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, scale: number) {
   o.position.copy(pos);
-  o.lookAt(pos.clone().multiplyScalar(2));
+  o.lookAt(outward.copy(pos).multiplyScalar(2));
   o.scale.setScalar(scale);
   o.updateMatrix();
   mesh.setMatrixAt(i, o.matrix);
@@ -31,7 +34,7 @@ function place(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, scale: 
 /** A city pillar: a thin light column standing on the surface, growing with live operations. */
 function placePillar(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, height: number) {
   o.position.copy(pos);
-  o.lookAt(pos.clone().multiplyScalar(2));
+  o.lookAt(outward.copy(pos).multiplyScalar(2));
   o.scale.set(1, 1, Math.max(0.0001, height));
   o.updateMatrix();
   mesh.setMatrixAt(i, o.matrix);
@@ -189,7 +192,7 @@ export function Nodes() {
             for (let s = 0; s < SHARDS; s++) {
               const a = (s / SHARDS) * Math.PI * 2;
               v.set(Math.cos(a), Math.sin(a * 1.7), Math.sin(a)).multiplyScalar(0.06 * e);
-              sp.set([n.pos.x * 1.02 + v.x, n.pos.y * 1.02 + v.y, n.pos.z * 1.02 + v.z], s * 3);
+              set3(sp, s, n.pos.x * 1.02 + v.x, n.pos.y * 1.02 + v.y, n.pos.z * 1.02 + v.z);
             }
             shards.current.geometry.attributes.position!.needsUpdate = true;
             (shards.current.material as THREE.PointsMaterial).opacity = 1 - k2;
@@ -248,7 +251,13 @@ export function Nodes() {
       if (ci !== undefined && active.current.length < MAX_RIPPLES)
         active.current.push({ city: ci, at: q.at });
     }
-    active.current = active.current.filter((a) => now - a.at < RIPPLE_MS);
+    // In place: no new array per frame.
+    {
+      const list = active.current;
+      let w = 0;
+      for (const a of list) if (now - a.at < RIPPLE_MS) list[w++] = a;
+      list.length = w;
+    }
     for (let i = 0; i < MAX_RIPPLES; i++) {
       const a = active.current[i];
       if (!a || cityScale === 0) {

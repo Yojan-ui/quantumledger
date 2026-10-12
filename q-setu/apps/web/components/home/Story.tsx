@@ -8,6 +8,7 @@ import { LazyView } from "@/components/scenes/LazyView";
 import { world } from "@/components/world/store";
 import { STEPS } from "./chapters";
 import { SealedCost } from "./SealedCost";
+import { scrollToY } from "@/lib/client/scroll";
 
 // The Q-Day widget breaks real (tiny) RSA in the browser; its code loads only when the section is near.
 const HarvestQDay = dynamic(() => import("./HarvestQDay"), { ssr: false, loading: () => null });
@@ -51,7 +52,9 @@ export function Story() {
       world.chapter = step.chapter;
       world.accent = step.accent;
       world.glow = step.role;
-      setV(x);
+      // Quantised to 1/50 of a step: React bails out on unchanged values, so the pinned section
+      // re-renders a few times per step, not on every scroll frame.
+      setV(Math.min(N - 0.001, Math.round(x * 50) / 50));
     };
     const onScroll = () => (raf ||= requestAnimationFrame(update));
     const io = new IntersectionObserver(([e]) => e?.isIntersecting && setNear(true), {
@@ -71,7 +74,7 @@ export function Story() {
     const el = root.current;
     if (!el) return;
     const y = el.offsetTop + ((el.offsetHeight - window.innerHeight) * (i + 0.4)) / N;
-    window.scrollTo({ top: y, behavior: "smooth" });
+    scrollToY(y);
   };
 
   const active = Math.floor(v);

@@ -144,9 +144,9 @@ export function ReadinessBars({ className = "" }: { className?: string }) {
                 </div>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-inset" aria-hidden>
                   <div
-                    className="h-full rounded-full transition-all duration-700"
+                    className="h-full origin-left rounded-full transition duration-700"
                     style={{
-                      width: `${Math.max(1, v * 100)}%`,
+                      transform: `scaleX(${Math.max(0.01, v)})`,
                       background: `color-mix(in srgb, var(--warn) ${Math.round((1 - ready) * 100)}%, var(--ok))`,
                     }}
                   />

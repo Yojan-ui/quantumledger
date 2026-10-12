@@ -16,6 +16,7 @@ import { onRoom } from "@/lib/client/room";
 import { stepForward } from "@/components/hud/HudShell";
 import { actions, autoplay, getPipeline, nextStage } from "@/lib/client/pipeline";
 import { pct, READINESS, share } from "@/lib/readiness";
+import { scrollToY } from "@/lib/client/scroll";
 
 const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
   ssr: false,
@@ -251,11 +252,11 @@ export function Tour() {
             if (anchor) {
               await until(() => !!document.getElementById(anchor), 10000);
               // Jump on a fresh page (no long scroll across every section); glide within one.
-              document
-                .getElementById(anchor)
-                ?.scrollIntoView({ behavior: moved ? "instant" : "smooth", block: "start" });
+              const el = document.getElementById(anchor);
+              if (el)
+                scrollToY(el.getBoundingClientRect().top + window.scrollY, { instant: moved });
               await wait(moved ? 400 : 900);
-            } else if (moved) window.scrollTo({ top: 0, behavior: "instant" });
+            } else if (moved) scrollToY(0, { instant: true });
           },
           film: async (last, maxMs) => {
             const hud = () =>

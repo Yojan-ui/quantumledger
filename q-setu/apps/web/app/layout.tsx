@@ -11,6 +11,7 @@ import { GlobeTooltip } from "@/components/world/GlobeTooltip";
 import { LiveTraffic } from "@/components/world/LiveTraffic";
 import { RouteSync } from "@/components/world/RouteSync";
 import { WorldCanvas } from "@/components/world/WorldCanvas";
+import { ServerNote } from "@/components/ui/ServerNote";
 import { serverToken } from "@/lib/brand/tokens-server";
 import { COPY_MODE_SCRIPT } from "@/lib/copy-mode-script";
 import { SITE_NAME, SITE_URL } from "@/lib/meta";
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LiveTraffic />
         <Interactions />
         <Warmup />
+        <ServerNote />
         <GlobeTooltip />
         <CommandMenu />
         <Presenter />

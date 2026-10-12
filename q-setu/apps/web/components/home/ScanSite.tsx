@@ -136,7 +136,7 @@ export function ScanSite() {
                 <div className="space-y-3 border-t border-line pt-6" role="alert">
                   <p className="text-body text-fg">That scan didn’t work.</p>
                   <Text size="small">{error}</Text>
-                  <Button onClick={() => void run()}>Try again</Button>
+                  <Button onClick={() => run()}>Try again</Button>
                 </div>
               )}
               {!busy && !error && result && <ScanResult r={result} />}

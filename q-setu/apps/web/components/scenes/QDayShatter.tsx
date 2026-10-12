@@ -91,10 +91,8 @@ export default function QDayShatter({
     if (!g || !ed) return;
     g.visible = ed.visible = qday;
     shards.forEach((s, i) => {
-      o.position
-        .copy(s.start)
-        .addScaledVector(s.dir, e)
-        .add(new THREE.Vector3(-X, 0, 0));
+      o.position.copy(s.start).addScaledVector(s.dir, e);
+      o.position.x -= X;
       o.rotation.set(s.spin.x * e, s.spin.y * e, s.spin.z * e);
       o.scale.setScalar(1 - 0.35 * e);
       o.updateMatrix();
@@ -112,7 +110,7 @@ export default function QDayShatter({
       <directionalLight position={[2, 3, 4]} intensity={1.2} />
       <mesh ref={classical} position={[-X, 0, 0]}>
         <boxGeometry args={[0.9, 0.9, 0.9]} />
-        <meshBasicMaterial color={c.warn} wireframe transparent opacity={0.7} />
+        <meshBasicMaterial color={c.warn} wireframe transparent depthWrite={false} opacity={0.7} />
       </mesh>
       <instancedMesh ref={glass} args={[shardGeo, undefined, SHARDS]} visible={false}>
         <meshPhysicalMaterial
@@ -125,7 +123,7 @@ export default function QDayShatter({
         />
       </instancedMesh>
       <instancedMesh ref={edges} args={[shardGeo, undefined, SHARDS]} visible={false}>
-        <meshBasicMaterial color={c.warn} wireframe transparent opacity={0.9} />
+        <meshBasicMaterial color={c.warn} wireframe transparent depthWrite={false} opacity={0.9} />
       </instancedMesh>
       <mesh ref={qsetu} position={[X, 0, 0]}>
         <boxGeometry args={[0.9, 0.9, 0.9]} />
@@ -146,7 +144,13 @@ export default function QDayShatter({
         />
         {/* KEM edges: the packet that stays whole reads as encrypted. */}
         <lineSegments geometry={boxEdges}>
-          <lineBasicMaterial color={c.kem} transparent opacity={0.85} toneMapped={false} />
+          <lineBasicMaterial
+            color={c.kem}
+            transparent
+            depthWrite={false}
+            opacity={0.85}
+            toneMapped={false}
+          />
         </lineSegments>
       </mesh>
     </>

@@ -12,6 +12,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { MERKLE_Y, R } from "./geometry";
+import { set3 } from "@/components/scenes/geometry";
 import type { Look } from "./look";
 
 export const NODES = [
@@ -139,7 +140,10 @@ export function Merkle({
     EDGES.forEach(([a, b], j) => {
       const A = nodes.current[a]?.position;
       const B = nodes.current[b]?.position;
-      if (A && B) ep.set([A.x, A.y, A.z, B.x, B.y, B.z], j * 6);
+      if (A && B) {
+        set3(ep, j * 2, A.x, A.y, A.z);
+        set3(ep, j * 2 + 1, B.x, B.y, B.z);
+      }
     });
     edges.geometry.attributes.position!.needsUpdate = true;
     const em = edges.material as THREE.LineBasicMaterial;

@@ -70,8 +70,11 @@
     position: absolute;
     pointer-events: none;
     z-index: -1;
-    width: min(900px, 100%);
+    left: 0;
+    top: 0;
+    width: 900px;
     aspect-ratio: 1;
+    transform-origin: 0 0;
     border-radius: 9999px;
     background: radial-gradient(
       closest-side,
@@ -102,6 +105,54 @@
   html:not([data-copy-mode="technical"]) [data-copy="technical"],
   html[data-copy-mode="technical"] [data-copy="simple"] {
     display: none;
+  }
+  /*
+   * 3D posters: shown until a scene's first frame (then crossfaded out), and again while the GL
+   * context is lost. The "Restoring" note only shows in that second case.
+   */
+  [data-ready] > [data-gl-poster] {
+    opacity: 0;
+  }
+  html[data-gl-lost] [data-gl-poster] {
+    opacity: 1;
+  }
+  [data-gl-lost-note] {
+    display: none;
+  }
+  html[data-gl-lost] [data-gl-lost-note] {
+    display: inline;
+  }
+  /* A button whose async step is running: dimmed, with a thin sweeping bar along its bottom edge. */
+  button[aria-busy="true"] {
+    opacity: 0.7;
+  }
+  button[aria-busy="true"]::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    background: currentColor;
+    transform-origin: left;
+    animation: busy-bar 900ms var(--ease) infinite;
+  }
+  @keyframes busy-bar {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  /* Lenis (lib/client/scroll) */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
   }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;

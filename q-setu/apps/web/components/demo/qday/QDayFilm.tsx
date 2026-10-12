@@ -135,6 +135,7 @@ export default function QDayFilm({
       new THREE.LineBasicMaterial({
         color: c.kem,
         transparent: true,
+        depthWrite: false,
         opacity: 0.6,
         toneMapped: false,
       }),
@@ -242,7 +243,7 @@ export default function QDayFilm({
             />
           </mesh>
           <lineSegments geometry={corridorEdges}>
-            <lineBasicMaterial color={c.text3} transparent opacity={0.35} />
+            <lineBasicMaterial color={c.text3} transparent depthWrite={false} opacity={0.35} />
           </lineSegments>
         </group>
       ))}
@@ -257,11 +258,11 @@ export default function QDayFilm({
           geometry={boxEdges}
           matrixAutoUpdate={false}
         >
-          <lineBasicMaterial color={c.warn} transparent opacity={0.85} />
+          <lineBasicMaterial color={c.warn} transparent depthWrite={false} opacity={0.85} />
         </lineSegments>
       ))}
       <instancedMesh ref={shards} args={[shardGeo, undefined, MAX * SHARDS]} visible={false}>
-        <meshBasicMaterial color={c.warn} wireframe transparent opacity={0.85} />
+        <meshBasicMaterial color={c.warn} wireframe transparent depthWrite={false} opacity={0.85} />
       </instancedMesh>
       <instancedMesh ref={qsetu} args={[box, undefined, MAX]}>
         <meshPhysicalMaterial
@@ -308,10 +309,16 @@ export default function QDayFilm({
       {/* The adversary: an orb recording both corridors through saffron tendrils. */}
       <mesh ref={orb} position={ORB}>
         <icosahedronGeometry args={[1, 2]} />
-        <meshBasicMaterial color={c.warn} wireframe transparent opacity={0.55} />
+        <meshBasicMaterial color={c.warn} wireframe transparent depthWrite={false} opacity={0.55} />
       </mesh>
       <lineSegments geometry={tendrils}>
-        <lineBasicMaterial ref={tendrilMat} color={c.warn} transparent opacity={0.2} />
+        <lineBasicMaterial
+          ref={tendrilMat}
+          color={c.warn}
+          transparent
+          depthWrite={false}
+          opacity={0.2}
+        />
       </lineSegments>
 
       <Anchor

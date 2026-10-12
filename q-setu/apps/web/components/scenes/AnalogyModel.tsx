@@ -14,6 +14,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { set3 } from "@/components/scenes/geometry";
 
 const N = 520;
 
@@ -51,7 +52,7 @@ function padlock(n = N): Float32Array {
       y = 0.14 + (R + t * Math.cos(b)) * Math.sin(a);
       z = t * Math.sin(b);
     }
-    out.set([x, y, z], i * 3);
+    set3(out, i, x, y, z);
   }
   return out;
 }
@@ -90,7 +91,7 @@ function keyShape(n = 420): Float32Array {
       const tooth = Math.floor(r() * 3);
       [x, y] = [0.38 + tooth * 0.1 + (r() - 0.5) * 0.05, -0.04 - r() * (0.12 + tooth * 0.04)];
     }
-    out.set([x, y, (r() - 0.5) * 0.05], i * 3);
+    set3(out, i, x, y, (r() - 0.5) * 0.05);
   }
   return out;
 }
@@ -233,7 +234,13 @@ export default function AnalogyModel({
               </group>
               <group ref={(g) => void (copies.current[i] = g)} visible={false}>
                 <lineSegments geometry={boxGeo}>
-                  <lineBasicMaterial color={c.warn} transparent opacity={0.8} toneMapped={false} />
+                  <lineBasicMaterial
+                    color={c.warn}
+                    transparent
+                    depthWrite={false}
+                    opacity={0.8}
+                    toneMapped={false}
+                  />
                 </lineSegments>
               </group>
             </group>

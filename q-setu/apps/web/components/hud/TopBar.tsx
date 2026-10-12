@@ -28,7 +28,8 @@ const PILL = {
 } as const;
 
 function Clock() {
-  const [t, setT] = useState("");
+  // A same-width placeholder until the client's time is known (no shift when it arrives).
+  const [t, setT] = useState("--:--:--");
   useEffect(() => {
     const tick = () => setT(new Date().toTimeString().slice(0, 8));
     tick();
@@ -105,7 +106,18 @@ export function TopBar({ compact = false }: { compact?: boolean }) {
           style={{ transitionDuration: "600ms" }}
           data-threat={threat(s)}
         >
-          {pill.text}
+          {/* Every label stacked in one cell: the pill is as wide as the longest, so it never resizes. */}
+          <span className="grid">
+            {Object.values(PILL).map((p) => (
+              <span
+                key={p.text}
+                className={`col-start-1 row-start-1 ${p.text === pill.text ? "" : "invisible"}`}
+                aria-hidden={p.text !== pill.text || undefined}
+              >
+                {p.text}
+              </span>
+            ))}
+          </span>
         </span>
         <button
           type="button"

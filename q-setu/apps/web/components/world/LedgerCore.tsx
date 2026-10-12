@@ -20,10 +20,11 @@ export function LedgerCore() {
   const g = useRef<THREE.Group>(null);
   const m = useRef<THREE.Mesh>(null);
   const at = useMemo(() => toVec3(HUB[0], HUB[1], 1.03), []);
+  const out = useMemo(() => at.clone().multiplyScalar(2), [at]);
   useFrame((_, dt) => {
     if (!g.current || !m.current) return;
     g.current.position.copy(at);
-    g.current.lookAt(at.clone().multiplyScalar(2));
+    g.current.lookAt(out);
     g.current.visible = !world.index && world.mode !== "deploy";
     if (world.breathe) m.current.rotation.z += dt * 0.6;
   });

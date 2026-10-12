@@ -13,6 +13,7 @@ import { params } from "./director";
 import { ARCS, arcPoints, toVec3 } from "./geo";
 import { palette } from "./palette";
 import { world } from "./store";
+import { set3 } from "@/components/scenes/geometry";
 
 const SEG = 64;
 const N = ARCS.length;
@@ -204,28 +205,32 @@ export function Arcs() {
     const warn = pulses.g.attributes.aWarn!.array as Float32Array;
     size.fill(0);
     let k = 0;
-    live.current = live.current.filter((l) => {
+    // Compacted in place (no new array per frame).
+    const list = live.current;
+    let keep = 0;
+    for (const l of list) {
       l.t += dt * l.speed;
       if (l.doomed && l.t >= 0.5) {
         // Snap: the tampered packet dies at the break point and the arc flashes saffron.
         flash.current[l.arc] = 1;
         snap[l.arc] = 0.5;
-        return false;
+        continue;
       }
       if (l.t >= 1) {
         world.harvested++;
         if (l.arriveAt && params.accent === "accent")
           world.ripples.push({ city: l.arriveAt, at: performance.now() });
-        return false;
+        continue;
       }
       if (k < pulses.n) {
         pointOnArc(l.arc, l.reverse ? 1 - l.t : l.t, tmp);
-        pos.set([tmp.x, tmp.y, tmp.z], k * 3);
+        set3(pos, k, tmp.x, tmp.y, tmp.z);
         warn[k] = l.doomed ? Math.min(1, l.t * 2) : 0;
         size[k++] = l.size * Math.min(1, level[l.arc]! * 1.6 + 0.25);
       }
-      return true;
-    });
+      list[keep++] = l;
+    }
+    list.length = keep;
     pulses.g.attributes.position!.needsUpdate = true;
     pulses.g.attributes.aSize!.needsUpdate = true;
     pulses.g.attributes.aWarn!.needsUpdate = true;

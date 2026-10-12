@@ -12,7 +12,7 @@ import * as THREE from "three";
 import { Anchor } from "@/components/director/Anchor";
 import { DirectorCamera } from "@/components/director/DirectorCamera";
 import type { DirectorState } from "@/components/director/types";
-import { span } from "@/components/scenes/geometry";
+import { span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { makeLook, type Look } from "@/components/scenes/pipeline/look";
@@ -110,9 +110,14 @@ export default function LedgerFilm({
         fill: new THREE.MeshBasicMaterial({
           color: c.text3.clone(),
           transparent: true,
+          depthWrite: false,
           opacity: 0.08,
         }),
-        line: new THREE.LineBasicMaterial({ color: c.text3.clone(), transparent: true }),
+        line: new THREE.LineBasicMaterial({
+          color: c.text3.clone(),
+          transparent: true,
+          depthWrite: false,
+        }),
       })),
     [c],
   );
@@ -126,6 +131,7 @@ export default function LedgerFilm({
   const p = useMemo(() => new THREE.Vector3(), []);
   const q = useMemo(() => new THREE.Vector3(), []);
   const col = useMemo(() => new THREE.Color(), []);
+  const linkCol = useMemo(() => new THREE.Color(), []);
   const head = useMemo(() => blockPos(N - 1), []);
   const target = useMemo(() => blockPos(TARGET_INDEX), []);
 
@@ -173,7 +179,10 @@ export default function LedgerFilm({
     ].forEach(([a, b], j) => {
       const A = nodes.current[a!]?.position;
       const B = nodes.current[b!]?.position;
-      if (A && B) tp.set([A.x, A.y, A.z, B.x, B.y, B.z], j * 6);
+      if (A && B) {
+        set3(tp, j * 2, A.x, A.y, A.z);
+        set3(tp, j * 2 + 1, B.x, B.y, B.z);
+      }
     });
     treeEdges.geometry.attributes.position!.needsUpdate = true;
     const tm = treeEdges.material as THREE.LineBasicMaterial;
@@ -216,14 +225,15 @@ export default function LedgerFilm({
       m.fill.opacity = 0.1 * (1 - 0.6 * d) + (isBad ? 0.12 : 0);
       if (i > 0) {
         blockPos(i - 1, q);
-        const k = (i - 1) * 6;
-        pos.set([q.x, q.y + 0.0, q.z, p.x, p.y, p.z], k);
+        set3(pos, (i - 1) * 2, q.x, q.y, q.z);
+        set3(pos, (i - 1) * 2 + 1, p.x, p.y, p.z);
         // The link into a block is broken from the edit onward; the gap is drawn faint.
         const gap = i === N / 2;
-        const lcol = c.sig.clone();
+        const lcol = linkCol.copy(c.sig);
         if (tamperedAt && i > TARGET_INDEX) lcol.lerp(c.text3, 0.8);
         if (gap) lcol.multiplyScalar(0.25);
-        lc.set([lcol.r, lcol.g, lcol.b, lcol.r, lcol.g, lcol.b], k);
+        set3(lc, (i - 1) * 2, lcol.r, lcol.g, lcol.b);
+        set3(lc, (i - 1) * 2 + 1, lcol.r, lcol.g, lcol.b);
       }
     }
     linkGeo.attributes.position!.needsUpdate = linkGeo.attributes.color!.needsUpdate = true;
@@ -279,10 +289,16 @@ export default function LedgerFilm({
       <directionalLight position={[2, 5, 5]} intensity={0.8} />
       <directionalLight position={[0, 2, -8]} intensity={0.3} color={c.sig} />
       <gridHelper args={[30, 60, c.text3, c.text3]} position={[0, -0.6, -2]}>
-        <meshBasicMaterial attach="material" color={c.text3} transparent opacity={0.06} />
+        <meshBasicMaterial
+          attach="material"
+          color={c.text3}
+          transparent
+          depthWrite={false}
+          opacity={0.06}
+        />
       </gridHelper>
       <lineSegments geometry={linkGeo}>
-        <lineBasicMaterial vertexColors transparent opacity={0.9} />
+        <lineBasicMaterial vertexColors transparent depthWrite={false} opacity={0.9} />
       </lineSegments>
       {Array.from({ length: N }, (_, i) => (
         <group key={i} ref={(g) => void (blocks.current[i] = g)}>
@@ -292,7 +308,13 @@ export default function LedgerFilm({
       ))}
       <mesh ref={beam} visible={false}>
         <planeGeometry args={[0.04, 1.3]} />
-        <meshBasicMaterial color={c.ok} transparent opacity={0.8} toneMapped={false} />
+        <meshBasicMaterial
+          color={c.ok}
+          transparent
+          depthWrite={false}
+          opacity={0.8}
+          toneMapped={false}
+        />
       </mesh>
 
       <Anchor

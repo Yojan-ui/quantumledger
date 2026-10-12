@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { mosca } from "@/lib/mosca";
 import { R, rng, textPoints } from "./geometry";
+import { set3 } from "@/components/scenes/geometry";
 import type { Look } from "./look";
 
 const RING_N = 160;
@@ -36,7 +37,7 @@ export function Mosca({
     const scatter = new Float32Array(count * 3);
     const r = rng(3);
     for (let i = 0; i < count; i++)
-      scatter.set([(r() - 0.5) * R * 2, (r() - 0.5) * R * 2, (r() - 0.5) * R * 2], i * 3);
+      set3(scatter, i, (r() - 0.5) * R * 2, (r() - 0.5) * R * 2, (r() - 0.5) * R * 2);
     return {
       scatter,
       q: textPoints("X + Y ? Z", count, 0.85),

@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import { demoOnPage, resetAll, sendPresent } from "@/lib/client/present";
+import { scrollToY } from "@/lib/client/scroll";
 
 const KEY = "qsetu:present";
 
@@ -30,7 +31,7 @@ function stepSections(dir: 1 | -1) {
   const y = window.scrollY + 80;
   const tops = sections.map((s) => s.getBoundingClientRect().top + window.scrollY);
   const target = dir > 0 ? tops.find((t) => t > y + 4) : [...tops].reverse().find((t) => t < y - 4);
-  if (target !== undefined) window.scrollTo({ top: target - 56, behavior: "smooth" });
+  if (target !== undefined) scrollToY(target - 56);
 }
 
 function PresenterInner() {

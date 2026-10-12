@@ -85,26 +85,30 @@ export function DirectorCamera({
     Object.assign(user.current, { ty: 0, tp: 0, tz: 1 });
     const p = { t: 0 };
     const side = Math.sign(to.x - from.x || 1);
-    const tl = gsap.timeline({
-      onComplete: () => {
-        settled.current = true;
-        onSettled();
-      },
+    // Inside a gsap.context, killed on unmount or when the next shot starts (it then blends from
+    // wherever the camera is now: `from` is the current position, not the old start).
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          settled.current = true;
+          onSettled();
+        },
+      });
+      tl.to(p, {
+        t: 1,
+        duration,
+        ease: easeToken,
+        onUpdate: () => {
+          curve.getPoint(p.t, base.current);
+          look.current.lerpVectors(fromLook, toLook, p.t);
+          c.fov = fromFov + (toFov - fromFov) * p.t;
+          c.updateProjectionMatrix();
+          // Roll in during the move, settle to level at the end (max ~1.5°).
+          roll.current = side * 0.026 * Math.sin(Math.PI * p.t);
+        },
+      });
     });
-    tl.to(p, {
-      t: 1,
-      duration,
-      ease: easeToken,
-      onUpdate: () => {
-        curve.getPoint(p.t, base.current);
-        look.current.lerpVectors(fromLook, toLook, p.t);
-        c.fov = fromFov + (toFov - fromFov) * p.t;
-        c.updateProjectionMatrix();
-        // Roll in during the move, settle to level at the end (max ~1.5°).
-        roll.current = side * 0.026 * Math.sin(Math.PI * p.t);
-      },
-    });
-    return () => void tl.kill();
+    return () => ctx.kill();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.index, state.take, state.reduce]);
 
@@ -147,19 +151,21 @@ export function DirectorCamera({
   }, [orbit, zoom, state.reduce]);
 
   const off = useRef(new THREE.Vector3());
+  const swayV = useRef(new THREE.Vector3());
   const axis = useRef(new THREE.Vector3());
   useFrame(({ clock }, dt) => {
     const c = cam.current;
     if (!c) return;
     const d = base.current.length();
-    const sway =
-      settled.current && !state.reduce
-        ? new THREE.Vector3(
-            Math.sin((clock.elapsedTime * 2 * Math.PI) / 8) * drift * d,
-            Math.sin((clock.elapsedTime * 2 * Math.PI) / 11) * drift * d * 0.5,
-            0,
-          )
-        : new THREE.Vector3();
+    // The hold drift (no allocation per frame: one reused vector).
+    const sway = swayV.current;
+    if (settled.current && !state.reduce)
+      sway.set(
+        Math.sin((clock.elapsedTime * 2 * Math.PI) / 8) * drift * d,
+        Math.sin((clock.elapsedTime * 2 * Math.PI) / 11) * drift * d * 0.5,
+        0,
+      );
+    else sway.set(0, 0, 0);
     c.position.copy(base.current).add(sway);
     // The viewer's orbit: rotate the camera's offset from its subject, then scale it.
     const u = user.current;

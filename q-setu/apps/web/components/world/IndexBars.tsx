@@ -34,10 +34,16 @@ export function IndexBars() {
   const mats = useMemo(
     () =>
       SECTORS.map(() => ({
-        fill: new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, toneMapped: false }),
+        fill: new THREE.MeshBasicMaterial({
+          transparent: true,
+          depthWrite: false,
+          opacity: 0.85,
+          toneMapped: false,
+        }),
         ghost: new THREE.LineBasicMaterial({
           color: c.text3,
           transparent: true,
+          depthWrite: false,
           opacity: 0.25,
           toneMapped: false,
         }),

@@ -14,6 +14,7 @@ import { easeToken } from "./director";
 import { arcPoints, toVec3 } from "./geo";
 import { palette } from "./palette";
 import { world } from "./store";
+import { set3 } from "@/components/scenes/geometry";
 
 const SEG = 80;
 const POOL = 12;
@@ -103,11 +104,11 @@ export function RoomArcs() {
       ca.copy(c[v.a]).lerp(c[v.b], v.mix);
       cb.copy(c[v.b]);
       pts.forEach((p, i) => {
-        pos.set([p.x, p.y, p.z], i * 3);
+        set3(pos, i, p.x, p.y, p.z);
         // A gradient along the arc between the visitor's two role colours; --danger if tampered.
         if (s.ok) tmp.copy(ca).lerp(cb, i / SEG);
         else tmp.copy(c.danger);
-        col.set([tmp.r, tmp.g, tmp.b], i * 3);
+        set3(col, i, tmp.r, tmp.g, tmp.b);
       });
       slot.mid.copy(pts[Math.floor(SEG / 2)]!);
       slot.geo.attributes.position!.needsUpdate = slot.geo.attributes.color!.needsUpdate = true;
@@ -149,7 +150,7 @@ export function RoomArcs() {
           }
         } else {
           // Parked beyond the far plane.
-          for (let i = 0; i < SHARDS; i++) sp.set([0, 0, 1000], (k * SHARDS + i) * 3);
+          for (let i = 0; i < SHARDS; i++) set3(sp, k * SHARDS + i, 0, 0, 1000);
         }
         if (st > Math.max(SHATTER_MS, 500)) slot.live = slot.line.visible = false;
       }

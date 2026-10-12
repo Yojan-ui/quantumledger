@@ -233,35 +233,38 @@ export function DeployDemo() {
     };
     if (director.state.reduce || travel < 1e-3) return done();
     const p = { t: 0 };
-    let tween: { kill: () => void } | undefined;
+    // Created inside a gsap.context, killed (not reverted: that would snap the camera back) on unmount.
+    let ctx: { kill: () => void } | undefined;
     let cancelled = false;
     // GSAP loads with the first camera move, not with the page.
     void import("gsap").then(({ default: gsap }) => {
       if (cancelled) return;
-      tween = gsap.to(p, {
-        t: 1,
-        duration: Math.min(1.0, Math.max(0.7, 0.7 + travel * 0.3)),
-        ease: easeToken,
-        onUpdate: () => {
-          const t = p.t;
-          pose.current = {
-            lat: from.lat + (to.lat - from.lat) * t,
-            lon: from.lon + (to.lon - from.lon) * t,
-            // The arc: lift away from the surface mid-flight, proportional to the distance travelled.
-            dist:
-              from.dist +
-              (to.dist - from.dist) * t +
-              Math.min(0.6, travel * 0.35) * Math.sin(Math.PI * t),
-            spin: to.spin,
-          };
-          world.shot!.pose = pose.current;
-        },
-        onComplete: done,
+      ctx = gsap.context(() => {
+        gsap.to(p, {
+          t: 1,
+          duration: Math.min(1.0, Math.max(0.7, 0.7 + travel * 0.3)),
+          ease: easeToken,
+          onUpdate: () => {
+            const t = p.t;
+            pose.current = {
+              lat: from.lat + (to.lat - from.lat) * t,
+              lon: from.lon + (to.lon - from.lon) * t,
+              // The arc: lift away from the surface mid-flight, proportional to the distance travelled.
+              dist:
+                from.dist +
+                (to.dist - from.dist) * t +
+                Math.min(0.6, travel * 0.35) * Math.sin(Math.PI * t),
+              spin: to.spin,
+            };
+            world.shot!.pose = pose.current;
+          },
+          onComplete: done,
+        });
       });
     });
     return () => {
       cancelled = true;
-      tween?.kill();
+      ctx?.kill();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [director.state.index, director.state.take, shot]);
@@ -295,7 +298,7 @@ export function DeployDemo() {
       title="Demo 2 · Deploy anywhere"
       caption="Pick a system and deploy its QuantumLedger adapter for real. Grey nodes are harvestable today; sealed nodes turn cyan."
       controls={
-        <Button onClick={() => void reel.to(shots.length - 1)} disabled={running || reel.busy}>
+        <Button onClick={() => reel.to(shots.length - 1)} disabled={running || reel.busy}>
           Deploy all
         </Button>
       }
@@ -369,7 +372,7 @@ export function DeployDemo() {
             </dl>
             <Button
               variant="primary"
-              onClick={() => void reel.to(3)}
+              onClick={() => reel.to(3)}
               disabled={running || reel.busy}
               className="w-full"
             >

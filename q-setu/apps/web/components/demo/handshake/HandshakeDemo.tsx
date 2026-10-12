@@ -444,7 +444,7 @@ export function HandshakeDemo() {
       title="Demo 1 · How it works"
       caption="The real QuantumLedger handshake, running in your browser: one signed hybrid key exchange, then fast symmetric messages. Hover a packet for its bytes."
       controls={
-        <Button onClick={() => void attackShot()} disabled={reel.busy}>
+        <Button onClick={() => attackShot()} disabled={reel.busy}>
           Attack it
         </Button>
       }
