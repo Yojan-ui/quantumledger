@@ -497,13 +497,20 @@ export const nextStage = (s = state) => s.status.findIndex((x) => x !== "done");
  * Autoplay: each stage starts after the previous one's real result has arrived and been on screen
  * for at least `holdMs`. Stops on a failure, at the end, or when switched off.
  */
+/**
+ * How long each stage's result stays on screen in autoplay before the next stage starts: at least
+ * 1.5 s after its effect has played (the camera move, then the morph, the Merkle build…).
+ */
+const HOLD_MS = [3200, 3600, 3400, 4400, 0];
+
 export async function autoplay(holdMs = 1500) {
   set({ autoplay: true });
   while (state.autoplay) {
     const i = nextStage();
     if (i < 0) break;
     const prev = i > 0 ? state.doneAt[i - 1]! : 0;
-    const wait = prev ? Math.max(0, holdMs - (performance.now() - prev)) : 0;
+    const hold = Math.max(holdMs, i > 0 ? HOLD_MS[i - 1]! : 0);
+    const wait = prev ? Math.max(0, hold - (performance.now() - prev)) : 0;
     if (wait) await new Promise((r) => setTimeout(r, wait));
     if (!state.autoplay) break;
     try {

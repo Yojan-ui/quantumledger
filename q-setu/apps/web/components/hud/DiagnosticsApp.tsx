@@ -17,7 +17,7 @@ function Stage() {
   const s = usePipeline((x) => x);
   return (
     <LazyView
-      className="absolute inset-0"
+      className="h-full w-full"
       label={`The diagnostics stage: ${s.domain || "awaiting a target"}`}
     >
       {(on) => <PipelineStage state={s} active={on} />}
