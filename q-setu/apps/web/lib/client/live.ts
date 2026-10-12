@@ -71,6 +71,17 @@ export function recentLive(): OpEvent[] {
   return [...events];
 }
 
+/** Subscribes to the rolling metrics frames (once a second). Keeps the stream open while subscribed. */
+export function onMetrics(fn: (m: Metrics) => void): () => void {
+  const release = retain();
+  const l = () => metrics && fn(metrics);
+  metricsListeners.add(l);
+  return () => {
+    metricsListeners.delete(l);
+    release();
+  };
+}
+
 /** The latest rolling metrics frame from the server (once a second). */
 export function useMetrics(): Metrics | undefined {
   useEffect(() => retain(), []);

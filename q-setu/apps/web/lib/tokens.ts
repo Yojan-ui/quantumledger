@@ -5,7 +5,18 @@
 const cache = new Map<string, string>();
 
 export function token(
-  name: "--bg" | "--bg-raised" | "--text" | "--text-2" | "--text-3" | "--accent" | "--warn",
+  name:
+    | "--bg"
+    | "--bg-raised"
+    | "--text"
+    | "--text-2"
+    | "--text-3"
+    | "--accent"
+    | "--warn"
+    | "--kem"
+    | "--sig"
+    | "--ok"
+    | "--danger",
 ): string {
   if (typeof window === "undefined") return "";
   let v = cache.get(name);

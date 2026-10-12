@@ -5,7 +5,7 @@ import { MaskHeading } from "@/components/ui/MaskHeading";
 /** 09: what do I do next? */
 export function EarlyAccess() {
   return (
-    <Section id="early-access" index="09" label="Early access">
+    <Section id="early-access" index="09" label="Early access" role="ok">
       <Grid className="gap-y-12">
         <div className="col-span-12 lg:col-span-5">
           <MaskHeading text="Be quantum-safe before Q‑Day." />

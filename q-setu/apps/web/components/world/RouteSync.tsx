@@ -31,6 +31,9 @@ export function RouteSync() {
             : "backdrop";
     world.mode = mode;
     world.pagePose = pose ?? null;
+    // Content pages glow KEM (protection); Demo 2 glows OK (protected nodes). Home sections set their own.
+    world.glow =
+      mode === "page" ? "kem" : mode === "deploy" ? "ok" : mode === "story" ? "kem" : null;
     if (mode !== "story") world.chapter = 0;
     world.hover = null;
     notify();

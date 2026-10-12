@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Button, Grid, Label, Section, Text, TextLink } from "@/components/ui";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { Button, Grid, Label, Legend, Section, Text, TextLink } from "@/components/ui";
+import { LazyView } from "@/components/scenes/LazyView";
 import { CountUp } from "@/components/ui/CountUp";
 import { MaskHeading } from "@/components/ui/MaskHeading";
 import { Odometer } from "@/components/ui/Odometer";
@@ -10,6 +12,8 @@ import { errText } from "@/lib/client/api";
 import { useMetrics } from "@/lib/client/live";
 import { useBench } from "@/lib/client/useBench";
 import { ms } from "@/lib/format";
+
+const LedgerChain = dynamic(() => import("@/components/scenes/LedgerChain"), { ssr: false });
 
 interface Verify {
   ok: boolean;
@@ -49,6 +53,12 @@ export function Proof() {
   const [tampered, setTampered] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [still, setStill] = useState(false);
+  useEffect(() => {
+    setStill(
+      window.innerWidth < 768 || window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, []);
 
   const step = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -76,7 +86,7 @@ export function Proof() {
     });
 
   return (
-    <Section id="proof" index="07" label="Proof">
+    <Section id="proof" index="07" label="Proof" role="ok">
       <MaskHeading
         text="Fast enough to forget. Strict enough to catch an insider."
         className="max-w-text"
@@ -123,10 +133,31 @@ export function Proof() {
             />
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-6 lg:col-start-7">
+        <div className="relative col-span-12 lg:col-span-6 lg:col-start-7">
+          {/* Ambient tint: OK while the chain verifies, DANGER once an edit is found. */}
+          <div
+            aria-hidden
+            className={`ambient -top-40 left-1/2 -translate-x-1/2 ${v?.broken ? "glow-danger" : "glow-ok"}`}
+          />
           <Label as="p" tone="strong">
             Q-Ledger · tamper with the audit log
           </Label>
+          {/* Entries #37–#48; #42 is the sixth block. */}
+          <LazyView
+            className="mt-4 h-24 w-full"
+            label="Twelve ledger entries linked by signatures. If entry 42 is edited it turns red and every entry after it can no longer be trusted."
+          >
+            {(on) => (
+              <LedgerChain
+                brokenIndex={
+                  v?.broken && v.broken.id >= 37 && v.broken.id <= 48 ? v.broken.id - 37 : -1
+                }
+                still={still}
+                active={on}
+              />
+            )}
+          </LazyView>
+          <Legend roles={["sig", "ok", "danger"]} className="mt-2" />
           <div className="mt-6 min-h-panel space-y-6 border-t border-line pt-6" aria-live="polite">
             {!v && (
               <Text>
@@ -136,7 +167,7 @@ export function Proof() {
             )}
             {v?.ok && (
               <p className="text-h2 font-medium text-fg">
-                <span className="text-accent">✓</span> Chain intact ·{" "}
+                <span className="text-ok">✓</span> Chain intact ·{" "}
                 <span className="tabular">{v.checked.toLocaleString("en-IN")}</span> entries ·{" "}
                 <span className="tabular">{v.ms.toFixed(0)} ms</span>
               </p>
@@ -144,7 +175,7 @@ export function Proof() {
             {v && !v.ok && v.broken && (
               <div className="animate-reveal space-y-2">
                 <p className="text-h2 font-medium text-fg">
-                  <span className="text-warn">✗</span> Broken at entry #{v.broken.id}
+                  <span className="text-danger">✗</span> Broken at entry #{v.broken.id}
                 </p>
                 <Text size="small">
                   Someone edited that row after it was written. Its SHA3-256 hash no longer matches,

@@ -1,6 +1,6 @@
 "use client";
 
-/** The dotted Earth: uniform land dots (--text at 25–35%), a 6% graticule and a subtle rim (≤20%) that breathes. */
+/** The dotted Earth: land dots (--text at 25–35%), a fainter 8% ocean layer for depth, a 6% graticule and a subtle rim (≤20%) that breathes. */
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
@@ -29,6 +29,26 @@ const dotVertex = /* glsl */ `
   }
 `;
 const dotFragment = /* glsl */ `
+  uniform vec3 uColor; varying float vAlpha;
+  void main() {
+    if (length(gl_PointCoord - 0.5) > 0.5) discard;
+    gl_FragColor = vec4(uColor, vAlpha);
+  }
+`;
+const oceanVertex = /* glsl */ `
+  uniform float uPR;
+  uniform float uAssemble;
+  varying float vAlpha;
+  void main() {
+    vec4 world = modelMatrix * vec4(position * mix(1.6, 1.0, uAssemble), 1.0);
+    float facing = dot(normalize(world.xyz), normalize(cameraPosition - world.xyz));
+    vAlpha = smoothstep(0.0, 0.35, facing) * 0.08 * uAssemble;
+    vec4 mv = viewMatrix * world;
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = 4.0 * uPR / -mv.z;
+  }
+`;
+const oceanFragment = /* glsl */ `
   uniform vec3 uColor; varying float vAlpha;
   void main() {
     if (length(gl_PointCoord - 0.5) > 0.5) discard;
@@ -65,6 +85,19 @@ export function Globe({ dots }: { dots: Dots }) {
     });
     return { g, m };
   }, [dots, pr, c]);
+  // Ocean: same dot shader idea, fixed 8% opacity and smaller, under the land layer.
+  const ocean = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(dots.ocean, 3));
+    const m = new THREE.ShaderMaterial({
+      vertexShader: oceanVertex,
+      fragmentShader: oceanFragment,
+      uniforms: { uPR: { value: pr }, uColor: { value: c.text }, uAssemble: { value: 0 } },
+      transparent: true,
+      depthWrite: false,
+    });
+    return { g, m };
+  }, [dots, pr, c]);
   const rim = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -84,6 +117,7 @@ export function Globe({ dots }: { dots: Dots }) {
     born.at ||= performance.now();
     const t = world.breathe ? Math.min(1, (performance.now() - born.at) / 900) : 1;
     points.m.uniforms.uAssemble!.value = easeToken(t);
+    ocean.m.uniforms.uAssemble!.value = easeToken(t);
   });
   // Idle breathing: the atmosphere rim moves by 2.5% opacity over a 6 s cycle (static when reduced motion).
   useFrame(({ clock }) => {
@@ -126,6 +160,7 @@ export function Globe({ dots }: { dots: Dots }) {
       <lineSegments geometry={graticule}>
         <lineBasicMaterial color={c.text} transparent opacity={0.06} depthWrite={false} />
       </lineSegments>
+      <points geometry={ocean.g} material={ocean.m} />
       <points geometry={points.g} material={points.m} />
       <mesh scale={1.06} material={rim}>
         <sphereGeometry args={[1, 64, 64]} />

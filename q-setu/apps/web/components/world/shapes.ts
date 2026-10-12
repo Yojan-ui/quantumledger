@@ -6,6 +6,8 @@ export interface Dots {
   positions: Float32Array;
   india: Float32Array;
   seed: Float32Array;
+  /** A sparser, fainter layer where the mask says ocean: it gives the sphere real depth. */
+  ocean: Float32Array;
 }
 
 /** Fibonacci-sphere points kept where the mask says land. R = land, G = India. */
@@ -18,6 +20,7 @@ export function sampleLand(
   const pos: number[] = [];
   const ind: number[] = [];
   const seed: number[] = [];
+  const ocean: number[] = [];
   const golden = Math.PI * (3 - Math.sqrt(5));
   for (let i = 0; i < candidates; i++) {
     const y = 1 - (i / (candidates - 1)) * 2;
@@ -30,7 +33,9 @@ export function sampleLand(
     const u = Math.floor(((lon / Math.PI + 1) / 2) * w) % w;
     const v = Math.min(h - 1, Math.floor((0.5 - lat / Math.PI) * h));
     const k = (v * w + u) * 4;
-    if (mask[k]! > 127) {
+    if (mask[k]! <= 127) {
+      if (i % 5 === 0) ocean.push(x, y, z);
+    } else {
       pos.push(x, y, z);
       ind.push(mask[k + 1]! > 127 ? 1 : 0);
       seed.push((Math.sin(i * 12.9898) * 43758.5453) % 1);
@@ -40,5 +45,6 @@ export function sampleLand(
     positions: new Float32Array(pos),
     india: new Float32Array(ind),
     seed: new Float32Array(seed.map((s) => Math.abs(s))),
+    ocean: new Float32Array(ocean),
   };
 }

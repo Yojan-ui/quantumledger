@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ROLES, type Role } from "./Role";
 import { Label } from "./type";
 
 /** 1200px container with 24px side padding (20px on mobile). */
@@ -24,24 +25,22 @@ export function Section({
   id,
   index,
   label,
+  role,
   children,
   className = "",
 }: {
   id?: string;
   index?: string;
   label?: string;
+  /** The section's crypto role: a 6px dot before its index label. */
+  role?: Role;
   children: ReactNode;
   className?: string;
 }) {
   return (
     <section id={id} className={`relative scroll-mt-14 py-24 md:py-40 ${className}`}>
       <Container>
-        {label && (
-          <Label className="mb-6 block">
-            {index ? `${index} — ` : ""}
-            {label}
-          </Label>
-        )}
+        {label && <SectionLabel index={index} label={label} role={role} />}
         {children}
       </Container>
     </section>
@@ -50,4 +49,27 @@ export function Section({
 
 export function Divider({ className = "" }: { className?: string }) {
   return <hr className={`border-0 border-t border-line ${className}`} />;
+}
+
+/** "03 — WHY NOW" with an optional 6px dot in the section's role colour. */
+export function SectionLabel({
+  index,
+  label,
+  role,
+  className = "mb-6",
+}: {
+  index?: string;
+  label: string;
+  role?: Role;
+  className?: string;
+}) {
+  return (
+    <Label className={`flex items-center gap-3 ${className}`}>
+      {role && <span aria-hidden className={`block h-dot w-dot rounded-full ${ROLES[role].bg}`} />}
+      <span>
+        {index ? `${index} — ` : ""}
+        {label}
+      </span>
+    </Label>
+  );
 }

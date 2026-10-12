@@ -51,7 +51,7 @@ export function EarlyAccessForm({ kind = "early-access" }: { kind?: "early-acces
     return (
       <div className="space-y-2 border-t border-line pt-6" role="status">
         <p className="text-h3 font-medium text-fg">
-          <span className="text-accent">✓</span> Thanks. We’ll write to {email}.
+          <span className="text-ok">✓</span> Thanks. We’ll write to {email}.
         </p>
         <Text size="small">We read every request ourselves, usually within two working days.</Text>
       </div>

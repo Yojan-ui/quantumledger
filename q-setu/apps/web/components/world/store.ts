@@ -74,6 +74,10 @@ export const world = {
   scan: null as { lat: number; lon: number; ok: boolean; at: number } | null,
   /** True while the scan section is the one on screen. */
   scanActive: false,
+  /** Role colour of the soft glow behind the globe (null = none). Set by the section on screen. */
+  glow: null as null | "kem" | "sig" | "ok" | "warn" | "danger",
+  /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */
+  cityOps: {} as Record<string, number>,
 };
 
 const listeners = new Set<Listener>();

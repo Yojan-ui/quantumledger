@@ -76,11 +76,11 @@ export function LiveConsole({
               <li key={`${e.source}-${e.seq}`} className="text-fg-3">
                 <p className="flex gap-3">
                   <span>{c.time}</span>
-                  <span className={`w-16 shrink-0 ${c.failed ? "text-warn" : "text-fg-2"}`}>
+                  <span className={`w-16 shrink-0 ${c.failed ? "text-danger" : "text-fg-2"}`}>
                     {c.op}
                   </span>
                   <span className="ml-auto shrink-0">{c.ms}</span>
-                  <span className={c.failed ? "text-warn" : "text-accent"}>{c.mark}</span>
+                  <span className={c.failed ? "text-danger" : "text-ok"}>{c.mark}</span>
                 </p>
                 <p className="truncate pl-16 normal-case">
                   {e.source === "browser" ? "browser · " : ""}

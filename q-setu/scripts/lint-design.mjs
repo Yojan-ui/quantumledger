@@ -4,8 +4,9 @@
  *  - hex / rgb() / hsl() colours outside styles/tokens.css
  *  - banned Tailwind classes (gradient utilities, shadows, blur outside the Nav, bold weights,
  *    pulse/bounce, clip-text)
- *  - CSS gradients, except the three allowed ones in app/globals.css: the panel spotlight
- *    (.spotlight), the accent hairline (.hairline-accent); the globe atmosphere is a shader
+ *  - CSS gradients, except the allowed ones in app/globals.css: the panel spotlight (.spotlight),
+ *    hairlines between role colours (.hairline-accent, .hairline-roles) and the ambient role tint
+ *    behind a 3D object (.ambient, 8% of a role token); the globe atmosphere is a shader
  *  - arbitrary Tailwind values like p-[13px] or text-[#fff], and arbitrary properties like [mask:...],
  *    in className strings and in any other string literal that looks like a class list
  *  - emoji in JSX/HTML
@@ -50,7 +51,7 @@ const RULES = [
     re: /(?:linear|radial|conic)-gradient\(/g,
     allowIn: {
       file: /^app\/globals\.css$/,
-      selector: /^\s*\.(?:spotlight(?:::before)?|hairline-accent)\s*\{/,
+      selector: /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient)\s*\{/,
     },
   },
 ];

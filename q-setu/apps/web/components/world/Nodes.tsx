@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Systems across India, the five adapter sockets, and the route cities. Route cities are hoverable
+ * Systems across India, the five adapter sockets, and the route cities (with light pillars that
+ * grow with each city's live operations). Route cities are hoverable
  * (a tooltip shows their live counts) and ripple once when a sealed packet arrives.
  */
 import { useFrame, useThree } from "@react-three/fiber";
@@ -25,6 +26,15 @@ function place(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, scale: 
   mesh.setMatrixAt(i, o.matrix);
 }
 
+/** A city pillar: a thin light column standing on the surface, growing with live operations. */
+function placePillar(mesh: THREE.InstancedMesh, i: number, pos: THREE.Vector3, height: number) {
+  o.position.copy(pos);
+  o.lookAt(pos.clone().multiplyScalar(2));
+  o.scale.set(1, 1, Math.max(0.0001, height));
+  o.updateMatrix();
+  mesh.setMatrixAt(i, o.matrix);
+}
+
 const CITY_INDEX = new Map<string, number>(ROUTE_CITIES.map((c, i) => [c.id, i]));
 
 export function Nodes() {
@@ -36,6 +46,15 @@ export function Nodes() {
   const sockets = useRef<THREE.InstancedMesh>(null);
   const cities = useRef<THREE.InstancedMesh>(null);
   const ripples = useRef<THREE.InstancedMesh>(null);
+  const pillars = useRef<THREE.InstancedMesh>(null);
+  const heights = useRef(new Float32Array(ROUTE_CITIES.length));
+  const pillarGeo = useMemo(() => {
+    // Unit-length column along +Z (outwards after lookAt), base on the surface.
+    const g = new THREE.CylinderGeometry(0.0026, 0.0026, 1, 6, 1, true);
+    g.translate(0, 0.5, 0);
+    g.rotateX(Math.PI / 2);
+    return g;
+  }, []);
   const active = useRef<{ city: number; at: number }[]>([]);
   const safe = useRef(new Float32Array(NODES.length));
   const vis = useRef(0);
@@ -63,7 +82,7 @@ export function Nodes() {
     SOCKETS.forEach((pos, i) => {
       const on = i === world.socket;
       place(s, i, pos, (on ? 0.03 : 0.018) * sockVis.current);
-      s.setColorAt(i, on ? c.accent : c.text3);
+      s.setColorAt(i, on ? c.kem : c.text3);
     });
 
     // Where the highlighted socket is on screen, for the adapter row's connector line.
@@ -76,6 +95,21 @@ export function Nodes() {
     // Route cities: small neutral markers, hidden while the India dolly shows the systems instead.
     const cityScale = 0.007 * (1 - vis.current) * (world.mode === "story" ? 1 : 0);
     ROUTE_CITIES.forEach((city, i) => place(ct, i, city.pos, cityScale));
+    // Pillar height = live sealed operations in that city (last 60 s), eased so it never jumps.
+    const pl = pillars.current;
+    if (pl) {
+      ROUTE_CITIES.forEach((city, i) => {
+        const ops = world.cityOps[city.id] ?? 0;
+        const target = cityScale > 0 ? 0.012 + Math.min(0.16, (ops / 120) * 0.16) : 0;
+        heights.current[i]! += (target - heights.current[i]!) * Math.min(1, dt * 1.5);
+        placePillar(pl, i, city.pos, heights.current[i]!);
+        // Hovering a city brightens its pillar from 60% to 100% of KEM.
+        col.copy(c.kem).multiplyScalar(world.hover?.id === `city:${city.id}` ? 1 : 0.6);
+        pl.setColorAt(i, col);
+      });
+      pl.instanceMatrix.needsUpdate = true;
+      if (pl.instanceColor) pl.instanceColor.needsUpdate = true;
+    }
 
     // Ripples: one ring per arrival, expanding and fading over RIPPLE_MS.
     const now = performance.now();
@@ -161,6 +195,18 @@ export function Nodes() {
           toneMapped={false}
           side={THREE.DoubleSide}
           depthWrite={false}
+        />
+      </instancedMesh>
+      <instancedMesh
+        ref={pillars}
+        args={[pillarGeo, undefined, ROUTE_CITIES.length]}
+        raycast={() => null}
+      >
+        <meshBasicMaterial
+          transparent
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
         />
       </instancedMesh>
       <instancedMesh ref={ripples} args={[undefined, undefined, MAX_RIPPLES]} raycast={() => null}>

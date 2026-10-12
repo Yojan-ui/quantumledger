@@ -29,6 +29,10 @@ export default {
       "fg-3": "var(--text-3)",
       accent: "var(--accent)",
       warn: "var(--warn)",
+      kem: "var(--kem)",
+      sig: "var(--sig)",
+      ok: "var(--ok)",
+      danger: "var(--danger)",
     },
     fontFamily: {
       sans: ["var(--font-geist-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
@@ -56,7 +60,7 @@ export default {
     extend: {
       maxWidth: { container: px(1200), text: px(560) },
       /** The 6px LIVE dot. */
-      width: { dot: px(6), console: px(360) },
+      width: { dot: px(6), console: px(360), socket: px(120) },
       height: {
         stage: px(560),
         "stage-sm": px(360),
@@ -66,6 +70,7 @@ export default {
         story: "calc(100svh - 56px)",
         dot: px(6),
         console: px(560),
+        socket: px(120),
       },
       minHeight: { svh: "100svh", stage: px(560), panel: px(320), story: "calc(100svh - 56px)" },
       minWidth: { panel: px(640) },

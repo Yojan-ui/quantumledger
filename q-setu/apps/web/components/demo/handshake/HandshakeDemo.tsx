@@ -444,7 +444,7 @@ export function HandshakeDemo() {
                 <p className={`text-small ${i <= stepper.index ? "text-fg" : "text-fg-2"}`}>
                   <span className="mr-3 font-mono text-fg-3">{String(i + 1).padStart(2, "0")}</span>
                   {s.title}
-                  {i <= stepper.index && <span className="ml-2 text-accent">✓</span>}
+                  {i <= stepper.index && <span className="ml-2 text-ok">✓</span>}
                 </p>
                 <Text size="small" className="mt-1">
                   {s.body}

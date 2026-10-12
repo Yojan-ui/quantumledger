@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "./Button";
 import { openCommandMenu } from "./CommandMenu";
 import { Container } from "./layout";
@@ -35,6 +35,21 @@ export function Nav() {
   }, [path]);
   useEffect(() => setOpen(false), [path]);
 
+  // A 1px KEM underline slides to the active item (300 ms).
+  const list = useRef<HTMLUListElement>(null);
+  const [bar, setBar] = useState<{ x: number; w: number } | null>(null);
+  useEffect(() => {
+    const place = () => {
+      const a = list.current?.querySelector<HTMLElement>('[aria-current="page"]');
+      const ul = list.current;
+      if (!a || !ul) return setBar(null);
+      setBar({ x: a.offsetLeft, w: a.offsetWidth });
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [path]);
+
   return (
     <>
       <a
@@ -50,7 +65,7 @@ export function Nav() {
         <Container className="flex h-full items-center justify-between gap-6">
           <Logo />
           <nav aria-label="Main" className="hidden md:block">
-            <ul className="flex items-center gap-8">
+            <ul ref={list} className="relative flex items-center gap-8">
               {NAV_LINKS.map((l) => {
                 const on = path === l.href || path.startsWith(`${l.href}/`);
                 return (
@@ -65,6 +80,11 @@ export function Nav() {
                   </li>
                 );
               })}
+              <span
+                aria-hidden
+                className={`absolute -bottom-2 left-0 h-px bg-kem transition-all duration-300 ${bar ? "opacity-100" : "opacity-0"}`}
+                style={{ width: bar?.w ?? 0, transform: `translateX(${bar?.x ?? 0}px)` }}
+              />
             </ul>
           </nav>
           <div className="flex items-center gap-3">

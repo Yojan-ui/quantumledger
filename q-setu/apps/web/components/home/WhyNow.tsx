@@ -41,7 +41,7 @@ export const MOMENTS = [
 export function WhyNow() {
   const shown = MOMENTS.filter((m) => fact(m.factId));
   return (
-    <Section id="why-now" index="03" label="Why now">
+    <Section id="why-now" index="03" label="Why now" role="warn">
       <MaskHeading
         text="The clock started before the quantum computer exists."
         className="max-w-text"

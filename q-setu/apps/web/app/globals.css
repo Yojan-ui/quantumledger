@@ -57,6 +57,44 @@
     height: 1px;
     background: linear-gradient(90deg, var(--accent), transparent);
   }
+  /* Role hairline: a 1px divider between two role colours (set --from / --to, default KEM → SIG). */
+  .hairline-roles {
+    height: 1px;
+    background: linear-gradient(90deg, var(--from, var(--kem)), var(--to, var(--sig)));
+  }
+  /*
+   * Ambient tint: one soft radial glow behind a section's 3D object, in its role colour at 8%.
+   * Max 900px wide. The page background itself never changes.
+   */
+  .ambient {
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    width: min(900px, 100%);
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--glow, var(--kem)) 8%, transparent),
+      transparent
+    );
+    transition: background var(--dur-reveal) var(--ease);
+  }
+  .glow-kem {
+    --glow: var(--kem);
+  }
+  .glow-sig {
+    --glow: var(--sig);
+  }
+  .glow-ok {
+    --glow: var(--ok);
+  }
+  .glow-warn {
+    --glow: var(--warn);
+  }
+  .glow-danger {
+    --glow: var(--danger);
+  }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);

@@ -207,7 +207,7 @@ export function Scanner() {
             wrap
           >
             <span className="text-fg-2">
-              <span className={probe.hybridPq ? "text-accent" : "text-warn"}>
+              <span className={probe.hybridPq ? "text-kem" : "text-warn"}>
                 {probe.hybridPq ? "✓" : "✗"}
               </span>{" "}
               {probe.host}: {probe.protocol} · {probe.cipher} · key exchange{" "}

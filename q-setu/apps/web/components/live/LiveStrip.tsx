@@ -88,7 +88,7 @@ export function LiveStrip() {
                     this browser in{" "}
                     <span className="tabular text-fg-2">{key.ms.toFixed(2)} ms</span>
                   </span>
-                  <span className="text-accent">✓</span>
+                  <span className="text-ok">✓</span>
                 </>
               )}
             </p>
@@ -103,7 +103,7 @@ export function LiveStrip() {
               <span className="hidden normal-case md:inline">{c.alg}</span>
               <span className="hidden md:inline">{c.bytes}</span>
               <span className="hidden md:inline">{c.ms}</span>
-              <span className={c.failed ? "text-warn" : "text-accent"}>{c.mark}</span>
+              <span className={c.failed ? "text-danger" : "text-ok"}>{c.mark}</span>
               <span className="hidden truncate normal-case lg:inline">{c.detail}</span>
             </p>
           )}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Label } from "@/components/ui";
+import { Label, RoleDot } from "@/components/ui";
 import { scanDate, type ScanView } from "@/lib/scan-types";
 import { ScoreRing } from "./ScoreRing";
 
@@ -16,8 +16,8 @@ export function ScanResult({ r, compact = false }: { r: ScanView; compact?: bool
         <ScoreRing score={r.score} />
         <div className="min-w-0 flex-1 space-y-2">
           <p className="truncate text-h2 font-medium text-fg">{r.probe.host}</p>
-          <p className="text-body text-fg-2">
-            <span className={r.probe.hybridPq ? "text-accent" : "text-warn"}>●</span>{" "}
+          <p className="flex flex-wrap items-center gap-x-2 text-body text-fg-2">
+            <RoleDot role={r.probe.hybridPq ? "kem" : "warn"} />
             {r.probe.hybridPq ? "Hybrid post-quantum key exchange" : "Harvestable today"} ·
             readiness {r.grade.toLowerCase()}
           </p>
@@ -41,7 +41,7 @@ export function ScanResult({ r, compact = false }: { r: ScanView; compact?: bool
               className="flex animate-reveal gap-3 text-body text-fg-2"
               style={{ animationDelay: `${300 + i * 60}ms` }}
             >
-              <span className={`font-mono ${good ? "text-accent" : "text-fg"}`} aria-hidden>
+              <span className={`font-mono ${good ? "text-ok" : "text-warn"}`} aria-hidden>
                 {good ? "✓" : "✗"}
               </span>
               {p}

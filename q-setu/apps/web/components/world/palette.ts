@@ -9,5 +9,9 @@ export function palette() {
     text3: new THREE.Color(token("--text-3")),
     accent: new THREE.Color(token("--accent")),
     warn: new THREE.Color(token("--warn")),
+    kem: new THREE.Color(token("--kem")),
+    sig: new THREE.Color(token("--sig")),
+    ok: new THREE.Color(token("--ok")),
+    danger: new THREE.Color(token("--danger")),
   };
 }

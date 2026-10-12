@@ -2,7 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { Container, Label, Text } from "@/components/ui";
+import { Container, Label, Legend, ROLES, SectionLabel, Text } from "@/components/ui";
+import { LazyView } from "@/components/scenes/LazyView";
 import { MaskHeading } from "@/components/ui/MaskHeading";
 import { world } from "@/components/world/store";
 import { STEPS } from "./chapters";
@@ -10,6 +11,7 @@ import { SealedCost } from "./SealedCost";
 
 // The Q-Day widget breaks real (tiny) RSA in the browser; its code loads only when the section is near.
 const HarvestQDay = dynamic(() => import("./HarvestQDay"), { ssr: false, loading: () => null });
+const HandshakeCubes = dynamic(() => import("@/components/scenes/HandshakeCubes"), { ssr: false });
 
 const N = STEPS.length;
 
@@ -23,6 +25,14 @@ export function Story() {
   const fill = useRef<HTMLSpanElement>(null);
   const [v, setV] = useState(0);
   const [near, setNear] = useState(false);
+  const [replayAt, setReplayAt] = useState(0);
+  // Phones and reduced motion get the handshake's static end state.
+  const [still, setStill] = useState(false);
+  useEffect(() => {
+    setStill(
+      window.innerWidth < 768 || window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, []);
 
   useEffect(() => {
     const el = root.current;
@@ -40,6 +50,7 @@ export function Story() {
       const step = STEPS[Math.floor(x)]!;
       world.chapter = step.chapter;
       world.accent = step.accent;
+      world.glow = step.role;
       setV(x);
     };
     const onScroll = () => (raf ||= requestAnimationFrame(update));
@@ -82,7 +93,7 @@ export function Story() {
             aria-hidden
           />
           <div className="col-span-12 pt-6 md:order-1 md:col-span-6 md:pt-24 lg:col-span-6">
-            <Label className="block">04 — How it works</Label>
+            <SectionLabel index="04" label="How it works" role={step.role} className="" />
             {/* Progress: three steps, the current one bright, a hairline that fills with scroll. */}
             <nav aria-label="Steps" className="mt-6 flex items-center gap-4">
               {STEPS.map((s, i) => (
@@ -91,8 +102,13 @@ export function Story() {
                   type="button"
                   onClick={() => goTo(i)}
                   aria-current={i === active ? "step" : undefined}
-                  className={`font-mono text-label uppercase transition-colors duration-300 ${i === active ? "text-fg" : i < active ? "text-fg-2" : "text-fg-3"}`}
+                  className={`flex items-center gap-2 font-mono text-label uppercase transition-colors duration-300 ${i === active ? "text-fg" : i < active ? "text-fg-2" : "text-fg-3"}`}
                 >
+                  {/* Each tick takes its step's role colour: saffron while harvestable, KEM once sealed. */}
+                  <span
+                    aria-hidden
+                    className={`block h-dot w-dot rounded-full transition-opacity duration-300 ${ROLES[s.role].bg} ${i === active ? "opacity-100" : "opacity-40"}`}
+                  />
                   0{i + 1}
                 </button>
               ))}
@@ -113,7 +129,27 @@ export function Story() {
                 <Text>{step.body}</Text>
               </div>
               {active === 2 && (
-                <div className="mt-8 animate-reveal" style={{ animationDelay: "300ms" }}>
+                <div className="mt-6 animate-reveal space-y-6" style={{ animationDelay: "300ms" }}>
+                  <button
+                    type="button"
+                    onClick={() => setReplayAt(performance.now())}
+                    className="block w-full max-w-text text-left"
+                    aria-label="Replay the handshake"
+                  >
+                    <LazyView
+                      className="h-40 w-full"
+                      label="Client and server lattice cubes: the client sends an ML-KEM packet, the server answers with an ML-DSA signature, and the cubes interlock when the shared key is derived."
+                    >
+                      {(on) => (
+                        <HandshakeCubes
+                          progress={still ? 1 : Math.min(1, Math.max(0, (v - 2) / 0.75))}
+                          replayAt={still ? 0 : replayAt}
+                          active={on}
+                        />
+                      )}
+                    </LazyView>
+                  </button>
+                  <Legend roles={["kem", "sig", "ok"]} />
                   <SealedCost />
                 </div>
               )}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { Container, Heading, Text } from "@/components/ui";
+import { Container, Heading, Legend, Text } from "@/components/ui";
 import { resetAll } from "@/lib/client/present";
 
 /** One click (or R in presenter mode) puts every demo back to a clean start. */
@@ -80,10 +80,11 @@ export function DemoShell({
             {controls}
             <ResetAll />
           </div>
-          <div className="basis-full">
+          <div className="flex basis-full flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <Text size="small" className="max-w-text">
               {caption}
             </Text>
+            <Legend align="right" />
           </div>
         </Container>
       </header>

@@ -11,7 +11,7 @@
  */
 import { useEffect } from "react";
 import { ROUTES } from "@/data/routes";
-import { onLive } from "@/lib/client/live";
+import { onLive, onMetrics } from "@/lib/client/live";
 import type { OpEvent } from "@/lib/live/types";
 import { world } from "./store";
 
@@ -47,6 +47,10 @@ export function LiveTraffic() {
       }
     };
     const off = onLive(handle);
+    // City light pillars: sealed operations per city in the last 60 s.
+    const offMetrics = onMetrics((m) => {
+      world.cityOps = Object.fromEntries(Object.entries(m.byCity).map(([k, v]) => [k, v.sealed]));
+    });
 
     const sectors = ["fintech", "healthcare", "education"];
     let n = 0;
@@ -60,6 +64,7 @@ export function LiveTraffic() {
     }, 6000);
     return () => {
       off();
+      offMetrics();
       clearInterval(tick);
     };
   }, []);

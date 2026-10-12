@@ -16,7 +16,7 @@ export const HERO = {
 };
 
 /** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */
-export const STEPS: (Chapter & { chapter: number })[] = [
+export const STEPS: (Chapter & { chapter: number; role: "warn" | "kem" | "ok" })[] = [
   {
     id: "recorded",
     label: "Step 1 · Recorded today",
@@ -24,6 +24,7 @@ export const STEPS: (Chapter & { chapter: number })[] = [
     body: "Adversaries copy encrypted traffic now and wait. Each pulse is a real packet on this network.",
     accent: "warn",
     chapter: 2.3,
+    role: "warn",
   },
   {
     id: "opened",
@@ -32,6 +33,7 @@ export const STEPS: (Chapter & { chapter: number })[] = [
     body: "Shor’s algorithm breaks RSA and elliptic curves. Watch recorded classical traffic decrypt in your browser.",
     accent: "warn",
     chapter: 3.3,
+    role: "warn",
   },
   {
     id: "sealed",
@@ -40,6 +42,7 @@ export const STEPS: (Chapter & { chapter: number })[] = [
     body: "A hybrid X25519 + ML-KEM-768 handshake, once per session. Every message after it is AES-256-GCM.",
     accent: "accent",
     chapter: 7.3,
+    role: "kem",
   },
 ];
 

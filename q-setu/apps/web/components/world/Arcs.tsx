@@ -94,7 +94,7 @@ export function Arcs() {
         uSnap: { value: new Array(N).fill(0.5) },
         uNeutral: { value: c.text },
         uAccent: { value: c.warn.clone() },
-        uWarn: { value: c.warn },
+        uWarn: { value: c.danger },
       },
       transparent: true,
       depthWrite: false,
@@ -112,7 +112,11 @@ export function Arcs() {
     const m = new THREE.ShaderMaterial({
       vertexShader: `attribute float aSize; attribute float aWarn; varying float vWarn; uniform float uPR; void main(){ vWarn = aWarn; vec4 mv = modelViewMatrix*vec4(position,1.); gl_Position = projectionMatrix*mv; gl_PointSize = aSize*uPR/-mv.z; }`,
       fragmentShader: `uniform vec3 uColor; uniform vec3 uWarn; varying float vWarn; void main(){ float d = length(gl_PointCoord-.5); if (d > .5) discard; gl_FragColor = vec4(mix(uColor, uWarn, vWarn), smoothstep(.5,.2,d)); }`,
-      uniforms: { uPR: { value: pr }, uColor: { value: c.warn.clone() }, uWarn: { value: c.warn } },
+      uniforms: {
+        uPR: { value: pr },
+        uColor: { value: c.warn.clone() },
+        uWarn: { value: c.danger },
+      },
       transparent: true,
       depthWrite: false,
     });

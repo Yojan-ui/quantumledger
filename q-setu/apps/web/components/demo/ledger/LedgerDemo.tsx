@@ -169,7 +169,7 @@ export function LedgerDemo() {
             {verify?.ok && (
               <div className="space-y-1">
                 <p className="text-h2 font-medium text-fg">
-                  <span className="text-accent">✓</span> Chain intact
+                  <span className="text-ok">✓</span> Chain intact
                 </p>
                 <Label as="p">
                   {verify.checked} entries · {verify.ms.toFixed(0)} ms · head{" "}
@@ -180,7 +180,7 @@ export function LedgerDemo() {
             {broken && (
               <div className="space-y-1">
                 <p className="text-h2 font-medium text-fg">
-                  <span className="text-warn">✗</span> Broken at entry #{broken.id}
+                  <span className="text-danger">✗</span> Broken at entry #{broken.id}
                 </p>
                 <Text size="small">{REASON[broken.reason] ?? broken.detail}</Text>
                 <Label as="p">

@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { world } from "./store";
 import type { Dots } from "./shapes";
 
 const WorldScene = dynamic(() => import("./WorldScene"), { ssr: false, loading: () => null });
@@ -10,6 +11,44 @@ const WorldScene = dynamic(() => import("./WorldScene"), { ssr: false, loading: 
  * Mounted once in the root layout. After load (when the browser is idle) a worker samples the land
  * dots and the world mounts. It only ever draws inside a page's [data-world-focus] area.
  */
+/**
+ * The ambient tint behind the globe: a soft radial glow in the current section's role colour (8%,
+ * at most 900px wide), centred on the globe's area. It sits under the canvas, so it is truly behind.
+ */
+function GlobeGlow() {
+  const el = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let raf = 0;
+    let last = "";
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const d = el.current;
+      const r = world.focusRect;
+      if (!d) return;
+      const role = r ? world.glow : null;
+      const key =
+        role && r
+          ? `${role}|${Math.round(r.left)}|${Math.round(r.top)}|${Math.round(r.width)}|${Math.round(r.height)}`
+          : "";
+      if (key === last) return;
+      last = key;
+      if (!role || !r) {
+        d.style.opacity = "0";
+        return;
+      }
+      const size = Math.min(900, Math.max(r.width, r.height) * 1.25);
+      d.style.opacity = "1";
+      d.style.width = `${size}px`;
+      d.style.left = `${r.left + r.width / 2 - size / 2}px`;
+      d.style.top = `${r.top + r.height / 2 - size / 2}px`;
+      d.style.setProperty("--glow", `var(--${role})`);
+    };
+    tick();
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return <div ref={el} className="ambient opacity-0 transition-opacity duration-700" />;
+}
+
 export function WorldCanvas() {
   const [dots, setDots] = useState<Dots>();
   useEffect(() => {
@@ -73,6 +112,7 @@ export function WorldCanvas() {
   }, []);
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+      <GlobeGlow />
       {dots && <WorldScene dots={dots} />}
     </div>
   );

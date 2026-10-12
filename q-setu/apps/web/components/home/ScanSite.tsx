@@ -20,11 +20,14 @@ export function ScanSite() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [result, setResult] = useState<ScanView>();
+  // The glow behind the globe says the verdict: KEM if hybrid post-quantum, WARN if harvestable.
+  const resultRole = useRef<"kem" | "warn" | null>(null);
 
   useEffect(() => {
     const io = new IntersectionObserver(
       ([e]) => {
         world.scanActive = !!e?.isIntersecting;
+        if (e?.isIntersecting) world.glow = resultRole.current;
       },
       { threshold: 0.35 },
     );
@@ -57,6 +60,8 @@ export function ScanSite() {
         ok: data.probe.hybridPq,
         at: performance.now(),
       };
+      resultRole.current = data.probe.hybridPq ? "kem" : "warn";
+      world.glow = resultRole.current;
     } catch (e) {
       setError(
         e instanceof TypeError
@@ -69,7 +74,7 @@ export function ScanSite() {
   }
 
   return (
-    <Section id="scan" index="02" label="Scan your site">
+    <Section id="scan" index="02" label="Scan your site" role="warn">
       <div ref={ref}>
         <Grid className="gap-y-12">
           <div className="col-span-12 lg:col-span-7">

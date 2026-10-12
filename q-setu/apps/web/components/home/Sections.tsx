@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Code, Grid, Heading, Label, Section, Text, TextLink } from "@/components/ui";
+import { Code, Grid, Heading, Label, Section, SectionLabel, Text, TextLink } from "@/components/ui";
+import dynamic from "next/dynamic";
+import { LazyView } from "@/components/scenes/LazyView";
 import { MaskHeading } from "@/components/ui/MaskHeading";
 import { world } from "@/components/world/store";
 import { SOLUTIONS } from "@/data/solutions";
 import { ADAPTERS } from "./chapters";
+
+const SocketModel = dynamic(() => import("@/components/scenes/SocketModel"), { ssr: false });
 
 const ONE_LINE: Record<string, string> = {
   shield: "Legacy servers and APIs. Zero code change.",
@@ -26,6 +30,7 @@ export function Adapters() {
         if (!e?.isIntersecting) return;
         world.chapter = 4.5; // the director's "sockets" pose
         world.accent = "accent";
+        world.glow = "kem";
       },
       { threshold: 0.3 },
     );
@@ -36,7 +41,7 @@ export function Adapters() {
   return (
     <section ref={ref} id="adapters" className="relative scroll-mt-14 py-24 md:py-40">
       <div className="mx-auto w-full max-w-container px-5 md:px-6">
-        <Label className="mb-6 block">05 — Adapters</Label>
+        <SectionLabel index="05" label="Adapters" role="kem" />
         <Grid className="gap-y-12">
           <div className="col-span-12 lg:col-span-7">
             <MaskHeading text="Five ways in. Each one line." />
@@ -46,17 +51,26 @@ export function Adapters() {
                   key={a.id}
                   onPointerEnter={() => setHot(i)}
                   onPointerLeave={() => setHot(-1)}
-                  className="border-t border-line py-6"
+                  className="flex items-center gap-6 border-t border-line py-6"
                 >
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                    <Heading as="h3" variant="h3">
-                      Q-Setu {a.name}
-                    </Heading>
-                    <Text size="small">{ONE_LINE[a.id]}</Text>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                      <Heading as="h3" variant="h3">
+                        Q-Setu {a.name}
+                      </Heading>
+                      <Text size="small">{ONE_LINE[a.id]}</Text>
+                    </div>
+                    <div className="mt-4">
+                      <Code code={a.code} />
+                    </div>
                   </div>
-                  <div className="mt-4">
-                    <Code code={a.code} />
-                  </div>
+                  {/* Hover: this adapter's socket model turns and lights KEM, as does its socket on the globe. */}
+                  <LazyView
+                    className="hidden h-socket w-socket shrink-0 md:block"
+                    label={`Q-Setu ${a.name} socket`}
+                  >
+                    {(on) => <SocketModel id={a.id} hot={hot === i} active={on} />}
+                  </LazyView>
                 </li>
               ))}
             </ul>
@@ -76,7 +90,7 @@ export function Adapters() {
 /** 06: one row per sector, linking to its solution page. */
 export function Solutions() {
   return (
-    <Section id="solutions" index="06" label="Solutions">
+    <Section id="solutions" index="06" label="Solutions" role="sig">
       <MaskHeading text="Built for India’s most sensitive rails." className="max-w-text" />
       <ul className="mt-12 border-b border-line">
         {SOLUTIONS.map((s) => (
@@ -225,7 +239,7 @@ export function ComparisonTable() {
 /** 08: an honest comparison. Libraries are the foundation; Q-Setu is built on them. */
 export function WhyQSetu() {
   return (
-    <Section id="why-q-setu" index="08" label="Why Q-Setu">
+    <Section id="why-q-setu" index="08" label="Why Q-Setu" role="kem">
       <MaskHeading text="Algorithms are solved. Deployment isn’t." className="max-w-text" />
       <div className="mt-12">
         <ComparisonTable />

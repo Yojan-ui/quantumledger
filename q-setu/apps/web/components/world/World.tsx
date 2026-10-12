@@ -22,6 +22,8 @@ function RenderMain() {
     gl.clear();
     const r = world.focusRect;
     if (r) {
+      // drei <View>s leave the viewport set to their own rectangle; the world needs the whole canvas.
+      gl.setViewport(0, 0, size.width, size.height);
       gl.setScissor(r.left, size.height - r.top - r.height, r.width, r.height);
       gl.setScissorTest(true);
       gl.render(scene, camera);

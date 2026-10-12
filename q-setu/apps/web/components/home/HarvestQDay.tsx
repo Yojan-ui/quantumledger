@@ -4,8 +4,12 @@ import { breakClassical, SECTORS, type HarvestRecord } from "@qsetu/sim";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
-import { Label, Stat } from "@/components/ui";
+import { Label, RoleDot, Stat } from "@/components/ui";
+import dynamic from "next/dynamic";
+import { LazyView } from "@/components/scenes/LazyView";
 import { Odometer } from "@/components/ui/Odometer";
+
+const QDayShatter = dynamic(() => import("@/components/scenes/QDayShatter"), { ssr: false });
 
 interface Row {
   id: string;
@@ -69,6 +73,13 @@ export default function HarvestQDay({ progress }: { progress: number }) {
     };
   }, []);
 
+  const [still, setStill] = useState(false);
+  useEffect(() => {
+    setStill(
+      window.innerWidth < 768 || window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, []);
+  const firstPlain = rows?.find((r) => r.mode === "classical" && r.plain)?.plain;
   const year = 2026 + Math.round(Math.min(1, Math.max(0, progress / QDAY_AT)) * 9);
   const qday = progress >= QDAY_AT;
   return (
@@ -80,8 +91,34 @@ export default function HarvestQDay({ progress }: { progress: number }) {
           label="Packets recorded"
         />
       </div>
+      <div>
+        <LazyView
+          className="h-32 w-full"
+          label="Two recorded packets. At Q-Day the classical one shatters; the Q-Setu one stays whole."
+        >
+          {(on) => <QDayShatter qday={qday} still={still} active={on} />}
+        </LazyView>
+        <div className="grid grid-cols-2 gap-6 font-mono text-label uppercase text-fg-3">
+          <div className="space-y-1 text-center">
+            <RoleDot role="warn" label="Classical packet" />
+            <p
+              className={`truncate normal-case text-fg transition-opacity duration-700 ${qday && firstPlain ? "opacity-100" : "opacity-0"}`}
+            >
+              {firstPlain ?? " "}
+            </p>
+          </div>
+          <div className="space-y-1 text-center">
+            <RoleDot role="kem" label="Q-Setu packet" />
+            <p
+              className={`normal-case transition-opacity duration-700 ${qday ? "opacity-100" : "opacity-0"}`}
+            >
+              still sealed
+            </p>
+          </div>
+        </div>
+      </div>
       <ul className="divide-y divide-line border-y border-line" aria-label="Recorded packets">
-        {(rows ?? []).map((r) => (
+        {(rows ?? []).slice(0, 4).map((r) => (
           <li key={r.id} className="grid grid-cols-12 gap-3 py-3">
             <Label as="p" className="col-span-4 pt-px">
               {r.mode === "classical" ? "Classical · RSA" : "Q-Setu · ML-KEM"}

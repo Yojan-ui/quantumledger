@@ -14,5 +14,10 @@ self.onmessage = async (e: MessageEvent<{ maskUrl: string; candidates: number }>
     bmp.height,
     candidates,
   );
-  postMessage({ dots }, [dots.positions.buffer, dots.india.buffer, dots.seed.buffer]);
+  postMessage({ dots }, [
+    dots.positions.buffer,
+    dots.india.buffer,
+    dots.seed.buffer,
+    dots.ocean.buffer,
+  ]);
 };

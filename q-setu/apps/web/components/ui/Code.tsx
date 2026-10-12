@@ -102,7 +102,7 @@ export function Code({
             aria-hidden
             className={`col-start-1 row-start-1 text-fg transition duration-150 ${copied ? "opacity-100" : "translate-y-1 opacity-0"}`}
           >
-            Copied <span className="text-accent">✓</span>
+            Copied <span className="text-ok">✓</span>
           </span>
           <span className="sr-only" aria-live="polite">
             {copied ? "Copied" : ""}

@@ -14,7 +14,13 @@
   --text-2: #a1a4ab;
   --text-3: #797d84; /* 4.6:1 on --bg-raised, 4.8:1 on --bg (WCAG AA for small text) */
   --accent: #3de0ff; /* protected */
-  --warn: #ff9933; /* vulnerable / India */
+  --warn: #ff9933; /* vulnerable / classical / India */
+
+  /* crypto roles: colour encodes meaning, learnt once, read everywhere */
+  --kem: #3de0ff; /* encryption (ML-KEM): arcs, sealed packets, "encrypted" */
+  --sig: #8b9dff; /* signatures (ML-DSA): signature rings, ledger links, "signed" */
+  --ok: #3ddc97; /* verified / protected: ✓, protected nodes, success */
+  --danger: #ff5c5c; /* attack / tampered: rejected packets, broken ledger entry */
 
   /* motion */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);

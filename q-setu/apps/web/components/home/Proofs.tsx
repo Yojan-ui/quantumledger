@@ -27,7 +27,7 @@ import { bytes, ms, us } from "@/lib/format";
 function Result({ ok = true, children }: { ok?: boolean; children: ReactNode }) {
   return (
     <p className="font-mono text-small text-fg-2">
-      <span className={ok ? "text-accent" : "text-warn"}>{ok ? "✓" : "✗"}</span> {children}
+      <span className={ok ? "text-ok" : "text-danger"}>{ok ? "✓" : "✗"}</span> {children}
     </p>
   );
 }
