@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analogy } from "@/components/home/Analogy";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero } from "@/components/home/Hero";
 import { IndexSection } from "@/components/home/IndexSection";
@@ -26,6 +27,7 @@ export default function Home() {
       <Nav />
       <main id="main">
         <Hero />
+        <Analogy index="01" />
         <ScanSite />
         <IndexSection index="02" />
         <WhyNow />

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "./Button";
 import { openCommandMenu } from "./CommandMenu";
+import { setCopyMode, useCopyMode } from "@/lib/client/copy-mode";
 import { Container } from "./layout";
 import { Logo } from "./Logo";
 
@@ -20,6 +21,30 @@ export const NAV_LINKS = [
  * 56px sticky nav, the site's only translucent surface. On the home page its primary button hides
  * while the hero (which has its own primary) is on screen: never two primaries in one viewport.
  */
+/** Simple / Technical: every section has both versions of its copy. Remembered in localStorage. */
+function CopyToggle({ className = "" }: { className?: string }) {
+  const mode = useCopyMode();
+  return (
+    <div
+      role="group"
+      aria-label="Explanation level"
+      className={`flex h-8 items-center rounded-sm border border-line p-px ${className}`}
+    >
+      {(["simple", "technical"] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          aria-pressed={mode === m}
+          onClick={() => setCopyMode(m)}
+          className={`h-full rounded-sm px-2 font-mono text-label uppercase transition-colors duration-150 ${mode === m ? "bg-raised text-fg" : "text-fg-3 hover:text-fg"}`}
+        >
+          {m}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function Nav() {
   const path = usePathname();
   const [heroVisible, setHeroVisible] = useState(false);
@@ -88,6 +113,7 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
+            <CopyToggle />
             <button
               type="button"
               onClick={openCommandMenu}

@@ -15,3 +15,20 @@ test("readiness index: sector totals, methodology, no site names", async ({ page
   const text = await page.locator("main").innerText();
   expect(text).not.toMatch(/hdfcbank|icicibank|uidai|aiims|airtel/i);
 });
+
+// Simple / Technical: one toggle swaps every section's copy and is remembered.
+test("simple / technical copy toggle persists", async ({ page }) => {
+  await page.goto("/");
+  const simple = page.locator("#analogy").getByText("Everything has a lock");
+  const technical = page.locator("#analogy").getByText("Today: classical key exchange");
+  await expect(simple).toBeVisible();
+  await expect(technical).toBeHidden();
+  await page.getByRole("button", { name: "technical" }).first().click();
+  await expect(technical).toBeVisible();
+  await expect(simple).toBeHidden();
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-copy-mode", "technical");
+  await page.locator('[data-term="ml-kem"]').first().hover();
+  await expect(page.getByRole("tooltip").filter({ hasText: "FIPS 203" })).toBeVisible();
+  await page.getByRole("button", { name: "simple" }).first().click();
+});

@@ -10,6 +10,7 @@ import { LiveTraffic } from "@/components/world/LiveTraffic";
 import { RouteSync } from "@/components/world/RouteSync";
 import { WorldCanvas } from "@/components/world/WorldCanvas";
 import { serverToken } from "@/lib/brand/tokens-server";
+import { COPY_MODE_SCRIPT } from "@/lib/copy-mode-script";
 import { SITE_NAME, SITE_URL } from "@/lib/meta";
 import "./globals.css";
 
@@ -60,7 +61,15 @@ const PLAUSIBLE =
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Simple / Technical copy, applied before first paint (no flash of the other version). */}
+        <script dangerouslySetInnerHTML={{ __html: COPY_MODE_SCRIPT }} />
+      </head>
       <body>
         <script
           type="application/ld+json"

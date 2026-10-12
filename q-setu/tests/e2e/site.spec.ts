@@ -63,7 +63,7 @@ test("home: nine sections in order, each with an index label", async ({ page }) 
   await expect(page.getByRole("link", { name: "Try it live" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Scan your site" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Scan any site" })).toBeVisible();
 });
 
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {

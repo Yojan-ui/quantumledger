@@ -5,6 +5,7 @@ import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
 import { ButtonLink, Container, Legend, Text } from "@/components/ui";
+import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { HERO } from "./chapters";
 
@@ -65,7 +66,9 @@ export function Hero() {
             </span>
           </h1>
           <div className="mt-6 max-w-text animate-reveal" style={{ animationDelay: "520ms" }}>
-            <Text>{HERO.body}</Text>
+            <Text>
+              <Copy simple={HERO.body} technical={HERO.technical} />
+            </Text>
           </div>
           <div
             className="mt-8 flex flex-wrap gap-3 animate-reveal"

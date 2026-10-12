@@ -12,7 +12,9 @@ export interface Chapter {
 
 export const HERO = {
   title: "Make anything in India quantum\u2011safe. In one line.",
-  body: "Your data is being harvested today. Q-Setu makes any system in India quantum-safe in one line, before Q-Day.",
+  body: "Locked data can be copied today and opened by a future quantum computer. Q-Setu puts quantum-safe locks on any system in India, in one line, before that day comes.",
+  technical:
+    "Harvest now, decrypt later is happening today. Q-Setu adds hybrid X25519 + ML-KEM-768 key exchange and ML-DSA signatures (FIPS 203/204) to any system, in one line, before Q-Day.",
 };
 
 /** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */
