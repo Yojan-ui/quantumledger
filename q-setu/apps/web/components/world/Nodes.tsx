@@ -13,6 +13,7 @@ import { params } from "./director";
 import { NODES, ROUTE_CITIES, SOCKETS } from "./geo";
 import { palette } from "./palette";
 import { setHover, world } from "./store";
+import { burst } from "@/lib/client/burst";
 
 const o = new THREE.Object3D();
 const v = new THREE.Vector3();
@@ -261,9 +262,25 @@ export function Nodes() {
         onPointerOver={(e) => {
           if (e.instanceId === undefined || vis.current > 0.5) return;
           const city = ROUTE_CITIES[e.instanceId]!;
-          setHover({ id: `city:${city.id}`, label: city.label });
+          setHover({ id: `city:${city.id}`, label: `${city.label} · click to seal a packet` });
         }}
         onPointerOut={() => setHover(null)}
+        onClick={(e) => {
+          if (e.instanceId === undefined || vis.current > 0.5) return;
+          e.stopPropagation();
+          const city = ROUTE_CITIES[e.instanceId]!;
+          const at = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY };
+          // A real transaction on a route from this city; the bus brings its packet back as an arc.
+          void fetch("/api/seal-from", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ city: city.id }),
+          }).then((r) => {
+            if (!r.ok) return;
+            world.ripples.push({ city: city.id, at: performance.now() });
+            burst(at);
+          });
+        }}
       >
         {/* Generous hit area: the visible dot is drawn smaller by the scale. */}
         <circleGeometry args={[1.6, 16]} />

@@ -86,12 +86,13 @@ test("early access: validated, stored, thanked", async ({ page, request }) => {
   const bad = await request.post("/api/early-access", { data: { email: "nope" } });
   expect(bad.status()).toBe(400);
   await page.goto("/#early-access");
-  await page.getByLabel("Name").fill("Asha Rao");
-  await page.getByLabel("Work email").fill("asha@example.in");
-  await page.getByLabel("Organisation").fill("Example Bank");
-  await page.getByLabel("Sector").selectOption("fintech");
-  await page.getByLabel("What would you protect first?").fill("UPI switch links");
-  await page.getByRole("button", { name: "Request early access" }).click();
+  const form = page.locator("#early-access");
+  await form.getByLabel("Name").fill("Asha Rao");
+  await form.getByLabel("Work email").fill("asha@example.in");
+  await form.getByLabel("Organisation").fill("Example Bank");
+  await form.getByLabel("Sector").selectOption("fintech");
+  await form.getByLabel("What would you protect first?").fill("UPI switch links");
+  await form.getByRole("button", { name: "Request early access" }).click();
   await expect(page.getByText("Thanks. We’ll write to asha@example.in.")).toBeVisible();
 });
 

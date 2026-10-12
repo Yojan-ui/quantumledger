@@ -3,7 +3,7 @@
 /**
  * The Readiness Index on the globe: one bar per sector rising out of India, its height the measured
  * share (thin ghost column = 100%), its colour --warn → --ok by how ready that share means (mixed in
- * sRGB). Bars rise 80 ms apart over 700 ms and sink when the section leaves. They stand in a row
+ * sRGB). Bars rise 80 ms apart over 450 ms and sink when the section leaves. They stand in a row
  * across India; a bar's place doesn't mean that sector's sites are there.
  */
 import { useFrame, useThree } from "@react-three/fiber";
@@ -17,7 +17,7 @@ import { world } from "./store";
 
 const MAX_H = 0.55;
 const W = 0.032;
-const RISE_MS = 700;
+const RISE_MS = 450;
 const STAGGER_MS = 80;
 
 export function IndexBars() {

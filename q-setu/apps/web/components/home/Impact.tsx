@@ -142,7 +142,7 @@ export function Impact({ index }: { index: string }) {
             aria-label="Your records"
           >
             <label className="block">
-              <span className="font-mono text-label uppercase text-fg-3">Sector</span>
+              <span className="font-mono text-label uppercase text-fg-3">Your sector</span>
               <select
                 value={sector}
                 onChange={(e) => {

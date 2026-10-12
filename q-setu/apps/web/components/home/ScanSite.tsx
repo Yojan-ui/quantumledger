@@ -5,6 +5,7 @@ import { Button, Grid, Label, Section, Text } from "@/components/ui";
 import { MaskHeading } from "@/components/ui/MaskHeading";
 import { ScanResult, ScanSkeleton } from "@/components/scan/ScanResult";
 import { world } from "@/components/world/store";
+import { burst } from "@/lib/client/burst";
 import { track } from "@/lib/client/analytics";
 import { errText } from "@/lib/client/api";
 import { SUGGESTED_HOSTS, type ScanView } from "@/lib/scan-types";
@@ -54,6 +55,8 @@ export function ScanSite() {
       const data = (await res.json()) as ScanView;
       if (!res.ok) throw new Error(errText(data, `Scan failed (${res.status})`));
       setResult(data);
+      // Done: a short burst from the scan box (once, < 600 ms).
+      if (input.current) burst(input.current);
       world.scan = {
         lat: data.geo.lat,
         lon: data.geo.lon,

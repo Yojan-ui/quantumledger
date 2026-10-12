@@ -1,6 +1,7 @@
 "use client";
 
-import { breakClassical, SECTORS, type HarvestRecord } from "@qsetu/sim";
+import { SECTORS, type HarvestRecord } from "@qsetu/sim";
+import { breakInWorker } from "@/lib/client/qday-crypto";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
@@ -54,7 +55,7 @@ export default function HarvestQDay({ progress }: { progress: number }) {
       const out: Row[] = [];
       for (const { s, records } of all) {
         const cls = records.filter((r) => r.mode === "classical").slice(-1);
-        const broken = breakClassical(cls).find((o) => o.plaintext);
+        const broken = (await breakInWorker(cls)).outcomes.find((o) => o.plaintext);
         const c = cls[0];
         if (c)
           out.push({

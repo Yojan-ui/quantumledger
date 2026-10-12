@@ -1,19 +1,5 @@
 "use client";
 
-import {
-  clientFinish,
-  clientHello,
-  createIdentity,
-  handshakeBytes,
-  serverComplete,
-  serverRespond,
-  utf8ToBytes,
-  type ClientState,
-  type Identity,
-  type ServerPending,
-  type ServerHello,
-  type Session,
-} from "@qsetu/core";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { DirectorHUD } from "@/components/director/HUD";
@@ -27,6 +13,7 @@ import { ComputeMeter, type MeterReading } from "@/components/demo/shell/Compute
 import { DemoShell } from "@/components/demo/shell/DemoShell";
 import { hexPreview, us } from "@/lib/format";
 import { errText } from "@/lib/client/api";
+import { hs } from "@/lib/client/handshake-crypto";
 import { pushLocal, useMetrics } from "@/lib/client/live";
 import { useStepper } from "@/lib/client/useStepper";
 import type { OpEvent, PolicyState } from "@/lib/live/types";
@@ -161,18 +148,13 @@ const consoleFilter = (e: OpEvent) =>
   e.op === "ROTATE" ||
   (e.source === "mesh" && e.op === "HANDSHAKE");
 
-interface Live {
-  identity: Identity;
-  client?: ClientState;
-  hello?: ReturnType<typeof clientHello>["hello"];
-  serverHello?: ServerHello;
-  pending?: ServerPending;
-  clientSession?: Session;
-  serverSession?: Session;
-}
+/** Hex of the first `n` bytes, with "…" when the value is longer (it may be a truncated copy). */
+const head = (b: Uint8Array, n: number, total: number) =>
+  hexPreview(b.subarray(0, n), n) + (total > n ? "…" : "");
 
 export function HandshakeDemo() {
-  const live = useRef<Live>(undefined);
+  // The crypto runs in a worker (lib/client/handshake-crypto); this page only stages it.
+  const ready = useRef<Promise<unknown>>(Promise.resolve());
   const [packets, setPackets] = useState<ScenePacket[]>([]);
   const [log, setLog] = useState<{ text: string; tone?: "ok" | "bad" }[]>([]);
   const [reading, setReading] = useState<MeterReading>();
@@ -192,7 +174,7 @@ export function HandshakeDemo() {
       .then((p: PolicyState) => setPolicy(p));
   }, []);
   useEffect(() => {
-    live.current = { identity: createIdentity(profile) };
+    ready.current = hs.identity(profile);
   }, [profile]);
   useEffect(() => {
     if (metrics?.policy) setPolicy(metrics.policy);
@@ -234,85 +216,61 @@ export function HandshakeDemo() {
   const say = (text: string, tone?: "ok" | "bad") => setLog((l) => [...l, { text, tone }]);
 
   async function run(i: number) {
-    const L = live.current!;
+    await ready.current;
     if (i === 0) {
-      const t = performance.now();
-      const c = clientHello(profile);
-      const cpu = performance.now() - t;
+      const c = await hs.hello(profile);
       pushLocal({
         op: "HANDSHAKE",
         alg: "x25519",
-        ms: cpu,
-        bytes: handshakeBytes.clientHello(c.hello),
+        ms: c.ms,
+        bytes: c.bytes,
         ok: true,
         detail: "ClientHello",
       });
-      L.client = c.state;
-      L.hello = c.hello;
-      patch({
-        shareHex: hexPreview(c.hello.x25519, 8),
-        helloBytes: handshakeBytes.clientHello(c.hello),
-      });
-      setReading({
-        label: "Step 1 · ClientHello",
-        cpuMs: cpu,
-        bytesAdded: handshakeBytes.clientHello(c.hello),
-      });
+      patch({ shareHex: hexPreview(c.x25519, 8), helloBytes: c.bytes });
+      setReading({ label: "Step 1 · ClientHello", cpuMs: c.ms, bytesAdded: c.bytes });
       await send({
         dir: "c2s",
         kind: "hello",
         label: "ClientHello",
         alg: "X25519 key share",
-        bytes: handshakeBytes.clientHello(c.hello),
-        hex: hexPreview(c.hello.x25519, 32),
+        bytes: c.bytes,
+        hex: hexPreview(c.x25519, 32),
       });
-      say(
-        `ClientHello → X25519 share ${hexPreview(c.hello.x25519, 8)} (${handshakeBytes.clientHello(c.hello)} B)`,
-      );
+      say(`ClientHello → X25519 share ${hexPreview(c.x25519, 8)} (${c.bytes} B)`);
     } else if (i === 1) {
-      const t = performance.now();
-      const s = serverRespond(L.hello!, L.identity);
-      const cpu = performance.now() - t;
+      const s = await hs.respond();
       pushLocal({
         op: "SIGN",
         alg: `${kemName} keygen · ${sigName}`.toLowerCase(),
-        ms: cpu,
-        bytes: handshakeBytes.serverHello(s.serverHello),
+        ms: s.ms,
+        bytes: s.bytes,
         ok: true,
         detail: "ServerHello signed",
       });
-      L.serverHello = s.serverHello;
-      L.pending = s.pending;
-      const b = handshakeBytes.serverHello(s.serverHello);
-      patch({
-        signedAt: performance.now(),
-        kemPkBytes: s.serverHello.kemPublicKey.length,
-        sigBytes: s.serverHello.signature.length,
-      });
+      patch({ signedAt: performance.now(), kemPkBytes: s.kemPkBytes, sigBytes: s.sigBytes });
       setReading({
         label: `Step 2 · ServerHello (${kemName} keygen + ${sigName} sign)`,
-        cpuMs: cpu,
-        bytesAdded: b,
+        cpuMs: s.ms,
+        bytesAdded: s.bytes,
       });
       await send({
         dir: "s2c",
         kind: "signed",
         label: "ServerHello (signed)",
         alg: `${kemName} pk + ${sigName} signature`,
-        bytes: b,
-        hex: hexPreview(s.serverHello.kemPublicKey, 32),
+        bytes: s.bytes,
+        hex: hexPreview(s.kemPublicKey, 32),
       });
       say(
-        `ServerHello ← ${kemName} key (${s.serverHello.kemPublicKey.length} B) sealed with ${sigName} (${s.serverHello.signature.length} B)`,
+        `ServerHello ← ${kemName} key (${s.kemPkBytes} B) sealed with ${sigName} (${s.sigBytes} B)`,
       );
     } else if (i === 2) {
-      const t = performance.now();
-      const f = clientFinish(L.client!, L.serverHello!, L.identity.publicKey);
-      const tc = performance.now() - t;
+      const f = await hs.finish();
       pushLocal({
         op: "VERIFY",
         alg: sigName.toLowerCase(),
-        ms: tc,
+        ms: f.tc,
         ok: true,
         detail: "server hello verified",
       });
@@ -323,68 +281,58 @@ export function HandshakeDemo() {
         kind: "finish",
         label: "ClientFinish",
         alg: `${kemName} ciphertext + key confirmation`,
-        bytes: handshakeBytes.clientFinish(f.finish),
-        hex: hexPreview(f.finish.kemCiphertext, 32),
+        bytes: f.bytes,
+        hex: hexPreview(f.kemCiphertext, 32),
       });
-      const t2 = performance.now();
-      const server = serverComplete(L.pending!, f.finish);
-      const ts = performance.now() - t2;
-      L.clientSession = f.session;
-      L.serverSession = server;
-      patch({ sessionId: server.id, finishBytes: handshakeBytes.clientFinish(f.finish) });
+      patch({ sessionId: f.sessionId, finishBytes: f.bytes });
       pushLocal({
         op: "HANDSHAKE",
         alg: `${kemName}+x25519`.toLowerCase(),
-        ms: tc + ts,
-        bytes: handshakeBytes.clientFinish(f.finish),
+        ms: f.tc + f.ts,
+        bytes: f.bytes,
         ok: true,
-        detail: `session ${server.id.slice(0, 8)} established`,
+        detail: `session ${f.sessionId.slice(0, 8)} established`,
       });
       setReading({
         label: "Step 3 · verify + encapsulate + decapsulate + HKDF",
-        cpuMs: tc + ts,
-        bytesAdded: handshakeBytes.clientFinish(f.finish),
+        cpuMs: f.tc + f.ts,
+        bytesAdded: f.bytes,
       });
       say(
-        `ss_X25519 ‖ ss_ML-KEM → HKDF-SHA256 → session ${server.id.slice(0, 12)}… · key confirmation ✓`,
+        `ss_X25519 ‖ ss_ML-KEM → HKDF-SHA256 → session ${f.sessionId.slice(0, 12)}… · key confirmation ✓`,
         "ok",
       );
     } else {
-      const msgs = Array.from({ length: 14 }, (_, k) =>
-        utf8ToBytes(JSON.stringify({ n: k, amountINR: (100 + k * 37).toFixed(2) })),
-      );
-      const t = performance.now();
-      const sealed = msgs.map((m) => L.clientSession!.seal(m));
-      const opened = sealed.map((m) => L.serverSession!.open(m));
-      const per = ((performance.now() - t) / msgs.length) * 1000;
-      const first = sealed[0]!;
+      const m = await hs.messages(14);
+      const per = m.per;
+      const first = m.sealed[0]!;
       patch({ sparks: true, perUs: per, perSecond: 1e6 / per });
       pushLocal({
         op: "SEAL",
         alg: `${kemName}+x25519`.toLowerCase(),
         ms: per / 1000,
-        bytes: first.ciphertext.length + 28,
+        bytes: first.ctBytes + 28,
         ok: true,
-        detail: `${opened.length} messages, AES-256-GCM`,
+        detail: `${m.opened} messages, AES-256-GCM`,
       });
       setReading({
         label: "Step 4 · AES-256-GCM messages",
         cpuMs: per / 1000,
         cpuLabel: "Per message (seal + open)",
         bytesAdded: 44,
-        plainBytes: msgs[0]!.length,
-        extra: [{ label: "Messages", value: `${opened.length} delivered` }],
+        plainBytes: m.plainBytes,
+        extra: [{ label: "Messages", value: `${m.opened} delivered` }],
       });
       await Promise.all(
-        sealed.map((m, k) =>
+        m.sealed.map((x, k) =>
           send(
             {
               dir: "c2s",
               kind: "msg",
-              label: `Message #${m.seq}`,
+              label: `Message #${x.seq}`,
               alg: "AES-256-GCM",
-              bytes: m.ciphertext.length + 28,
-              hex: hexPreview(m.ciphertext, 24),
+              bytes: x.ctBytes + 28,
+              hex: head(x.head, 24, x.ctBytes),
             },
             k * 110,
             900,
@@ -392,7 +340,7 @@ export function HandshakeDemo() {
         ),
       );
       say(
-        `${opened.length} messages over AES-256-GCM · ${us(per)} each · +44 B (header + tag) · first ct ${hexPreview(first.ciphertext, 8)}`,
+        `${m.opened} messages over AES-256-GCM · ${us(per)} each · +44 B (header + tag) · first ct ${head(first.head, 8, first.ctBytes)}`,
         "ok",
       );
     }
@@ -402,11 +350,9 @@ export function HandshakeDemo() {
 
   async function attack() {
     // A man-in-the-middle swaps the server's ML-KEM key for their own but can't re-sign it.
-    const L = live.current!;
-    const c = clientHello(profile);
-    const { serverHello } = serverRespond(c.hello, L.identity);
-    const forged = { ...serverHello, kemPublicKey: serverHello.kemPublicKey.slice() };
-    forged.kemPublicKey.set(new Uint8Array(32).fill(0x66), 100);
+    await ready.current;
+    const a = hs.attack(profile);
+    const { bytes, tail } = await a;
     say("Attacker intercepts ServerHello and swaps in their own ML-KEM key…", "bad");
     await send(
       {
@@ -414,37 +360,35 @@ export function HandshakeDemo() {
         kind: "attack",
         label: "Tampered ServerHello",
         alg: "forged ML-KEM key, original ML-DSA signature",
-        bytes: handshakeBytes.serverHello(forged),
-        hex: hexPreview(forged.kemPublicKey.subarray(96), 32),
+        bytes,
+        hex: hexPreview(tail, 32),
       },
       0,
       1700,
     );
-    const t = performance.now();
-    try {
-      clientFinish(c.state, forged, L.identity.publicKey);
+    const r = await a;
+    if (!r.rejected) {
       say("Unexpected: forged packet accepted", "bad");
-    } catch (e) {
-      pushLocal({
-        op: "REJECT",
-        alg: sigName.toLowerCase(),
-        ms: performance.now() - t,
-        ok: false,
-        detail: "tampered ServerHello",
-      });
-      say(`✕ ${(e as Error).message}`, "bad");
-      patch({ attackRejected: true });
-      setReading({
-        label: "Attack · ML-DSA-65 verification",
-        cpuMs: performance.now() - t,
-        extra: [{ label: "Result", value: "packet rejected" }],
-      });
+      return;
     }
+    pushLocal({
+      op: "REJECT",
+      alg: sigName.toLowerCase(),
+      ms: r.ms,
+      ok: false,
+      detail: "tampered ServerHello",
+    });
+    say(`✕ ${r.error}`, "bad");
+    patch({ attackRejected: true });
+    setReading({
+      label: "Attack · ML-DSA-65 verification",
+      cpuMs: r.ms,
+      extra: [{ label: "Result", value: "packet rejected" }],
+    });
   }
 
   function reset() {
     stepper.reset();
-    live.current = { identity: live.current?.identity ?? createIdentity(profile) };
     setPackets([]);
     setLog([]);
     setReading(undefined);

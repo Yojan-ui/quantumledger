@@ -5,13 +5,7 @@
  * request through Shield, a sealed form post, a Vault write, a TLS probe, a ledger verification)
  * or shows a number measured on this server. Nothing here is a canned result.
  */
-import {
-  SEALED_CONTENT_TYPE,
-  HEADER_SIGNATURE,
-  sealBody,
-  verifyResponse,
-  type ServerPublicKeys,
-} from "@qsetu/web-shield";
+import { SEALED_CONTENT_TYPE, HEADER_SIGNATURE, type ServerPublicKeys } from "@qsetu/web-shield";
 import { utf8ToBytes } from "@qsetu/core";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
@@ -19,6 +13,7 @@ import { Button, Label } from "@/components/ui";
 import { CountUp } from "@/components/ui/CountUp";
 import { Odometer } from "@/components/ui/Odometer";
 import { errText } from "@/lib/client/api";
+import { sealInWorker, verifyInWorker } from "@/lib/client/web-crypto";
 import { onLive, pushLocal } from "@/lib/client/live";
 import { useBench } from "@/lib/client/useBench";
 import { bytes, ms, us } from "@/lib/format";
@@ -95,7 +90,7 @@ export function WebProof() {
   const r = useRun(async () => {
     const keys = (await (await fetch("/api/qsetu/key")).json()) as ServerPublicKeys;
     const form = JSON.stringify({ name: "Kavya Nair", pan: "ABCDE1234F", income: "1240000" });
-    const s = sealBody(utf8ToBytes(form), "application/json", keys);
+    const s = await sealInWorker(utf8ToBytes(form), "application/json", keys);
     pushLocal({
       op: "SEAL",
       alg: "ml-kem-768+x25519",
@@ -111,7 +106,12 @@ export function WebProof() {
     });
     const body = new Uint8Array(await res.arrayBuffer());
     if (!res.ok) throw new Error("Server rejected the sealed form");
-    const signed = verifyResponse(body, res.headers.get(HEADER_SIGNATURE), s.nonce, keys);
+    const { ok: signed } = await verifyInWorker(
+      body,
+      res.headers.get(HEADER_SIGNATURE),
+      s.nonce,
+      keys,
+    );
     return { ...s, signed };
   });
   return (

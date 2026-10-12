@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  breakClassical,
   SECTORS,
   type HarvestRecord,
   type NetEvent,
@@ -22,6 +21,7 @@ import { LazyView } from "@/components/scenes/LazyView";
 import { Button, Code, Heading, Label, Stat, Text } from "@/components/ui";
 import { LiveConsole } from "@/components/live/LiveConsole";
 import { Odometer } from "@/components/ui/Odometer";
+import { breakInWorker } from "@/lib/client/qday-crypto";
 import { pushLocal } from "@/lib/client/live";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
@@ -155,9 +155,7 @@ export function QDayDemo() {
         records: HarvestRecord[];
       };
       setRecords(all);
-      const t = performance.now();
-      const outcomes = breakClassical(all);
-      const breakMs = performance.now() - t;
+      const { outcomes, ms: breakMs } = await breakInWorker(all);
       // Reveal one row at a time so the scramble reads as a cascade.
       for (const o of outcomes) {
         setBroken((m) => new Map(m).set(o.harvestId, o));

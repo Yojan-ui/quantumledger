@@ -39,12 +39,15 @@ const lineVertex = /* glsl */ `
 `;
 const lineFragment = /* glsl */ `
   uniform vec3 uNeutral; uniform vec3 uAccent; uniform vec3 uWarn;
+  uniform vec3 uKem; uniform vec3 uSig; uniform float uGrad;
   varying float vT; varying float vLevel; varying float vTint; varying float vFlash; varying float vSnap;
   void main() {
     float ends = smoothstep(0.0, 0.05, vT) * smoothstep(1.0, 0.95, vT);
     // A snapped arc opens a gap around the break point that widens as the flash fades.
     float gap = vFlash > 0.0 ? smoothstep(0.0, 0.01, abs(vT - vSnap) - (1.0 - vFlash) * 0.12) : 1.0;
-    vec3 c = mix(mix(uNeutral, uAccent, vTint), uWarn, vFlash);
+    // Protected arcs carry a gradient between the role colours: encryption (KEM) → signature (SIG).
+    vec3 acc = mix(uAccent, mix(uKem, uSig, vT), uGrad);
+    vec3 c = mix(mix(uNeutral, acc, vTint), uWarn, vFlash);
     float a = max(vLevel * 0.55, vFlash * 0.9) * ends * gap;
     gl_FragColor = vec4(c, a);
   }
@@ -95,6 +98,9 @@ export function Arcs() {
         uNeutral: { value: c.text },
         uAccent: { value: c.warn.clone() },
         uWarn: { value: c.danger },
+        uKem: { value: c.kem },
+        uSig: { value: c.sig },
+        uGrad: { value: 0 },
       },
       transparent: true,
       depthWrite: false,
@@ -127,6 +133,8 @@ export function Arcs() {
     const dt = Math.min(rawDt, 0.1);
     const accent = params.accent === "accent" ? c.accent : c.warn;
     (lines.m.uniforms.uAccent!.value as THREE.Color).lerp(accent, Math.min(1, dt * 4));
+    const grad = lines.m.uniforms.uGrad!;
+    grad.value += ((params.accent === "accent" ? 1 : 0) - grad.value) * Math.min(1, dt * 4);
     (pulses.m.uniforms.uColor!.value as THREE.Color).copy(
       lines.m.uniforms.uAccent!.value as THREE.Color,
     );

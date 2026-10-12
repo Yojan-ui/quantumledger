@@ -22,6 +22,7 @@ import type { OpEvent } from "@/lib/live/types";
 import { BEFORE_AFTER, runAdapter, SNIPPETS, type RunResult } from "./adapters";
 import { CertificateFlow } from "./CertificateFlow";
 import { notify, world, type NodeState } from "@/components/world/store";
+import { burst } from "@/lib/client/burst";
 
 /** Adapter work on the server, deployed-node traffic, and anything this tab did. */
 const consoleFilter = (e: OpEvent) =>
@@ -157,6 +158,9 @@ export function DeployDemo() {
       setResult(r);
       setReading(r.meter);
       setStates((s) => ({ ...s, [site.id]: "protected" }));
+      // Done: a short burst from the deployed node (its label's anchor on screen).
+      const at = world.focusScreen;
+      if (at) burst(at);
     } catch (e) {
       setError((e as Error).message);
       setStates((s) => ({ ...s, [site.id]: "vulnerable" }));
@@ -225,7 +229,7 @@ export function DeployDemo() {
       if (cancelled) return;
       tween = gsap.to(p, {
         t: 1,
-        duration: Math.min(1.8, Math.max(1.2, 1.2 + travel * 0.4)),
+        duration: Math.min(1.0, Math.max(0.7, 0.7 + travel * 0.3)),
         ease: easeToken,
         onUpdate: () => {
           const t = p.t;

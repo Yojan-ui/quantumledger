@@ -2,8 +2,8 @@
 
 /**
  * Camera and globe choreography. Each frame: find the page's visible globe area, ask the director
- * for the pose, ease towards it (critically damped, never bouncy), add slow auto-rotation, drag
- * inertia and a slight cursor tilt, and frame the globe inside that area.
+ * for the pose, ease towards it (critically damped, never bouncy), add slow auto-rotation (faster
+ * while the page scrolls), a drag fling with inertia and a slight cursor tilt, and frame the globe inside that area.
  */
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
@@ -46,7 +46,9 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     offX: 0,
     offY: 0,
   });
-  const ptr = useRef({ x: 0, y: 0, down: false, lastX: 0 });
+  const ptr = useRef({ x: 0, y: 0, down: false, lastX: 0, lastT: 0 });
+  /** Scroll velocity (px/s), smoothed; the globe spins faster while the page scrolls. */
+  const scroll = useRef({ y: 0, t: 0, v: 0, boost: 0 });
   const reduce = useRef(false);
 
   useEffect(() => {
@@ -56,21 +58,37 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
       ptr.current.y = (e.clientY / window.innerHeight) * 2 - 1;
       if (ptr.current.down) {
         const dx = e.clientX - ptr.current.lastX;
+        const now = performance.now();
+        const dtMs = Math.max(8, now - ptr.current.lastT);
         ptr.current.lastX = e.clientX;
+        ptr.current.lastT = now;
         st.current.drag += dx * 0.006;
-        st.current.dragV = dx * 0.36;
+        // Fling: radians per second from the pointer's own speed, released with inertia.
+        st.current.dragV = Math.max(-6, Math.min(6, ((dx * 0.006) / dtMs) * 1000));
       }
     };
     const down = (e: PointerEvent) => {
       if (!(e.target as Element).closest?.("[data-world-drag]")) return;
       ptr.current.down = true;
       ptr.current.lastX = e.clientX;
+      ptr.current.lastT = performance.now();
+      st.current.dragV = 0;
     };
     const up = () => (ptr.current.down = false);
+    const onScroll = () => {
+      const now = performance.now();
+      const sc = scroll.current;
+      const dtS = Math.max(0.008, (now - sc.t) / 1000);
+      sc.v = Math.abs(window.scrollY - sc.y) / dtS;
+      sc.y = window.scrollY;
+      sc.t = now;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pointermove", move, { passive: true });
     window.addEventListener("pointerdown", down);
     window.addEventListener("pointerup", up);
     return () => {
+      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerdown", down);
       window.removeEventListener("pointerup", up);
@@ -104,11 +122,20 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     camera.position.set(0, 0, s.dist);
     camera.lookAt(0, 0, 0);
 
-    if (!reduce.current && p.spin > 0.005) s.spin = wrap(s.spin + p.spin * dt);
+    // Scroll velocity spins the globe faster (up to +0.9 rad/s), then it eases back.
+    const sc = scroll.current;
+    if (performance.now() - sc.t > 120) sc.v = 0;
+    sc.boost = damp(
+      sc.boost,
+      reduce.current ? 0 : Math.min(0.9, sc.v / 2500),
+      sc.v > 0 ? 6 : 1.5,
+      dt,
+    );
+    if (!reduce.current && p.spin > 0.005) s.spin = wrap(s.spin + (p.spin + sc.boost) * dt);
     else s.spin = damp(s.spin, 0, 1.6, dt);
     if (!ptr.current.down) {
-      s.drag += s.dragV * dt * 0.016;
-      s.dragV = damp(s.dragV, 0, 2.5, dt);
+      s.drag += s.dragV * dt;
+      s.dragV = damp(s.dragV, 0, 1.6, dt);
       if (p.spin <= 0.005) s.drag = damp(wrap(s.drag), 0, 1.2, dt);
     }
     s.tiltX = damp(s.tiltX, ptr.current.y * 0.04, 2, dt);

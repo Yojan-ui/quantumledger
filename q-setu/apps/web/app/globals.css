@@ -63,7 +63,7 @@
     background: linear-gradient(90deg, var(--from, var(--kem)), var(--to, var(--sig)));
   }
   /*
-   * Ambient tint: one soft radial glow behind a section's 3D object, in its role colour at 8%.
+   * Ambient tint: one soft radial glow behind a section's 3D object, in its role colour at 12%.
    * Max 900px wide. The page background itself never changes.
    */
   .ambient {
@@ -75,7 +75,7 @@
     border-radius: 9999px;
     background: radial-gradient(
       closest-side,
-      color-mix(in srgb, var(--glow, var(--kem)) 8%, transparent),
+      color-mix(in srgb, var(--glow, var(--kem)) 12%, transparent),
       transparent
     );
     transition: background var(--dur-reveal) var(--ease);
@@ -107,6 +107,38 @@
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);
     transition-timing-function: var(--ease);
+  }
+  /*
+   * Press: buttons scale to 0.97 (the independent `scale` property, so it composes with the magnetic
+   * pull's transform) and a ripple in the button's role colour (data-ripple, default KEM) spreads
+   * from the pointer.
+   */
+  [data-pressed] {
+    scale: 0.97;
+  }
+  button,
+  [data-magnetic] {
+    transition-property: transform, scale, opacity, background-color, border-color, color;
+  }
+  .ripple {
+    position: absolute;
+    border-radius: 9999px;
+    pointer-events: none;
+    background: var(--ripple, var(--kem));
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(0);
+    animation: ripple var(--dur-reveal) var(--ease) forwards;
+  }
+  @keyframes ripple {
+    to {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0;
+    }
+  }
+  /* Cards that tilt towards the cursor (Interactions sets the transform with a spring). */
+  [data-tilt] {
+    transform-style: preserve-3d;
+    will-change: transform;
   }
   /* A primary button's one-time shimmer: a solid, skewed band of --bg sweeps across once. */
   .shimmer {

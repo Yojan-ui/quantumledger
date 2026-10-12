@@ -6,7 +6,7 @@
  *    pulse/bounce, clip-text)
  *  - CSS gradients, except the allowed ones in app/globals.css: the panel spotlight (.spotlight),
  *    hairlines between role colours (.hairline-accent, .hairline-roles) and the ambient role tint
- *    behind a 3D object (.ambient, 8% of a role token); the globe atmosphere is a shader
+ *    behind a 3D object (.ambient, 12% of a role token); the globe atmosphere is a shader
  *  - arbitrary Tailwind values like p-[13px] or text-[#fff], and arbitrary properties like [mask:...],
  *    in className strings and in any other string literal that looks like a class list
  *  - emoji in JSX/HTML

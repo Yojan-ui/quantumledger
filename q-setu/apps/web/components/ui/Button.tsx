@@ -4,7 +4,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 type Variant = "primary" | "secondary";
 
 const BASE =
-  "inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40";
+  "relative inline-flex h-10 overflow-hidden shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 const STYLE: Record<Variant, string> = {
   primary: "bg-fg text-base hover:opacity-90",
   secondary: "border border-line-strong text-fg hover:bg-raised",

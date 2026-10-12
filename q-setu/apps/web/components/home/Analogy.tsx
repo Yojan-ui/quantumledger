@@ -31,7 +31,7 @@ const STEPS = [
   {
     title: { simple: "A master key is coming", technical: "Shor's algorithm breaks RSA and ECC" },
     simple:
-      "A large quantum computer would be a master key for today's locks. Experts expect one may arrive in the 2030s.",
+      "A large quantum computer would be a master key for today's locks. The US standards body has already proposed retiring those locks from 2030.",
     technical: (
       <>
         A cryptographically relevant quantum computer breaks RSA and elliptic curves. NIST&apos;s

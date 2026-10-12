@@ -229,6 +229,7 @@ export function JoinRoom() {
             Seal &amp; send
           </Button>
           <Button
+            data-ripple="danger"
             className="h-12"
             disabled={!me || busy || tooLong}
             onClick={() => void send(true)}

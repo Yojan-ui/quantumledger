@@ -12,7 +12,7 @@ const WorldScene = dynamic(() => import("./WorldScene"), { ssr: false, loading: 
  * dots and the world mounts. It only ever draws inside a page's [data-world-focus] area.
  */
 /**
- * The ambient tint behind the globe: a soft radial glow in the current section's role colour (8%,
+ * The ambient tint behind the globe: a soft radial glow in the current section's role colour (12%,
  * at most 900px wide), centred on the globe's area. It sits under the canvas, so it is truly behind.
  */
 function GlobeGlow() {

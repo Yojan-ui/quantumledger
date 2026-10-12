@@ -10,6 +10,7 @@ import { Nodes } from "./Nodes";
 import { Rig } from "./Rig";
 import { RoomArcs } from "./RoomArcs";
 import { ScanArc } from "./ScanArc";
+import { SetuCore } from "./SetuCore";
 import type { Dots } from "./shapes";
 import { world } from "./store";
 
@@ -48,6 +49,7 @@ export function World({ dots }: { dots: Dots }) {
         <ScanArc />
         <RoomArcs />
         <IndexBars />
+        <SetuCore />
       </group>
     </>
   );

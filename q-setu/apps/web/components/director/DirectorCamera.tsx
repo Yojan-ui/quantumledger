@@ -2,7 +2,7 @@
 
 /**
  * The director's camera (inside a drei View). Between shots it flies on a gentle arc, not a straight
- * line, over 1.2–1.8 s with the motion token easing, and settles with a 1–2° roll. While a shot is held
+ * line, over 0.7–1.0 s with the motion token easing, and settles with a 1–2° roll. While a shot is held
  * it drifts slowly (2–3% of the distance over 8 s), so the scene never looks frozen.
  * Reduced motion: cuts straight to the shot, no drift.
  */
@@ -65,7 +65,8 @@ export function DirectorCamera({
       .multiplyScalar(dist * 0.18);
     const ctrl = mid.add(out).add(new THREE.Vector3(0, dist * 0.12, 0));
     const curve = new THREE.QuadraticBezierCurve3(from, ctrl, to);
-    const duration = Math.min(1.8, Math.max(1.2, 1.2 + dist * 0.08));
+    // Snappy: every camera move takes 0.7–1.0 s.
+    const duration = Math.min(1.0, Math.max(0.7, 0.7 + dist * 0.05));
     const p = { t: 0 };
     const side = Math.sign(to.x - from.x || 1);
     const tl = gsap.timeline({

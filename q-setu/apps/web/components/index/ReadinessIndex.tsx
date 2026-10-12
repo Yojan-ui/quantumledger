@@ -9,7 +9,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Label, Text } from "@/components/ui";
+import { Text } from "@/components/ui";
 import { notify, world } from "@/components/world/store";
 import { METRICS, pct, READINESS, SECTORS, share, type MetricId } from "@/lib/readiness";
 
@@ -108,7 +108,7 @@ export function ReadinessBars({ className = "" }: { className?: string }) {
             </button>
           ))}
         </div>
-        <ul className="mt-8 border-b border-line" aria-label="By sector">
+        <ul className="mt-8 border-b border-line" aria-label="Readiness by sector">
           {SECTORS.map((s, i) => {
             const a = READINESS.sectors[s.id];
             const v = values[i]!;

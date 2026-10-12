@@ -119,3 +119,5 @@ export const RoomSendBody = z.object({
     sig: B64.max(8192).nullable(),
   }),
 });
+
+export const SealFromBody = z.object({ city: z.string().regex(/^[a-z]{2,20}$/) });

@@ -22,9 +22,37 @@
   --ok: #3ddc97; /* verified / protected: ✓, protected nodes, success */
   --danger: #ff5c5c; /* attack / tampered: rejected packets, broken ledger entry */
 
-  /* motion */
+  /* motion: fast. Hover 120 ms, UI 220 ms, reveals 450 ms. */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-hover: 150ms;
-  --dur-ui: 300ms;
-  --dur-reveal: 700ms;
+  /* A spring (stiffness 400, damping 30, mass 1: ζ = 0.75, ~3% overshoot), sampled into linear(). */
+  --ease-spring: linear(
+    0,
+    0.031,
+    0.108,
+    0.212,
+    0.328,
+    0.444,
+    0.555,
+    0.655,
+    0.742,
+    0.815,
+    0.875,
+    0.923,
+    0.959,
+    0.986,
+    1.005,
+    1.017,
+    1.024,
+    1.028,
+    1.028,
+    1.027,
+    1.025,
+    1.022,
+    1.018,
+    1.015,
+    1
+  );
+  --dur-hover: 120ms;
+  --dur-ui: 220ms;
+  --dur-reveal: 450ms;
 }

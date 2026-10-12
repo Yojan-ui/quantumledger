@@ -1,18 +1,12 @@
 "use client";
 
-import { createSession } from "@qsetu/sdk";
 import { SECTORS, type SectorId } from "@qsetu/sim";
-import {
-  HEADER_SIGNATURE,
-  sealBody,
-  SEALED_CONTENT_TYPE,
-  verifyResponse,
-  type ServerPublicKeys,
-} from "@qsetu/web-shield";
+import { HEADER_SIGNATURE, SEALED_CONTENT_TYPE, type ServerPublicKeys } from "@qsetu/web-shield";
 import type { AdapterId } from "@/data/sites";
 import type { MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { bytes, ms, us } from "@/lib/format";
 import { runEdge } from "./edge-runner";
+import { sdkInWorker, sealInWorker, verifyInWorker } from "@/lib/client/web-crypto";
 
 export const SNIPPETS: Record<AdapterId, { lang: string; code: string }> = {
   web: {
@@ -89,16 +83,19 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
   if (adapter === "web") {
     const key = (await (await fetch("/api/qsetu/key")).json()) as ServerPublicKeys;
     const plain = new TextEncoder().encode(JSON.stringify(sample));
-    const sealed = sealBody(plain, "application/json", key);
+    const sealed = await sealInWorker(plain, "application/json", key);
     const res = await fetch("/api/web-shield/submit", {
       method: "POST",
       headers: { "content-type": SEALED_CONTENT_TYPE, accept: "application/json" },
       body: sealed.body,
     });
     const body = new Uint8Array(await res.arrayBuffer());
-    const t = performance.now();
-    const ok = verifyResponse(body, res.headers.get(HEADER_SIGNATURE), sealed.nonce, key);
-    const verifyMs = performance.now() - t;
+    const { ok, ms: verifyMs } = await verifyInWorker(
+      body,
+      res.headers.get(HEADER_SIGNATURE),
+      sealed.nonce,
+      key,
+    );
     const server = JSON.parse(new TextDecoder().decode(body));
     return {
       headline: ok
@@ -158,18 +155,12 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
   }
 
   if (adapter === "sdk") {
-    const { publicKey } = await (await fetch("/api/sdk/identity")).json();
-    const s = await createSession({ url: "/api/sdk", serverKey: publicKey });
-    const reply = await s.send<{ status: string; epoch: number }>(sample);
-    const payload = new TextEncoder().encode(JSON.stringify(sample));
-    const t = performance.now();
-    for (let i = 0; i < 200; i++) s.session.seal(payload);
-    const perMsg = ((performance.now() - t) / 200) * 1000;
-    const wire = s.session.seal(payload);
+    const s = await sdkInWorker(sample);
+    const { reply, perMsg, wire } = s;
     return {
       headline: `Session ${s.id.slice(0, 8)}… established; server replied “${reply.status}”`,
       plainView: json(sample),
-      sealedView: `epoch=${wire.epoch} seq=${wire.seq}\n${Array.from(wire.ciphertext.slice(0, 96), (b) => b.toString(16).padStart(2, "0")).join("")}…`,
+      sealedView: `epoch=${wire.epoch} seq=${wire.seq}\n${Array.from(wire.head, (b) => b.toString(16).padStart(2, "0")).join("")}…`,
       details: [
         { k: "Handshake (2 round trips)", v: ms(s.handshake.ms) },
         {
@@ -186,7 +177,7 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
         perRequestMs: perMsg / 1000,
         perRequestHint: "per message, after the handshake",
         bytesAdded: 44,
-        plainBytes: payload.length,
+        plainBytes: s.plainBytes,
         extra: [{ label: "Per message", value: us(perMsg) }],
       },
     };

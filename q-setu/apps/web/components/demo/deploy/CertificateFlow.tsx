@@ -1,6 +1,5 @@
 "use client";
 
-import { bytesToBase64, getSig, utf8ToBytes } from "@qsetu/core";
 import jsQR from "jsqr";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +11,7 @@ import {
   type SignedCertificate,
   type VerifyResult,
 } from "@/lib/certs";
+import { forgeSignature as forgeInWorker } from "@/lib/client/web-crypto";
 import { ms } from "@/lib/format";
 import { token } from "@/lib/tokens";
 import { Button, Heading, Label, Text } from "@/components/ui";
@@ -76,10 +76,7 @@ export function CertificateFlow() {
   async function forgeSignature() {
     // The forger signs an altered record with their own ML-DSA key and serves it as the registry copy.
     const fake = { ...signed!.cert };
-    const attacker = getSig("ml-dsa-65").keygen();
-    const sig = bytesToBase64(
-      getSig("ml-dsa-65").sign(utf8ToBytes(canonicalCert(fake)), attacker.secretKey),
-    );
+    const sig = await forgeInWorker(canonicalCert(fake));
     await scan("Registry copy signed by a fake key", fake, { ...signed!, signature: sig });
   }
 
