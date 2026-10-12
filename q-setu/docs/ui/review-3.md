@@ -35,7 +35,7 @@ Playwright smoke tests (7) ✓.
   hero's text columns. The text block spans 7 columns instead of 6 to keep it to 3 lines.
 - **Two accents in one viewport:** only where the brief asks for a state comparison.
   - The "Without vs with" table (its saffron ● and cyan ● dots are specified).
-  - Demo 3 after Q-Day: classical rows saffron ●, Q-Setu rows cyan ●.
+  - Demo 3 after Q-Day: classical rows saffron ●, QuantumLedger rows cyan ●.
   - Demo 1 during "Attack it" (one saffron packet against cyan seals).
     Everywhere else each chapter declares one accent, and the globe follows it.
 - **Label contrast:** `--text-3` (#62666D) on `--bg` is ~3.5:1, below WCAG AA for 12px text. It's used, as specified,

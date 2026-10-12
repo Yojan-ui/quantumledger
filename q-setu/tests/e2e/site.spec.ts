@@ -59,7 +59,7 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
     "solutions",
     "impact",
     "whats-new",
-    "why-q-setu",
+    "why-quantumledger",
     "early-access",
   ]);
   // Every numbered section label, 02–10, in order (the hero is 01 and the scan box is part of 03).
@@ -77,7 +77,9 @@ test("scan: a site gets a score, plain findings and a share page", async ({ page
   await page.goto("/#scan");
   await page.getByRole("button", { name: "irctc.co.in" }).click();
   await expect(page.getByText(/Hybrid post-quantum key exchange|Harvestable today/)).toBeVisible();
-  await expect(page.getByText("Fix this with Q-Setu Shield, zero code change →")).toBeVisible();
+  await expect(
+    page.getByText("Fix this with QuantumLedger Shield, zero code change →"),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Open result page" }).click();
   await expect(page).toHaveURL(/\/scan\/www\.irctc\.co\.in/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

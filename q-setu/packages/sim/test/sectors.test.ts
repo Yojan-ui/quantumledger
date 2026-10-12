@@ -18,7 +18,7 @@ describe.each(SECTOR_IDS)("%s network", (sector) => {
     expect(net.harvested()).toHaveLength(3 * 2 * 2);
   });
 
-  it("Q-Day: classical decrypts to the originals; Q-Setu stays sealed even with X25519 broken", async () => {
+  it("Q-Day: classical decrypts to the originals; QuantumLedger stays sealed even with X25519 broken", async () => {
     const net = new SectorNetwork(sector);
     const { records, done } = net.simulate(3, 0);
     await done;

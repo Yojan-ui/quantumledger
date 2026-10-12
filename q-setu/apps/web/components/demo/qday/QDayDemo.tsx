@@ -71,8 +71,8 @@ const SHOTS: Shot[] = [
     id: "aftermath",
     camera: { position: [0, 1.4, 8.4], target: [0, -0.35, -0.4], fov: 40 },
     step: 3,
-    caption: "Classical records are exposed; Q-Setu records stay sealed.",
-    simple: "Old-lock records are exposed. Q-Setu records stay locked.",
+    caption: "Classical records are exposed; QuantumLedger records stay sealed.",
+    simple: "Old-lock records are exposed. QuantumLedger records stay locked.",
   },
 ];
 
@@ -150,7 +150,7 @@ export function QDayDemo() {
     return () => clearInterval(t);
   }, [sector, qday]);
 
-  // Q-Day: the browser really factors every recorded RSA modulus; the server attacks Q-Setu traffic.
+  // Q-Day: the browser really factors every recorded RSA modulus; the server attacks QuantumLedger traffic.
   useEffect(() => {
     if (!qday || qsetuOutcomes || attacking) return;
     setAttacking(true);
@@ -299,7 +299,7 @@ export function QDayDemo() {
   return (
     <DemoShell
       title="Demo 3 · Q-Day Time Machine"
-      caption="An adversary records both systems' traffic today. Move the timeline to Q-Day: classical records open, Q-Setu records stay sealed."
+      caption="An adversary records both systems' traffic today. Move the timeline to Q-Day: classical records open, QuantumLedger records stay sealed."
       controls={
         <Button
           variant="primary"
@@ -322,7 +322,7 @@ export function QDayDemo() {
       <div className="relative mb-12 overflow-hidden rounded-lg border border-line">
         <LazyView
           className="h-stage-sm md:h-stage"
-          label={`Two corridors of recorded packets, classical and Q-Setu, watched by an adversary. Year ${year}. ${qday ? "Q-Day: classical packets break open; Q-Setu packets stay whole." : "Recording traffic."}`}
+          label={`Two corridors of recorded packets, classical and QuantumLedger, watched by an adversary. Year ${year}. ${qday ? "Q-Day: classical packets break open; QuantumLedger packets stay whole." : "Recording traffic."}`}
         >
           {(onScreen) => (
             <QDayFilm
@@ -363,7 +363,7 @@ export function QDayDemo() {
         <SectorSwitcher value={sector} onChange={switchSector} disabled={reel.busy || attacking} />
         <Label as="p">
           <span aria-live="polite">
-            Recorded so far: {harvest.classical} classical · {harvest.qsetu} Q-Setu packets
+            Recorded so far: {harvest.classical} classical · {harvest.qsetu} QuantumLedger packets
           </span>
         </Label>
       </div>
@@ -425,7 +425,7 @@ export function QDayDemo() {
         </div>
 
         <Column
-          title="Q-Setu"
+          title="QuantumLedger"
           sub="X25519 + ML-KEM-768 · ML-DSA-65"
           exposed={qExposed}
           tone="accent"
@@ -453,14 +453,14 @@ export function QDayDemo() {
               value={attacking && !qsetuOutcomes ? "…" : exposed}
               label={`${SECTORS[sector].noun}s exposed · classical`}
             />
-            <Stat value={qsetuOutcomes ? qExposed : "…"} label="Exposed · Q-Setu" />
+            <Stat value={qsetuOutcomes ? qExposed : "…"} label="Exposed · QuantumLedger" />
           </div>
           <AttackLog
             title="Classical attack log"
             lines={firstClassical?.log}
             ms={firstClassical?.ms}
           />
-          <AttackLog title="Q-Setu attack log" lines={firstQsetu?.log} ms={firstQsetu?.ms} />
+          <AttackLog title="QuantumLedger attack log" lines={firstQsetu?.log} ms={firstQsetu?.ms} />
         </div>
       )}
 
@@ -475,9 +475,9 @@ export function QDayDemo() {
             AES-256 payload encryption is real.
           </Text>
           <Text size="small">
-            Q-Setu side: real X25519 + ML-KEM-768 and ML-DSA-65. The attacker even gets a simulated
-            Shor oracle that reveals the X25519 secrets, then runs the real key schedule with its
-            best guess for the ML-KEM share. The AES-GCM tag check fails.
+            QuantumLedger side: real X25519 + ML-KEM-768 and ML-DSA-65. The attacker even gets a
+            simulated Shor oracle that reveals the X25519 secrets, then runs the real key schedule
+            with its best guess for the ML-KEM share. The AES-GCM tag check fails.
           </Text>
           <Text size="small">
             The Q-Day year is illustrative. Nobody knows when a cryptographically relevant quantum

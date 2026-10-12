@@ -293,7 +293,7 @@ export function DeployDemo() {
   return (
     <DemoShell
       title="Demo 2 · Deploy anywhere"
-      caption="Pick a system and deploy its Q-Setu adapter for real. Grey nodes are harvestable today; sealed nodes turn cyan."
+      caption="Pick a system and deploy its QuantumLedger adapter for real. Grey nodes are harvestable today; sealed nodes turn cyan."
       controls={
         <Button onClick={() => void reel.to(shots.length - 1)} disabled={running || reel.busy}>
           Deploy all
@@ -395,7 +395,7 @@ export function DeployDemo() {
               data-world-drag
               className="h-stage-sm rounded-lg border border-line md:h-stage"
               role="img"
-              aria-label={`Globe zoomed to India showing ${sectorSites.length} ${sector} systems; ${protectedCount} protected by Q-Setu.`}
+              aria-label={`Globe zoomed to India showing ${sectorSites.length} ${sector} systems; ${protectedCount} protected by QuantumLedger.`}
             />
             <p
               aria-hidden
@@ -448,13 +448,13 @@ export function DeployDemo() {
               </Heading>
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <div className="space-y-2">
-                  <Label as="p">Without Q-Setu, a recorder captures</Label>
+                  <Label as="p">Without QuantumLedger, a recorder captures</Label>
                   <Code code={result.plainView} copy={false} wrap>
                     {result.plainView}
                   </Code>
                 </div>
                 <div className="space-y-2">
-                  <Label as="p">With Q-Setu, it captures</Label>
+                  <Label as="p">With QuantumLedger, it captures</Label>
                   <Code code={result.sealedView} copy={false} wrap>
                     <span className="text-fg-2">{result.sealedView}</span>
                   </Code>

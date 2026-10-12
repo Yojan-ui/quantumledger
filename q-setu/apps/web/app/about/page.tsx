@@ -22,19 +22,19 @@ export default function About() {
           The algorithms are standardised and open-source libraries implement them. What stops a
           bank, a hospital or a department is everything around them: legacy cores nobody can touch,
           data at rest, devices in the field, and no inventory of where RSA and elliptic curves are
-          used. Q-Setu is built for that gap.
+          used. QuantumLedger is built for that gap.
         </p>
       </Block>
       <Block label="Team" title="Who’s building it.">
         <p>
-          Q-Setu started as a hackathon project and is being built by a small team in India. We’d
-          rather show working code than a list of titles. Everything on this site runs live.
+          QuantumLedger started as a hackathon project and is being built by a small team in India.
+          We’d rather show working code than a list of titles. Everything on this site runs live.
         </p>
       </Block>
       <Block label="Design partners wanted" title="Pilot it with us.">
         <p>
-          We’re looking for a small number of organisations to run Q-Setu in shadow mode alongside
-          existing systems:
+          We’re looking for a small number of organisations to run QuantumLedger in shadow mode
+          alongside existing systems:
         </p>
         <Lines
           items={[

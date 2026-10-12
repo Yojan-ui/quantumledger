@@ -110,7 +110,7 @@ async function call<T>(url: string, body?: unknown): Promise<T> {
 }
 
 /**
- * Demo 4: the Q-Ledger. Verify the whole chain, then edit entry #42 directly in SQLite (the way an
+ * Demo 4: the Proof Chain. Verify the whole chain, then edit entry #42 directly in SQLite (the way an
  * insider with database access would) and verify again: the chain breaks exactly there, and says why.
  */
 export function LedgerDemo() {
@@ -289,7 +289,7 @@ export function LedgerDemo() {
   }
   return (
     <DemoShell
-      title="Demo 4 · Q-Ledger"
+      title="Demo 4 · Proof Chain"
       caption="An append-only audit log: each entry is hash-chained with SHA3-256 and signed with ML-DSA-65. Edit one row in the database and see verification pinpoint it."
       controls={
         <>

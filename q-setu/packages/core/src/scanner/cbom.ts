@@ -87,7 +87,9 @@ export function buildCbom(findings: Finding[], sourceName: string): Cbom {
     metadata: {
       timestamp: new Date().toISOString(),
       tools: {
-        components: [{ type: "application", name: "Q-Setu Readiness Scanner", version: "0.1.0" }],
+        components: [
+          { type: "application", name: "QuantumLedger Readiness Scanner", version: "0.1.0" },
+        ],
       },
       component: { type: "file", name: sourceName, "bom-ref": "scan-target" },
     },

@@ -13,16 +13,16 @@ import { Nav } from "@/components/ui/Nav";
 import { pageMeta } from "@/lib/meta";
 
 export const metadata: Metadata = pageMeta({
-  title: "Q-Setu: make anything in India quantum-safe, in one line",
+  title: "QuantumLedger: see your quantum risk. Fix it. Prove it.",
   description:
-    "Your data is being harvested today. Q-Setu adds NIST post-quantum encryption and signatures (ML-KEM, ML-DSA) to any website, server, app or device in one line, before Q-Day.",
+    "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography. Scan any site, apply a hybrid ML-KEM patch, and anchor the proof in a signed chain.",
   path: "/",
   absoluteTitle: true,
 });
 
 /**
  * Ten sections for a first-time visitor: hero, the analogy, the Readiness Index (with the scan box),
- * how it works, deploy anywhere, solutions, impact, what's new, why Q-Setu, early access.
+ * how it works, deploy anywhere, solutions, impact, what's new, why QuantumLedger, early access.
  */
 export default function Home() {
   return (

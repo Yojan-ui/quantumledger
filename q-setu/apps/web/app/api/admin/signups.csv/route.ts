@@ -27,7 +27,7 @@ export async function GET() {
   return new Response(csv + "\n", {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": `attachment; filename="q-setu-signups-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "content-disposition": `attachment; filename="quantumledger-signups-${new Date().toISOString().slice(0, 10)}.csv"`,
       "cache-control": "no-store",
     },
   });

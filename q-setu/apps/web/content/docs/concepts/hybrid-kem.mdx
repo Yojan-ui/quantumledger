@@ -3,7 +3,7 @@ title: Hybrid key exchange
 description: X25519 plus ML-KEM-768, combined so the session is safe if either one holds.
 ---
 
-Q-Setu runs two key exchanges side by side: X25519 (classical, well studied) and ML-KEM-768 (FIPS 203,
+QuantumLedger runs two key exchanges side by side: X25519 (classical, well studied) and ML-KEM-768 (FIPS 203,
 post-quantum). Both shared secrets go into one HKDF together with the full handshake transcript:
 
 ```text

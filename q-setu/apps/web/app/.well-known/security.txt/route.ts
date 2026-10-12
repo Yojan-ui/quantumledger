@@ -2,7 +2,7 @@ import { SITE_URL } from "@/lib/meta";
 
 /** /.well-known/security.txt (RFC 9116). The contact comes from SECURITY_CONTACT; expires yearly. */
 export function GET() {
-  const contact = process.env.SECURITY_CONTACT ?? "mailto:security@q-setu.example";
+  const contact = process.env.SECURITY_CONTACT ?? "mailto:security@quantumledger.example";
   const expires = new Date(Date.UTC(new Date().getUTCFullYear() + 1, 0, 1)).toISOString();
   const body = [
     `Contact: ${contact}`,

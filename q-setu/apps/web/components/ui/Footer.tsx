@@ -108,8 +108,8 @@ export function Footer() {
             </li>
           </ol>
           <p className="mt-8 text-small text-fg-3">
-            Q-Setu is an early-stage project, not yet audited. Not affiliated with or endorsed by
-            NIST, NPCI, NHA, MeitY or the National Quantum Mission.
+            QuantumLedger is an early-stage project, not yet audited. Not affiliated with or
+            endorsed by NIST, NPCI, NHA, MeitY or the National Quantum Mission.
           </p>
         </div>
       </Container>

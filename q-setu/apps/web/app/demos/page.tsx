@@ -9,7 +9,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata: Metadata = pageMeta({
   title: "Demos",
   description:
-    "Four live demos of Q-Setu: a real hybrid handshake, deploying five adapters, the Q-Day time machine and a tamper-evident ledger.",
+    "Four live demos of QuantumLedger: a real hybrid handshake, deploying five adapters, the Q-Day time machine and a tamper-evident ledger.",
   path: "/demos",
 });
 

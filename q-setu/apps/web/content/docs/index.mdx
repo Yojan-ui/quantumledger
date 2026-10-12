@@ -1,17 +1,17 @@
 ---
 title: Quickstart
-description: Run Q-Setu locally and seal your first request in about five minutes.
+description: Run QuantumLedger locally and seal your first request in about five minutes.
 ---
 
 <TrackQuickstart />
 
-Q-Setu is a post-quantum layer you add to a system instead of rewriting it. In five minutes you'll run
+QuantumLedger is a post-quantum layer you add to a system instead of rewriting it. In five minutes you'll run
 the whole stack locally, put **Shield** in front of an unmodified legacy app, and watch a request cross
 the wire as a hybrid X25519 + ML-KEM-768 session.
 
 <Callout>
   The packages aren't published to npm yet. Until they are, install from this repository. Everything
-  below runs on your machine; nothing calls out to a Q-Setu service.
+  below runs on your machine; nothing calls out to a QuantumLedger service.
 </Callout>
 
 ## 1. Install (1 minute)
@@ -19,7 +19,7 @@ the wire as a hybrid X25519 + ML-KEM-768 session.
 You need Node 20.19 or newer and pnpm 10 (`corepack enable` picks up the pinned version).
 
 ```bash
-git clone <your fork of q-setu> && cd q-setu
+git clone <your fork of this repository> quantumledger && cd quantumledger
 pnpm install
 ```
 
@@ -35,7 +35,7 @@ callers).
 
 ## 3. Send a request through Shield (2 minutes)
 
-The legacy app knows nothing about Q-Setu. Call it through the client node:
+The legacy app knows nothing about QuantumLedger. Call it through the client node:
 
 ```bash
 curl -s localhost:8080/api/transfer \

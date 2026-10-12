@@ -6,7 +6,7 @@ import { storedScan } from "@/lib/server/scan-lookup";
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Q-Setu quantum-readiness score";
+export const alt = "QuantumLedger quantum-readiness score";
 
 /** The share card for a scan: host, 0–100 score and the one-line verdict. */
 export default async function Image({ params }: { params: Promise<{ host: string }> }) {
@@ -27,7 +27,7 @@ export default async function Image({ params }: { params: Promise<{ host: string
           </div>
         </div>
       ) : (
-        <div style={{ color: fg2, fontSize: 32 }}>Scan it at q-setu</div>
+        <div style={{ color: fg2, fontSize: 32 }}>Scan it at QuantumLedger</div>
       )}
     </OgCard>,
     size,

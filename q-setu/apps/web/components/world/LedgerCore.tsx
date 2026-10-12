@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The Setu core: a small iridescent glass gem standing on the Q-Setu node (Mumbai), where the
+ * The ledger core: a small iridescent glass gem standing on the QuantumLedger node (Mumbai), where the
  * audience's packets land. drei's MeshTransmissionMaterial on three's own transmission pass
  * (transmissionSampler: no extra scene render), with chromatic dispersion kept low and a KEM tint.
  * It turns slowly; under reduced motion it holds still.
@@ -15,7 +15,7 @@ import { toVec3 } from "./geo";
 import { palette } from "./palette";
 import { world } from "./store";
 
-export function SetuCore() {
+export function LedgerCore() {
   const c = useMemo(palette, []);
   const g = useRef<THREE.Group>(null);
   const m = useRef<THREE.Mesh>(null);

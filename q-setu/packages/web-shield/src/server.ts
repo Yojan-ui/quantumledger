@@ -1,4 +1,4 @@
-/** Server side of Q-Setu Web: open sealed request bodies (FIPS 203) and sign responses (FIPS 204). */
+/** Server side of QuantumLedger Web: open sealed request bodies (FIPS 203) and sign responses (FIPS 204). */
 import { sha256 } from "@noble/hashes/sha2.js";
 import {
   bytesToBase64,
@@ -47,7 +47,7 @@ export interface OpenedRequest {
 
 export function openSealedBody(raw: string, keys: WebShieldKeys): OpenedRequest {
   const sealed = JSON.parse(raw) as SealedBody;
-  if (sealed.qsetu !== 1) throw new Error("Not a Q-Setu sealed body");
+  if (sealed.qsetu !== 1) throw new Error("Not a QuantumLedger sealed body");
   const env = envelopeFromJSON(sealed.envelope);
   return {
     bytes: open(env, keys.kem),

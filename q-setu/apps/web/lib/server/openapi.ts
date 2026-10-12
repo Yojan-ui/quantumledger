@@ -59,20 +59,20 @@ const OPS: Op[] = [
   {
     method: "get",
     path: "/api/ledger",
-    tag: "Q-Ledger",
+    tag: "Proof Chain",
     summary: "Recent ledger entries, newest first",
     query: S.LedgerQuery,
   },
   {
     method: "post",
     path: "/api/ledger/verify",
-    tag: "Q-Ledger",
+    tag: "Proof Chain",
     summary: "Verify the whole chain; names the first broken entry",
   },
   {
     method: "post",
     path: "/api/ledger/tamper",
-    tag: "Q-Ledger",
+    tag: "Proof Chain",
     summary: "DEMO: edit a row directly in SQLite (or restore it)",
     body: S.LedgerTamperBody,
   },
@@ -115,7 +115,7 @@ const OPS: Op[] = [
     method: "post",
     path: "/api/simulate",
     tag: "Simulator",
-    summary: "Send records through a sector network (classical and Q-Setu)",
+    summary: "Send records through a sector network (classical and QuantumLedger)",
     body: S.SimulateBody,
   },
   {
@@ -129,7 +129,7 @@ const OPS: Op[] = [
     method: "post",
     path: "/api/qday",
     tag: "Simulator",
-    summary: "Q-Day against recorded Q-Setu traffic",
+    summary: "Q-Day against recorded QuantumLedger traffic",
     body: SectorBody,
   },
   {
@@ -197,7 +197,7 @@ const OPS: Op[] = [
     method: "post",
     path: "/api/web-shield/submit",
     tag: "Adapters",
-    summary: "Form endpoint: accepts plain or Q-Setu-sealed posts",
+    summary: "Form endpoint: accepts plain or QuantumLedger-sealed posts",
   },
   { method: "get", path: "/api/qsetu/key", tag: "Adapters", summary: "Web shield public keys" },
 ];
@@ -250,7 +250,7 @@ export function openApi() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "Q-Setu API",
+      title: "QuantumLedger API",
       version: "0.2.0",
       description:
         "Post-quantum security layer for India. Every error has the shape { error: { code, message, issues? } }.",

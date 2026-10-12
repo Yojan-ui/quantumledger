@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The Q-Ledger as 12 blocks linked by SIG lines (each link is a hash + ML-DSA signature). When an entry
+ * The Proof Chain as 12 blocks linked by SIG lines (each link is a hash + ML-DSA signature). When an entry
  * is edited, its block turns DANGER and every link after it dims and drops 4px in a 60 ms cascade:
  * nothing after the edit can be trusted. Verifying a restored chain lifts them back.
  */

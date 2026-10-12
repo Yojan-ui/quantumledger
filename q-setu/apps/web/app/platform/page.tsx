@@ -15,7 +15,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata = pageMeta({
   title: "Platform",
   description:
-    "One core, five adapters, one algorithm registry: how Q-Setu adds hybrid ML-KEM key exchange and ML-DSA signatures to any system.",
+    "One core, five adapters, one algorithm registry: how QuantumLedger adds hybrid ML-KEM key exchange and ML-DSA signatures to any system.",
   path: "/platform",
 });
 

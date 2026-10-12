@@ -1,5 +1,5 @@
 /**
- * The live mesh: real Q-Setu sessions on the twelve globe routes, carrying generated sector records.
+ * The live mesh: real QuantumLedger sessions on the twelve globe routes, carrying generated sector records.
  * Each transaction is signed (policy signature algorithm), sealed with the route's hybrid session,
  * opened and verified on the far side, and every step is published to the bus with its measured
  * time. Every so often an on-path attacker flips one ciphertext byte, and AES-GCM rejects it.
@@ -32,7 +32,7 @@ import { KEM_LABEL, type PolicyState, type ProfileName, type SigName, type Sourc
 export const ROTATE_EVERY = 12;
 /** One transaction in this many is tampered with on the wire. */
 const TAMPER_ONE_IN = 13;
-/** One delivered transaction in this many is written to the Q-Ledger. */
+/** One delivered transaction in this many is written to the Proof Chain. */
 const LEDGER_ONE_IN = 3;
 
 interface Link {

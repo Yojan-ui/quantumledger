@@ -4,7 +4,7 @@
  * site (default http://localhost:3000), and writes docs/final/demo.mp4. The backup for when the venue's
  * laptop or projector fails. Every frame is the real site doing real crypto.
  *
- *   Hero ticker → scan a bank → Why now → Q-Day → Deploy → Q-Ledger tamper → Why Q-Setu
+ *   Hero ticker → scan a bank → Why now → Q-Day → Deploy → Proof Chain tamper → Why QuantumLedger
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, renameSync } from "node:fs";
@@ -107,7 +107,7 @@ await wait(5000);
 await page.getByRole("button", { name: "Deploy all" }).click();
 await wait(30000);
 
-// 6. Demo 4: tamper with the Q-Ledger (25 s).
+// 6. Demo 4: tamper with the Proof Chain (25 s).
 mark("demo 4");
 await page.goto(`${BASE}/demo/ledger`, { waitUntil: "domcontentloaded" });
 await wait(3500);
@@ -118,11 +118,11 @@ await wait(5000);
 await page.getByRole("button", { name: "Verify the chain" }).click();
 await wait(8000);
 
-// 7. Why Q-Setu (15 s).
-mark("why q-setu");
-await page.goto(`${BASE}/#why-q-setu`, { waitUntil: "domcontentloaded" });
+// 7. Why QuantumLedger (15 s).
+mark("why quantumledger");
+await page.goto(`${BASE}/#why-quantumledger`, { waitUntil: "domcontentloaded" });
 await wait(2500);
-await glide(page, "#why-q-setu", 800);
+await glide(page, "#why-quantumledger", 800);
 await wait(11000);
 mark("end");
 

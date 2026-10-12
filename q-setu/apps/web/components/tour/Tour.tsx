@@ -56,8 +56,9 @@ function typeInto(el: HTMLInputElement | null, value: string) {
 const STEPS: TourStep[] = [
   {
     id: "hero",
-    title: "Q-Setu",
-    caption: "Q-Setu puts quantum-safe locks on any system in India, in one line.",
+    title: "QuantumLedger",
+    caption:
+      "See your quantum risk. Fix it. Prove it: QuantumLedger puts quantum-safe locks on any system.",
     ms: 13000,
     run: async (c) => {
       await c.go("/", "top");
@@ -99,7 +100,7 @@ const STEPS: TourStep[] = [
   {
     id: "qday",
     title: "Q-Day",
-    caption: "Recorded today, opened at Q-Day. Unless it was sealed with Q-Setu.",
+    caption: "Recorded today, opened at Q-Day. Unless it was sealed with QuantumLedger.",
     ms: 28000,
     run: async (c) => {
       await c.go("/demo/qday");
@@ -146,7 +147,7 @@ const STEPS: TourStep[] = [
   {
     id: "cta",
     title: "Pilot partners",
-    caption: "Banks, hospitals, universities and departments: pilot Q-Setu with us.",
+    caption: "Banks, hospitals, universities and departments: pilot QuantumLedger with us.",
     ms: 8000,
     run: async (c) => {
       await c.go("/", "early-access");

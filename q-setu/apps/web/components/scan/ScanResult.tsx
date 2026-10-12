@@ -55,7 +55,7 @@ export function ScanResult({ r, compact = false }: { r: ScanView; compact?: bool
             href="/docs/adapters/shield"
             className="text-small text-fg transition-opacity duration-150 hover:opacity-70"
           >
-            Fix this with Q-Setu Shield, zero code change →
+            Fix this with QuantumLedger Shield, zero code change →
           </Link>
           <button
             type="button"

@@ -12,7 +12,7 @@ import {
 
 const enc = new TextEncoder();
 
-describe("Q-Setu Web", () => {
+describe("QuantumLedger Web", () => {
   const keys = demoWebShieldKeys();
   const pub = publicKeysOf(keys);
 

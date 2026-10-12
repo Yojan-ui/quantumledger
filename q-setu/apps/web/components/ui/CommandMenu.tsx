@@ -32,7 +32,7 @@ const GROUPS: { heading: string; items: [string, string][] }[] = [
       ["Demo 1 · How it works", "/demo/how-it-works"],
       ["Demo 2 · Deploy anywhere", "/demo/deploy"],
       ["Demo 3 · Q-Day time machine", "/demo/qday"],
-      ["Demo 4 · Q-Ledger", "/demo/ledger"],
+      ["Demo 4 · Proof Chain", "/demo/ledger"],
       ["Readiness scanner", "/demo/scanner"],
       ["Pitch (7 slides)", "/pitch"],
     ],

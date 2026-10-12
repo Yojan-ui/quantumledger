@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Right after the hero: Q-Setu as an everyday story in four steps, each with a small 3D object.
+ * Right after the hero: QuantumLedger as an everyday story in four steps, each with a small 3D object.
  * Locks → a future master key → thieves copying boxes now → new locks on the same doors. Cards are
  * transparent: the 3D layer sits under the page, so an opaque card would hide its object.
  */
@@ -58,12 +58,12 @@ const STEPS = [
   {
     title: { simple: "New locks, same doors", technical: "Hybrid ML-KEM, no rewrite" },
     simple:
-      "Q-Setu adds a new kind of lock that the master key can't open, without rebuilding your systems.",
+      "QuantumLedger adds a new kind of lock that the master key can't open, without rebuilding your systems.",
     technical: (
       <>
-        Q-Setu adds <Term id="hybrid">hybrid</Term> X25519 + <Term id="ml-kem">ML-KEM-768</Term>{" "}
-        (FIPS 203) and <Term id="ml-dsa">ML-DSA</Term> (FIPS 204) through five adapters, in front of
-        systems that stay as they are.
+        QuantumLedger adds <Term id="hybrid">hybrid</Term> X25519 +{" "}
+        <Term id="ml-kem">ML-KEM-768</Term> (FIPS 203) and <Term id="ml-dsa">ML-DSA</Term> (FIPS
+        204) through five adapters, in front of systems that stay as they are.
       </>
     ),
     label: "The padlock becomes a lattice lock",

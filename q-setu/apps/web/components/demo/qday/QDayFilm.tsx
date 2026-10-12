@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * Demo 3 as a film. Two glass corridors carry each system's packets (classical above, Q-Setu below)
+ * Demo 3 as a film. Two glass corridors carry each system's packets (classical above, QuantumLedger below)
  * while an adversary orb records both through saffron tendrils. Time-lapse: the light warms and the
  * orb grows. Q-Day: the classical packets shatter (saffron edges) and their real decrypted contents
- * float out as labels; the Q-Setu packets only glint and stay whole.
+ * float out as labels; the QuantumLedger packets only glint and stay whole.
  */
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -172,7 +172,7 @@ export default function QDayFilm({
         o.updateMatrix();
         sh.setMatrixAt(i * SHARDS + k, o.matrix);
       }
-      // Q-Setu packet: keeps moving, and refracts the shock wave as a brief KEM glint.
+      // QuantumLedger packet: keeps moving, and refracts the shock wave as a brief KEM glint.
       o.position.set(packetX(i, t), -ROW, 0);
       o.rotation.set(0, 0, 0);
       o.scale.setScalar(on * (1 + 0.12 * glint));
@@ -200,7 +200,7 @@ export default function QDayFilm({
       <directionalLight position={[2, 4, 5]} intensity={0.9} />
       <directionalLight ref={rim} position={[0, 2, -6]} intensity={0.25} color={c.warn} />
 
-      {/* Two glass corridors: classical above, Q-Setu below. */}
+      {/* Two glass corridors: classical above, QuantumLedger below. */}
       {[ROW, -ROW].map((y) => (
         <group key={y} position={[0, y, 0]}>
           <mesh geometry={corridor}>
@@ -271,7 +271,7 @@ export default function QDayFilm({
       />
       <Anchor
         position={[-2.4, -ROW - 0.35, 0]}
-        label="Q-Setu"
+        label="QuantumLedger"
         value="X25519 + ML-KEM-768 · recorded"
         role="kem"
         show={show && (id === "split" || id === "timelapse")}
@@ -298,7 +298,7 @@ export default function QDayFilm({
       ))}
       <Anchor
         position={[2.4, -ROW - 0.35, 0]}
-        label="Q-Setu · attack failed"
+        label="QuantumLedger · attack failed"
         value="AES-GCM tag mismatch"
         role="kem"
         show={show && id === "climax" && qExposed !== undefined}

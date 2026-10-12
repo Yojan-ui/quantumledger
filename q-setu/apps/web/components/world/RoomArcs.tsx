@@ -2,7 +2,7 @@
 
 /**
  * Audience packets. Each message a phone seals flies as an arc from a random Indian city to the
- * Q-Setu node, drawn on in 900 ms with a gradient in that visitor's colours, and ripples the node
+ * QuantumLedger node, drawn on in 900 ms with a gradient in that visitor's colours, and ripples the node
  * when it arrives (the server has opened it by then: the arc is queued from the server's verdict).
  * A tampered packet travels in --danger, stops halfway and shatters.
  */

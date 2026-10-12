@@ -3,7 +3,7 @@ import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta({
   title: "Terms (draft)",
-  description: "Terms of use for the Q-Setu website and demos. Draft pending legal review.",
+  description: "Terms of use for the QuantumLedger website and demos. Draft pending legal review.",
   path: "/terms",
 });
 
@@ -17,9 +17,9 @@ export default function Terms() {
       />
       <Block label="The demos" title="Demonstrations, not a service.">
         <p>
-          The website and its demos show how Q-Setu works. They are provided as they are, without
-          warranties, and are not a security service for your systems. Don’t enter real personal or
-          production data into the demos.
+          The website and its demos show how QuantumLedger works. They are provided as they are,
+          without warranties, and are not a security service for your systems. Don’t enter real
+          personal or production data into the demos.
         </p>
       </Block>
       <Block label="The scanner" title="Scan only what you’re allowed to.">

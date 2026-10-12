@@ -90,7 +90,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -269,7 +269,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],
@@ -406,7 +406,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -574,7 +574,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],
@@ -711,7 +711,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -879,7 +879,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],
@@ -1016,7 +1016,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -1184,7 +1184,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],
@@ -1321,7 +1321,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -1489,7 +1489,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],
@@ -1626,7 +1626,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -1794,7 +1794,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],
@@ -1931,7 +1931,7 @@
           "components": [
             {
               "type": "application",
-              "name": "Q-Setu Readiness Scanner",
+              "name": "QuantumLedger Readiness Scanner",
               "version": "0.1.0"
             }
           ]
@@ -2099,7 +2099,7 @@
         {
           "id": "vault-at-rest",
           "priority": "P1",
-          "title": "Wrap long-lived records with Q-Setu Vault",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
           "fixer": "Vault",
           "effort": "M",
           "resolves": [],

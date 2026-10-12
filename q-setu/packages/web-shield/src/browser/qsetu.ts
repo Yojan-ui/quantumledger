@@ -1,5 +1,5 @@
 /**
- * qsetu.js: the one-line Q-Setu Web integration (FIPS 203 sealing, FIPS 204 response signatures).
+ * qsetu.js: the one-line QuantumLedger Web integration (FIPS 203 sealing, FIPS 204 response signatures).
  *
  *   <script src="/qsetu.js" data-key="<server key ID>" data-endpoint="/api/"></script>
  *
@@ -39,7 +39,7 @@ function loadKeys(cfg: Config): Promise<ServerPublicKeys> {
     .then((k) => {
       if (k.kid !== cfg.kid)
         throw new Error(
-          `Q-Setu: server key ${k.kid} doesn't match pinned data-key ${cfg.kid}. Refusing to send.`,
+          `QuantumLedger: server key ${k.kid} doesn't match pinned data-key ${cfg.kid}. Refusing to send.`,
         );
       return k;
     });
@@ -80,7 +80,7 @@ async function sendSealed(
   const verified = res.headers.has(HEADER_SIGNATURE)
     ? verifyResponse(body, res.headers.get(HEADER_SIGNATURE), sealed.nonce, keys)
     : null;
-  if (verified === false) throw new Error("Q-Setu: response signature verification failed");
+  if (verified === false) throw new Error("QuantumLedger: response signature verification failed");
   return {
     res,
     event: {

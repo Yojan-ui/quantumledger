@@ -25,7 +25,7 @@ export const DEMOS = [
   {
     href: "/demo/ledger",
     video: "/previews/ledger.webm",
-    title: "Q-Ledger",
+    title: "Proof Chain",
     body: "Edit an audit-log row in the database and watch verification pinpoint it.",
   },
 ];

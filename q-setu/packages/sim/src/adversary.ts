@@ -3,7 +3,7 @@
  *
  * - Classical: really factors each tiny RSA modulus with Pollard's rho (standing in for Shor),
  *   then decrypts. `breakClassical` is isomorphic, so the browser can run it live.
- * - Q-Setu: given ephemeral X25519 secrets from a *simulated* Shor oracle, it runs the real Q-Setu
+ * - QuantumLedger: given ephemeral X25519 secrets from a *simulated* Shor oracle, it runs the real QuantumLedger
  *   key schedule with its best ML-KEM guess, and the AES-256-GCM tag check fails.
  */
 import { x25519 } from "@noble/curves/ed25519.js";

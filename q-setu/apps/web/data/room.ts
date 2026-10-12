@@ -3,7 +3,7 @@
  * to, the visitor colours and the emoji a visitor may pick. No three.js here (the server uses it).
  * The cities are only a visual: a visitor's real location is never asked for or inferred.
  */
-export const ROOM_HUB = "Q-Setu node · Mumbai";
+export const ROOM_HUB = "QuantumLedger node · Mumbai";
 export const HUB: [number, number] = [19.08, 72.88];
 
 export const ROOM_CITIES = [

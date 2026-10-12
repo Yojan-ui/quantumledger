@@ -55,7 +55,7 @@ const DEMOS = [
     async (p) => {
       await wait(5000);
       await press(p, /Go to Q-Day/);
-      await until(p, "Exposed · Q-Setu");
+      await until(p, "Exposed · QuantumLedger");
       await wait(9000);
     },
   ],

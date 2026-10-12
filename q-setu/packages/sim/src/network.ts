@@ -1,6 +1,6 @@
 /**
  * A sector network: node A → node B → node C, carrying each record twice in parallel (classical
- * and Q-Setu). An adversary taps both links of both modes.
+ * and QuantumLedger). An adversary taps both links of both modes.
  */
 import { Adversary } from "./adversary";
 import { ClassicalLink, makeNode, QsetuLink, type ShorEscrow } from "./links";
@@ -66,7 +66,7 @@ export class SectorNetwork {
     return this.adversary.list();
   }
 
-  /** Q-Day against Q-Setu traffic (server side, since it needs the simulated Shor oracle). */
+  /** Q-Day against QuantumLedger traffic (server side, since it needs the simulated Shor oracle). */
   qDayQsetu(): QDayOutcome[] {
     return this.adversary.attackQsetu(this.escrow);
   }

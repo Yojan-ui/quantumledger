@@ -1,7 +1,7 @@
 {
   "name": "@qsetu/edge",
   "version": "0.1.0",
-  "description": "Q-Setu Edge: ML-KEM-512 + ML-DSA-44 profile and a budgeted device simulator for IoT.",
+  "description": "QuantumLedger Edge: ML-KEM-512 + ML-DSA-44 profile and a budgeted device simulator for IoT.",
   "private": true,
   "type": "module",
   "sideEffects": false,

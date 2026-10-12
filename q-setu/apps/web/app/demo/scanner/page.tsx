@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Scanner } from "@/components/demo/Scanner";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
 
-export const metadata: Metadata = { title: "Quantum Readiness Scanner · Q-Setu" };
+export const metadata: Metadata = { title: "Quantum Readiness Scanner · QuantumLedger" };
 
 export default function Page() {
   return (

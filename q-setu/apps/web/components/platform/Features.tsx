@@ -29,7 +29,7 @@ interface Feature {
 const FEATURES: Feature[] = [
   {
     id: "shield",
-    name: "Q-Setu Shield",
+    name: "QuantumLedger Shield",
     socket: 0,
     problem: "Banks can’t rewrite 20-year-old core systems to add new cryptography.",
     fix: "Shield sits in front of them. Zero code changes.",
@@ -39,7 +39,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "web",
-    name: "Q-Setu Web",
+    name: "QuantumLedger Web",
     socket: 1,
     problem: "Citizen portals send forms over TLS that can be recorded today.",
     fix: "One script tag seals every form before it leaves the browser.",
@@ -49,7 +49,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "sdk",
-    name: "Q-Setu SDK",
+    name: "QuantumLedger SDK",
     socket: 2,
     problem: "App teams can’t become cryptographers to protect their APIs.",
     fix: "One package: post-quantum sessions, envelopes and signatures.",
@@ -59,7 +59,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "edge",
-    name: "Q-Setu Edge",
+    name: "QuantumLedger Edge",
     socket: 3,
     problem: "Meters and POS terminals have kilobytes of RAM and a battery.",
     fix: "A post-quantum profile sized for devices: ML-KEM-512 and ML-DSA-44.",
@@ -69,7 +69,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "vault",
-    name: "Q-Setu Vault",
+    name: "QuantumLedger Vault",
     socket: 4,
     problem: "Backups and replicas leak, and a health record outlives its encryption.",
     fix: "Every record gets its own key, wrapped with ML-KEM and signed with ML-DSA.",
@@ -87,7 +87,7 @@ const FEATURES: Feature[] = [
   },
   {
     id: "ledger",
-    name: "Q-Ledger",
+    name: "Proof Chain",
     problem: "An insider with database access can quietly rewrite an audit log.",
     fix: "Every entry is hash-chained with SHA3-256 and signed with ML-DSA-65.",
     proof: <LedgerProof />,
@@ -202,7 +202,7 @@ export function Features() {
                   </Label>
                   {f.proof}
                   <p className="mt-8 text-small text-warn">
-                    <span className="font-mono text-label uppercase">Without Q-Setu · </span>
+                    <span className="font-mono text-label uppercase">Without QuantumLedger · </span>
                     {f.without}
                   </p>
                 </li>

@@ -1,5 +1,5 @@
 /**
- * HTTP session client: runs the Q-Setu handshake (hybrid X25519 + ML-KEM, ML-DSA-authenticated)
+ * HTTP session client: runs the QuantumLedger handshake (hybrid X25519 + ML-KEM, ML-DSA-authenticated)
  * against a session server, then sends AES-256-GCM-sealed messages.
  */
 import {
@@ -17,7 +17,7 @@ import {
 import { asJSON, toBytes, type Data } from "./data";
 
 export interface CreateSessionOptions extends SessionOptions {
-  /** Base URL of a Q-Setu session server, e.g. "https://bank.example/qsetu". */
+  /** Base URL of a QuantumLedger session server, e.g. "https://bank.example/qsetu". */
   url: string;
   /** The server's pinned ML-DSA identity public key (base64 or bytes). */
   serverKey: string | Uint8Array;
@@ -45,7 +45,7 @@ async function post<T>(f: typeof fetch, url: string, body: unknown): Promise<T> 
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Q-Setu ${url} → HTTP ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`QuantumLedger ${url} → HTTP ${res.status}: ${await res.text()}`);
   return (await res.json()) as T;
 }
 

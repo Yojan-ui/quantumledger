@@ -5,7 +5,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata = pageMeta({
   title: "Security",
   description:
-    "What's real and what's simulated in Q-Setu, the threat model, the libraries it builds on and their audit status, and how to report a vulnerability.",
+    "What's real and what's simulated in QuantumLedger, the threat model, the libraries it builds on and their audit status, and how to report a vulnerability.",
   path: "/security",
 });
 
@@ -28,14 +28,14 @@ export default function Security() {
       <PageHero
         label="Security"
         title="What we protect, what we don’t, and what’s simulated."
-        lead="Q-Setu is early-stage and has not had an independent security audit. This page says exactly what that means."
+        lead="QuantumLedger is early-stage and has not had an independent security audit. This page says exactly what that means."
       />
       <Block label="Real" title="What runs for real.">
         <Lines
           items={[
             "Every post-quantum and classical primitive, from the @noble libraries below; no cryptography written from scratch",
             "The hybrid combiner, the ML-DSA-authenticated handshake, the AES-256-GCM record layer, replay protection and the key ratchet",
-            "All five adapters, the Q-Ledger hash chain and signatures, the KMS key wrapping and rotation, the URL scanner",
+            "All five adapters, the Proof Chain hash chain and signatures, the KMS key wrapping and rotation, the URL scanner",
             "Every number on the site: measured on the serving machine, or cited with a source",
           ]}
         />
@@ -44,7 +44,7 @@ export default function Security() {
         <Lines
           items={[
             "The classical “today” system in Demo 3 uses a deliberately tiny ~40-bit RSA key (packages/sim/src/classical, INSECURE_DEMO_ONLY) so a browser can factor it. It stands in for Shor’s algorithm on RSA-2048.",
-            "A simulated Shor oracle hands the attacker the X25519 secrets. The attack on Q-Setu traffic then runs the real key schedule and fails.",
+            "A simulated Shor oracle hands the attacker the X25519 secrets. The attack on QuantumLedger traffic then runs the real key schedule and fails.",
             "Edge device budgets are accounted, not enforced by hardware. Demo institutions and people are fictional.",
             "The ledger’s “tamper” button is a demo-only endpoint. The demo KMS keeps its key-encryption key on disk unless QSETU_KMS_KEK is set; production should use an HSM.",
           ]}

@@ -9,7 +9,7 @@ const report = {
   lab: "Pune General",
 };
 
-describe("Q-Setu Vault", () => {
+describe("QuantumLedger Vault", () => {
   it("put → get round-trip; the store only holds ciphertext", async () => {
     const store = memoryStore();
     const vault = createVault({ keys: generateVaultKeys(), store });

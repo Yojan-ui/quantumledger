@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 /**
- * A simulated IoT device (Q-Setu Edge profile: ML-KEM-512 + ML-DSA-44) inside a Web Worker,
+ * A simulated IoT device (QuantumLedger Edge profile: ML-KEM-512 + ML-DSA-44) inside a Web Worker,
  * with an accounted RAM budget and a throttled CPU. The gateway runs on the page.
  */
 import { base64ToBytes, bytesToBase64, getSig } from "@qsetu/core";

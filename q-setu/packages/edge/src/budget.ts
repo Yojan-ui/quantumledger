@@ -1,5 +1,5 @@
 /**
- * Device budget simulation for Q-Setu Edge. RAM is *accounted*, not measured: we sum the bytes
+ * Device budget simulation for QuantumLedger Edge. RAM is *accounted*, not measured: we sum the bytes
  * of every key, buffer and piece of session state the device must hold (JS heap can't be capped).
  * CPU is throttled by spinning `slowdown − 1` times as long as each operation took, which emulates
  * a slower microcontroller inside a Web Worker.

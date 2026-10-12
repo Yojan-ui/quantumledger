@@ -19,11 +19,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Q-Setu: make anything in India quantum-safe, in one line",
+    default: "QuantumLedger: see your quantum risk. Fix it. Prove it.",
     template: `%s · ${SITE_NAME}`,
   },
   description:
-    "Q-Setu adds NIST post-quantum encryption and signatures (ML-KEM, FIPS 203; ML-DSA, FIPS 204) to any website, server, app or device in one line.",
+    "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography: ML-KEM (FIPS 203) and ML-DSA (FIPS 204).",
   applicationName: SITE_NAME,
 };
 
@@ -36,8 +36,8 @@ const JSON_LD = {
       "@type": "Organization",
       name: SITE_NAME,
       url: SITE_URL,
-      logo: `${SITE_URL}/brand/q-setu-mark.svg`,
-      description: "Quantum-safe India before Q-Day.",
+      logo: `${SITE_URL}/brand/quantumledger-mark.svg`,
+      description: "See your quantum risk. Fix it. Prove it.",
     },
     {
       "@type": "SoftwareApplication",

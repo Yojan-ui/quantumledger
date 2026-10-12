@@ -7,7 +7,7 @@ Captures: every page at 1440×900 (`desktop-*`, plus `*-full.png` full-page) and
 Scores 1–5: **C** 5-second clarity · **W** wow · **S** structure (one question per section) · **T** trust (every
 number real or cited, nothing fake) · **P** polish · **Perf** budget.
 
-**5-second clarity from the hero screenshot alone:** "Q-Setu adds post-quantum encryption to any system in India
+**5-second clarity from the hero screenshot alone:** "QuantumLedger adds post-quantum encryption to any system in India
 in one line; this page is running real crypto right now (the ticker, the generated key)."
 
 | Page                                          |  C  |   W   |  S  |  T  |   P   | Perf | Notes                                                                                                                                                                 |

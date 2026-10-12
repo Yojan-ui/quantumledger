@@ -138,7 +138,7 @@ async function create(): Promise<Runtime> {
   });
 
   if ((await ledger.count()) === 0)
-    await ledger.append("genesis", "q-ledger", {
+    await ledger.append("genesis", "proof-chain", {
       note: "Append-only audit log: SHA3-256 chain, ML-DSA-65 signatures.",
     });
 

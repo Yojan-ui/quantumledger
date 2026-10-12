@@ -48,7 +48,7 @@ export interface SessionBench {
   envelopeOverheadBytes: number;
   /** Classical baseline handshake: X25519 + ECDSA P-256 (what TLS does today). */
   classicalHandshakeMs: number;
-  /** Plain AES-256-GCM on the same message: what you'd pay without Q-Setu. */
+  /** Plain AES-256-GCM on the same message: what you'd pay without QuantumLedger. */
   baselineMessageUs: number;
 }
 

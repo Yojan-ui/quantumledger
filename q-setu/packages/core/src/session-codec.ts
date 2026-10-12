@@ -1,5 +1,5 @@
 /**
- * JSON wire codec for Q-Setu session messages (FIPS 203/204 handshake, AES-256-GCM records).
+ * JSON wire codec for QuantumLedger session messages (FIPS 203/204 handshake, AES-256-GCM records).
  * Byte fields are base64, so messages can travel over plain HTTP/JSON or postMessage.
  */
 import { base64ToBytes, bytesToBase64 } from "./encoding";

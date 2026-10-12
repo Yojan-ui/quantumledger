@@ -1,6 +1,6 @@
 /**
  * Migration planner: turns readiness-scanner findings into an ordered checklist. Each step says
- * which Q-Setu adapter (or plain configuration change) fixes which findings, how big the job is
+ * which QuantumLedger adapter (or plain configuration change) fixes which findings, how big the job is
  * (S/M/L), and how urgent it is.
  *
  * Urgency uses Mosca's inequality: if data must stay secret for x years and migrating takes y years,
@@ -81,7 +81,7 @@ const TEMPLATES: Template[] = [
     match: (f, i) =>
       i.source === "code" &&
       (f.primitive === "key-agree" || f.ruleId === "tls-suite" || f.ruleId === "rsa"),
-    title: "Front legacy services with Q-Setu Shield",
+    title: "Front legacy services with QuantumLedger Shield",
     fixer: "Shield",
     effort: "S",
     quantum: true,
@@ -181,7 +181,7 @@ export function buildPlan(input: PlanInput): Plan {
     steps.push({
       id: "vault-at-rest",
       priority: input.dataLifetimeYears + EFFORT_YEARS.M > yearsLeft ? "P1" : "P2",
-      title: "Wrap long-lived records with Q-Setu Vault",
+      title: "Wrap long-lived records with QuantumLedger Vault",
       fixer: "Vault",
       effort: "M",
       resolves: [],
@@ -211,7 +211,7 @@ export function buildPlan(input: PlanInput): Plan {
   };
 }
 
-export function planToMarkdown(plan: Plan, title = "Q-Setu migration plan"): string {
+export function planToMarkdown(plan: Plan, title = "QuantumLedger migration plan"): string {
   const a = plan.assumptions;
   return [
     `# ${title}`,

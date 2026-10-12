@@ -5,7 +5,7 @@ import { KeysRotateBody } from "@/lib/server/schemas";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST /api/keys/rotate { purpose }: rotates a key now (it also rotates on a schedule). Logged to the Q-Ledger. */
+/** POST /api/keys/rotate { purpose }: rotates a key now (it also rotates on a schedule). Logged to the Proof Chain. */
 export async function POST(req: Request) {
   const b = await parseBody(req, KeysRotateBody);
   if (!b.ok) return b.res;

@@ -3,8 +3,8 @@
 /**
  * Impact calculator. Pick a sector, roughly how many records and how long they must stay secret: a
  * timeline shows today → "secret until" against the quantum risk window (2030–2035+, from NIST's
- * draft transition plan, IR 8547), the years of exposure Q-Setu prevents, and the migration effort
- * with and without Q-Setu for that sector's adapter. Every assumption is labelled and editable.
+ * draft transition plan, IR 8547), the years of exposure QuantumLedger prevents, and the migration effort
+ * with and without QuantumLedger for that sector's adapter. Every assumption is labelled and editable.
  */
 import { useId, useMemo, useState } from "react";
 import { Container, SectionLabel } from "@/components/ui";
@@ -243,7 +243,7 @@ export function Impact({ index }: { index: string }) {
                     simple={
                       worst === 0
                         ? "Your records stop needing secrecy before the risk window opens. Keep an eye on it anyway."
-                        : `of exposure Q-Setu prevents: ${fmt(records)} records would still need to be secret after a quantum computer could open them.`
+                        : `of exposure QuantumLedger prevents: ${fmt(records)} records would still need to be secret after a quantum computer could open them.`
                     }
                     technical={
                       worst === 0 ? (
@@ -264,12 +264,12 @@ export function Impact({ index }: { index: string }) {
               </div>
               <div>
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2" data-impact-effort>
-                  <dt className="text-small text-fg-2">Without Q-Setu</dt>
+                  <dt className="text-small text-fg-2">Without QuantumLedger</dt>
                   <dd className="text-right font-mono text-small text-fg">
                     ≈ {fmt(Math.round(without))} engineer-weeks
                   </dd>
                   <dt className="text-small text-fg-2">
-                    With Q-Setu <span data-copy="technical">{s.adapter}</span>
+                    With QuantumLedger <span data-copy="technical">{s.adapter}</span>
                   </dt>
                   <dd className="text-right font-mono text-small text-ok">
                     ≈ {fmt(Math.round(withQ * 10) / 10)} engineer-weeks
@@ -277,8 +277,8 @@ export function Impact({ index }: { index: string }) {
                 </dl>
                 <p className="mt-3 text-small text-fg-2">
                   <Copy
-                    simple={`Without Q-Setu, each of your ${systems} systems has its locks rebuilt by hand. With it: ${s.plain}.`}
-                    technical={`Without: change, test and redeploy the cryptography in each of ${systems} systems. With Q-Setu ${s.adapter}: ${s.how}.`}
+                    simple={`Without QuantumLedger, each of your ${systems} systems has its locks rebuilt by hand. With it: ${s.plain}.`}
+                    technical={`Without: change, test and redeploy the cryptography in each of ${systems} systems. With QuantumLedger ${s.adapter}: ${s.how}.`}
                   />
                 </p>
                 <details className="mt-3">

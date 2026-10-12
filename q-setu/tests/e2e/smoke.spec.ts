@@ -11,7 +11,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Make anything in India quantum-safe",
+    "See your quantum risk. Fix it. Prove it.",
   );
   await expect(page.locator("[data-room-qr] svg")).toBeVisible();
   await expect(page.locator("#fact-1")).toContainText("as of");
@@ -48,19 +48,19 @@ test("Demo 2: Web, Database and IoT adapters deploy for real; forged certificate
 }) => {
   const errors = trackErrors(page);
   await page.goto("/demo/deploy");
-  await page.getByRole("button", { name: "Deploy Q-Setu Web" }).click();
+  await page.getByRole("button", { name: "Deploy QuantumLedger Web" }).click();
   await expect(page.getByText(/reply signature verified/)).toBeVisible();
   // A deployed node keeps doing real work: its counter climbs.
   await expect(page.getByLabel("operations since deploy").first()).not.toHaveText(/^0\s/, {
     timeout: 15_000,
   });
   await page.getByRole("radio", { name: /Database/ }).click();
-  await page.getByRole("button", { name: "Deploy Q-Setu Vault" }).click();
+  await page.getByRole("button", { name: "Deploy QuantumLedger Vault" }).click();
   await expect(page.getByText(/read back and signature verified/)).toBeVisible();
   await page.getByRole("button", { name: "Tamper with the stored record" }).click();
   await expect(page.getByText(/verification failed: record .* was modified/)).toBeVisible();
   await page.getByRole("radio", { name: /IoT device/ }).click();
-  await page.getByRole("button", { name: "Deploy Q-Setu Edge" }).click();
+  await page.getByRole("button", { name: "Deploy QuantumLedger Edge" }).click();
   await expect(page.getByText(/readings delivered, 3 batch signatures verified/)).toBeVisible();
   await page.getByRole("radio", { name: "Education" }).click();
   await page.getByRole("button", { name: /University issues/ }).click();
@@ -75,18 +75,18 @@ test("Demo 2: Web, Database and IoT adapters deploy for real; forged certificate
 test("Demo 2: Shield tunnels to the untouched legacy app", async ({ page }) => {
   await page.goto("/demo/deploy");
   await page.getByRole("radio", { name: /API server/ }).click();
-  await page.getByRole("button", { name: "Deploy Q-Setu Shield" }).click();
+  await page.getByRole("button", { name: "Deploy QuantumLedger Shield" }).click();
   await expect(page.getByText(/unaware it was tunnelled over PQC/)).toBeVisible();
 });
 
-test("Demo 3: Q-Day exposes classical records, none with Q-Setu", async ({ page }) => {
+test("Demo 3: Q-Day exposes classical records, none with QuantumLedger", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/demo/qday");
   await expect(
     page.getByRole("region", { name: "Classical system" }).locator("li").first(),
   ).toBeVisible();
   await page.getByRole("button", { name: /Go to Q-Day/ }).click();
-  await expect(page.getByText("Exposed · Q-Setu")).toBeVisible();
+  await expect(page.getByText("Exposed · QuantumLedger")).toBeVisible();
   await expect(page.getByText(/Factored n in \d+ steps/)).toBeVisible();
   await expect(page.getByText(/AES-256-GCM tag check failed/)).toBeVisible();
   const stats = page.locator("p.tabular");
@@ -95,7 +95,7 @@ test("Demo 3: Q-Day exposes classical records, none with Q-Setu", async ({ page 
   expect(errors).toEqual([]);
 });
 
-test("Demo 4: Q-Ledger pinpoints a row edited in the database", async ({ page }) => {
+test("Demo 4: Proof Chain pinpoints a row edited in the database", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/demo/ledger");
   await page.getByRole("button", { name: "Verify the chain" }).click();
@@ -134,7 +134,7 @@ test("Scanner: Java TLS sample scores Critical and yields a CBOM", async ({ page
   expect((await download).suggestedFilename()).toMatch(/^cbom-.*\.json$/);
   // Findings become an ordered migration plan, exportable as Markdown.
   await expect(page.getByText(/steps, most urgent first/)).toBeVisible();
-  await expect(page.getByText("Front legacy services with Q-Setu Shield")).toBeVisible();
+  await expect(page.getByText("Front legacy services with QuantumLedger Shield")).toBeVisible();
   const md = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export Markdown" }).click();
   expect((await md).suggestedFilename()).toMatch(/^migration-plan-.*\.md$/);
@@ -144,6 +144,6 @@ test("Web shield: a plain HTML form is sealed by one script tag", async ({ page 
   await page.goto("/web-shield-demo/");
   await expect(page.locator("html")).toHaveAttribute("data-qsetu", "on");
   await page.getByRole("button", { name: "Submit application" }).click();
-  await expect(page.getByText(/Arrived sealed with Q-Setu/)).toBeVisible();
+  await expect(page.getByText(/Arrived sealed with QuantumLedger/)).toBeVisible();
   await expect(page.getByRole("cell", { name: "Kavya Nair" })).toBeVisible();
 });

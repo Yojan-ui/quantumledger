@@ -14,7 +14,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata = pageMeta({
   title: "Pricing",
   description:
-    "Community (free, self-hosted), Pro (managed Shield and Q-Ledger) and Government & Enterprise (on-prem, HSM).",
+    "Community (free, self-hosted), Pro (managed Shield and Proof Chain) and Government & Enterprise (on-prem, HSM).",
   path: "/pricing",
 });
 
@@ -36,7 +36,7 @@ const TIERS = [
     note: "Pricing not decided yet",
     items: [
       "Managed Shield nodes",
-      "Hosted Q-Ledger with retention",
+      "Hosted Proof Chain with retention",
       "Migration planning and support",
     ],
     cta: ["Talk to us", "/contact"],
@@ -60,7 +60,7 @@ const FAQ: [string, string][] = [
     "We haven’t set one. We would rather price with our first design partners than publish a number we’d change.",
   ],
   [
-    "Has Q-Setu been audited?",
+    "Has QuantumLedger been audited?",
     "Not yet. It builds on @noble libraries; three of the four have independent audits, the post-quantum one is self-audited. Details are on the security page.",
   ],
   [

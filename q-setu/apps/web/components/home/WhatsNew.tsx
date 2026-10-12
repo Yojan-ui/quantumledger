@@ -36,7 +36,7 @@ const NEW: {
     role: "sig",
     title: {
       simple: "A record book nobody can quietly edit",
-      technical: "Quantum-safe signed Q-Ledger",
+      technical: "Quantum-safe signed Proof Chain",
     },
     simple:
       "Every action is written down, chained and signed, so a single changed entry is caught at once.",
@@ -61,7 +61,7 @@ export function WhatsNew({ index }: { index: string }) {
       <Container>
         <SectionLabel index={index} label="What's new here" role="sig" />
         <CopyHeading
-          simple="What Q-Setu adds that's new."
+          simple="What QuantumLedger adds that's new."
           technical="What's new: deployment, measurement, audit and proof."
           className="max-w-text"
         />

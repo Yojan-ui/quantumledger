@@ -1,5 +1,5 @@
 /**
- * Q-Setu Edge device: the `edge` profile (X25519 + ML-KEM-512, FIPS 203; ML-DSA-44, FIPS 204).
+ * QuantumLedger Edge device: the `edge` profile (X25519 + ML-KEM-512, FIPS 203; ML-DSA-44, FIPS 204).
  * One handshake, then many small AES-256-GCM readings. Every `batchSize` readings the device signs
  * a SHA-256 hash chain over the batch with ML-DSA-44, which gives origin proof without paying
  * 2.4 KB and a signature per reading.

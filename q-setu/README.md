@@ -1,6 +1,6 @@
-# Q-Setu: make anything in India quantum-safe, in one line
+# QuantumLedger: make anything in India quantum-safe, in one line
 
-Most post-quantum projects are a library or a slideshow. **Q-Setu is a quantum-safe socket**: one
+Most post-quantum projects are a library or a slideshow. **QuantumLedger is a quantum-safe socket**: one
 core, one crypto-agile algorithm registry and **five adapters**. Any website, API, app, database or
 hardware device can adopt NIST's post-quantum standards without a rewrite. Those standards are
 **ML-KEM** (FIPS 203) for key exchange, hybridised with X25519, and **ML-DSA** (FIPS 204) for
@@ -10,13 +10,13 @@ never quoted.
 
 ## The five adapters
 
-| Adapter                                      | For                                       | Integration                                                                                                       |
-| -------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Q-Setu Shield** (sidecar proxy)            | Any server or API, including legacy cores | `npx qsetu-shield --upstream http://localhost:4000 --listen 8443` (zero code change)                              |
-| **Q-Setu Web** (script tag + Service Worker) | Any website                               | `<script src="/qsetu.js" data-key="<key id>" data-endpoint="/api/"></script>`                                     |
-| **Q-Setu SDK** (ESM package)                 | New apps: Node, browser, React Native     | `npm i @qsetu/sdk`, then `createSession` / `seal` / `open` / `sign` / `verify` ([README](packages/sdk/README.md)) |
-| **Q-Setu Edge** (IoT profile)                | Meters, medical devices, POS terminals    | ML-KEM-512 + ML-DSA-44, a 64 KB budget, batch-signed readings                                                     |
-| **Q-Setu Vault** (data at rest)              | Databases and file stores                 | `await vault.put(record)` / `await vault.get(id)`: per-record ML-KEM-wrapped keys, ML-DSA signatures              |
+| Adapter                                             | For                                       | Integration                                                                                                       |
+| --------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **QuantumLedger Shield** (sidecar proxy)            | Any server or API, including legacy cores | `npx qsetu-shield --upstream http://localhost:4000 --listen 8443` (zero code change)                              |
+| **QuantumLedger Web** (script tag + Service Worker) | Any website                               | `<script src="/qsetu.js" data-key="<key id>" data-endpoint="/api/"></script>`                                     |
+| **QuantumLedger SDK** (ESM package)                 | New apps: Node, browser, React Native     | `npm i @qsetu/sdk`, then `createSession` / `seal` / `open` / `sign` / `verify` ([README](packages/sdk/README.md)) |
+| **QuantumLedger Edge** (IoT profile)                | Meters, medical devices, POS terminals    | ML-KEM-512 + ML-DSA-44, a 64 KB budget, batch-signed readings                                                     |
+| **QuantumLedger Vault** (data at rest)              | Databases and file stores                 | `await vault.put(record)` / `await vault.get(id)`: per-record ML-KEM-wrapped keys, ML-DSA signatures              |
 
 ## Architecture
 
@@ -33,8 +33,8 @@ flowchart TB
   core --> SIM["@qsetu/sim<br/>fintech · healthcare · education<br/>Q-Day adversary · sim/classical (INSECURE_DEMO_ONLY)"]
   subgraph web["apps/web (Next.js)"]
     SITE["Landing: one persistent R3F scene<br/>morphing on scroll"]
-    D1[Demo 1 · How it works] & D2[Demo 2 · Deploy anywhere] & D3[Demo 3 · Q-Day] & D4[Demo 4 · Q-Ledger] & SCN[Scanner]
-    BUS["lib/live: event bus · metrics · mesh · policy · KMS · Q-Ledger (SQLite)"]
+    D1[Demo 1 · How it works] & D2[Demo 2 · Deploy anywhere] & D3[Demo 3 · Q-Day] & D4[Demo 4 · Proof Chain] & SCN[Scanner]
+    BUS["lib/live: event bus · metrics · mesh · policy · KMS · Proof Chain (SQLite)"]
     API["/api/*: stream (SSE) · metrics · ledger · policy · keys · plan · scan/url · simulate · qday · shield/run · sdk · vault · certs · docs"]
   end
   SDK & WEB & EDGE & VAULT & SIM --> web
@@ -72,7 +72,7 @@ Open these URLs:
 - <http://localhost:3000/admin>: signups (set `ADMIN_PASSWORD`)
 - <http://localhost:3000/web-shield-demo/>: a plain HTML form protected by one script tag
 
-`pnpm dev` prints every component's logs, labelled. Watch `[legacy-app] POST /api/transfer (plain HTTP, unaware of Q-Setu)`
+`pnpm dev` prints every component's logs, labelled. Watch `[legacy-app] POST /api/transfer (plain HTTP, unaware of QuantumLedger)`
 while Shield carries it over PQC. With `pnpm start`, the API starts the same Shield stack in-process.
 
 ## Presenting
@@ -83,7 +83,7 @@ while Shield carries it over PQC. With `pnpm start`, the API starts the same Shi
   | Key   | Action                                                                        |
   | ----- | ----------------------------------------------------------------------------- |
   | → / ← | Step the current demo forward or back (on other pages, move between sections) |
-  | 1–5   | How it works · Deploy · Q-Day · Q-Ledger · Scanner                            |
+  | 1–5   | How it works · Deploy · Q-Day · Proof Chain · Scanner                         |
   | R     | Reset every demo                                                              |
   | ⌘K    | Jump anywhere, or scan a site                                                 |
 
@@ -106,30 +106,30 @@ while Shield carries it over PQC. With `pnpm start`, the API starts the same Shi
    deprecation dates. Every claim has a footnote to its primary source. Keep scrolling through
    _Harvest → Q-Day_: the year runs to 2035 and the classical rows decrypt in your browser.
 4. **Demo 3 · Q-Day (35 s).** Open `/demo/qday` and press **Go to Q-Day**. The classical column's
-   _exposed_ counter rolls up as your browser factors the RSA keys. The Q-Setu column stays at 0 even
+   _exposed_ counter rolls up as your browser factors the RSA keys. The QuantumLedger column stays at 0 even
    though the attacker was handed the X25519 secrets. The console on the right shows both halves.
 5. **Demo 2 · Deploy (30 s).** Open `/demo/deploy` and press **Deploy all**. Five real adapters run;
    then each sealed node keeps working and its ops counter climbs with real traffic.
-6. **Q-Ledger tamper (25 s).** Open `/demo/ledger`. **Verify the chain** (✓ intact). **Tamper with
+6. **Proof Chain tamper (25 s).** Open `/demo/ledger`. **Verify the chain** (✓ intact). **Tamper with
    entry #42**: the demo runs a raw SQL `UPDATE`, bypassing the API. **Verify** again: _Broken at entry
    #42: row edited after it was written_. **Restore**.
-7. **Why Q-Setu (20 s).** Back on the home page, the comparison against PQC libraries, edge
-   PQ-TLS and doing nothing. Libraries are the foundation (Q-Setu is built on them); Q-Setu is how
+7. **Why QuantumLedger (20 s).** Back on the home page, the comparison against PQC libraries, edge
+   PQ-TLS and doing nothing. Libraries are the foundation (QuantumLedger is built on them); QuantumLedger is how
    India deploys them. Optional: in Demo 1, switch the policy to SLH-DSA and watch the console's
    algorithm IDs change as live sessions re-key, with no restart.
 
 ## Live backend
 
-| Endpoint                                     | What it does                                                                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/stream`                            | SSE from the in-process event bus: one frame per real operation, plus `event: metrics` every second                 |
-| `GET /api/metrics`                           | Rolling 60 s counts and p50/p95 latency per operation, per city and per Demo 2 site                                 |
-| `GET /api/ledger`, `POST /api/ledger/verify` | Q-Ledger: SQLite (`better-sqlite3`), SHA3-256 hash chain, ML-DSA-65 signatures; verify names the first broken entry |
-| `POST /api/scan/url`                         | Probes a public host on 443 offering `X25519MLKEM768`; reports TLS version, cipher, group, certificate; CBOM + plan |
-| `POST /api/plan`                             | Findings → ordered migration checklist (adapter, effort S/M/L, priority by data lifetime); JSON or Markdown         |
-| `POST /api/policy`                           | Hot-swaps `standard` ↔ `edge` or the signature to SLH-DSA; live sessions re-key at their next rotation              |
-| `GET /api/keys`, `POST /api/keys/rotate`     | Demo KMS: keys wrapped with AES-256-GCM in a pluggable `KeyStore` (file now, HSM-ready); rotations go to the ledger |
-| `GET /api/docs`                              | OpenAPI 3.1, generated from the same zod schemas every route validates with                                         |
+| Endpoint                                     | What it does                                                                                                           |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/stream`                            | SSE from the in-process event bus: one frame per real operation, plus `event: metrics` every second                    |
+| `GET /api/metrics`                           | Rolling 60 s counts and p50/p95 latency per operation, per city and per Demo 2 site                                    |
+| `GET /api/ledger`, `POST /api/ledger/verify` | Proof Chain: SQLite (`better-sqlite3`), SHA3-256 hash chain, ML-DSA-65 signatures; verify names the first broken entry |
+| `POST /api/scan/url`                         | Probes a public host on 443 offering `X25519MLKEM768`; reports TLS version, cipher, group, certificate; CBOM + plan    |
+| `POST /api/plan`                             | Findings → ordered migration checklist (adapter, effort S/M/L, priority by data lifetime); JSON or Markdown            |
+| `POST /api/policy`                           | Hot-swaps `standard` ↔ `edge` or the signature to SLH-DSA; live sessions re-key at their next rotation                 |
+| `GET /api/keys`, `POST /api/keys/rotate`     | Demo KMS: keys wrapped with AES-256-GCM in a pluggable `KeyStore` (file now, HSM-ready); rotations go to the ledger    |
+| `GET /api/docs`                              | OpenAPI 3.1, generated from the same zod schemas every route validates with                                            |
 
 The live mesh (`apps/web/lib/live/mesh.ts`) runs real hybrid sessions on the globe's 12 routes, but only
 while someone is watching the stream. Every error has one shape: `{ "error": { "code", "message", "issues"? } }`.
@@ -138,7 +138,7 @@ Data lives in `apps/web/.data/` (gitignored); set `QSETU_DATA_DIR`, `QSETU_KMS_K
 
 ## Deploy
 
-**Recommended: one Node container** (`Dockerfile`), on Railway, Fly.io, Render or any VM. Q-Setu has
+**Recommended: one Node container** (`Dockerfile`), on Railway, Fly.io, Render or any VM. QuantumLedger has
 long-running pieces that serverless platforms can't host: the SSE event bus (`/api/stream`), the live
 mesh that generates real traffic while someone watches, the scheduled KMS rotation, and the Shield demo
 nodes, which bind local ports. One container runs all of them.
@@ -181,7 +181,7 @@ docker run -p 3000:3000 \
 - The QR code is decoded from rendered pixels, and the certificate signatures are real ML-DSA-65.
 - Every benchmark and Compute Meter value, every ticker line, globe pulse and console entry: each is
   an operation that actually ran, with its measured time.
-- The Q-Ledger chain and its signatures, the KMS key wrapping and rotation, and the policy hot-swap.
+- The Proof Chain chain and its signatures, the KMS key wrapping and rotation, and the policy hot-swap.
 
 **Simulated (and labelled in the UI):**
 
@@ -208,7 +208,7 @@ docker run -p 3000:3000 \
 
 ## Roadmap
 
-1. **Hackathon MVP** (this repo): the core, five adapters, four demos, the scanner, Q-Ledger and the website.
+1. **Hackathon MVP** (this repo): the core, five adapters, four demos, the scanner, Proof Chain and the website.
 2. **Pilots:** a bank, a hospital and a university, each running in shadow mode.
 3. **HSM + TLS 1.3:** keys move into HSMs (PKCS#11), and every link uses `X25519MLKEM768`. SLH-DSA
    (FIPS 205, already in the registry) covers long-lived roots.

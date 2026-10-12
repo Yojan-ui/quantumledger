@@ -442,7 +442,7 @@ export function HandshakeDemo() {
   return (
     <DemoShell
       title="Demo 1 · How it works"
-      caption="The real Q-Setu handshake, running in your browser: one signed hybrid key exchange, then fast symmetric messages. Hover a packet for its bytes."
+      caption="The real QuantumLedger handshake, running in your browser: one signed hybrid key exchange, then fast symmetric messages. Hover a packet for its bytes."
       controls={
         <Button onClick={() => void attackShot()} disabled={reel.busy}>
           Attack it
@@ -462,7 +462,7 @@ export function HandshakeDemo() {
         <div className="relative overflow-hidden rounded-lg border border-line">
           <LazyView
             className="h-stage-sm md:h-stage"
-            label="The Q-Setu handshake as a short film: client and server exchange a signed hybrid key, then sealed messages"
+            label="The QuantumLedger handshake as a short film: client and server exchange a signed hybrid key, then sealed messages"
           >
             {(onScreen) => (
               <HandshakeFilm

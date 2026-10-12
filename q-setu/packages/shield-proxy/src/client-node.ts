@@ -1,6 +1,6 @@
 /**
  * Shield client node: accepts plain HTTP from local apps and forwards each request to the peer
- * Shield over a Q-Setu session (hybrid X25519 + ML-KEM, ML-DSA-pinned, AES-256-GCM records).
+ * Shield over a QuantumLedger session (hybrid X25519 + ML-KEM, ML-DSA-pinned, AES-256-GCM records).
  */
 import { createSession, type ClientSession } from "@qsetu/sdk";
 import Fastify from "fastify";
@@ -78,7 +78,9 @@ export async function startShieldClient(opts: ShieldClientOptions) {
       } catch (e) {
         session = undefined; // e.g. the peer restarted: re-handshake once
         if (attempt === 1)
-          return reply.code(502).send({ error: `Q-Setu tunnel failed: ${(e as Error).message}` });
+          return reply
+            .code(502)
+            .send({ error: `QuantumLedger tunnel failed: ${(e as Error).message}` });
       }
     }
   });

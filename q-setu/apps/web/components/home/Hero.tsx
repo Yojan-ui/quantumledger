@@ -40,7 +40,12 @@ export function Hero() {
 
   const words = HERO.title.split(" ");
   return (
-    <section ref={ref} id="top" className="relative flex min-h-story flex-col" aria-label="Q-Setu">
+    <section
+      ref={ref}
+      id="top"
+      className="relative flex min-h-story flex-col"
+      aria-label="QuantumLedger"
+    >
       <LiveStrip />
       <Container className="grid flex-1 grid-cols-12 content-start gap-x-6 md:content-center">
         <div className="relative col-span-12 md:order-2 md:col-span-5 md:col-start-8">

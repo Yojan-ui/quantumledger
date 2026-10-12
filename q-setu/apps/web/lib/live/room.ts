@@ -3,7 +3,7 @@
  *
  * The room holds one hybrid X25519 + ML-KEM-768 key pair per process (its secret key never leaves
  * this object and is never logged). A phone joins with the public half of a key pair it generated in
- * its own browser, seals a short message to the room's public key with the Q-Setu envelope, and
+ * its own browser, seals a short message to the room's public key with the QuantumLedger envelope, and
  * posts it. The room opens it (KEM decapsulation + AES-256-GCM, whose tag check rejects any change
  * to the packet) and seals a receipt back to the phone's key: the SHA3-256 digest of what it read.
  * The phone opens the receipt and compares the digest with its own message before showing ✓.
@@ -228,7 +228,9 @@ export class Room {
     const text = new TextDecoder("utf-8", { fatal: false }).decode(plain);
     const digest = bytesToHex(sha3_256(plain));
     const receipt = seal(
-      utf8ToBytes(JSON.stringify({ opened: true, sha3: digest, n: this.sealed + 1, by: "Q-Setu" })),
+      utf8ToBytes(
+        JSON.stringify({ opened: true, sha3: digest, n: this.sealed + 1, by: "QuantumLedger" }),
+      ),
       v.publicKey,
       { aad: receiptAad(v.id) },
     );

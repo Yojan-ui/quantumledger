@@ -68,7 +68,7 @@ export function Adapters() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                       <Heading as="h3" variant="h3">
-                        Q-Setu{" "}
+                        QuantumLedger{" "}
                         <Copy simple={a.id === "sdk" ? "for apps" : a.name} technical={a.name} />
                       </Heading>
                       <Text size="small">
@@ -82,7 +82,7 @@ export function Adapters() {
                   {/* Hover: this adapter's socket model turns and lights KEM, as does its socket on the globe. */}
                   <LazyView
                     className="hidden h-socket w-socket shrink-0 md:block"
-                    label={`Q-Setu ${a.name} socket`}
+                    label={`QuantumLedger ${a.name} socket`}
                   >
                     {(on) => <SocketModel id={a.id} hot={hot === i} active={on} />}
                   </LazyView>
@@ -140,14 +140,14 @@ export function Solutions() {
 
 type Cell = "yes" | "partial" | "no";
 const COLS = [
-  "Q-Setu",
+  "QuantumLedger",
   "PQC libraries (liboqs, OpenSSL 3.5+)",
   "PQ-TLS at the edge",
   "Doing nothing",
 ];
 /** Simple-mode column and row names (no acronyms); notes are technical detail, shown in Technical. */
 const COLS_SIMPLE = [
-  "Q-Setu",
+  "QuantumLedger",
   "Do-it-yourself crypto toolkits",
   "Quantum-safe front door only",
   "Doing nothing",
@@ -192,7 +192,7 @@ const ROWS: { k: string; cells: [Cell, Cell, Cell, Cell]; note?: string }[] = [
   {
     k: "Built around Indian sector workflows (UPI, ABDM, APAAR / DigiLocker)",
     cells: ["yes", "no", "no", "no"],
-    note: "Q-Setu’s are prototype flows modelled on these systems.",
+    note: "QuantumLedger’s are prototype flows modelled on these systems.",
   },
 ];
 const MARK: Record<Cell, ReactNode> = {
@@ -234,8 +234,8 @@ export function ComparisonTable() {
       <table ref={table} className="w-full min-w-panel table-fixed text-left">
         <caption className="sr-only">
           <Copy
-            simple="Q-Setu compared with do-it-yourself toolkits, a quantum-safe front door only, and doing nothing"
-            technical="Q-Setu compared with PQC libraries, edge PQ-TLS and doing nothing"
+            simple="QuantumLedger compared with do-it-yourself toolkits, a quantum-safe front door only, and doing nothing"
+            technical="QuantumLedger compared with PQC libraries, edge PQ-TLS and doing nothing"
           />
         </caption>
         <thead>
@@ -285,10 +285,10 @@ export function ComparisonTable() {
   );
 }
 
-/** 09: an honest comparison. Libraries are the foundation; Q-Setu is built on them. */
+/** 09: an honest comparison. Libraries are the foundation; QuantumLedger is built on them. */
 export function WhyQSetu() {
   return (
-    <Section id="why-q-setu" index="09" label="Why Q-Setu" role="kem">
+    <Section id="why-quantumledger" index="09" label="Why QuantumLedger" role="kem">
       <CopyHeading
         simple="The new locks exist. Fitting them is the hard part."
         technical="Algorithms are solved. Deployment isn’t."
@@ -299,8 +299,8 @@ export function WhyQSetu() {
       </div>
       <p className="mt-8 max-w-text text-body text-fg-2">
         <Copy
-          simple="Toolkits give you the new locks. Q-Setu gives India a way to fit them, on systems already running. It is built on widely used open-source code, not new inventions."
-          technical="Libraries give you algorithms. Q-Setu gives India a way to actually deploy them. It is built on widely used open-source implementations (the @noble libraries), not new cryptography."
+          simple="Toolkits give you the new locks. QuantumLedger gives India a way to fit them, on systems already running. It is built on widely used open-source code, not new inventions."
+          technical="Libraries give you algorithms. QuantumLedger gives India a way to actually deploy them. It is built on widely used open-source implementations (the @noble libraries), not new cryptography."
         />
       </p>
     </Section>

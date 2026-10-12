@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * POST /api/qday { sector }: the Q-Setu half of Q-Day. It runs on the server because it needs the
+ * POST /api/qday { sector }: the QuantumLedger half of Q-Day. It runs on the server because it needs the
  * simulated Shor oracle. The classical half (Pollard's rho) runs live in the browser.
  */
 export async function POST(req: Request) {

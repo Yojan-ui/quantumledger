@@ -1,7 +1,7 @@
 /**
  * One link between two nodes, in both modes.
  * - Classical (INSECURE_DEMO_ONLY): tiny-RSA key transport + AES-256-GCM + ECDSA P-256.
- * - Q-Setu: a real session (hybrid X25519 + ML-KEM-768, ML-DSA-65-authenticated), plus an
+ * - QuantumLedger: a real session (hybrid X25519 + ML-KEM-768, ML-DSA-65-authenticated), plus an
  *   ML-DSA-65 signature on every record by its originator.
  */
 import { p256 } from "@noble/curves/nist.js";

@@ -12,7 +12,7 @@ self.onmessage = () => {
   const hybrid = getKem("hybrid-x25519-mlkem768").keygen();
   const t2 = performance.now();
   const sig = getSig("ml-dsa-65").keygen();
-  const signature = getSig("ml-dsa-65").sign(utf8ToBytes("hello, Q-Setu"), sig.secretKey);
+  const signature = getSig("ml-dsa-65").sign(utf8ToBytes("hello, QuantumLedger"), sig.secretKey);
   const t3 = performance.now();
   postMessage({
     kemPublicKey: kem.publicKey,

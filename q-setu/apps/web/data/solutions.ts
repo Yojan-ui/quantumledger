@@ -1,7 +1,7 @@
 /**
  * Sector solutions: shared by the home page's Solutions list and the /solutions/* pages. Workflows
  * are modelled on public Indian systems (UPI, ABDM, APAAR / DigiLocker) but every institution, person
- * and flow in the demos is fictional; Q-Setu has no integration with those systems today.
+ * and flow in the demos is fictional; QuantumLedger has no integration with those systems today.
  */
 export type SolutionId = "fintech" | "healthcare" | "education" | "government";
 
@@ -35,7 +35,10 @@ export const SOLUTIONS: Solution[] = [
       "Mobile banking APIs, via the SDK",
       "Net-banking forms, via one script tag",
     ],
-    dsa: ["Transaction signing and recurring mandates", "Statements and audit trails (Q-Ledger)"],
+    dsa: [
+      "Transaction signing and recurring mandates",
+      "Statements and audit trails (Proof Chain)",
+    ],
     flow: [
       { node: "Payer app", adapter: "SDK" },
       { node: "Payer bank", adapter: "Shield" },
@@ -47,7 +50,7 @@ export const SOLUTIONS: Solution[] = [
       ["Mandates and signatures", "Forgeable once RSA and ECDSA fall"],
       ["Migration", "Rewrite each core's crypto, system by system"],
     ],
-    demo: { href: "/demo/deploy", label: "Deploy Q-Setu across a payment network" },
+    demo: { href: "/demo/deploy", label: "Deploy QuantumLedger across a payment network" },
     dataLifetime: "7–10 years (financial records)",
     impact:
       "Payment records stay sensitive for years. Recorded today, they can still be worth reading when a quantum computer arrives.",
@@ -113,12 +116,12 @@ export const SOLUTIONS: Solution[] = [
       "Citizen portals, via one script tag",
       "Archives, via Vault",
     ],
-    dsa: ["Signed certificates, orders and records", "Tamper-evident audit logs (Q-Ledger)"],
+    dsa: ["Signed certificates, orders and records", "Tamper-evident audit logs (Proof Chain)"],
     flow: [
       { node: "Citizen portal", adapter: "Web" },
       { node: "Department API", adapter: "Shield" },
       { node: "Records archive", adapter: "Vault" },
-      { node: "Audit log", adapter: "Q-Ledger" },
+      { node: "Audit log", adapter: "Proof Chain" },
     ],
     without: [
       ["Citizen data", "Recorded today, readable at Q-Day"],

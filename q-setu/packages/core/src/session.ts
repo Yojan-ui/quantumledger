@@ -1,5 +1,5 @@
 /**
- * Q-Setu session: hybrid X25519 + ML-KEM (FIPS 203) handshake authenticated by ML-DSA (FIPS 204),
+ * QuantumLedger session: hybrid X25519 + ML-KEM (FIPS 203) handshake authenticated by ML-DSA (FIPS 204),
  * then AES-256-GCM (SP 800-38D) messages with counters, replay protection and ratcheting key rotation.
  *
  *   1. ClientHello  { profile, clientRandom, x25519 share }

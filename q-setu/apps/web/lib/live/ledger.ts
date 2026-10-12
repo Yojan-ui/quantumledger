@@ -1,5 +1,5 @@
 /**
- * Q-Ledger: an append-only, tamper-evident audit log (SQLite locally, Postgres in production).
+ * Proof Chain: an append-only, tamper-evident audit log (SQLite locally, Postgres in production).
  *
  *   hash_n = SHA3-256("qledger-v1" ‖ id ‖ at ‖ kind ‖ subject ‖ payload ‖ hash_{n-1} ‖ key_id)
  *   sig_n  = ML-DSA-65(hash_n)            (the signing key comes from the KMS and rotates)

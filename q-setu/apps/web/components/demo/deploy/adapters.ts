@@ -60,9 +60,9 @@ export const BEFORE_AFTER: Record<AdapterId, { before: string; after: string }> 
 
 export interface RunResult {
   headline: string;
-  /** What an eavesdropper (or DB thief) sees without Q-Setu. */
+  /** What an eavesdropper (or DB thief) sees without QuantumLedger. */
   plainView: string;
-  /** What they see with Q-Setu. */
+  /** What they see with QuantumLedger. */
   sealedView: string;
   details: { k: string; v: string }[];
   meter: MeterReading;
@@ -110,7 +110,7 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
         { k: "Verify reply (ML-DSA-65)", v: ms(verifyMs) },
       ],
       meter: {
-        label: "Q-Setu Web · one form post",
+        label: "QuantumLedger Web · one form post",
         cpuMs: sealed.ms + verifyMs,
         bytesAdded: sealed.sealedBytes - sealed.plainBytes,
         plainBytes: sealed.plainBytes,
@@ -142,8 +142,8 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
       meter: {
         label:
           r.stats.requests > 1
-            ? "Q-Setu Shield · request on an existing session"
-            : "Q-Setu Shield · first request (includes handshake)",
+            ? "QuantumLedger Shield · request on an existing session"
+            : "QuantumLedger Shield · first request (includes handshake)",
         cpuMs: Math.max(0, added),
         cpuLabel: "Added latency",
         perRequestHint: r.stats.requests > 1 ? "this request" : "first request, incl. handshake",
@@ -171,7 +171,7 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
         { k: "Server identity", v: "ML-DSA-65, pinned" },
       ],
       meter: {
-        label: "Q-Setu SDK · handshake, then messages",
+        label: "QuantumLedger SDK · handshake, then messages",
         cpuMs: s.handshake.ms,
         cpuLabel: "Handshake (incl. network)",
         perRequestMs: perMsg / 1000,
@@ -197,7 +197,7 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
         { k: "Bytes per reading", v: `${st.bytesPerReading} B (+${st.overheadPerReading})` },
       ],
       meter: {
-        label: "Q-Setu Edge · handshake + 48 readings on a 64 KB device",
+        label: "QuantumLedger Edge · handshake + 48 readings on a 64 KB device",
         cpuMs: st.cpuMs,
         cpuLabel: "Device crypto CPU (all)",
         perRequestMs: (st.cpuMs - st.handshakeCpuMs) / st.readings,
@@ -228,7 +228,7 @@ export async function runAdapter(adapter: AdapterId, sector: SectorId): Promise<
       { k: "Stored size", v: `${bytes(put.put.storedBytes)} for ${bytes(put.put.plainBytes)}` },
     ],
     meter: {
-      label: "Q-Setu Vault · put + get",
+      label: "QuantumLedger Vault · put + get",
       cpuMs: put.put.ms + got.ms,
       bytesAdded: put.put.storedBytes - put.put.plainBytes,
       plainBytes: put.put.plainBytes,

@@ -1,5 +1,5 @@
 /**
- * Q-Setu envelope v1: one-shot hybrid public-key encryption (FIPS 203 KEM + AES-256-GCM, SP 800-38D)
+ * QuantumLedger envelope v1: one-shot hybrid public-key encryption (FIPS 203 KEM + AES-256-GCM, SP 800-38D)
  * with an optional ML-DSA signature (FIPS 204). Used by Web shield and Vault.
  *
  *   header = canonical JSON { v, profile, algIds, rid, sid }

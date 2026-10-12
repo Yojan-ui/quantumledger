@@ -59,7 +59,7 @@ export interface HarvestRecord {
   qsetu?: QsetuWire;
 }
 
-/** A recorded Q-Setu handshake: everything that crossed the wire, no secrets. */
+/** A recorded QuantumLedger handshake: everything that crossed the wire, no secrets. */
 export interface RecordedHandshake {
   linkId: string;
   clientHello: ClientHelloJSON;

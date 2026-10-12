@@ -17,8 +17,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const meta = pageMeta({
     title: `Is ${host} quantum-safe?`,
     description: r
-      ? `${host} scored ${r.score}/100 on Q-Setu's quantum-readiness scan: ${r.probe.hybridPq ? "hybrid post-quantum key exchange" : "classical key exchange, harvestable today"}.`
-      : `Scan ${host} for quantum risk with Q-Setu.`,
+      ? `${host} scored ${r.score}/100 on QuantumLedger's quantum-readiness scan: ${r.probe.hybridPq ? "hybrid post-quantum key exchange" : "classical key exchange, harvestable today"}.`
+      : `Scan ${host} for quantum risk with QuantumLedger.`,
     path: `/scan/${encodeURIComponent(host)}`,
   });
   // This page has its own score card image (opengraph-image.tsx).

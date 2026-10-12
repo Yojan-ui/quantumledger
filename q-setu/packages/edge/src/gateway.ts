@@ -1,5 +1,5 @@
 /**
- * Q-Setu Edge gateway: answers device handshakes with an ML-DSA-44 identity (FIPS 204), opens
+ * QuantumLedger Edge gateway: answers device handshakes with an ML-DSA-44 identity (FIPS 204), opens
  * AES-256-GCM readings, and checks each batch's hash chain and signature.
  */
 import { sha256 } from "@noble/hashes/sha2.js";

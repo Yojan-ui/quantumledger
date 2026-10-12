@@ -43,7 +43,7 @@ export function OgCard({
             <path key={d} d={d} />
           ))}
         </svg>
-        Q-Setu
+        QuantumLedger
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <div
@@ -73,7 +73,7 @@ export function OgCard({
           fontSize: 22,
         }}
       >
-        Quantum-safe India before Q-Day
+        See your quantum risk. Fix it. Prove it.
       </div>
     </div>
   );

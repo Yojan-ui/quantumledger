@@ -1,5 +1,5 @@
 /*
- * Q-Setu design tokens: the only colour, motion and depth values allowed anywhere in apps/web.
+ * QuantumLedger design tokens: the only colour, motion and depth values allowed anywhere in apps/web.
  * Enforced by `pnpm lint:design`. Tailwind maps these names in tailwind.config.ts.
  */
 :root {

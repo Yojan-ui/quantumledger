@@ -1,4 +1,4 @@
-/** Browser side of Q-Setu Web: seal request bodies (FIPS 203 hybrid KEM) and verify signed responses (FIPS 204). */
+/** Browser side of QuantumLedger Web: seal request bodies (FIPS 203 hybrid KEM) and verify signed responses (FIPS 204). */
 import { base64ToBytes, envelopeToJSON, getProfile, getSig, seal } from "@qsetu/core";
 import { responseSigned, type SealedBody, type ServerPublicKeys } from "./protocol";
 

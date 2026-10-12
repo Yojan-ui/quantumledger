@@ -3,9 +3,9 @@ import { serverToken } from "@/lib/brand/tokens-server";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Q-Setu",
-    short_name: "Q-Setu",
-    description: "Make anything in India quantum-safe, in one line.",
+    name: "QuantumLedger",
+    short_name: "QuantumLedger",
+    description: "See your quantum risk. Fix it. Prove it.",
     start_url: "/",
     display: "standalone",
     background_color: serverToken("--bg"),

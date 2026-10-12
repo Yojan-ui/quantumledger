@@ -25,7 +25,7 @@ export function Architecture() {
         viewBox={`0 0 ${W} 420`}
         className="w-full min-w-panel"
         role="img"
-        aria-label="Five adapters (Shield, Web, SDK, Edge, Vault) all built on one Q-Setu core: algorithm registry, hybrid KEM, sessions, envelopes and signatures."
+        aria-label="Five adapters (Shield, Web, SDK, Edge, Vault) all built on one QuantumLedger core: algorithm registry, hybrid KEM, sessions, envelopes and signatures."
         fontFamily="var(--font-geist-sans), sans-serif"
       >
         {/* adapters */}
@@ -43,7 +43,7 @@ export function Architecture() {
                 stroke="var(--line-strong)"
               />
               <text x={x + 16} y={44} fill="var(--text)" fontSize={18} fontWeight={500}>
-                Q-Setu {a.name}
+                QuantumLedger {a.name}
               </text>
               <text x={x + 16} y={72} fill="var(--text-3)" fontSize={13}>
                 {a.where}

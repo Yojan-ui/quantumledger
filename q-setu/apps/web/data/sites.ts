@@ -52,11 +52,15 @@ export const SITES: Site[] = [
 ];
 
 export const ADAPTERS: Record<AdapterId, { label: string; product: string; target: string }> = {
-  web: { label: "Website", product: "Q-Setu Web", target: "one <script> tag" },
-  shield: { label: "API server", product: "Q-Setu Shield", target: "sidecar, zero code change" },
-  sdk: { label: "Mobile app", product: "Q-Setu SDK", target: "npm i @qsetu/sdk" },
-  edge: { label: "IoT device", product: "Q-Setu Edge", target: "edge profile, 64 KB RAM" },
-  vault: { label: "Database", product: "Q-Setu Vault", target: "vault.put / vault.get" },
+  web: { label: "Website", product: "QuantumLedger Web", target: "one <script> tag" },
+  shield: {
+    label: "API server",
+    product: "QuantumLedger Shield",
+    target: "sidecar, zero code change",
+  },
+  sdk: { label: "Mobile app", product: "QuantumLedger SDK", target: "npm i @qsetu/sdk" },
+  edge: { label: "IoT device", product: "QuantumLedger Edge", target: "edge profile, 64 KB RAM" },
+  vault: { label: "Database", product: "QuantumLedger Vault", target: "vault.put / vault.get" },
 };
 
 export const ADAPTER_ORDER: AdapterId[] = ["web", "shield", "sdk", "edge", "vault"];

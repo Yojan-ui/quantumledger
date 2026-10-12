@@ -1,7 +1,7 @@
 {
   "name": "@qsetu/vault",
   "version": "0.1.0",
-  "description": "Q-Setu Vault: per-record AES keys wrapped with ML-KEM, records signed with ML-DSA.",
+  "description": "QuantumLedger Vault: per-record AES keys wrapped with ML-KEM, records signed with ML-DSA.",
   "private": true,
   "type": "module",
   "sideEffects": false,

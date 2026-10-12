@@ -1,5 +1,5 @@
 /**
- * Shared types for the Q-Setu crypto SDK. Every algorithm, classical or post-quantum,
+ * Shared types for the QuantumLedger crypto SDK. Every algorithm, classical or post-quantum,
  * implements one of two interfaces (KEM or signature) so call sites never depend on a
  * concrete primitive. That is the core of crypto agility.
  */

@@ -10,7 +10,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 /**
  * POST /api/web-shield/submit: the demo form's endpoint. It accepts plain posts (no script tag) or
- * Q-Setu-sealed posts, and reports which arrived, so the before/after is visible.
+ * QuantumLedger-sealed posts, and reports which arrived, so the before/after is visible.
  */
 export async function POST(req: Request) {
   const t = performance.now();
@@ -94,7 +94,7 @@ function page(r: {
     .map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`)
     .join("");
   const banner = r.transport.sealed
-    ? `<p class="ok">Arrived sealed with Q-Setu (X25519 + ML-KEM-768). On the wire: ${r.transport.sealedBytes} bytes of ciphertext instead of ${r.transport.plainBytes} bytes of readable form data.</p>`
+    ? `<p class="ok">Arrived sealed with QuantumLedger (X25519 + ML-KEM-768). On the wire: ${r.transport.sealedBytes} bytes of ciphertext instead of ${r.transport.plainBytes} bytes of readable form data.</p>`
     : `<p class="bad">Arrived as plain form data. Anyone recording this connection's contents could read it at Q-Day.</p>`;
   return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Application received</title>
 <link rel="stylesheet" href="/tokens.css"><style>body{font:16px/26px system-ui;background:var(--bg);color:var(--text-2);max-width:560px;margin:96px auto;padding:0 20px}h1{color:var(--text);font-weight:500;font-size:28px;letter-spacing:-0.02em}.ok,.bad{font:14px/22px system-ui;color:var(--text)}table{border-collapse:collapse;width:100%;margin-top:32px}th,td{text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}th{color:var(--text-3);font:400 12px/16px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em}a{color:var(--text)}</style>

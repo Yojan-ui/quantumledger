@@ -1,5 +1,5 @@
 /**
- * Shield server node: terminates the Q-Setu session (ML-DSA-signed hybrid ML-KEM handshake,
+ * Shield server node: terminates the QuantumLedger session (ML-DSA-signed hybrid ML-KEM handshake,
  * AES-256-GCM records) and replays each decrypted request to the unmodified upstream app.
  */
 import { createSessionServer } from "@qsetu/sdk";

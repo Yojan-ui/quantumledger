@@ -3,7 +3,7 @@ import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta({
   title: "Privacy notice (draft)",
-  description: "What Q-Setu collects, why, and for how long. Draft pending legal review.",
+  description: "What QuantumLedger collects, why, and for how long. Draft pending legal review.",
   path: "/privacy",
 });
 

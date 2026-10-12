@@ -11,10 +11,11 @@ export interface Chapter {
 }
 
 export const HERO = {
-  title: "Make anything in India quantum\u2011safe. In one line.",
-  body: "Locked data can be copied today and opened by a future quantum computer. Q-Setu puts quantum-safe locks on any system in India, in one line, before that day comes.",
+  title: "See your quantum risk. Fix it. Prove it.",
+  /** The brief's subline, shown in both copy modes (its one acronym, NIST, is deliberate). */
+  body: "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography.",
   technical:
-    "Harvest now, decrypt later is happening today. Q-Setu adds hybrid X25519 + ML-KEM-768 key exchange and ML-DSA signatures (FIPS 203/204) to any system, in one line, before Q-Day.",
+    "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography.",
 };
 
 /** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */
@@ -50,12 +51,12 @@ export const STEPS: (Chapter & {
   },
   {
     id: "sealed",
-    label: "Step 3 · Sealed with Q-Setu",
-    title: "With Q-Setu, they stay noise.",
+    label: "Step 3 · Sealed with QuantumLedger",
+    title: "With QuantumLedger, they stay noise.",
     body: "A hybrid X25519 + ML-KEM-768 handshake, once per session. Every message after it is AES-256-GCM.",
-    simpleTitle: "With Q-Setu, the copies stay useless.",
+    simpleTitle: "With QuantumLedger, the copies stay useless.",
     simpleBody:
-      "Q-Setu adds a new lock that even a quantum computer can't open, once per connection. Everything sent after it stays scrambled.",
+      "QuantumLedger adds a new lock that even a quantum computer can't open, once per connection. Everything sent after it stays scrambled.",
     accent: "accent",
     chapter: 7.3,
     role: "kem",

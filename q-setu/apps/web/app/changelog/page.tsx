@@ -3,7 +3,7 @@ import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta({
   title: "Changelog",
-  description: "What changed in Q-Setu, release by release.",
+  description: "What changed in QuantumLedger, release by release.",
   path: "/changelog",
 });
 
@@ -22,7 +22,7 @@ const RELEASES: { version: string; date: string; items: string[] }[] = [
     date: "October 2026",
     items: [
       "Live event bus, metrics and the live mesh behind the ticker and the globe",
-      "Q-Ledger: a SHA3-256 hash chain signed with ML-DSA-65, with tamper detection",
+      "Proof Chain: a SHA3-256 hash chain signed with ML-DSA-65, with tamper detection",
       "URL readiness scan, migration planner, policy hot-swap and a demo KMS",
     ],
   },

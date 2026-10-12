@@ -1,4 +1,4 @@
-/** @qsetu/shield-proxy: zero-code-change Q-Setu sidecars. */
+/** @qsetu/shield-proxy: zero-code-change QuantumLedger sidecars. */
 export { startShieldServer, type ShieldServerOptions } from "./server-node";
 export { startShieldClient, type ShieldClientOptions } from "./client-node";
 export { loadOrCreateIdentity } from "./identity-file";

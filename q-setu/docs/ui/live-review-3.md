@@ -10,13 +10,13 @@ Captures: `live-3/scroll-30s.webm` (30 s scroll at 1440×900) and screenshots at
 | Story 03–04 Harvest → Q-Day     |  5  |  5  |  4  |  5  |
 | Story 05–08                     |  4  |  4  |  4  |  4  |
 | Product (Problem → Fix → Proof) |  4  |  5  |  4  |  5  |
-| Why Q-Setu                      |  4  |  5  |  4  |  5  |
+| Why QuantumLedger               |  4  |  5  |  4  |  5  |
 | Industries                      |  4  |  4  |  4  |  5  |
 | Demos (4 previews)              |  4  |  4  |  4  |  5  |
 | Demo 1 · How it works           |  4  |  4  |  4  |  4  |
 | Demo 2 · Deploy anywhere        |  4  |  4  |  4  |  5  |
 | Demo 3 · Q-Day                  |  4  |  5  |  4  |  5  |
-| Demo 4 · Q-Ledger               |  5  |  5  |  4  |  5  |
+| Demo 4 · Proof Chain            |  5  |  5  |  4  |  5  |
 | Scanner + plan                  |  4  |  5  |  4  |  5  |
 
 **Gates:** `pnpm lint` (ESLint, `lint:design`, Prettier) ✓ · `pnpm test` 98/98 ✓ · `pnpm build` ✓ · Playwright 9/9 ✓.
@@ -26,7 +26,7 @@ Captures: `live-3/scroll-30s.webm` (30 s scroll at 1440×900) and screenshots at
 - **Two accents in one viewport, where the brief asks for it:**
   - The ticker's ✓ (cyan) and ✗ (saffron).
   - A rejected packet's saffron flash on an otherwise cyan globe.
-  - The "Without Q-Setu" notes (`--warn`) under each feature block.
+  - The "Without QuantumLedger" notes (`--warn`) under each feature block.
   - Demo 3's exposed counter.
 
   Each saffron mark means "vulnerable or rejected", never decoration.

@@ -24,7 +24,7 @@ const QDAY_AT = 0.68;
 /**
  * Chapters 3–4, scrubbed: recorded packets (real ones, from the eavesdropper's store) while a year
  * counter runs 2026 → 2035. At Q-Day the classical rows are broken for real, in this browser, and
- * scramble into readable text; the Q-Setu rows stay sealed.
+ * scramble into readable text; the QuantumLedger rows stay sealed.
  */
 export default function HarvestQDay({ progress }: { progress: number }) {
   const [rows, setRows] = useState<Row[]>();
@@ -95,7 +95,7 @@ export default function HarvestQDay({ progress }: { progress: number }) {
       <div>
         <LazyView
           className="h-32 w-full"
-          label="Two recorded packets. At Q-Day the classical one shatters; the Q-Setu one stays whole."
+          label="Two recorded packets. At Q-Day the classical one shatters; the QuantumLedger one stays whole."
         >
           {(on) => <QDayShatter qday={qday} still={still} active={on} />}
         </LazyView>
@@ -109,7 +109,7 @@ export default function HarvestQDay({ progress }: { progress: number }) {
             </p>
           </div>
           <div className="space-y-1 text-center">
-            <RoleDot role="kem" label="Q-Setu packet" />
+            <RoleDot role="kem" label="QuantumLedger packet" />
             <p
               className={`normal-case transition-opacity duration-700 ${qday ? "opacity-100" : "opacity-0"}`}
             >
@@ -122,7 +122,7 @@ export default function HarvestQDay({ progress }: { progress: number }) {
         {(rows ?? []).slice(0, 4).map((r) => (
           <li key={r.id} className="grid grid-cols-12 gap-3 py-3">
             <Label as="p" className="col-span-4 pt-px">
-              {r.mode === "classical" ? "Classical · RSA" : "Q-Setu · ML-KEM"}
+              {r.mode === "classical" ? "Classical · RSA" : "QuantumLedger · ML-KEM"}
             </Label>
             <p className="col-span-8 truncate font-mono text-small">
               {r.mode === "classical" && qday && r.plain ? (

@@ -9,7 +9,7 @@ key is erased, so a key stolen from memory reveals at most one epoch.
 **Long-term keys** (ledger, transaction-signing and node identities) live in a KMS. In the demo KMS they
 are wrapped with AES-256-GCM under a key-encryption key and stored in the database; production should
 back the `KeyStore` interface with an HSM. They rotate on a schedule (`QSETU_ROTATE_MS`), retired
-public keys stay available for verification, and every rotation is written to the Q-Ledger.
+public keys stay available for verification, and every rotation is written to the Proof Chain.
 
 **Policy changes** (for example, switching signatures to SLH-DSA) reach live sessions at their next
 rotation. Nothing restarts. Try it in [Demo 1](/demo/how-it-works).

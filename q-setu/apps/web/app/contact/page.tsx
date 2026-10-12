@@ -4,7 +4,7 @@ import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta({
   title: "Contact",
-  description: "Talk to the Q-Setu team about pilots, pricing or security.",
+  description: "Talk to the QuantumLedger team about pilots, pricing or security.",
   path: "/contact",
 });
 

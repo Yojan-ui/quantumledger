@@ -2,7 +2,7 @@
   "name": "@qsetu/legacy-bank",
   "version": "0.1.0",
   "private": true,
-  "description": "A deliberately ordinary Express app. Q-Setu Shield protects it without touching this code.",
+  "description": "A deliberately ordinary Express app. QuantumLedger Shield protects it without touching this code.",
   "type": "module",
   "scripts": {
     "dev": "tsx src/server.ts",

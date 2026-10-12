@@ -15,7 +15,7 @@ function rig(ramBytes = 64 * 1024, batchSize = 4) {
   return { device, gateway };
 }
 
-describe("Q-Setu Edge", () => {
+describe("QuantumLedger Edge", () => {
   it("handshakes once, then sends many readings within a 64 KB budget", () => {
     const { device, gateway } = rig();
     gateway.finish(device.finish(gateway.hello(device.hello())));

@@ -73,7 +73,7 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
             ["1", "How it works: a real hybrid handshake", "/demo/how-it-works"],
             ["2", "Deploy anywhere: five adapters", "/demo/deploy"],
             ["3", "Q-Day: recordings open", "/demo/qday"],
-            ["4", "Q-Ledger: catch an insider", "/demo/ledger"],
+            ["4", "Proof Chain: catch an insider", "/demo/ledger"],
             ["5", "Scan any website", "/demo/scanner"],
           ].map(([k, t, href]) => (
             <li key={k}>
@@ -102,7 +102,7 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {[
           ["Community", "Free", "Self-hosted core, five adapters, scanner"],
-          ["Pro", "Pricing not set", "Managed Shield, hosted Q-Ledger, support"],
+          ["Pro", "Pricing not set", "Managed Shield, hosted Proof Chain, support"],
           ["Government & Enterprise", "Contract", "On-prem, HSM keys, compliance support"],
         ].map(([n, p, d]) => (
           <div key={n} className="border-t border-line pt-6">
@@ -122,8 +122,8 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
     body: (
       <>
         <Text className="max-w-text">
-          A bank, a hospital and a university to run Q-Setu in shadow mode. No customers yet, so no
-          logos: just working code you can verify today.
+          A bank, a hospital and a university to run QuantumLedger in shadow mode. No customers yet,
+          so no logos: just working code you can verify today.
         </Text>
         <p className="font-mono text-label uppercase text-fg-3">
           Quantum-safe India before Q-Day · /contact
@@ -199,7 +199,7 @@ export function Deck() {
       </Container>
       <Container className="flex items-center justify-between border-t border-line py-4">
         <span className="flex items-center gap-2 text-small text-fg">
-          <Mark /> Q-Setu
+          <Mark /> QuantumLedger
         </span>
         <div className="flex items-center gap-4">
           <button

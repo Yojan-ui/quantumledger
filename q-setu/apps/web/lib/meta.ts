@@ -4,7 +4,7 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3
   /\/$/,
   "",
 );
-export const SITE_NAME = "Q-Setu";
+export const SITE_NAME = "QuantumLedger";
 
 /** Title, description, canonical URL and a generated OG image for one page. */
 export function pageMeta({
@@ -22,7 +22,7 @@ export function pageMeta({
   label?: string;
 }): Metadata {
   const og = `/og?${new URLSearchParams({
-    title: absoluteTitle ? "Make anything in India quantum-safe. In one line." : title,
+    title: absoluteTitle ? "See your quantum risk. Fix it. Prove it." : title,
     label: label ?? (path === "/" ? "Post-quantum security for India" : (path.split("/")[1] ?? "")),
   })}`;
   return {

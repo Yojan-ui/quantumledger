@@ -1,5 +1,5 @@
 {
-  "name": "q-setu",
+  "name": "quantumledger",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.34.6",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MARK_PATHS } from "@/lib/brand/mark";
+import { MARK_PATHS, WORDMARK } from "@/lib/brand/mark";
 
 /** The monogram alone (favicon-weight strokes), in the current text colour. */
 export function Mark({ className = "h-5 w-5" }: { className?: string }) {
@@ -24,9 +24,9 @@ export function Mark({ className = "h-5 w-5" }: { className?: string }) {
 /** Monogram + wordmark, linking home. */
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2 text-fg" aria-label="Q-Setu home">
+    <Link href="/" className="flex items-center gap-2 text-fg" aria-label="QuantumLedger home">
       <Mark />
-      <span className="text-body font-medium tracking-tight">Q-Setu</span>
+      <span className="font-mono text-small font-medium tracking-widest">{WORDMARK}</span>
     </Link>
   );
 }

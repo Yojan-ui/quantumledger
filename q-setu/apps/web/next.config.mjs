@@ -23,7 +23,20 @@ const nextConfig = {
     "@electric-sql/pglite",
   ],
   async redirects() {
-    return [{ source: "/demo", destination: "/demos", permanent: true }];
+    return [
+      { source: "/demo", destination: "/demos", permanent: true },
+      // Q-Setu is now QuantumLedger: old brand URLs keep working.
+      {
+        source: "/brand/q-setu-:asset.svg",
+        destination: "/brand/quantumledger-:asset.svg",
+        permanent: true,
+      },
+      { source: "/q-setu", destination: "/", permanent: true },
+      { source: "/q-setu/:path*", destination: "/:path*", permanent: true },
+      // The audit log was "Q-Ledger"; it is now the Proof Chain.
+      { source: "/q-ledger", destination: "/demo/ledger", permanent: true },
+      { source: "/proof-chain", destination: "/demo/ledger", permanent: false },
+    ];
   },
   async rewrites() {
     // The plain-HTML Web shield demo lives in public/; serve its folder URL too.

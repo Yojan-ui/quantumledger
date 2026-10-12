@@ -1,6 +1,6 @@
 /**
  * A deliberately ordinary Express app standing in for a legacy core-banking / hospital / university
- * API. It has no Q-Setu code: Shield nodes in front of it make its traffic quantum-safe.
+ * API. It has no QuantumLedger code: Shield nodes in front of it make its traffic quantum-safe.
  */
 import express from "express";
 
@@ -8,7 +8,7 @@ export function createLegacyApp(log: (line: string) => void = console.log) {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    log(`[legacy-app] ${req.method} ${req.path} (plain HTTP, unaware of Q-Setu)`);
+    log(`[legacy-app] ${req.method} ${req.path} (plain HTTP, unaware of QuantumLedger)`);
     next();
   });
 

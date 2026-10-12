@@ -26,7 +26,7 @@ const DIALECTS: [string, () => Promise<Repos>][] = [
 ];
 
 for (const [name, open] of DIALECTS) {
-  describe(`Q-Ledger on ${name}`, () => {
+  describe(`Proof Chain on ${name}`, () => {
     async function setup() {
       const repos = await open();
       const keys = new KeyManager(new MemoryKeyStore(), Buffer.alloc(32, 7));

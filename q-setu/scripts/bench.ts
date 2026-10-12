@@ -19,7 +19,7 @@ const report = await runBench(iterations);
 if (args.includes("--json")) {
   console.log(JSON.stringify(report, null, 2));
 } else {
-  console.log(`Q-Setu benchmarks: ${report.runtime}, median of ${iterations} runs\n`);
+  console.log(`QuantumLedger benchmarks: ${report.runtime}, median of ${iterations} runs\n`);
   console.table(
     report.rows.map((r) => {
       const [a, b, c] = ops(r);

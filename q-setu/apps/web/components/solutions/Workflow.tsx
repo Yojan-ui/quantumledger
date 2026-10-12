@@ -52,7 +52,7 @@ export function Workflow({ s }: { s: Solution }) {
                 letterSpacing="0.08em"
                 fontFamily="var(--font-geist-mono), monospace"
               >
-                {`Q-SETU ${f.adapter.toUpperCase()}`}
+                {`QUANTUMLEDGER ${f.adapter.toUpperCase()}`}
               </text>
               {i < n - 1 && (
                 <line

@@ -11,7 +11,7 @@ Judged against the redesign brief: colour, type, spacing, effects, alignment, 3D
   strings. Tailwind's default palette is still available (`bg-white/[0.06]`, `border-white/15`).
 - **Colour:** cyan _and_ saffron appear in the same viewport almost everywhere (story chapters, every demo,
   Industries rows, nav cursor plus a cyan button).
-- **Colour:** the accent is used as a fill on large things: the cyan primary buttons ("Deploy Q-Setu Web", "Scan",
+- **Colour:** the accent is used as a fill on large things: the cyan primary buttons ("Deploy QuantumLedger Web", "Scan",
   "Go to Q-Day"), selected tabs, and the cyan background tint on result rows. The brief bans accent
   backgrounds.
 - **Type:** six or more ad-hoc sizes (`text-[11px]`, `text-xs`, `text-sm`, `text-base`, `text-lg`, two `clamp()`

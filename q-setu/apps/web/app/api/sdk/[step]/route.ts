@@ -15,7 +15,7 @@ const json = async (req: Request) => {
 };
 
 /**
- * POST /api/sdk/{hello|finish|message}: a Q-Setu session server for the SDK ("Mobile app") demo.
+ * POST /api/sdk/{hello|finish|message}: a QuantumLedger session server for the SDK ("Mobile app") demo.
  * It's what `createSession({ url: "/api/sdk", serverKey })` talks to. Handshake and message bodies
  * are checked by the SDK's own codec, which rejects anything malformed.
  */

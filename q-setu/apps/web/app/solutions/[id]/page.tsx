@@ -59,17 +59,17 @@ export default async function SolutionPage({ params }: Props) {
       <Block label="Without vs with" title="What changes.">
         <div className="overflow-x-auto">
           <table className="w-full min-w-panel text-left">
-            <caption className="sr-only">{s.name} without and with Q-Setu</caption>
+            <caption className="sr-only">{s.name} without and with QuantumLedger</caption>
             <thead>
               <tr className="border-b border-line">
                 <th className="w-1/4 pb-3">
                   <span className="sr-only">Aspect</span>
                 </th>
                 <Label as="th" className="pb-3 pr-4 font-normal">
-                  Without Q-Setu
+                  Without QuantumLedger
                 </Label>
                 <Label as="th" className="pb-3 font-normal">
-                  With Q-Setu
+                  With QuantumLedger
                 </Label>
               </tr>
             </thead>
@@ -102,8 +102,8 @@ export default async function SolutionPage({ params }: Props) {
       <Block label="Honest scope" title="What exists today.">
         <p>
           The {s.name.toLowerCase()} flows in our demos are modelled on public Indian systems, with
-          fictional institutions and people. Q-Setu is not integrated with any live national system.
-          We are looking for design partners to pilot it in shadow mode.
+          fictional institutions and people. QuantumLedger is not integrated with any live national
+          system. We are looking for design partners to pilot it in shadow mode.
         </p>
       </Block>
       <Container>

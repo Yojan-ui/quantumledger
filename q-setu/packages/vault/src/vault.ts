@@ -1,5 +1,5 @@
 /**
- * Q-Setu Vault: envelope encryption for data at rest. Each record gets a random AES-256-GCM data
+ * QuantumLedger Vault: envelope encryption for data at rest. Each record gets a random AES-256-GCM data
  * key (SP 800-38D), wrapped under a hybrid ML-KEM key (FIPS 203), and is signed with ML-DSA (FIPS 204).
  *
  *   DEK  = random 32 bytes                              (one per record)

@@ -1,5 +1,5 @@
 /**
- * Q-Setu Web wire protocol: a request body sealed into a FIPS 203 hybrid envelope, and an
+ * QuantumLedger Web wire protocol: a request body sealed into a FIPS 203 hybrid envelope, and an
  * ML-DSA (FIPS 204) signature on the response that binds it to that request.
  */
 import { concatBytes, utf8ToBytes } from "@qsetu/core";

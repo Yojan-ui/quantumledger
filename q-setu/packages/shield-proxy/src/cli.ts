@@ -1,5 +1,5 @@
 /**
- * qsetu-shield: put a Q-Setu sidecar in front of any app.
+ * qsetu-shield: put a QuantumLedger sidecar in front of any app.
  *
  *   Server side (next to the app):  qsetu-shield --upstream http://localhost:4000 --listen 8443
  *   Client side (next to callers):  qsetu-shield --peer http://localhost:8443 --listen 8080 [--server-key <base64>]

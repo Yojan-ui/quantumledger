@@ -2,7 +2,7 @@
 
 /**
  * Q-Day, as one shock wave: the classical packet (RSA key transport) breaks into 40 glass shards with
- * saffron edges and drifts apart; the Q-Setu packet (ML-KEM) only refracts the wave, a ripple through
+ * saffron edges and drifts apart; the QuantumLedger packet (ML-KEM) only refracts the wave, a ripple through
  * its glass, and stays whole. Plays once on Q-Day, in under 1.2 s; `still` shows the end state.
  */
 import { MeshTransmissionMaterial, PerspectiveCamera } from "@react-three/drei";

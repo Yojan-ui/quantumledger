@@ -22,7 +22,7 @@ export function getNetwork(sector: SectorId): SectorNetwork {
   let net = state.networks[sector];
   if (!net) {
     net = state.networks[sector] = new SectorNetwork(sector);
-    // Every Q-Setu hop the simulator carries also appears on the live bus.
+    // Every QuantumLedger hop the simulator carries also appears on the live bus.
     net.subscribe(publishNetEvent);
   }
   return net;

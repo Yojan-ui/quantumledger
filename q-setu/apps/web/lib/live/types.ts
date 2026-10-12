@@ -13,7 +13,7 @@ export type Op =
   | "LEDGER"
   | "SCAN";
 
-/** Which part of Q-Setu produced the event. */
+/** Which part of QuantumLedger produced the event. */
 export type Source =
   | "mesh"
   | "sim"
