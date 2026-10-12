@@ -18,6 +18,8 @@ export interface Fact {
   check: string;
   /** Optional headline number (animated) for stat rows. */
   stat?: { num: number; decimals: number; unit: string; label: string };
+  /** A numeric range the site computes with (e.g. Mosca's Z), taken from the claim above. */
+  range?: { low: number; high: number; unit: string; label: string };
 }
 
 export const FACTS: Fact[] = [
@@ -53,6 +55,20 @@ export const FACTS: Fact[] = [
     verified: true,
     check:
       "Read 2026-10-11 in the draft PDF. CSRC still lists it as an Initial Public Draft (no final version), so always call it a draft.",
+  },
+  {
+    id: "crqc-timeline",
+    claim:
+      "In an expert survey, a cryptographically relevant quantum computer is judged quite possible (28–49%) within 10 years and likely (51–70%) within 15.",
+    source:
+      "Global Risk Institute, Quantum Threat Timeline Report 2025 (Mosca & Piani), 26 experts",
+    url: "https://globalriskinstitute.org/publication/quantum-threat-timeline-report-2025b/",
+    asOf: "2026-03-09",
+    verified: true,
+    // "Quite possible within 10 years, likely within 15": Mosca's Z as 10–15 years from the report.
+    range: { low: 10, high: 15, unit: "years", label: "estimated years until a CRQC" },
+    check:
+      "Read 2026-10-12 on globalriskinstitute.org: “a cryptographically relevant quantum computer (CRQC) quite possible (28-49%) within the next 10 years … likely (51-70%) in the next 15.” An expert-opinion survey, not a forecast of a device: always call it an estimate.",
   },
   {
     id: "nqm",

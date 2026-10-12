@@ -10,6 +10,8 @@
   --bg-nav: rgba(8, 9, 10, 0.8);
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.14);
+  /* HUD glass: the diagnostics panels around the stage (3% white over the stage, 8px blur) */
+  --glass: rgba(255, 255, 255, 0.03);
   --text: #f7f8f8;
   --text-2: #a1a4ab;
   --text-3: #797d84; /* 4.6:1 on --bg-raised, 4.8:1 on --bg (WCAG AA for small text) */

@@ -28,7 +28,7 @@ describe("bench", () => {
     const mlkem = r.rows.find((x) => x.id === "ml-kem-768")!;
     expect(mlkem.sizes).toMatchObject({ publicKey: 1184, output: 1088 });
     expect(mlkem.ops.encapsulate).toBeGreaterThan(0);
-    expect(r.sessions.map((x) => x.profile)).toEqual(["standard", "edge"]);
+    expect(r.sessions.map((x) => x.profile)).toEqual(["standard", "maximum", "edge"]);
     for (const sess of r.sessions) {
       expect(sess.handshakeMs).toBeGreaterThan(0);
       expect(sess.messageOverheadBytes).toBe(44);

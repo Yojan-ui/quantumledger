@@ -23,6 +23,7 @@ export default {
       inset: "var(--bg-inset)",
       nav: "var(--bg-nav)",
       line: "var(--line)",
+      glass: "var(--glass)",
       "line-strong": "var(--line-strong)",
       fg: "var(--text)",
       "fg-2": "var(--text-2)",
@@ -48,13 +49,15 @@ export default {
       body: [tpx(16), { lineHeight: tpx(26) }],
       small: [tpx(14), { lineHeight: tpx(22) }],
       label: [tpx(12), { lineHeight: tpx(16), letterSpacing: "0.08em" }],
+      /** HUD readouts: 11px mono, uppercase. */
+      micro: [tpx(11), { lineHeight: tpx(16), letterSpacing: "0.08em" }],
     },
     fontWeight: { normal: "400", medium: "500" },
     spacing: { px: "1px", ...space },
     borderRadius: { none: "0", sm: px(6), lg: px(12), full: "9999px" },
     borderWidth: { 0: "0", DEFAULT: "1px" },
     boxShadow: { none: "none" },
-    backdropBlur: { nav: px(12) },
+    backdropBlur: { nav: px(12), panel: px(8) },
     transitionDuration: { 150: "var(--dur-hover)", 300: "var(--dur-ui)", 700: "var(--dur-reveal)" },
     transitionTimingFunction: { DEFAULT: "var(--ease-spring)", ease: "var(--ease)" },
     extend: {
@@ -63,6 +66,10 @@ export default {
       width: { dot: px(6), console: px(360), socket: px(120) },
       height: {
         stage: px(560),
+        /** The diagnostics stage on phones: the top 60% of the screen. */
+        "hud-stage": "60svh",
+        /** The compact HUD in the homepage hero. */
+        "hud-compact": px(720),
         "stage-sm": px(360),
         globe: px(300),
         nav: px(56),
@@ -79,6 +86,9 @@ export default {
         demo: "320px minmax(0, 1fr)",
         "demo-console": "320px minmax(0, 1fr) 360px",
         split: "minmax(0, 1fr) 360px",
+        /** The diagnostics HUD: diagnostics · stage · terminal and risk. */
+        hud: "300px minmax(0, 1fr) 340px",
+        "hud-compact": "260px minmax(0, 1fr) 300px",
       },
       keyframes: {
         reveal: {
@@ -100,6 +110,8 @@ export default {
         skeleton: { "0%, 100%": { opacity: "0.5" }, "50%": { opacity: "1" } },
         /** The LIVE dot: a slow opacity breath, never a scale. */
         live: { "0%, 100%": { opacity: "1" }, "50%": { opacity: "0.35" } },
+        /** The terminal's block cursor. */
+        blink: { "0%, 49%": { opacity: "1" }, "50%, 100%": { opacity: "0" } },
       },
       animation: {
         reveal: "reveal var(--dur-reveal) var(--ease) both",
@@ -107,6 +119,7 @@ export default {
         "tick-in": "tick-in var(--dur-ui) var(--ease) both",
         uncover: "uncover var(--dur-reveal) var(--ease) both",
         live: "live 2s var(--ease) infinite",
+        blink: "blink 1s steps(1) infinite",
         ring: "ring var(--dur-reveal) var(--ease) both",
         skeleton: "skeleton 1.4s var(--ease) infinite",
       },

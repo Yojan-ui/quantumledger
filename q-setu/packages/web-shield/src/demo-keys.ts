@@ -12,7 +12,7 @@ export const PUBLIC_DEMO_SEED_LABEL =
 
 export function webShieldKeysFromSeed(
   seed: Uint8Array,
-  profile: "standard" | "edge" = "standard",
+  profile: "standard" | "edge" | "maximum" = "standard",
 ): WebShieldKeys {
   const p = getProfile(profile);
   return { profile, kem: getKem(p.kem).keygen(seed), sig: getSig(p.sig).keygen(seed) };

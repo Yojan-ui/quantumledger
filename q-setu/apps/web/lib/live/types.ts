@@ -78,8 +78,8 @@ export interface Metrics {
   policy: PolicyState;
 }
 
-export type ProfileName = "standard" | "edge";
-export type SigName = "ml-dsa-65" | "ml-dsa-44" | "slh-dsa-sha2-128f";
+export type ProfileName = "standard" | "edge" | "maximum";
+export type SigName = "ml-dsa-65" | "ml-dsa-44" | "ml-dsa-87" | "slh-dsa-sha2-128f";
 
 export interface PolicyState {
   profile: ProfileName;
@@ -95,4 +95,5 @@ export interface PolicyState {
 export const KEM_LABEL: Record<ProfileName, string> = {
   standard: "ml-kem-768+x25519",
   edge: "ml-kem-512+x25519",
+  maximum: "ml-kem-1024+x25519",
 };

@@ -1,7 +1,14 @@
 import { fail, parseBody } from "@/lib/server/api";
 import { clientKey } from "@/lib/live/rate-limit";
 import { live } from "@/lib/server/runtime";
-import { scanHost } from "@/lib/server/scan-service";
+import { cachedScan, scanHost } from "@/lib/server/scan-service";
+import { hostFromInput } from "@/lib/live/tls";
+
+function cachedOnlyScan(url: string) {
+  const r = cachedScan(hostFromInput(url));
+  if (!r) throw new Error("No cached scan for that host");
+  return r;
+}
 import { ScanUrlBody } from "@/lib/server/schemas";
 
 export const runtime = "nodejs";
@@ -15,7 +22,12 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: Request) {
   const { scanLimiter, bus } = await live();
-  const wait = scanLimiter.take(clientKey(req));
+  const peek = (await req
+    .clone()
+    .json()
+    .catch(() => ({}))) as { cachedOnly?: boolean };
+  // A cached answer costs nothing and touches no network, so it isn't rate-limited.
+  const wait = peek.cachedOnly ? 0 : scanLimiter.take(clientKey(req));
   if (wait)
     return fail("rate_limited", `Too many scans. Try again in ${wait} s.`, 429, {
       retryAfter: wait,
@@ -24,7 +36,7 @@ export async function POST(req: Request) {
   if (!b.ok) return b.res;
   const t = performance.now();
   try {
-    const r = await scanHost(b.data.url);
+    const r = b.data.cachedOnly ? cachedOnlyScan(b.data.url) : await scanHost(b.data.url);
     bus.publish({
       op: "SCAN",
       source: "scanner",

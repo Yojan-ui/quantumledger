@@ -2145,5 +2145,322 @@
       "source": "lookup"
     },
     "scannedAt": "2026-10-11T15:24:31.599Z"
+  },
+  "ecc256.badssl.com": {
+    "probe": {
+      "host": "ecc256.badssl.com",
+      "address": "104.154.89.105",
+      "protocol": "TLSv1.2",
+      "cipher": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+      "group": "prime256v1",
+      "hybridPq": false,
+      "certKey": "ECDSA prime256v1",
+      "certSigAlg": "ecdsa-with-SHA384",
+      "issuer": "Let's Encrypt",
+      "validTo": "Dec 28 20:02:43 2026 GMT",
+      "report": "# TLS details for ecc256.badssl.com\nprotocol = TLSv1.2\ncipher = TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256\nkey_exchange_group = prime256v1\nkey_exchange = ECDHE prime256v1\ncertificate_key = ECDSA prime256v1\ncertificate_signature = ecdsa-with-SHA384"
+    },
+    "score": 23,
+    "grade": "Critical",
+    "summary": {
+      "critical": 0,
+      "high": 4,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    },
+    "findings": [
+      {
+        "ruleId": "tls-suite",
+        "line": 3,
+        "column": 10,
+        "match": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "algorithm": "TLS cipher suite",
+        "primitive": "protocol",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "kx=ECDHE; auth=ECDSA; cipher=AES-128",
+        "why": "ECDHE key exchange is breakable by Shor's algorithm (harvest now, decrypt later). ECDSA authentication is quantum-vulnerable.",
+        "replacement": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+      },
+      {
+        "ruleId": "ecdh",
+        "line": 5,
+        "column": 16,
+        "match": "ECDHE",
+        "algorithm": "ECDH",
+        "primitive": "key-agree",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "prime256v1",
+        "why": "ECDH key agreement is broken by Shor's algorithm, so session keys in harvested traffic can be recovered later.",
+        "replacement": "Hybrid X25519 + ML-KEM-768 (TLS group X25519MLKEM768)"
+      },
+      {
+        "ruleId": "ecdsa",
+        "line": 6,
+        "column": 19,
+        "match": "ECDSA",
+        "algorithm": "ECDSA",
+        "primitive": "signature",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "parameter": "prime256v1",
+        "why": "Elliptic-curve discrete logs fall to Shor's algorithm, so signatures can be forged once a quantum computer exists.",
+        "replacement": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+      },
+      {
+        "ruleId": "ecdsa",
+        "line": 7,
+        "column": 25,
+        "match": "ecdsa-with-SHA384",
+        "algorithm": "ECDSA",
+        "primitive": "signature",
+        "severity": "high",
+        "quantumVulnerable": true,
+        "quantumSafe": false,
+        "why": "Elliptic-curve discrete logs fall to Shor's algorithm, so signatures can be forged once a quantum computer exists.",
+        "replacement": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+      }
+    ],
+    "cbom": {
+      "bomFormat": "CycloneDX",
+      "specVersion": "1.6",
+      "serialNumber": "urn:uuid:14d212fe-170d-444b-9309-6c0fb6e25164",
+      "version": 1,
+      "metadata": {
+        "timestamp": "2026-10-12T11:30:41.859Z",
+        "tools": {
+          "components": [
+            {
+              "type": "application",
+              "name": "QuantumLedger Readiness Scanner",
+              "version": "0.1.0"
+            }
+          ]
+        },
+        "component": {
+          "type": "file",
+          "name": "ecc256.badssl.com",
+          "bom-ref": "scan-target"
+        }
+      },
+      "components": [
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:tls:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "name": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "cryptoProperties": {
+            "assetType": "protocol",
+            "protocolProperties": {
+              "type": "tls",
+              "cipherSuites": [
+                {
+                  "name": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "ecc256.badssl.com",
+                "line": 3,
+                "offset": 10,
+                "symbol": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "TLS 1.3 with TLS_AES_256_GCM_SHA384 and the X25519MLKEM768 hybrid group"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdh:prime256v1",
+          "name": "ECDH",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "key-agree",
+              "parameterSetIdentifier": "prime256v1",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "ecc256.badssl.com",
+                "line": 5,
+                "offset": 16,
+                "symbol": "ECDHE"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "Hybrid X25519 + ML-KEM-768 (TLS group X25519MLKEM768)"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdsa:prime256v1",
+          "name": "ECDSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "signature",
+              "parameterSetIdentifier": "prime256v1",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "ecc256.badssl.com",
+                "line": 6,
+                "offset": 19,
+                "symbol": "ECDSA"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+            }
+          ]
+        },
+        {
+          "type": "cryptographic-asset",
+          "bom-ref": "crypto:ecdsa:",
+          "name": "ECDSA",
+          "cryptoProperties": {
+            "assetType": "algorithm",
+            "algorithmProperties": {
+              "primitive": "signature",
+              "nistQuantumSecurityLevel": 0
+            }
+          },
+          "evidence": {
+            "occurrences": [
+              {
+                "location": "ecc256.badssl.com",
+                "line": 7,
+                "offset": 25,
+                "symbol": "ecdsa-with-SHA384"
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "qsetu:severity",
+              "value": "high"
+            },
+            {
+              "name": "qsetu:quantumVulnerable",
+              "value": "true"
+            },
+            {
+              "name": "qsetu:recommendation",
+              "value": "ML-DSA-65 (FIPS 204); SLH-DSA (FIPS 205) for long-lived roots"
+            }
+          ]
+        }
+      ]
+    },
+    "plan": {
+      "steps": [
+        {
+          "id": "tls-hybrid",
+          "priority": "P1",
+          "title": "Turn on hybrid post-quantum key exchange (X25519MLKEM768)",
+          "fixer": "Config",
+          "effort": "S",
+          "resolves": ["tls-suite:3", "ecdh:5"],
+          "why": "The server negotiated a classical key exchange, so recorded sessions can be decrypted after Q-Day. Data kept 10 years + 0.25 years to migrate exceeds the 9 years to 2035.",
+          "action": "Upgrade the TLS terminator (OpenSSL 3.5+, or a CDN that supports it) and put X25519MLKEM768 first in the supported groups."
+        },
+        {
+          "id": "vault-at-rest",
+          "priority": "P1",
+          "title": "Wrap long-lived records with QuantumLedger Vault",
+          "fixer": "Vault",
+          "effort": "M",
+          "resolves": [],
+          "why": "Records kept 10 years will outlive the 2035 horizon. Backups and replicas leak too.",
+          "action": "Store each record under its own AES-256 key wrapped with ML-KEM-768 and signed with ML-DSA-65 (`vault.put`)."
+        },
+        {
+          "id": "rescan",
+          "priority": "P3",
+          "title": "Keep the CBOM current",
+          "fixer": "Scanner",
+          "effort": "S",
+          "resolves": [],
+          "why": "Migration is only done when the inventory says so.",
+          "action": "Run the readiness scanner in CI and attach the CycloneDX CBOM to each release."
+        },
+        {
+          "id": "cert-plan",
+          "priority": "P3",
+          "title": "Plan the certificate migration",
+          "fixer": "Config",
+          "effort": "L",
+          "resolves": ["ecdsa:6", "ecdsa:7"],
+          "why": "The certificate uses a classical key. Forging it needs a quantum computer at connection time, so it is not a harvest risk, but CA and browser support for PQ certificates takes years.",
+          "action": "Inventory certificates (the CBOM), shorten lifetimes, and track your CA's ML-DSA roadmap. Use ML-DSA now for internal PKI."
+        }
+      ],
+      "assumptions": {
+        "dataLifetimeYears": 10,
+        "horizonYear": 2035,
+        "yearsLeft": 9
+      }
+    },
+    "plain": [
+      "Uses prime256v1 key exchange: traffic recorded today can be decrypted by a future quantum computer.",
+      "Uses an ECDSA prime256v1 certificate: its signature can be forged by a future quantum computer.",
+      "Negotiated TLSv1.2: older than TLS 1.3, so it cannot use post-quantum key exchange."
+    ],
+    "geo": {
+      "lat": 41.2619,
+      "lon": -95.8608,
+      "label": "Council Bluffs, United States",
+      "source": "lookup"
+    },
+    "scannedAt": "2026-10-12T11:30:42.613Z"
   }
 }

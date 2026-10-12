@@ -1,8 +1,8 @@
 /**
- * ML-DSA-44 / ML-DSA-65 (NIST FIPS 204): Module-Lattice signatures, NIST categories 2 and 3.
+ * ML-DSA-44 / 65 / 87 (NIST FIPS 204): Module-Lattice signatures, NIST categories 2, 3 and 5.
  * Thin adapters over @noble/post-quantum (pure, hedged signing).
  */
-import { ml_dsa44, ml_dsa65 } from "@noble/post-quantum/ml-dsa.js";
+import { ml_dsa44, ml_dsa65, ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { expandSeed } from "../seed";
 import type { SignatureAlgorithm } from "../types";
 
@@ -11,7 +11,7 @@ type Noble = typeof ml_dsa65;
 function adapt(
   id: string,
   name: string,
-  level: 2 | 3,
+  level: 2 | 3 | 5,
   impl: Noble,
   sizes: SignatureAlgorithm["sizes"],
 ): SignatureAlgorithm {
@@ -44,4 +44,9 @@ export const mlDsa65 = adapt("ml-dsa-65", "ML-DSA-65", 3, ml_dsa65, {
   publicKey: 1952,
   secretKey: 4032,
   output: 3309,
+});
+export const mlDsa87 = adapt("ml-dsa-87", "ML-DSA-87", 5, ml_dsa87, {
+  publicKey: 2592,
+  secretKey: 4896,
+  output: 4627,
 });

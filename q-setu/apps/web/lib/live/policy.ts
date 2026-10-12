@@ -8,6 +8,7 @@ import type { PolicyState, ProfileName, SigName } from "./types";
 export const SIG_FOR_PROFILE: Record<ProfileName, SigName> = {
   standard: "ml-dsa-65",
   edge: "ml-dsa-44",
+  maximum: "ml-dsa-87",
 };
 
 export class Policy {

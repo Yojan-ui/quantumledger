@@ -18,6 +18,18 @@ export interface ScanView {
   scannedAt: string;
   cached?: boolean;
   plan: { steps: { id: string; priority: string; title: string; fixer: string; effort: string }[] };
+  /** The scanner's findings (what the plan and the CBOM are built from). */
+  findings: {
+    ruleId: string;
+    line: number;
+    algorithm: string;
+    primitive: string;
+    severity: string;
+    quantumVulnerable: boolean;
+    match: string;
+  }[];
+  /** CycloneDX CBOM for the probed host. */
+  cbom: unknown;
 }
 
 export const SUGGESTED_HOSTS = [

@@ -179,11 +179,93 @@ export class Ledger {
     return this.walk();
   }
 
-  private async walk(): Promise<VerifyResult> {
+  /**
+   * Verifies the chain from entry `from` to the head (hashes, links, signatures), trusting entry
+   * `from - 1` as a signed checkpoint: the Proof Chain sweep checks the checkpoint itself with
+   * verifyEntry, then walks only what came after it. `verify()` is the full walk from genesis.
+   */
+  async verifyFrom(from: number): Promise<VerifyResult> {
+    return this.walk(Math.max(1, from));
+  }
+
+  /**
+   * One entry, checked from scratch: its hash, its link to the entry before it, and a fresh ML-DSA
+   * verification (the per-process signature memory is not consulted).
+   */
+  async verifyEntry(id: number): Promise<VerifyResult> {
+    await this.flush();
+    const t = performance.now();
+    const r = await this.repo.get(id);
+    const before = id > 1 ? await this.repo.get(id - 1) : undefined;
+    const done = (broken?: VerifyResult["broken"]): VerifyResult => ({
+      ok: !broken,
+      checked: r ? 1 : 0,
+      ms: performance.now() - t,
+      head: r?.hash ?? "",
+      broken,
+    });
+    if (!r) return done({ id, reason: "missing-entry", detail: `Entry #${id} is missing.` });
+    const prev = id > 1 ? before?.hash : GENESIS;
+    if (r.prev !== prev)
+      return done({
+        id,
+        reason: "chain-broken",
+        detail: `Entry #${id} does not link to entry #${id - 1}.`,
+        expected: prev,
+        actual: r.prev,
+      });
+    const recomputed = entryHash(r);
+    if (recomputed !== r.hash)
+      return done({
+        id,
+        reason: "payload-modified",
+        detail: `Entry #${id} was modified after it was written: its SHA3-256 no longer matches.`,
+        expected: r.hash,
+        actual: recomputed,
+      });
+    const key = this.signer.publicKey(r.keyId);
+    if (!key)
+      return done({
+        id,
+        reason: "unknown-key",
+        detail: `Entry #${id} is signed by an unknown key.`,
+      });
+    if (
+      !getSig(key.alg).verify(
+        new Uint8Array(Buffer.from(r.sig, "base64")),
+        hexToBytes(r.hash),
+        key.publicKey,
+      )
+    )
+      return done({
+        id,
+        reason: "bad-signature",
+        detail: `Entry #${id}: ${getSig(key.alg).name} signature does not verify.`,
+      });
+    return done();
+  }
+
+  private async walk(from = 1): Promise<VerifyResult> {
     await this.flush();
     const t = performance.now();
     let prev = GENESIS;
-    let expectId = 1;
+    if (from > 1) {
+      const anchor = await this.repo.get(from - 1);
+      if (!anchor)
+        return {
+          ok: false,
+          checked: 0,
+          ms: performance.now() - t,
+          head: GENESIS,
+          broken: {
+            id: from - 1,
+            reason: "missing-entry",
+            detail: `Checkpoint #${from - 1} is missing.`,
+          },
+        };
+      prev = anchor.hash;
+    }
+    let expectId = from;
     let checked = 0;
     let fresh = 0;
     const done = (broken?: VerifyResult["broken"]): VerifyResult => ({
@@ -193,7 +275,7 @@ export class Ledger {
       head: prev,
       broken,
     });
-    for (let after = 0; ;) {
+    for (let after = from - 1; ;) {
       const page = await this.repo.page(after, PAGE);
       if (!page.length) break;
       for (const r of page) {

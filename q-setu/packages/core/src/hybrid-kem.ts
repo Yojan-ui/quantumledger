@@ -20,7 +20,7 @@
 import { x25519 as curve } from "@noble/curves/ed25519.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { mlKem512, mlKem768 } from "./algorithms/ml-kem";
+import { mlKem1024, mlKem512, mlKem768 } from "./algorithms/ml-kem";
 import { x25519Kem } from "./algorithms/x25519";
 import { concatBytes, encodeParts, splitBytes, utf8ToBytes } from "./encoding";
 import type { Bytes, KemAlgorithm } from "./types";
@@ -110,4 +110,9 @@ export const hybridX25519MlKem512 = makeHybrid(
   mlKem512,
   "hybrid-x25519-mlkem512",
   "X25519 + ML-KEM-512",
+);
+export const hybridX25519MlKem1024 = makeHybrid(
+  mlKem1024,
+  "hybrid-x25519-mlkem1024",
+  "X25519 + ML-KEM-1024",
 );

@@ -37,7 +37,8 @@ const RULES = [
   {
     name: "blur outside Nav",
     re: /(?<![\w-])(?:backdrop-)?blur(?:-[\w[]+)?(?![\w-])/g,
-    except: /components\/ui\/Nav\.tsx$/,
+    // The nav and the HUD's glass panels are the only translucent surfaces.
+    except: /components\/(ui\/Nav|hud\/HudPanel)\.tsx$/,
     classOnly: true,
   },
   {

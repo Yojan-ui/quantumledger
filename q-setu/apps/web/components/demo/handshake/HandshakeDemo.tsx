@@ -172,8 +172,8 @@ export function HandshakeDemo() {
   const [policy, setPolicy] = useState<PolicyState>();
   const [swapping, setSwapping] = useState(false);
   const profile = policy?.profile ?? "standard";
-  const kemName = profile === "edge" ? "ML-KEM-512" : "ML-KEM-768";
-  const sigName = profile === "edge" ? "ML-DSA-44" : "ML-DSA-65";
+  const kemName = { edge: "ML-KEM-512", standard: "ML-KEM-768", maximum: "ML-KEM-1024" }[profile];
+  const sigName = { edge: "ML-DSA-44", standard: "ML-DSA-65", maximum: "ML-DSA-87" }[profile];
 
   useEffect(() => {
     void fetch("/api/policy")

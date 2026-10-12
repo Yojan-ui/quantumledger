@@ -18,7 +18,7 @@ export interface SealedBody {
 }
 
 export interface ServerPublicKeys {
-  profile: "standard" | "edge";
+  profile: "standard" | "edge" | "maximum";
   kid: string;
   kem: string;
   sig: string;

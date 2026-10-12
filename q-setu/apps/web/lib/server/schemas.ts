@@ -30,6 +30,8 @@ export const ScanUrlBody = z.object({
     .min(1)
     .max(2048)
     .meta({ examples: ["https://example.com"] }),
+  /** Answer only from the pre-cached real scans (the homepage's labelled example); never probes. */
+  cachedOnly: z.boolean().optional(),
 });
 
 export const FindingInput = z.object({
@@ -52,8 +54,8 @@ export const PlanBody = z.object({
 
 export const PolicyBody = z
   .object({
-    profile: z.enum(["standard", "edge"]).optional(),
-    sig: z.enum(["ml-dsa-65", "ml-dsa-44", "slh-dsa-sha2-128f"]).optional(),
+    profile: z.enum(["standard", "edge", "maximum"]).optional(),
+    sig: z.enum(["ml-dsa-65", "ml-dsa-44", "ml-dsa-87", "slh-dsa-sha2-128f"]).optional(),
   })
   .refine((b) => b.profile || b.sig, "Set profile, sig, or both");
 
@@ -104,7 +106,7 @@ export const RoomSendBody = z.object({
   sealMs: z.number().min(0).max(60_000).default(0),
   envelope: z.object({
     v: z.number(),
-    profile: z.enum(["standard", "edge"]),
+    profile: z.enum(["standard", "edge", "maximum"]),
     algIds: z.object({
       kem: z.string(),
       sig: z.string().nullable(),
@@ -121,3 +123,15 @@ export const RoomSendBody = z.object({
 });
 
 export const SealFromBody = z.object({ city: z.string().regex(/^[a-z]{2,20}$/) });
+
+const Hex64 = z.string().regex(/^[0-9a-f]{64}$/, "Expected a SHA3-256 hex digest");
+
+export const AnchorBody = z.object({
+  domain: z.string().min(1).max(253),
+  scan: z.string().min(2).max(8192),
+  cbomSha3: Hex64,
+  policy: z.string().min(2).max(1024),
+  transcriptSha3: Hex64,
+});
+
+export const AnchorParams = z.object({ id: z.coerce.number().int().min(1) });

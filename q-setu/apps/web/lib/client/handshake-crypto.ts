@@ -21,9 +21,16 @@ export const hs = {
       ms: number;
     }>("respond"),
   finish: () =>
-    call<{ kemCiphertext: Uint8Array; bytes: number; sessionId: string; tc: number; ts: number }>(
-      "finish",
-    ),
+    call<{
+      kemCiphertext: Uint8Array;
+      bytes: number;
+      sessionId: string;
+      tc: number;
+      ts: number;
+      transcriptSha3: string;
+      sharedSecretBytes: number;
+    }>("finish"),
+  sha3: (text: string) => call<string>("sha3", { text }),
   messages: (n: number) =>
     call<{
       per: number;

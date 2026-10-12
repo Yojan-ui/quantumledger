@@ -3,11 +3,11 @@
  * Call sites look algorithms up by ID or profile, so migrating is a config change, not a rewrite.
  */
 import { ed25519Sig } from "./algorithms/ed25519";
-import { mlDsa44, mlDsa65 } from "./algorithms/ml-dsa";
-import { mlKem512, mlKem768 } from "./algorithms/ml-kem";
+import { mlDsa44, mlDsa65, mlDsa87 } from "./algorithms/ml-dsa";
+import { mlKem1024, mlKem512, mlKem768 } from "./algorithms/ml-kem";
 import { slhDsa128f } from "./algorithms/slh-dsa";
 import { x25519Kem } from "./algorithms/x25519";
-import { hybridX25519MlKem512, hybridX25519MlKem768 } from "./hybrid-kem";
+import { hybridX25519MlKem1024, hybridX25519MlKem512, hybridX25519MlKem768 } from "./hybrid-kem";
 import type { KemAlgorithm, SignatureAlgorithm } from "./types";
 
 export const registry = {
@@ -15,12 +15,15 @@ export const registry = {
     x25519: x25519Kem,
     "ml-kem-512": mlKem512,
     "ml-kem-768": mlKem768,
+    "ml-kem-1024": mlKem1024,
     "hybrid-x25519-mlkem512": hybridX25519MlKem512,
     "hybrid-x25519-mlkem768": hybridX25519MlKem768,
+    "hybrid-x25519-mlkem1024": hybridX25519MlKem1024,
   },
   sig: {
     "ml-dsa-44": mlDsa44,
     "ml-dsa-65": mlDsa65,
+    "ml-dsa-87": mlDsa87,
     "slh-dsa-sha2-128f": slhDsa128f,
     ed25519: ed25519Sig,
   },
@@ -35,11 +38,14 @@ export interface Profile {
   kem: KemId;
   sig: SigId;
   /** The plain ML-KEM inside the hybrid, used by the session handshake. */
-  pqKem: "ml-kem-512" | "ml-kem-768";
+  pqKem: "ml-kem-512" | "ml-kem-768" | "ml-kem-1024";
   description: string;
 }
 
-/** `standard`: NIST category 3 everywhere. `edge`: smaller keys for constrained devices (categories 1–2). */
+/**
+ * `standard` (L3): NIST category 3 everywhere. `edge` (L1): smaller keys for constrained devices
+ * (categories 1–2). `maximum` (L5): category 5, the largest keys, for the longest-lived secrets.
+ */
 export const PROFILES = {
   standard: {
     id: "standard",
@@ -48,6 +54,14 @@ export const PROFILES = {
     sig: "ml-dsa-65",
     pqKem: "ml-kem-768",
     description: "X25519 + ML-KEM-768 with ML-DSA-65 (NIST category 3)",
+  },
+  maximum: {
+    id: "maximum",
+    label: "Maximum",
+    kem: "hybrid-x25519-mlkem1024",
+    sig: "ml-dsa-87",
+    pqKem: "ml-kem-1024",
+    description: "X25519 + ML-KEM-1024 with ML-DSA-87 (NIST category 5)",
   },
   edge: {
     id: "edge",

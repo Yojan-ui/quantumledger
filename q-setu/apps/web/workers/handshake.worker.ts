@@ -5,7 +5,10 @@
  * gets back only public values (key shares, public keys, ciphertexts, sizes) and measured times.
  * Secret keys, client state and sessions stay inside this worker.
  */
+import { sha3_256 } from "@noble/hashes/sha3.js";
 import {
+  bytesToHex,
+  concatBytes,
   clientFinish,
   clientHello,
   createIdentity,
@@ -35,7 +38,8 @@ export type HandshakeIn =
   | { rid: number; op: "respond" }
   | { rid: number; op: "finish" }
   | { rid: number; op: "messages"; n: number }
-  | { rid: number; op: "attack"; profile: ProfileId };
+  | { rid: number; op: "attack"; profile: ProfileId }
+  | { rid: number; op: "sha3"; text: string };
 
 function timed<T>(fn: () => T): [T, number] {
   const t = performance.now();
@@ -73,7 +77,16 @@ function handle(m: HandshakeIn): unknown {
       const [server, ts] = timed(() => serverComplete(pending!, f.finish));
       clientSession = f.session;
       serverSession = server;
+      // The transcript the Proof Chain anchors: both key shares, the server's ML-KEM key and the
+      // client's ciphertext, hashed (public values only).
+      const transcript = concatBytes(
+        hello!.x25519,
+        serverHello!.kemPublicKey,
+        f.finish.kemCiphertext,
+      );
       return {
+        transcriptSha3: bytesToHex(sha3_256(transcript)),
+        sharedSecretBytes: 32,
         kemCiphertext: f.finish.kemCiphertext,
         bytes: handshakeBytes.clientFinish(f.finish),
         sessionId: server.id,
@@ -100,6 +113,8 @@ function handle(m: HandshakeIn): unknown {
         })),
       };
     }
+    case "sha3":
+      return bytesToHex(sha3_256(utf8ToBytes(m.text)));
     case "attack": {
       // A man-in-the-middle swaps the server's ML-KEM key for their own but can't re-sign it.
       const c = clientHello(m.profile);
