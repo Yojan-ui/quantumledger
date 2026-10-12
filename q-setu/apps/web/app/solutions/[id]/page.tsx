@@ -106,6 +106,11 @@ export default async function SolutionPage({ params }: Props) {
           We are looking for design partners to pilot it in shadow mode.
         </p>
       </Block>
+      <Container>
+        <p className="max-w-text py-24 text-h2 font-medium text-fg md:py-32" data-impact>
+          {s.impact}
+        </p>
+      </Container>
     </PageShell>
   );
 }

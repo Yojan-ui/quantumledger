@@ -32,3 +32,17 @@ test("simple / technical copy toggle persists", async ({ page }) => {
   await expect(page.getByRole("tooltip").filter({ hasText: "FIPS 203" })).toBeVisible();
   await page.getByRole("button", { name: "simple" }).first().click();
 });
+
+// Impact calculator: exposure follows the secrecy period against the cited 2030–2035 window.
+test("impact calculator", async ({ page }) => {
+  await page.goto("/#impact");
+  const years = page.getByLabel("Years they must stay secret");
+  await years.fill("3");
+  await expect(page.locator("[data-impact-exposure]")).toHaveText("0 years");
+  await years.fill("30");
+  const y = new Date().getFullYear() + 30;
+  await expect(page.locator("[data-impact-exposure]")).toHaveText(`${y - 2035}–${y - 2030} years`);
+  await expect(page.locator("#impact")).toContainText("Estimate");
+  await page.goto("/solutions/healthcare");
+  await expect(page.locator("[data-impact]")).toContainText("decades of secrecy");
+});

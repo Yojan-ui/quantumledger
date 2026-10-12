@@ -20,6 +20,8 @@ export interface Solution {
   /** Demo that shows this sector, and the sector key the simulator uses (if any). */
   demo: { href: string; label: string };
   dataLifetime: string;
+  /** The page's closing line: what happens without migration, in this sector's own terms. */
+  impact: string;
 }
 
 export const SOLUTIONS: Solution[] = [
@@ -47,6 +49,8 @@ export const SOLUTIONS: Solution[] = [
     ],
     demo: { href: "/demo/deploy", label: "Deploy Q-Setu across a payment network" },
     dataLifetime: "7–10 years (financial records)",
+    impact:
+      "Payment records stay sensitive for 7–10 years. Recorded today, they can still be worth reading when a quantum computer arrives.",
   },
   {
     id: "healthcare",
@@ -72,6 +76,8 @@ export const SOLUTIONS: Solution[] = [
     ],
     demo: { href: "/demo/qday", label: "Watch recorded lab reports open at Q-Day" },
     dataLifetime: "Lifetime of the patient",
+    impact:
+      "Health records need decades of secrecy. Without migration, today's records are readable within their lifetime.",
   },
   {
     id: "education",
@@ -94,6 +100,8 @@ export const SOLUTIONS: Solution[] = [
     ],
     demo: { href: "/demo/deploy", label: "Issue a certificate and forge it (it fails)" },
     dataLifetime: "40+ years (a career)",
+    impact:
+      "A degree has to stay provable for a whole career. Without post-quantum signatures, it becomes forgeable within that career.",
   },
   {
     id: "government",
@@ -119,6 +127,8 @@ export const SOLUTIONS: Solution[] = [
     ],
     demo: { href: "/demo/ledger", label: "Tamper with an audit log and get caught" },
     dataLifetime: "Decades (identity, land, tax)",
+    impact:
+      "Identity, land and tax records stay sensitive for decades. Without migration, records sent today outlive the locks that protect them.",
   },
 ];
 

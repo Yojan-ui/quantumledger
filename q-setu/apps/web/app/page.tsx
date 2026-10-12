@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analogy } from "@/components/home/Analogy";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero } from "@/components/home/Hero";
+import { Impact } from "@/components/home/Impact";
 import { IndexSection } from "@/components/home/IndexSection";
 import { Proof } from "@/components/home/Proof";
 import { ScanSite } from "@/components/home/ScanSite";
@@ -35,6 +36,7 @@ export default function Home() {
         <Adapters />
         <Solutions />
         <Proof />
+        <Impact index="07" />
         <WhyQSetu />
         <EarlyAccess />
       </main>
