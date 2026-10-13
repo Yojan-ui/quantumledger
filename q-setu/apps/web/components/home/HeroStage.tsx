@@ -11,7 +11,9 @@
  * burst; the stages run straight through to their end state (every value still real).
  */
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useRef, useState } from "react";
 import { generateVisitorKeys } from "@/components/home/visitor";
 import { waitForCanvas } from "@/components/hud/DiagnosticsApp";
 import { LazyView } from "@/components/scenes/LazyView";
@@ -90,18 +92,57 @@ export function useHeadlineBeat(): 1 | 2 | 3 {
   return anchored ? 3 : defended ? 2 : 1;
 }
 
+/**
+ * As the hero scrolls away, its camera backs out of the sphere and the stage fades, so Join live's
+ * globe (which opens close on one node) reads as the same camera continuing to pull back.
+ */
+function useExit(
+  ref: React.RefObject<HTMLDivElement | null>,
+  veil: React.RefObject<HTMLDivElement | null>,
+) {
+  useEffect(() => {
+    const el = ref.current;
+    const section = el?.closest("section");
+    if (!el || !section) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom top",
+        onUpdate: (st) => {
+          hero.exit = reduce ? 0 : st.progress;
+          // The 3D draws on the shared canvas under the page, so it fades behind a page-colour veil.
+          if (veil.current)
+            veil.current.style.opacity = String(Math.max(0, (st.progress - 0.45) / 0.55));
+        },
+      });
+    }, el);
+    return () => ctx.revert();
+  }, [ref, veil]);
+}
+
 /** The full-bleed stage behind the hero. */
 export function HeroStage() {
   useOpening();
   const s = usePipeline((x) => x);
+  const ref = useRef<HTMLDivElement>(null);
+  const veil = useRef<HTMLDivElement>(null);
+  useExit(ref, veil);
   return (
-    <div className="absolute inset-0" data-hud-stage data-world-drag>
+    <div ref={ref} className="absolute inset-0" data-hud-stage data-world-drag>
       <LazyView
         className="h-full w-full"
         label={`The diagnostics stage, full screen: ${s.domain || "the cached example"}`}
       >
         {(on) => <PipelineStage state={s} active={on} hero />}
       </LazyView>
+      <div
+        ref={veil}
+        className="pointer-events-none absolute inset-0 bg-base opacity-0"
+        aria-hidden
+      />
     </div>
   );
 }

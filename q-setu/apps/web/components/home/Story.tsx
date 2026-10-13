@@ -42,6 +42,7 @@ export function Story() {
     if (!el) return;
     // Scrubbed by ScrollTrigger, on the same GSAP clock as Lenis (lib/client/scroll).
     gsap.registerPlugin(ScrollTrigger);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const update = (p: number) => {
       if (fill.current) fill.current.style.transform = `scaleX(${p})`;
       // Only while the section is on screen does it own the globe's chapter.
@@ -50,6 +51,8 @@ export function Story() {
       const x = Math.min(N - 0.001, p * N);
       const step = STEPS[Math.floor(x)]!;
       world.chapter = step.chapter;
+      // The homepage flight: side-on along the arc, travelling with the packets.
+      world.journey = reduce ? 6 : 6 + p;
       world.accent = step.accent;
       world.glow = step.role;
       // Quantised to 1/50 of a step: React bails out on unchanged values, so the pinned section
@@ -93,14 +96,25 @@ export function Story() {
       aria-label="How it works, in three steps"
     >
       <div className="sticky top-14 h-story overflow-hidden">
-        <Container className="grid h-full grid-cols-12 content-start gap-x-6 md:content-stretch">
+        {/* Desktop: the globe fills the pinned frame (side-on along the arc); the text sits over it. */}
+        <div
+          data-world-focus
+          data-world-drag
+          className="absolute inset-0 hidden md:block"
+          aria-hidden
+        />
+        <div
+          className="hero-scrim pointer-events-none absolute inset-0 hidden md:block"
+          aria-hidden
+        />
+        <Container className="relative grid h-full grid-cols-12 content-start gap-x-6 md:content-stretch">
           <div
             data-world-focus
             data-world-drag
-            className="col-span-12 h-globe md:order-2 md:col-span-5 md:col-start-8 md:h-full"
+            className="col-span-12 h-globe md:hidden"
             aria-hidden
           />
-          <div className="col-span-12 pt-6 md:order-1 md:col-span-6 md:pt-24 lg:col-span-6">
+          <div className="col-span-12 pt-6 md:col-span-6 md:pt-24 lg:col-span-5">
             <SectionLabel index="04" label="How it works" role={step.role} className="" />
             {/* Progress: three steps, the current one bright, a hairline that fills with scroll. */}
             <nav aria-label="Steps" className="mt-6 flex items-center gap-4">

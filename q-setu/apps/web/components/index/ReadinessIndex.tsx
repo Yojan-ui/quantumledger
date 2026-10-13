@@ -13,6 +13,7 @@ import { Text } from "@/components/ui";
 import { Copy } from "@/components/ui/Copy";
 import { notify, world } from "@/components/world/store";
 import { METRICS, pct, READINESS, SECTORS, share, type MetricId } from "@/lib/readiness";
+import { useJourney } from "@/lib/client/journey";
 
 const scanDate = (iso: string) =>
   iso
@@ -59,8 +60,16 @@ function BarLabels({ values }: { values: number[] }) {
   );
 }
 
-export function ReadinessBars({ className = "" }: { className?: string }) {
+export function ReadinessBars({
+  className = "",
+  flight = false,
+}: {
+  className?: string;
+  /** On the homepage: this section's stretch of the camera flight (a low angle over India). */
+  flight?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
+  useJourney(ref, flight ? 2 : -1, flight ? 3 : -1);
   const [metric, setMetric] = useState<MetricId>("hybridPq");
   const [on, setOn] = useState(false);
   const m = METRICS.find((x) => x.id === metric)!;
@@ -89,7 +98,7 @@ export function ReadinessBars({ className = "" }: { className?: string }) {
   const all = READINESS.all;
   return (
     <div ref={ref} className={`grid grid-cols-12 gap-x-6 gap-y-10 ${className}`}>
-      <div className="col-span-12 md:col-span-6">
+      <div className="col-span-12 md:col-span-5">
         <p className="text-small text-fg-2">
           Of {all.reachable} public Indian sites we connected to,
         </p>
@@ -180,11 +189,11 @@ export function ReadinessBars({ className = "" }: { className?: string }) {
       </div>
       {on && <BarLabels values={values} />}
       {/* On phones the globe comes first, so the bars are seen before the list. */}
-      <div className="relative order-first col-span-12 md:order-none md:col-span-6">
+      <div className="relative order-first col-span-12 md:order-none md:col-span-7">
         <div
           data-world-focus
           data-world-drag
-          className="h-globe md:sticky md:top-24 md:h-stage"
+          className="h-globe md:sticky md:top-14 md:h-story"
           aria-hidden
         />
       </div>

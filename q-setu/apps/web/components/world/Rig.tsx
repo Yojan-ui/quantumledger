@@ -46,6 +46,8 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     tiltY: 0,
     offX: 0,
     offY: 0,
+    tilt: 0,
+    yaw: 0,
   });
   const ptr = useRef({ x: 0, y: 0, down: false, lastX: 0, lastT: 0, upAt: 0, reframeAt: 0 });
   /** Scroll velocity (px/s), smoothed; the globe spins faster while the page scrolls. */
@@ -130,8 +132,23 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     // A directed shot (Demo 2) is already eased by its tween: follow it closely.
     const shot = world.mode === "deploy" && !!world.shot;
     s.dist = damp(s.dist, (p.dist / 3) * fitDist, reduce.current ? 50 : shot ? 12 : 2.2, dt);
-    camera.position.set(0, 0, s.dist);
-    camera.lookAt(0, 0, 0);
+    // Tilt and yaw: the camera orbits a point on the globe's near surface (the shot's lat/lon, which
+    // the globe turns to face the camera), so a pitched shot reads as a low angle over the land with
+    // a level horizon, not a tilted globe. Head-on shots (tilt 0) look at the centre as before.
+    const kt = reduce.current ? 50 : shot ? 12 : 2;
+    s.tilt = damp(s.tilt, p.tilt, kt, dt);
+    s.yaw = damp(s.yaw, p.yaw, kt, dt);
+    const T = (s.tilt * Math.PI) / 180;
+    const Y = (s.yaw * Math.PI) / 180;
+    const pz = Math.min(1, s.tilt / 35);
+    const d = Math.max(0.15, s.dist - pz);
+    const sT = Math.sin(T);
+    const cT = Math.cos(T);
+    const sY = Math.sin(Y);
+    const cY = Math.cos(Y);
+    camera.position.set(sT * sY * d, -sT * cY * d, pz + cT * d);
+    camera.up.set(-cT * sY, cT * cY, sT);
+    camera.lookAt(0, 0, pz);
 
     // Scroll velocity spins the globe faster (up to +0.9 rad/s), then it eases back.
     const sc = scroll.current;

@@ -18,6 +18,8 @@ export const hero = {
   /** performance.now() when the mark began assembling / bursting (0 = not yet). */
   assembleAt: 0,
   burstAt: 0,
+  /** How far the hero has scrolled away (0 = in place, 1 = gone): the camera pulls back out. */
+  exit: 0,
 };
 const listeners = new Set<() => void>();
 
@@ -33,7 +35,7 @@ export function useHero<T>(select: (h: typeof hero) => T): T {
       return () => void listeners.delete(fn);
     },
     () => select(hero),
-    () => select({ phase: "keygen", keygenMs: 0, assembleAt: 0, burstAt: 0 }),
+    () => select({ phase: "keygen", keygenMs: 0, assembleAt: 0, burstAt: 0, exit: 0 }),
   );
 }
 

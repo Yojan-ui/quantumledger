@@ -6,6 +6,7 @@ import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
 import { Button, ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
 import { HeroInput, HeroStage, HeroStatus, useHeadlineBeat } from "./HeroStage";
+import { useJourney } from "@/lib/client/journey";
 import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
@@ -98,10 +99,15 @@ export function Hero() {
   );
 }
 
-/** Join live from your phone: the room QR, the counter and the globe its arcs land on. */
+/**
+ * Join live from your phone. Full bleed: the camera starts close on one node (where the hero's sphere
+ * sat) and pulls back as you scroll, revealing it as one point on the globe; phone-sealed messages
+ * arrive as arcs. The statement is centred over the 3D, the QR card sits at the bottom.
+ */
 export function JoinLive() {
+  const ref = useRef<HTMLElement>(null);
+  useJourney(ref, 0, 1);
   useEffect(() => {
-    const el = document.getElementById("join-live");
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e?.isIntersecting) return;
@@ -111,30 +117,33 @@ export function JoinLive() {
       },
       { threshold: 0.3 },
     );
-    if (el) io.observe(el);
+    if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, []);
   return (
-    <section id="join-live" className="relative scroll-mt-14 py-16 md:py-24" aria-label="Join live">
-      <Container className="grid grid-cols-12 items-center gap-x-6 gap-y-8">
-        <div className="col-span-12 md:col-span-6">
+    <section
+      ref={ref}
+      id="join-live"
+      className="relative min-h-svh scroll-mt-14 overflow-hidden"
+      aria-label="Join live"
+    >
+      <div data-world-focus data-world-drag className="absolute inset-0" aria-hidden />
+      <Container className="pointer-events-none relative flex min-h-svh flex-col items-center justify-between py-24 text-center">
+        <div className="flex flex-col items-center">
           <SectionLabel label="Join live" role="kem" />
-          <p className="max-w-text text-h2 font-medium text-fg">
-            Seal a message from your phone and watch it land on the globe.
+          <p className="max-w-text text-h1-sm font-medium text-fg md:text-display">
+            Seal a message from your phone. Watch it land here.
           </p>
-          <div className="mt-8">
-            <RoomQR className="hidden md:flex" />
-            <ButtonLink href="/join" variant="secondary" className="md:hidden">
-              Join live on this phone
-            </ButtonLink>
-            <RoomFeed className="mt-5" />
-          </div>
         </div>
-        <div className="relative col-span-12 md:col-span-6">
-          <div data-world-focus data-world-drag className="h-globe md:h-stage" aria-hidden />
-          <Legend align="right" className="absolute bottom-0 left-0 md:-bottom-4" />
+        <div className="pointer-events-auto flex flex-col items-center gap-4 border border-line bg-base p-5">
+          <RoomQR className="hidden md:flex" />
+          <ButtonLink href="/join" variant="secondary" className="md:hidden">
+            Join live on this phone
+          </ButtonLink>
+          <RoomFeed />
         </div>
       </Container>
+      <Legend className="absolute bottom-6 left-5 md:left-8" />
     </section>
   );
 }

@@ -30,6 +30,7 @@ export function DirectorCamera({
   zoom = true,
   shiftX = 0,
   shiftY = 0,
+  pull,
 }: {
   state: DirectorState;
   onSettled: () => void;
@@ -49,6 +50,8 @@ export function DirectorCamera({
   shiftX?: number;
   /** Moves the framed subject up by this fraction of the view's height (text below it). */
   shiftY?: number;
+  /** A dolly-out factor (0 = none): the camera backs away from its subject by up to 3.5× its distance. */
+  pull?: () => number;
 }) {
   // The viewer's orbit offsets (yaw, pitch in radians; zoom as a distance factor) and their targets.
   // vy/vp: fling velocity (rad/s) after a release; at: the last drag or zoom (3 s idle springs back).
@@ -246,6 +249,12 @@ export function DirectorCamera({
       o.applyAxisAngle(axis.current, u.pitch).multiplyScalar(u.zoom);
       c.position.copy(look.current).add(o);
     }
+    const out = pull?.() ?? 0;
+    if (out > 0)
+      c.position
+        .sub(look.current)
+        .multiplyScalar(1 + 3.5 * out)
+        .add(look.current);
     const subject = track?.();
     if (subject && settled.current) {
       look.current.lerp(subject, 0.12);

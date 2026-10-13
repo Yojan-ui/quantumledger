@@ -22,7 +22,7 @@ export function IndexSection({ index }: { index: string }) {
             text={`${pct(share(all, "hybridPq"))} negotiate hybrid ML-KEM. ${pct(share(all, "rsa2048"))} still present RSA-2048 certificates.`}
           />
         </div>
-        <ReadinessBars className="mt-12" />
+        <ReadinessBars className="mt-12" flight />
         <div className="mt-8">
           <TextLink href="/index">The full index and how it was measured →</TextLink>
         </div>

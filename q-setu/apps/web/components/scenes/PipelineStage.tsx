@@ -28,6 +28,9 @@ import { Mosca } from "./pipeline/Mosca";
 import { Radar } from "./pipeline/Radar";
 import { Swarm } from "./pipeline/Swarm";
 import { tap, Vault, type Taps } from "./pipeline/Vault";
+import { hero as heroState } from "@/lib/client/hero";
+
+const heroExit = () => heroState.exit;
 
 const SHOTS: Shot[] = [
   { id: "standby", camera: { position: [0, 1.6, 11], target: [0, 0.6, 0], fov: 42 }, caption: "" },
@@ -195,6 +198,7 @@ export default function PipelineStage({
         zoom={!hero}
         shiftX={hero && !mobile ? 0.2 : 0}
         shiftY={hero && mobile ? 0.24 : 0}
+        pull={hero ? heroExit : undefined}
       />
       <fog attach="fog" args={[c.bg, 11, 34]} />
       <ambientLight intensity={0.35} />

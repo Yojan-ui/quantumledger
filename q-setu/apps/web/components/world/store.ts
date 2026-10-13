@@ -59,6 +59,11 @@ export const world = {
   mode: "story" as WorldMode,
   /** Story progress: 0..8, one unit per chapter. */
   chapter: 0,
+  /**
+   * The homepage camera flight: a position along the shot list in director.ts (KEYS), scrubbed by
+   * each section's ScrollTrigger. -1 = no flight (other pages, or no section has claimed it).
+   */
+  journey: -1,
   /** Where the globe should sit, as a fraction of the viewport (from the DOM element marked data-world-focus). */
   focus: { cx: 0.5, cy: 0.5, size: 1 },
   /** Visitor's ML-KEM-768 public key, generated in the browser by the preloader. */
