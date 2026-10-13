@@ -19,6 +19,7 @@ import { easeToken } from "@/lib/ease";
 import { makeLook, type Look } from "@/components/scenes/pipeline/look";
 import { CountdownRing } from "@/components/scenes/pipeline/Mosca";
 import { tap, Vault, type Taps } from "@/components/scenes/pipeline/Vault";
+import { Thicken } from "@/components/scenes/Thicken";
 
 const LEN = 9;
 const ROW = 0.8;
@@ -220,7 +221,7 @@ export default function QDayFilm({
   const id = state.shot.id;
   const show = state.settled;
   return (
-    <>
+    <Thicken>
       <DirectorCamera state={state} onSettled={onSettled} drift={0.02} />
       <fog attach="fog" args={[c.bg, 7, 18]} />
       <mesh position={[0, 0, -9]} material={backdrop} renderOrder={-2}>
@@ -378,6 +379,6 @@ export default function QDayFilm({
         show={show && id === "aftermath"}
         side="down"
       />
-    </>
+    </Thicken>
   );
 }

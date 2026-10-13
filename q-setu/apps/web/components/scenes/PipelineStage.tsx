@@ -29,6 +29,10 @@ import { Radar } from "./pipeline/Radar";
 import { Swarm } from "./pipeline/Swarm";
 import { tap, Vault, type Taps } from "./pipeline/Vault";
 import { hero as heroState } from "@/lib/client/hero";
+import { Thicken } from "@/components/scenes/Thicken";
+import { Crystal } from "./pipeline/Crystal";
+import { Dust } from "./Dust";
+import { Studio } from "./Studio";
 
 const heroExit = () => heroState.exit;
 
@@ -188,7 +192,7 @@ export default function PipelineStage({
   );
 
   return (
-    <>
+    <Thicken>
       <DirectorCamera
         state={director.state}
         onSettled={director.onSettled}
@@ -208,6 +212,10 @@ export default function PipelineStage({
 
       <Background look={look} progress={doneCount / 5} />
       <Swarm look={look} count={count} intro={hero} />
+      <Crystal look={look} />
+      <Dust color={c.text3} />
+      {/* Reflections for the glass blocks and the metal drum, and a soft shadow on the floor. */}
+      <Studio rim={c.kem} lights={false} floorY={-2.95} shadowScale={14} />
       <Link look={look} onCopy={() => tap(taps.current, performance.now())} />
       <Vault look={look} taps={taps} labelled={!mobile && !hero} labelIn={[0, 2, 4]} />
       <Mosca look={look} x={s.mosca.x} y={s.mosca.y} count={mobile ? 500 : 900} compact={mobile} />
@@ -339,6 +347,6 @@ export default function PipelineStage({
           show={settled && stage === 4}
         />
       )}
-    </>
+    </Thicken>
   );
 }

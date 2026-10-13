@@ -11,6 +11,7 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
+import { Body } from "@/components/scenes/Body";
 import { LINK_MID, VAULT } from "./geometry";
 import type { Look } from "./look";
 
@@ -53,6 +54,7 @@ export function Vault({
     () => new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16, 3, true)),
     [],
   );
+  const cylSolid = useMemo(() => new THREE.CylinderGeometry(0.54, 0.54, 1.18, 40, 1, false), []);
   const cylMat = useMemo(
     () => new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
     [],
@@ -123,6 +125,15 @@ export function Vault({
 
   return (
     <group>
+      {/* The storage as a dark metal drum inside its wireframe (it takes the role colour as a tint). */}
+      <Body
+        geometry={cylSolid}
+        like={cylMat}
+        kind="metal"
+        tint={0.25}
+        opacity={0.95}
+        position={at}
+      />
       <lineSegments geometry={cyl} material={cylMat} position={at} />
       <primitive object={beam} />
       {Array.from({ length: POOL }, (_, i) => (

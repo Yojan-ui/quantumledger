@@ -16,7 +16,9 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { palette } from "@/components/world/palette";
+import { Dust } from "./Dust";
 import { Studio } from "./Studio";
+import { Thicken } from "@/components/scenes/Thicken";
 
 export const ADAPTER_ORDER = ["shield", "web", "sdk", "edge", "vault"] as const;
 const RING = 5.2;
@@ -299,7 +301,7 @@ export default function AdapterOrbit({ focus, active }: { focus: { v: number }; 
     );
   });
   return (
-    <>
+    <Thicken>
       <PerspectiveCamera
         ref={cam}
         makeDefault
@@ -309,9 +311,10 @@ export default function AdapterOrbit({ focus, active }: { focus: { v: number }; 
         position={[0, 1.3, 7]}
       />
       <Studio rim={m.c.kem} fog={m.c.bg} floorY={-1.15} />
+      <Dust color={m.c.text3} spread={18} />
       {ADAPTER_ORDER.map((id, i) => (
         <Slot key={id} i={i} id={id} m={m} focus={focus} />
       ))}
-    </>
+    </Thicken>
   );
 }

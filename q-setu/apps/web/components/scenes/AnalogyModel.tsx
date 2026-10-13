@@ -15,6 +15,7 @@ import * as THREE from "three";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { set3 } from "@/components/scenes/geometry";
+import { Thicken } from "@/components/scenes/Thicken";
 
 const N = 520;
 
@@ -201,7 +202,7 @@ export default function AnalogyModel({
   });
 
   return (
-    <>
+    <Thicken>
       <PerspectiveCamera makeDefault position={[0, 0.1, 3]} fov={36} />
       <group ref={group}>
         {step === 0 && <Dots positions={lock} color={c.text} />}
@@ -247,6 +248,6 @@ export default function AnalogyModel({
           ))}
         </>
       )}
-    </>
+    </Thicken>
   );
 }

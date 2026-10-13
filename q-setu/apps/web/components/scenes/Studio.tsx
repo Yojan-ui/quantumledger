@@ -13,20 +13,29 @@ export function Studio({
   fog,
   floorY = -1.2,
   shadow = true,
+  lights = true,
+  shadowScale = 16,
 }: {
   /** The rim light's role colour. */
   rim: THREE.Color;
-  /** The page colour, for fog that fades into it. */
-  fog: THREE.Color;
+  /** The page colour, for fog that fades into it (omit where the scene sets its own fog). */
+  fog?: THREE.Color;
   floorY?: number;
   shadow?: boolean;
+  /** Off where the scene already has its key and rim lights: then only reflections and shadow. */
+  lights?: boolean;
+  shadowScale?: number;
 }) {
   return (
     <>
-      <fogExp2 attach="fog" args={[fog, 0.055]} />
-      <ambientLight intensity={0.15} />
-      <directionalLight position={[4, 6, 5]} intensity={1.6} />
-      <pointLight position={[-4, 2.5, -4]} intensity={30} distance={14} color={rim} />
+      {fog && <fogExp2 attach="fog" args={[fog, 0.055]} />}
+      {lights && (
+        <>
+          <ambientLight intensity={0.15} />
+          <directionalLight position={[4, 6, 5]} intensity={1.6} />
+          <pointLight position={[-4, 2.5, -4]} intensity={30} distance={14} color={rim} />
+        </>
+      )}
       <Environment resolution={64} frames={1} background={false}>
         <Lightformer form="rect" intensity={2.2} position={[0, 4, 3]} scale={[8, 2, 1]} />
         <Lightformer
@@ -42,7 +51,7 @@ export function Studio({
         <ContactShadows
           position={[0, floorY, 0]}
           opacity={0.55}
-          scale={16}
+          scale={shadowScale}
           blur={2.4}
           far={4}
           resolution={256}

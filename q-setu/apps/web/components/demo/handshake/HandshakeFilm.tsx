@@ -19,6 +19,7 @@ import type { DirectorState } from "@/components/director/types";
 import { latticeCube, span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { Thicken } from "@/components/scenes/Thicken";
 
 export interface Film {
   shareHex?: string;
@@ -332,7 +333,7 @@ export default function HandshakeFilm({
   const show = state.settled;
   const id = state.shot.id;
   return (
-    <>
+    <Thicken>
       <DirectorCamera state={state} onSettled={onSettled} track={track} />
       <fog attach="fog" args={[c.bg, 6, 16]} />
       <ambientLight intensity={0.5} />
@@ -485,6 +486,6 @@ export default function HandshakeFilm({
         value="forged ML-KEM key, original signature"
         show={show && id === "attack" && !!film.attackRejected}
       />
-    </>
+    </Thicken>
   );
 }

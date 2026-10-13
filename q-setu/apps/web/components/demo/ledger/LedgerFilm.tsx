@@ -17,6 +17,7 @@ import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { makeLook, type Look } from "@/components/scenes/pipeline/look";
 import { Radar } from "@/components/scenes/pipeline/Radar";
+import { Thicken } from "@/components/scenes/Thicken";
 
 export const N = 12;
 /** Index on the arc of the entry the insider edits. */
@@ -260,7 +261,7 @@ export default function LedgerFilm({
   const show = state.settled;
   const broken = verify?.broken ?? -1;
   return (
-    <>
+    <Thicken>
       <DirectorCamera state={state} onSettled={onSettled} drift={0.02} />
       <fog attach="fog" args={[c.bg, 8, 20]} />
       {/* The radar disc: the arc's blocks sit on a circle round (0, 0, -7), from 210° to 330°. */}
@@ -357,6 +358,6 @@ export default function LedgerFilm({
         value="nothing after it can be trusted"
         show={show && id === "broken" && broken === TARGET_INDEX}
       />
-    </>
+    </Thicken>
   );
 }

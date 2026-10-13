@@ -20,7 +20,7 @@ const vertex = /* glsl */ `
   attribute vec4 aSeed; attribute vec3 aLattice; attribute vec3 aLogo;
   uniform float uTime; uniform float uMorph; uniform float uLift; uniform float uSize; uniform float uPR;
   uniform float uAssemble; uniform float uIntro;
-  varying float vK; varying float vA; varying float vI;
+  varying float vK; varying float vA; varying float vI; varying float vFade;
   void main() {
     float r = ${R.toFixed(2)} * pow(aSeed.x, 0.33) * 0.93;
     float th = aSeed.y * 6.2831 + uTime * (0.35 + aSeed.z * 0.65);
@@ -44,17 +44,19 @@ const vertex = /* glsl */ `
     vI = ki;
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
+    // Depth: particles further from the camera fade, so the swarm reads as a volume.
+    vFade = clamp(1.25 - (-mv.z - 4.0) / 10.0, 0.35, 1.0);
     gl_PointSize = uSize * uPR / -mv.z * (1.0 + 0.3 * k + 0.5 * ki);
   }
 `;
 const fragment = /* glsl */ `
   uniform vec3 uA; uniform vec3 uB; uniform vec3 uMark; uniform float uOpacity;
-  varying float vK; varying float vA; varying float vI;
+  varying float vK; varying float vA; varying float vI; varying float vFade;
   void main() {
     float d = length(gl_PointCoord - 0.5);
     if (d > 0.5) discard;
     vec3 c = mix(mix(uA, uB, vK), uMark, vI);
-    gl_FragColor = vec4(c, (1.0 - smoothstep(0.15, 0.5, d)) * vA * uOpacity * 0.8);
+    gl_FragColor = vec4(c, (1.0 - smoothstep(0.15, 0.5, d)) * vA * vFade * uOpacity * 0.8);
   }
 `;
 
