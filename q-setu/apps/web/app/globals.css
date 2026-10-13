@@ -196,6 +196,21 @@
     width: 100vw;
     margin-left: calc(50% - 50vw);
   }
+  /* The global Q-Day switch: everything QuantumLedger protects stays sealed, with a --kem glint. */
+  html[data-qday] [data-sealed] {
+    outline: 1px solid var(--kem);
+    outline-offset: 3px;
+    animation: kem-glint 1.2s var(--ease) 4;
+  }
+  @keyframes kem-glint {
+    0%,
+    100% {
+      outline-color: transparent;
+    }
+    35% {
+      outline-color: var(--kem);
+    }
+  }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);

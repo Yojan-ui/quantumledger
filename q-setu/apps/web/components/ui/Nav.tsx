@@ -8,6 +8,7 @@ import { openCommandMenu } from "./CommandMenu";
 import { setCopyMode, useCopyMode } from "@/lib/client/copy-mode";
 import { Container } from "./layout";
 import { Logo } from "./Logo";
+import { endQday, throwQday, useQday } from "@/lib/client/qday-switch";
 
 export const NAV_LINKS = [
   { href: "/platform", label: "Platform" },
@@ -21,6 +22,22 @@ export const NAV_LINKS = [
  * 56px sticky nav, the site's only translucent surface. On the home page its primary button hides
  * while the hero (which has its own primary) is on screen: never two primaries in one viewport.
  */
+/** The global Q-Day switch: 6 s of simulated Q-Day across the whole site (lib/client/qday-switch). */
+function QDayToggle({ className = "" }: { className?: string }) {
+  const on = useQday();
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={() => (on ? endQday() : throwQday())}
+      title="Simulate Q-Day for 6 seconds"
+      className={`h-8 items-center rounded-sm border px-2 font-mono text-label uppercase transition-colors duration-150 ${on ? "border-warn text-warn" : "border-line text-fg-3 hover:text-fg"} ${className}`}
+    >
+      Q-Day
+    </button>
+  );
+}
+
 /** Simple / Technical: every section has both versions of its copy. Remembered in localStorage. */
 function CopyToggle({ className = "" }: { className?: string }) {
   const mode = useCopyMode();
@@ -112,6 +129,7 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
+            <QDayToggle className="hidden md:flex" />
             <CopyToggle />
             <button
               type="button"

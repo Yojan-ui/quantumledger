@@ -8,7 +8,7 @@ const px = (n: number) => `${n}px`;
 /** Type sizes scale with --type-scale (1 normally; 1.15 in presenter mode), layout doesn't. */
 const tpx = (n: number) => `calc(${n}px * var(--type-scale, 1))`;
 const space = Object.fromEntries(
-  [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 24, 32, 40].map((k) => [k, px(k * 4)]),
+  [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40].map((k) => [k, px(k * 4)]),
 );
 
 export default {

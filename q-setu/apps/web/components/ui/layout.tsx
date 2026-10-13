@@ -66,7 +66,13 @@ export function SectionLabel({
 }) {
   return (
     <Label className={`flex items-center gap-3 ${className}`}>
-      {role && <span aria-hidden className={`block h-dot w-dot rounded-full ${ROLES[role].bg}`} />}
+      {role && (
+        <span
+          aria-hidden
+          data-sealed={role === "kem" || undefined}
+          className={`block h-dot w-dot rounded-full ${ROLES[role].bg}`}
+        />
+      )}
       <span>
         {index ? `${index} — ` : ""}
         {label}

@@ -101,6 +101,7 @@ export function Adapters() {
               {ADAPTERS.map((a, i) => (
                 <article
                   key={a.id}
+                  data-sealed
                   aria-current={i === hot || undefined}
                   className={`w-console shrink-0 border bg-base p-6 transition-colors duration-300 ${i === hot ? "border-kem" : "border-line"}`}
                 >

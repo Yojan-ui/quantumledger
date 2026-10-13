@@ -230,7 +230,13 @@ export function Arcs() {
     const tint = lines.m.uniforms.uTint!.value as number[];
     const fl = lines.m.uniforms.uFlash!.value as number[];
     const snap = lines.m.uniforms.uSnap!.value as number[];
+    // The global Q-Day switch: every classical (untinted) arc cracks for its 6 s; sealed ones hold.
+    const qday = world.qdayAt ? performance.now() - world.qdayAt : -1;
     for (let i = 0; i < N; i++) {
+      if (qday >= 0 && qday < 6000 && tint[i]! < 0.5) {
+        flash.current[i] = Math.max(flash.current[i]!, 0.9);
+        snap[i] = 0.5;
+      }
       // Traffic lights an arc up (an arc "spawns" with its packet), then it settles back.
       activity.current[i] = Math.max(0, activity.current[i]! - dt * 0.35);
       flash.current[i] = Math.max(0, flash.current[i]! - dt * 1.1);

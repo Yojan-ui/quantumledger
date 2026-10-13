@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analogy } from "@/components/home/Analogy";
+import { DeviceSeal } from "@/components/home/DeviceSeal";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero, JoinLive } from "@/components/home/Hero";
 import { Impact } from "@/components/home/Impact";
@@ -38,6 +39,7 @@ export default function Home() {
         <Adapters />
         <Solutions />
         <Impact index="07" />
+        <DeviceSeal />
         <WhatsNew index="08" />
         <WhyQSetu />
         <EarlyAccess />
