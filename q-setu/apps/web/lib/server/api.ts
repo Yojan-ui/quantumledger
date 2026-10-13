@@ -6,7 +6,18 @@ import { z } from "zod";
  *   { "error": { "code": "invalid_input" | "not_found" | ..., "message": "...", "issues"?: [...] } }
  */
 export type ErrorCode =
-  "invalid_input" | "not_found" | "conflict" | "rate_limited" | "unprocessable" | "internal";
+  | "invalid_input"
+  | "not_found"
+  | "conflict"
+  | "rate_limited"
+  | "unprocessable"
+  | "internal"
+  | "forbidden"
+  | "blocked_target"
+  | "unresolvable"
+  | "unreachable"
+  | "timeout"
+  | "too_large";
 
 export function fail(code: ErrorCode, message: string, status: number, extra: object = {}) {
   return Response.json({ error: { code, message, ...extra } }, { status });

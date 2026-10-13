@@ -107,7 +107,7 @@ describe("URL scan parsing", () => {
         lookup: async () => [{ address: "93.184.215.14" }, { address: "10.1.2.3" }],
         connect,
       }),
-    ).rejects.toThrow(/private/);
+    ).rejects.toThrow(/public internet hosts/);
     const ok = await probeTls("safe.example", {
       lookup: async () => [{ address: "93.184.215.14" }],
       connect,
