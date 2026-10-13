@@ -29,7 +29,9 @@ const SIZES = {
 };
 const slug = (p) => (p === "/" ? "home" : p.slice(1).replace(/\//g, "_"));
 
-const browser = await chromium.launch({ channel: process.env.PW_CHANNEL === "" ? undefined : "chrome" });
+const browser = await chromium.launch({
+  channel: process.env.PW_CHANNEL === "" ? undefined : "chrome",
+});
 for (const [w, opts] of Object.entries(SIZES)) {
   const ctx = await browser.newContext(opts);
   for (const path of PAGES) {
@@ -53,7 +55,10 @@ for (const [w, opts] of Object.entries(SIZES)) {
         }, i);
         await page.waitForTimeout(1800);
         const n = String(i).padStart(2, "0");
-        const tag = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 32);
+        const tag = String(name)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .slice(0, 32);
         await page.screenshot({ path: `${out}home-${w}-s${n}-${tag}.png` });
       }
     }

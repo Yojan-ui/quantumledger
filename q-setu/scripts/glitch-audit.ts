@@ -11,7 +11,7 @@
  *   - a 10-second video of the scroll and clicks (docs/smooth/videos-<label>/, not committed)
  * and writes docs/smooth/audit-<label>.md (ranked) and audit-<label>.json.
  */
-/* eslint-disable no-console */
+
 import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { chromium, devices, type BrowserContext, type Page } from "@playwright/test";
 

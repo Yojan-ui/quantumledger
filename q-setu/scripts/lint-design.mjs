@@ -51,7 +51,8 @@ const RULES = [
     allowIn: {
       file: /^app\/globals\.css$/,
       // spotlight, the two hairlines, the globe's glow, and the hero's legibility scrim.
-    selector: /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim)\s*\{/,
+      selector:
+        /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim)\s*\{/,
     },
   },
 ];

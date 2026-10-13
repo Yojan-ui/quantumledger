@@ -6,6 +6,7 @@ Same method as review 1, after its fixes: `node scripts/wow-shots.mjs after-2` a
 ## Is each Part 0 issue fixed?
 
 Yes, all eight, as in review 1, re-checked in the after-2 shots at both widths. On phones (390):
+
 - the hero's swarm fills the top half above the headline;
 - the Analogy padlock, the How it works arc and the Index columns read clearly;
 - the diagnostics stage keeps its labels inside it.
@@ -13,6 +14,7 @@ Yes, all eight, as in review 1, re-checked in the after-2 shots at both widths. 
 ## Does each homepage section have a visibly different shot?
 
 Yes. The table in review 1 still holds:
+
 - hero sphere → node close-up pulling back → morphing analogy object → low angle over India → close on a
   city → side-on along an arc → orbit of five objects → wide pull-back.
 
@@ -27,6 +29,7 @@ green while "Fix it." and "Prove it." land on their stages (`attract-1440.webm`)
 ## Is any label or panel overlapping?
 
 No:
+
 - On phones the demo pill is now one row (step dots, arrows, Play, Replay), so nothing is clipped. With
   a 70svh stage it sits just below the first screen on a 390 × 844 phone, at the stage's bottom edge.
 - The vault counter and every anchored label stay inside their stage.
@@ -35,6 +38,7 @@ No:
 ## Is anything below 50 fps?
 
 No section is.
+
 - Every homepage section scrolls at 60 fps with a p95 frame of 16.7–16.8 ms.
 - Two long frames appeared in the recorded measurement: 66.7 ms in the opening (the 3D boot, 0.2% of its
   frames) and a single 283 ms frame in Solutions (0.4%; that section averaged 56 fps).

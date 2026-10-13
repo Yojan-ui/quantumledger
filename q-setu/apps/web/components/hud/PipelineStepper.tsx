@@ -176,18 +176,19 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
         >
           Replay · R
         </button>
-        {/* Only once there's an anchored block to tamper with. */}
-        {s.proof && (
-          <button
-            type="button"
-            onClick={() => void actions.tamper()}
-            disabled={busy}
-            data-ripple="danger"
-            className="h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-danger disabled:opacity-40"
-          >
-            Try tamper
-          </button>
-        )}
+        {/* Only once there's an anchored block to tamper with. Its space is kept (invisible and
+            out of the tab order until then), so the row never reflows when it appears. */}
+        <button
+          type="button"
+          onClick={() => void actions.tamper()}
+          disabled={busy || !s.proof}
+          aria-hidden={!s.proof || undefined}
+          tabIndex={s.proof ? 0 : -1}
+          data-ripple="danger"
+          className={`h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-danger disabled:opacity-40 ${s.proof ? "" : "invisible"}`}
+        >
+          Try tamper
+        </button>
         <button
           type="button"
           aria-expanded={table}

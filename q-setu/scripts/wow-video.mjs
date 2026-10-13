@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global document, window, requestAnimationFrame -- page.evaluate code */
+/* global document, window -- page.evaluate code */
 /**
  * `node scripts/wow-video.mjs <label>` → docs/wow/<label>/:
  *  - attract-1440.webm: the homepage opening from load until the input takes over (~16 s);
@@ -61,8 +61,23 @@ async function record(name, run) {
   renameSync(await v.path(), raw);
   rmSync(dir, { recursive: true, force: true });
   execFileSync(ffmpeg, [
-    "-y", "-loglevel", "error", "-i", raw, "-vf", "scale=1200:-2", "-c:v", "libvpx-vp9",
-    "-b:v", "0", "-crf", "42", "-row-mt", "1", "-an", `${out}${name}.webm`,
+    "-y",
+    "-loglevel",
+    "error",
+    "-i",
+    raw,
+    "-vf",
+    "scale=1200:-2",
+    "-c:v",
+    "libvpx-vp9",
+    "-b:v",
+    "0",
+    "-crf",
+    "42",
+    "-row-mt",
+    "1",
+    "-an",
+    `${out}${name}.webm`,
   ]);
   rmSync(raw);
 }
