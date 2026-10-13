@@ -22,3 +22,6 @@ dist/
 
 # Glitch-audit videos (large; regenerate with pnpm audit:glitch)
 docs/smooth/videos-*/
+
+# Real-pass audit videos (regenerate with AUDIT_OUT=docs/real pnpm audit:glitch)
+docs/real/videos-*/
