@@ -102,7 +102,7 @@ export function ReadinessBars({
         <p className="text-small text-fg-2">
           Of {all.reachable} public Indian sites we connected to,
         </p>
-        <p className="mt-2 font-mono text-h1-sm text-fg md:text-h1" data-index-headline>
+        <p className="mt-2 font-mono text-h3 text-fg md:text-h2" data-index-headline>
           {pct(share(all, metric))}
         </p>
         <p className="mt-2 text-body text-fg">

@@ -26,7 +26,7 @@ function rng(seed: number) {
 }
 
 /** Points on a padlock: a box body and a half-torus shackle. */
-function padlock(n = N): Float32Array {
+export function padlock(n = N): Float32Array {
   const r = rng(7);
   const out = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
@@ -59,7 +59,7 @@ function padlock(n = N): Float32Array {
 }
 
 /** The same padlock snapped to a skewed 3D lattice (the picture behind lattice cryptography). */
-function latticeLock(src: Float32Array): Float32Array {
+export function latticeLock(src: Float32Array): Float32Array {
   const out = new Float32Array(src.length);
   const a = new THREE.Vector3(0.11, 0, 0);
   const b = new THREE.Vector3(0.035, 0.105, 0);
@@ -76,7 +76,7 @@ function latticeLock(src: Float32Array): Float32Array {
 }
 
 /** A key: a ring bow, a shaft and three teeth. */
-function keyShape(n = 420): Float32Array {
+export function keyShape(n = 420): Float32Array {
   const r = rng(11);
   const out = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {

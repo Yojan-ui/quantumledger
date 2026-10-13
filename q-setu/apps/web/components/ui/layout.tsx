@@ -38,7 +38,8 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={`relative scroll-mt-14 py-24 md:py-40 ${className}`}>
+    // Text-only sections size to their content, 160 px apart (80 above and below each).
+    <section id={id} className={`relative scroll-mt-14 py-16 md:py-20 ${className}`}>
       <Container>
         {label && <SectionLabel index={index} label={label} role={role} />}
         {children}

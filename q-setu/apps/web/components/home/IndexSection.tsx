@@ -12,15 +12,30 @@ export function IndexSection({ index }: { index: string }) {
     <section id="index" className="relative scroll-mt-14 py-24 md:py-40">
       <Container>
         <SectionLabel index={index} label="India Quantum Readiness Index" role="ok" />
-        <div data-copy="simple">
-          <MaskHeading
-            text={`${classical} of the Indian sites we checked still use a lock a quantum computer could open.`}
-          />
-        </div>
-        <div data-copy="technical">
-          <MaskHeading
-            text={`${pct(share(all, "hybridPq"))} negotiate hybrid ML-KEM. ${pct(share(all, "rsa2048"))} still present RSA-2048 certificates.`}
-          />
+        {/* The section's one number, set huge, with its sentence beside it. */}
+        <div className="grid grid-cols-12 items-end gap-x-6 gap-y-4">
+          <p
+            className="col-span-12 font-medium tabular text-mega-sm text-fg md:col-span-5 md:text-mega"
+            data-copy="simple"
+          >
+            {classical}
+          </p>
+          <p
+            className="col-span-12 font-medium tabular text-mega-sm text-fg md:col-span-5 md:text-mega"
+            data-copy="technical"
+          >
+            {pct(share(all, "rsa2048"))}
+          </p>
+          <div className="col-span-12 md:col-span-7 md:pb-4">
+            <div data-copy="simple">
+              <MaskHeading text="of the Indian sites we checked still use a lock a quantum computer could open." />
+            </div>
+            <div data-copy="technical">
+              <MaskHeading
+                text={`still present RSA-2048 certificates. ${pct(share(all, "hybridPq"))} negotiate hybrid ML-KEM.`}
+              />
+            </div>
+          </div>
         </div>
         <ReadinessBars className="mt-12" flight />
         <div className="mt-8">

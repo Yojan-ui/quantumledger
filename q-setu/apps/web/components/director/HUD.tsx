@@ -74,7 +74,7 @@ export function DirectorHUD({
     >
       {/* Caption: one line, revealed through a mask on every shot change. */}
       <p
-        className="max-w-text overflow-hidden pb-1 text-center text-h3 font-medium text-fg md:text-h2"
+        className="max-w-text overflow-hidden pb-1 text-center text-body font-medium text-fg md:text-h3"
         aria-live="polite"
       >
         <span key={`${index}-${director.state.take}`} className="block animate-mask-up">
