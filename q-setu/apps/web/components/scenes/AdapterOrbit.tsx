@@ -12,7 +12,7 @@
  * The object in focus lights its accents in --kem. Reduced motion: the camera cuts, nothing spins.
  */
 import { PerspectiveCamera, RoundedBox } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef, type ReactNode } from "react";
 import * as THREE from "three";
 import { palette } from "@/components/world/palette";
@@ -281,6 +281,7 @@ function Slot({
 export default function AdapterOrbit({ focus, active }: { focus: { v: number }; active: boolean }) {
   const m = useMaterials();
   const cam = useRef<THREE.PerspectiveCamera>(null);
+  const size = useThree((st) => st.size);
   const angle = useRef(0);
   useFrame((_, dt) => {
     const c = cam.current;
@@ -291,9 +292,11 @@ export default function AdapterOrbit({ focus, active }: { focus: { v: number }; 
     const a = angle.current;
     // From outside the ring, slightly above; the aim point sits left of the object, so it lands
     // right of centre (the headline is top-left, the cards along the bottom).
-    const out = RING + 6.4;
+    // Phones are narrow: further back, aimed dead centre (no room for the off-centre framing).
+    const narrow = size.width < 768;
+    const out = RING + (narrow ? 9.5 : 6.4);
     c.position.set(Math.sin(a) * out, 1.4, Math.cos(a) * out);
-    const side = 1.7;
+    const side = narrow ? 0 : 1.7;
     c.lookAt(
       Math.sin(a) * RING - Math.cos(a) * side,
       0.15,

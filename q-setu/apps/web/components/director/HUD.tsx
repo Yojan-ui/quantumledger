@@ -82,7 +82,7 @@ export function DirectorHUD({
         </span>
       </p>
       {/* The floating pill: the step bar and Prev / Next / Play / Replay, bottom centre. */}
-      <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-full border border-line bg-glass px-3 py-2">
+      <div className="pointer-events-auto flex max-w-full items-center justify-center gap-x-3 rounded-full border border-line bg-glass px-3 py-2 md:gap-x-4">
         <ol className="flex items-center gap-2 font-mono text-label uppercase" aria-label="Shots">
           {steps.map((s, i) => (
             <li
@@ -94,7 +94,7 @@ export function DirectorHUD({
                 aria-hidden
                 className={`block h-1 rounded-full transition duration-300 ${ROLES[s.role].bg} ${i === step ? "w-6 opacity-100" : i < step ? "w-3 opacity-40" : "w-3 opacity-10"}`}
               />
-              <span className={i === step ? "" : "sr-only"}>
+              <span className={i === step ? "sr-only md:not-sr-only" : "sr-only"}>
                 {String(i + 1).padStart(2, "0")} {s.label}
               </span>
             </li>
