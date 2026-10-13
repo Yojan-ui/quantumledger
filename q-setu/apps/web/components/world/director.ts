@@ -160,6 +160,8 @@ export function direct(): Params {
     Object.assign(p, world.shot?.pose ?? { dist: 1.6, lat: 21, lon: 80, spin: 0 }, {
       accent: "accent",
     });
+    p.tilt = world.shot?.pose.tilt ?? 0;
+    p.yaw = world.shot?.pose.yaw ?? 0;
     // A held shot drifts very slightly (±0.4° over 8 s), so the map never looks frozen.
     if (world.shot && world.breathe)
       p.lon += 0.4 * Math.sin((performance.now() / 8000) * 2 * Math.PI);

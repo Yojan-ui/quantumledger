@@ -6,6 +6,7 @@
  * orb grows. Q-Day: the classical packets shatter (saffron edges) and their real decrypted contents
  * float out as labels; the QuantumLedger packets only glint and stay whole.
  */
+import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -26,6 +27,8 @@ const ROW = 0.8;
 const MAX = 12;
 const SHARDS = 6;
 const ORB = new THREE.Vector3(0, 0, -2.4);
+/** The beat between the key falling and the packets breaking. */
+const FREEZE_MS = 300;
 
 const mine = (e: { source: string }) => e.source === "browser";
 
@@ -165,8 +168,12 @@ export default function QDayFilm({
     const broke = !!breakAt && now >= breakAt;
     if (!broke) frozenAt.current = null;
     else frozenAt.current ??= t;
-    const b = broke ? (state.reduce ? 1 : easeToken(span(now - breakAt, 0, 1100))) : 0;
-    const glint = breakAt ? pulse(breakAt, 700) + 0.6 * pulse(react.current.reject, 500) : 0;
+    // Q-Day: a 300 ms freeze (everything holds), then the classical packets shatter in slow
+    // motion (2.4 s); the QuantumLedger packets glint and keep going.
+    const b = broke ? (state.reduce ? 1 : easeToken(span(now - breakAt - FREEZE_MS, 0, 2400))) : 0;
+    const glint = breakAt
+      ? pulse(breakAt + FREEZE_MS, 900) + 0.6 * pulse(react.current.reject, 500)
+      : 0;
     const p = pulse(breakAt - 200, 600);
 
     if (orb.current) {
@@ -194,11 +201,11 @@ export default function QDayFilm({
       for (let k = 0; k < SHARDS; k++) {
         const a = i * 1.7 + k * 1.05;
         o.position.set(
-          x + Math.cos(a) * b * 0.6,
-          ROW + Math.sin(a * 1.3) * b * 0.45 + b * 0.15,
-          Math.sin(a) * b * 0.5,
+          x + Math.cos(a) * b * 1.1,
+          ROW + Math.sin(a * 1.3) * b * 0.8 + b * 0.35,
+          Math.sin(a) * b * 1.0,
         );
-        o.rotation.set(a * b * 3, a, b * 2);
+        o.rotation.set(a * b * 2, a, b * 1.4);
         o.scale.setScalar(on * (broke ? 1 - 0.4 * b : 0.0001));
         o.updateMatrix();
         sh.setMatrixAt(i * SHARDS + k, o.matrix);
@@ -206,7 +213,7 @@ export default function QDayFilm({
       // QuantumLedger packet: keeps moving, and refracts the shock wave as a brief KEM glint.
       o.position.set(packetX(i, t), -ROW, 0);
       o.rotation.set(0, 0, 0);
-      o.scale.setScalar(on * (1 + 0.12 * glint));
+      o.scale.setScalar(on * (1 + 0.25 * Math.min(1, glint)));
       o.updateMatrix();
       qm.setMatrixAt(i, o.matrix);
       const qe = qsetuEdges.current[i];
@@ -353,9 +360,22 @@ export default function QDayFilm({
           label="Decrypted"
           value={text.length > 24 ? `${text.slice(0, 23)}…` : text}
           role="warn"
-          show={show && id === "climax" && !!breakAt}
+          show={show && id === "climax" && !!breakAt && state.reduce}
         />
       ))}
+      {/* The real decrypted contents, floating up out of the shattered packets as large type. */}
+      {!state.reduce &&
+        leaks
+          .slice(0, 2)
+          .map((text, i) => (
+            <FloatingText
+              key={`big-${i}`}
+              text={text}
+              from={[i === 0 ? -1.5 : 0.3, ROW + 0.1 - i * 0.35, 0.4]}
+              start={breakAt ? breakAt + FREEZE_MS + 500 + i * 350 : 0}
+              show={id === "climax" && !!breakAt}
+            />
+          ))}
       <Anchor
         position={[2.4, -ROW - 0.35, 0]}
         label="QuantumLedger · attack failed"
@@ -380,5 +400,41 @@ export default function QDayFilm({
         side="down"
       />
     </Thicken>
+  );
+}
+
+/** Large type that rises slowly from a point in the scene and fades in (a DOM overlay: no font download). */
+function FloatingText({
+  text,
+  from,
+  start,
+  show,
+}: {
+  text: string;
+  from: [number, number, number];
+  start: number;
+  show: boolean;
+}) {
+  const g = useRef<THREE.Group>(null);
+  const el = useRef<HTMLDivElement>(null);
+  useFrame(() => {
+    if (!g.current || !el.current) return;
+    const k = show && start ? easeToken(span(performance.now() - start, 0, 2600)) : 0;
+    g.current.position.set(from[0], from[1] + 0.5 * k, from[2] + 0.3 * k);
+    el.current.style.opacity = String(Math.min(1, k * 1.6));
+  });
+  return (
+    <group ref={g}>
+      <Html center zIndexRange={[5, 0]} style={{ pointerEvents: "none" }}>
+        <div
+          ref={el}
+          className="whitespace-nowrap font-mono text-h3 text-warn opacity-0 md:text-h2"
+          aria-hidden
+        >
+          <span className="block text-label uppercase text-fg-3">decrypted</span>
+          {text.length > 28 ? `${text.slice(0, 27)}…` : text}
+        </div>
+      </Html>
+    </group>
   );
 }

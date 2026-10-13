@@ -70,40 +70,50 @@ export function DirectorHUD({
       data-shot={shot.id}
       data-settled={director.state.settled}
       data-playing={playing}
-      className="pointer-events-none absolute inset-x-0 bottom-0 p-4 md:p-6"
+      className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-4 p-4 md:p-6"
     >
       {/* Caption: one line, revealed through a mask on every shot change. */}
-      <p className="overflow-hidden pb-1 text-h3 font-medium text-fg" aria-live="polite">
+      <p
+        className="max-w-text overflow-hidden pb-1 text-center text-h3 font-medium text-fg md:text-h2"
+        aria-live="polite"
+      >
         <span key={`${index}-${director.state.take}`} className="block animate-mask-up">
           <Copy simple={shot.simple ?? shot.caption} technical={shot.caption} />
         </span>
       </p>
-      <div className="pointer-events-auto mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <ol className="flex flex-1 flex-wrap items-center gap-x-4 gap-y-2 font-mono text-label uppercase">
+      {/* The floating pill: the step bar and Prev / Next / Play / Replay, bottom centre. */}
+      <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-full border border-line bg-glass px-3 py-2">
+        <ol className="flex items-center gap-2 font-mono text-label uppercase" aria-label="Shots">
           {steps.map((s, i) => (
             <li
               key={s.label}
+              aria-current={i === step ? "step" : undefined}
               className={`flex items-center gap-2 transition-colors duration-300 ${i === step ? "text-fg" : i < step ? "text-fg-2" : "text-fg-3"}`}
             >
               <span
                 aria-hidden
-                className={`block h-1 w-6 rounded-full transition-opacity duration-300 ${ROLES[s.role].bg} ${i === step ? "opacity-100" : i < step ? "opacity-40" : "opacity-10"}`}
+                className={`block h-1 rounded-full transition duration-300 ${ROLES[s.role].bg} ${i === step ? "w-6 opacity-100" : i < step ? "w-3 opacity-40" : "w-3 opacity-10"}`}
               />
-              {String(i + 1).padStart(2, "0")} {s.label}
+              <span className={i === step ? "" : "sr-only"}>
+                {String(i + 1).padStart(2, "0")} {s.label}
+              </span>
             </li>
           ))}
         </ol>
-        <div className="flex items-center gap-2" role="group" aria-label="Shot controls">
-          <HudButton onClick={onPrev} disabled={busy}>
-            ← Prev
+        <span aria-hidden className="h-4 border-l border-line-strong" />
+        <div className="flex items-center gap-1" role="group" aria-label="Shot controls">
+          <HudButton onClick={onPrev} disabled={busy} label="Previous shot">
+            ←
           </HudButton>
-          <HudButton onClick={onNext} disabled={busy}>
-            Next →
-          </HudButton>
-          <HudButton onClick={onToggle} pressed={playing}>
+          <HudButton onClick={onToggle} pressed={playing} label={playing ? "Pause" : "Play"}>
             {playing ? "Pause" : "Play"}
           </HudButton>
-          <HudButton onClick={onReplay}>Replay</HudButton>
+          <HudButton onClick={onNext} disabled={busy} label="Next shot">
+            →
+          </HudButton>
+          <HudButton onClick={onReplay} label="Replay">
+            Replay
+          </HudButton>
         </div>
       </div>
     </div>
@@ -115,11 +125,13 @@ function HudButton({
   onClick,
   disabled,
   pressed,
+  label,
 }: {
   children: string;
   onClick: () => void;
   disabled?: boolean;
   pressed?: boolean;
+  label: string;
 }) {
   return (
     <button
@@ -127,7 +139,8 @@ function HudButton({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={pressed}
-      className={`h-8 rounded-sm border px-3 font-mono text-label uppercase transition-colors duration-150 disabled:opacity-40 ${pressed ? "border-line-strong bg-raised text-fg" : "border-line bg-base text-fg-2 hover:text-fg"}`}
+      aria-label={label}
+      className={`h-8 min-w-8 rounded-full px-3 font-mono text-label uppercase transition-colors duration-150 disabled:opacity-40 ${pressed ? "bg-raised text-fg" : "text-fg-2 hover:bg-raised hover:text-fg"}`}
     >
       {children}
     </button>

@@ -70,6 +70,8 @@ export default {
       width: { dot: px(6), console: px(360), socket: px(120) },
       height: {
         stage: px(560),
+        /** A demo's full-width stage: 70% of the screen (at least the stage height). */
+        "stage-full": "70svh",
         /** The diagnostics stage on phones: the top 60% of the screen. */
         "hud-stage": "60svh",
         /** The compact HUD in the homepage hero. */

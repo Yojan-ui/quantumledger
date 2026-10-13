@@ -12,6 +12,9 @@ export interface Pose {
   lon: number;
   dist: number;
   spin: number;
+  /** Camera pitch over the surface and heading, degrees (see director.ts). */
+  tilt?: number;
+  yaw?: number;
 }
 export type NodeState = "vulnerable" | "deploying" | "protected";
 

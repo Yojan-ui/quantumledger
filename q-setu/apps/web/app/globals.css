@@ -14,6 +14,8 @@
   }
   body {
     @apply font-sans text-body text-fg-2;
+    /* Full-bleed stages are 100vw wide, which includes the scrollbar: never scroll sideways. */
+    overflow-x: clip;
   }
   ::selection {
     background: var(--line-strong);
@@ -188,6 +190,11 @@
   [data-beat="2"] [data-line="3"] {
     opacity: 0;
     transform: translateY(0.25em);
+  }
+  /* Break out of the page container to the full viewport width (demo stages). */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
   }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;

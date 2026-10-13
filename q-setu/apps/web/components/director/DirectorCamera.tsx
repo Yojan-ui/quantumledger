@@ -31,6 +31,7 @@ export function DirectorCamera({
   shiftX = 0,
   shiftY = 0,
   pull,
+  autoYaw,
 }: {
   state: DirectorState;
   onSettled: () => void;
@@ -52,6 +53,8 @@ export function DirectorCamera({
   shiftY?: number;
   /** A dolly-out factor (0 = none): the camera backs away from its subject by up to 3.5× its distance. */
   pull?: () => number;
+  /** A directed orbit (radians of yaw, added to the viewer's), for hero moments. */
+  autoYaw?: () => number;
 }) {
   // The viewer's orbit offsets (yaw, pitch in radians; zoom as a distance factor) and their targets.
   // vy/vp: fling velocity (rad/s) after a release; at: the last drag or zoom (3 s idle springs back).
@@ -242,9 +245,10 @@ export function DirectorCamera({
     u.yaw += (u.ty - u.yaw) * k;
     u.pitch += (u.tp - u.pitch) * k;
     u.zoom += (u.tz - u.zoom) * k;
-    if (Math.abs(u.yaw) + Math.abs(u.pitch) + Math.abs(u.zoom - 1) > 1e-4) {
+    const ay = autoYaw?.() ?? 0;
+    if (Math.abs(u.yaw + ay) + Math.abs(u.pitch) + Math.abs(u.zoom - 1) > 1e-4) {
       const o = off.current.copy(c.position).sub(look.current);
-      o.applyAxisAngle(THREE.Object3D.DEFAULT_UP, u.yaw);
+      o.applyAxisAngle(THREE.Object3D.DEFAULT_UP, u.yaw + ay);
       axis.current.crossVectors(THREE.Object3D.DEFAULT_UP, o).normalize();
       o.applyAxisAngle(axis.current, u.pitch).multiplyScalar(u.zoom);
       c.position.copy(look.current).add(o);

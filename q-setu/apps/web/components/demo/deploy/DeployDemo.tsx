@@ -78,7 +78,8 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       id: "target",
       camera: cam,
       step: 1,
-      pose: { dist: 1.05, lat: site.lat + 2.5, lon: site.lon, spin: 0 },
+      // The dive: down low over the node, looking across at its building.
+      pose: { dist: 1.12, lat: site.lat + 1.5, lon: site.lon, spin: 0, tilt: 52, yaw: 18 },
       extrude: 1,
       zoom: true,
       caption: `${site.label}'s data still crosses the network under classical keys.`,
@@ -88,7 +89,7 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       id: "integrate",
       camera: cam,
       step: 2,
-      pose: { dist: 0.95, lat: site.lat + 3, lon: site.lon + 1.5, spin: 0 },
+      pose: { dist: 1.04, lat: site.lat + 0.8, lon: site.lon + 0.6, spin: 0, tilt: 66, yaw: 30 },
       extrude: 1,
       zoom: true,
       caption: "One adapter, and this system's traffic is sealed with ML-KEM.",
@@ -98,7 +99,8 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       id: "all",
       camera: cam,
       step: 3,
-      pose: { dist: 2.0, lat: 20, lon: 80, spin: 0 },
+      // Pull right back while the seal spreads across the sector.
+      pose: { dist: 2.7, lat: 20, lon: 80, spin: 0, tilt: 0, yaw: 0 },
       extrude: 0.5,
       zoom: false,
       caption: `Every ${sector} system now seals its traffic with ML-KEM.`,
@@ -225,7 +227,9 @@ export function DeployDemo() {
     };
     const from = { ...pose.current };
     const travel =
-      Math.hypot(to.lat - from.lat, to.lon - from.lon) / 20 + Math.abs(to.dist - from.dist);
+      Math.hypot(to.lat - from.lat, to.lon - from.lon) / 20 +
+      Math.abs(to.dist - from.dist) +
+      Math.abs((to.tilt ?? 0) - (from.tilt ?? 0)) / 90;
     const done = () => {
       pose.current = { ...to };
       world.shot!.pose = { ...to };
@@ -242,7 +246,11 @@ export function DeployDemo() {
       ctx = gsap.context(() => {
         gsap.to(p, {
           t: 1,
-          duration: Math.min(1.0, Math.max(0.7, 0.7 + travel * 0.3)),
+          // Slower into and out of the node (the dive and the pull-back are the hero moment).
+          duration: Math.min(
+            1.8,
+            Math.max(0.7, 0.7 + travel * 0.3 + Math.abs((to.tilt ?? 0) - (from.tilt ?? 0)) / 60),
+          ),
           ease: easeToken,
           onUpdate: () => {
             const t = p.t;
@@ -255,6 +263,8 @@ export function DeployDemo() {
                 (to.dist - from.dist) * t +
                 Math.min(0.6, travel * 0.35) * Math.sin(Math.PI * t),
               spin: to.spin,
+              tilt: (from.tilt ?? 0) + ((to.tilt ?? 0) - (from.tilt ?? 0)) * t,
+              yaw: (from.yaw ?? 0) + ((to.yaw ?? 0) - (from.yaw ?? 0)) * t,
             };
             world.shot!.pose = pose.current;
           },
@@ -303,7 +313,7 @@ export function DeployDemo() {
         </Button>
       }
       meter={<ComputeMeter reading={reading} profile={adapter === "edge" ? "edge" : "standard"} />}
-      console={<LiveConsole title="Live console · deployed nodes" filter={consoleFilter} />}
+      console={<LiveConsole drawer title="Live console · deployed nodes" filter={consoleFilter} />}
       onAutoplay={() => void reel.play()}
       tryIt={{
         hint: "Deploy one adapter, then all of them: watch each system's traffic switch to ML-KEM",
@@ -311,8 +321,8 @@ export function DeployDemo() {
         run: () => reel.play(),
       }}
     >
-      <div className="grid grid-cols-1 gap-12 xl:grid-cols-demo">
-        <aside className="space-y-8">
+      <div className="grid grid-cols-1 gap-12">
+        <aside className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <SectorSwitcher
             value={sector}
             onChange={(s) => (setSector(s), setResult(undefined))}
@@ -396,12 +406,12 @@ export function DeployDemo() {
           </div>
         </aside>
 
-        <section className="min-w-0 space-y-12">
-          <div className="relative">
+        <section className="order-first min-w-0 space-y-12">
+          <div className="full-bleed relative border-y border-line">
             <div
               data-world-focus
               data-world-drag
-              className="h-stage-sm rounded-lg border border-line md:h-stage"
+              className="h-stage-full min-h-stage"
               role="img"
               aria-label={`Globe zoomed to India showing ${sectorSites.length} ${sector} systems; ${protectedCount} protected by QuantumLedger.`}
             />

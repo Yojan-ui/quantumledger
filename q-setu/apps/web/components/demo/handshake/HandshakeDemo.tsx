@@ -93,7 +93,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: "merge",
-    camera: { position: [3.2, 1.2, 2.6], target: [0, 0.1, 0], fov: 40 },
+    camera: { position: [2.1, 0.7, 1.7], target: [0, 0.05, 0], fov: 36 },
     focus: "merge",
     step: 2,
     caption: "Classical and post-quantum secrets merge through HKDF into one key.",
@@ -120,7 +120,8 @@ const ATTACK = SHOTS.length - 1;
 /** The crypto step (index into STEPS) that must really have run before each shot is shown. */
 const NEED = [-1, 0, 0, 2, 2, 3];
 /** Shots whose subject moves hold a little longer than the minimum. */
-const HOLD: Record<string, number> = { packet: 1900, merge: 2000, server: 1800 };
+// The merge is the hero moment: 2.6 s of fusion plus the flash, held long enough to take in.
+const HOLD: Record<string, number> = { packet: 1900, merge: 3600, server: 1800 };
 
 const mine = (e: OpEvent) => e.source === "browser";
 /** The console lines behind each shot. */
@@ -451,6 +452,7 @@ export function HandshakeDemo() {
       meter={<ComputeMeter reading={reading} profile={profile} />}
       console={
         <LiveConsole
+          drawer
           title="Live console · this tab + server"
           filter={consoleFilter}
           highlight={HIGHLIGHT[director.state.shot.id]}
@@ -467,9 +469,9 @@ export function HandshakeDemo() {
       }}
     >
       <div className="space-y-12">
-        <div className="relative overflow-hidden rounded-lg border border-line">
+        <div className="full-bleed relative overflow-hidden border-y border-line">
           <LazyView
-            className="h-stage-sm md:h-stage"
+            className="h-stage-full min-h-stage"
             label="The QuantumLedger handshake as a short film: client and server exchange a signed hybrid key, then sealed messages"
           >
             {(onScreen) => (
