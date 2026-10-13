@@ -516,13 +516,19 @@ export const nextStage = (s = state) => s.status.findIndex((x) => x !== "done");
  */
 const HOLD_MS = [3200, 3600, 3400, 4400, 0];
 
-export async function autoplay(holdMs = 1500) {
+/**
+ * The homepage attract loop's holds: the same five real stages, compressed to about 9 s in all
+ * (each stage still waits for its real result; only the pause after it is shorter).
+ */
+export const ATTRACT_HOLD_MS = [1300, 1500, 1500, 1800, 0];
+
+export async function autoplay(holdMs = 1500, holds: readonly number[] = HOLD_MS) {
   set({ autoplay: true });
   while (state.autoplay) {
     const i = nextStage();
     if (i < 0) break;
     const prev = i > 0 ? state.doneAt[i - 1]! : 0;
-    const hold = Math.max(holdMs, i > 0 ? HOLD_MS[i - 1]! : 0);
+    const hold = Math.max(holdMs, i > 0 ? holds[i - 1]! : 0);
     const wait = prev ? Math.max(0, hold - (performance.now() - prev)) : 0;
     if (wait) await new Promise((r) => setTimeout(r, wait));
     if (!state.autoplay) break;

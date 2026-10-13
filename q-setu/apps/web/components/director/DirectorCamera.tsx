@@ -11,7 +11,7 @@
  * and within limits; a double-click (or the next shot) eases back to the director's framing.
  */
 import { PerspectiveCamera } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -28,6 +28,8 @@ export function DirectorCamera({
   range = [0.7, 1.0],
   orbit,
   zoom = true,
+  shiftX = 0,
+  shiftY = 0,
 }: {
   state: DirectorState;
   onSettled: () => void;
@@ -40,6 +42,13 @@ export function DirectorCamera({
   orbit?: () => HTMLElement | null;
   /** Let the wheel zoom (off where the page itself must scroll). */
   zoom?: boolean;
+  /**
+   * Moves the framed subject right by this fraction of the view's width (a lens shift, not a camera
+   * move), leaving the left side free for text laid over the 3D.
+   */
+  shiftX?: number;
+  /** Moves the framed subject up by this fraction of the view's height (text below it). */
+  shiftY?: number;
 }) {
   // The viewer's orbit offsets (yaw, pitch in radians; zoom as a distance factor) and their targets.
   // vy/vp: fling velocity (rad/s) after a release; at: the last drag or zoom (3 s idle springs back).
@@ -177,6 +186,21 @@ export function DirectorCamera({
     };
   }, [orbit, zoom, state.reduce]);
 
+  const size = useThree((st) => st.size);
+  useEffect(() => {
+    const c = cam.current;
+    if (!c) return;
+    if (shiftX || shiftY)
+      c.setViewOffset(
+        size.width,
+        size.height,
+        -shiftX * size.width,
+        shiftY * size.height,
+        size.width,
+        size.height,
+      );
+    else c.clearViewOffset();
+  }, [shiftX, shiftY, size.width, size.height]);
   const off = useRef(new THREE.Vector3());
   const swayV = useRef(new THREE.Vector3());
   const axis = useRef(new THREE.Vector3());

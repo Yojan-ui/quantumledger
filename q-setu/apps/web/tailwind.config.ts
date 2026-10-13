@@ -40,6 +40,11 @@ export default {
       mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
     },
     fontSize: {
+      /** The homepage hero headline: 56 px on phones to 120 px on wide screens, tight. */
+      hero: [
+        "calc(clamp(56px, 8.4vw, 120px) * var(--type-scale, 1))",
+        { lineHeight: "0.94", letterSpacing: "-0.045em" },
+      ],
       display: [tpx(72), { lineHeight: tpx(76), letterSpacing: "-0.035em" }],
       "display-sm": [tpx(44), { lineHeight: tpx(48), letterSpacing: "-0.035em" }],
       h1: [tpx(48), { lineHeight: tpx(52), letterSpacing: "-0.03em" }],
@@ -74,11 +79,19 @@ export default {
         nav: px(56),
         svh: "100svh",
         story: "calc(100svh - 56px)",
+        /** The homepage hero: the whole first screen under the nav. */
+        hero: "calc(100svh - 56px)",
         dot: px(6),
         console: px(560),
         socket: px(120),
       },
-      minHeight: { svh: "100svh", stage: px(560), panel: px(320), story: "calc(100svh - 56px)" },
+      minHeight: {
+        svh: "100svh",
+        stage: px(560),
+        panel: px(320),
+        story: "calc(100svh - 56px)",
+        hero: px(640),
+      },
       minWidth: { panel: px(640) },
       maxHeight: { "stage-sm": px(360) },
       gridTemplateColumns: {

@@ -1,11 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Fragment, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
 import { Button, ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
-import { DiagnosticsApp } from "@/components/hud/DiagnosticsApp";
+import { HeroInput, HeroStage, HeroStatus, useHeadlineBeat } from "./HeroStage";
 import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
@@ -18,12 +18,14 @@ const RoomQR = dynamic(() => import("@/components/room/RoomQR").then((m) => m.Ro
 });
 
 /**
- * The hero is the pitch: one headline, one subline, two buttons and the diagnostics HUD in compact
- * form. The headline is server-rendered and painted on the first frame; covers lift off it word by
- * word. JoinLive follows it: the phone QR and the globe the audience's packets land on.
+ * The hero is the 3D, edge to edge: the real diagnostics stage runs the opening (a real key pair, the
+ * particle mark bursting into the swarm, then the five stages on the cached example in ~9 s). The
+ * headline sits over it bottom-left; its three sentences land with the stages (see HeroStage). The
+ * full sentence is server-rendered for readers and crawlers; the visible lines are aria-hidden.
  */
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
+  const beat = useHeadlineBeat();
   useEffect(() => {
     const io = new IntersectionObserver(
       ([e]) => {
@@ -40,38 +42,44 @@ export function Hero() {
     return () => io.disconnect();
   }, []);
 
-  const words = HERO.title.split(" ");
+  const lines = HERO.title.split(/(?<=\.)\s+/);
   return (
-    <section ref={ref} id="top" className="relative flex flex-col" aria-label="QuantumLedger">
-      <LiveStrip />
-      <Container className="pb-16 pt-10 md:pt-16">
-        <div data-hero className="grid grid-cols-12 items-end gap-x-6 gap-y-6">
-          <h1 className="col-span-12 text-display-sm font-medium text-fg md:col-span-7 md:text-display">
+    <section
+      ref={ref}
+      id="top"
+      className="relative h-hero min-h-hero overflow-hidden"
+      aria-label="QuantumLedger"
+    >
+      <HeroStage />
+      <div className="hero-scrim pointer-events-none absolute inset-0" aria-hidden />
+      <div className="relative">
+        <LiveStrip />
+      </div>
+      <Container className="pointer-events-none relative h-full">
+        <div className="absolute right-5 top-6 md:right-8">
+          <HeroStatus />
+        </div>
+        <div data-hero className="absolute inset-x-5 bottom-24 md:inset-x-8 md:bottom-16">
+          <h1 className="max-w-container text-hero font-medium text-fg">
             <span className="sr-only">{HERO.title.replace(/‑/g, "-")}</span>
-            <span aria-hidden>
-              {words.map((w, i) => (
-                <Fragment key={i}>
-                  <span className="relative -mb-2 inline-block overflow-hidden pb-2 align-top">
-                    {w}
-                    {/* The word is painted from the first frame (fast LCP); a --bg cover lifts off it. */}
-                    <span
-                      className="absolute inset-0 animate-uncover bg-base"
-                      style={{ animationDelay: `${120 + i * 45}ms` }}
-                    />
-                  </span>
-                  {i < words.length - 1 && " "}
-                </Fragment>
-              ))}
+            <span aria-hidden data-beat={beat} className="block">
+              <span data-line="1" className="block">
+                {lines[0]}
+              </span>
+              <span data-line="2" className="inline-block">
+                {lines[1]}
+              </span>{" "}
+              <span data-line="3" className="inline-block">
+                {lines[2]}
+              </span>
             </span>
           </h1>
-          <div
-            className="col-span-12 animate-reveal md:col-span-5"
-            style={{ animationDelay: "520ms" }}
-          >
-            <Text>
-              <Copy simple={HERO.body} technical={HERO.technical} />
-            </Text>
-            <div className="mt-6 flex flex-wrap gap-3">
+          <Text className="mt-6 max-w-text">
+            <Copy simple={HERO.body} technical={HERO.technical} />
+          </Text>
+          <div className="pointer-events-auto mt-8 flex flex-col items-start gap-4">
+            <HeroInput />
+            <div className="flex flex-wrap gap-3">
               <Button variant="primary" onClick={startTour} data-tour-start>
                 Take the 3-minute tour
               </Button>
@@ -81,11 +89,11 @@ export function Hero() {
             </div>
           </div>
         </div>
-        {/* The diagnostics HUD, compact: enter any domain, or watch the labelled cached example. */}
-        <div className="mt-10 animate-reveal md:h-hud-compact" style={{ animationDelay: "640ms" }}>
-          <DiagnosticsApp compact />
-        </div>
       </Container>
+      {/* Without JavaScript every line shows (the beats are a script-driven reveal). */}
+      <noscript>
+        <style>{`[data-beat] [data-line]{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
     </section>
   );
 }

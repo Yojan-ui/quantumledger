@@ -163,6 +163,32 @@
     outline: 1px solid var(--danger);
     outline-offset: 2px;
   }
+  /*
+   * The hero's legibility scrim: the page colour rising from the bottom-left corner under the
+   * headline, so the 3D stays bright everywhere else. (Token colours only; no gradient utilities.)
+   */
+  .hero-scrim {
+    background:
+      linear-gradient(
+        to top,
+        var(--bg) 0%,
+        color-mix(in srgb, var(--bg) 70%, transparent) 28%,
+        transparent 62%
+      ),
+      linear-gradient(to right, color-mix(in srgb, var(--bg) 55%, transparent) 0%, transparent 55%);
+  }
+  /* Hero headline beats: each line lands with its stage (data-beat on the headline). */
+  [data-beat] [data-line] {
+    transition:
+      opacity 700ms var(--ease),
+      transform 700ms var(--ease);
+  }
+  [data-beat="1"] [data-line="2"],
+  [data-beat="1"] [data-line="3"],
+  [data-beat="2"] [data-line="3"] {
+    opacity: 0;
+    transform: translateY(0.25em);
+  }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);

@@ -89,9 +89,15 @@ function Hit({
 export default function PipelineStage({
   state: s,
   active,
+  hero = false,
 }: {
   state: PipelineState;
   active: boolean;
+  /**
+   * The homepage hero: the opening's particle mark (lib/client/hero) and no anchored labels; the
+   * headline and the status pill over the stage say what's happening instead.
+   */
+  hero?: boolean;
 }) {
   const c = useMemo(palette, []);
   const director = useDirector(SHOTS);
@@ -186,6 +192,9 @@ export default function PipelineStage({
         drift={0.02}
         range={[1.2, 1.6]}
         orbit={orbitEl}
+        zoom={!hero}
+        shiftX={hero && !mobile ? 0.2 : 0}
+        shiftY={hero && mobile ? 0.24 : 0}
       />
       <fog attach="fog" args={[c.bg, 11, 34]} />
       <ambientLight intensity={0.35} />
@@ -194,9 +203,9 @@ export default function PipelineStage({
       <pointLight position={[0, 2, -5]} intensity={8} distance={14} color={role} />
 
       <Background look={look} progress={doneCount / 5} />
-      <Swarm look={look} count={count} />
+      <Swarm look={look} count={count} intro={hero} />
       <Link look={look} onCopy={() => tap(taps.current, performance.now())} />
-      <Vault look={look} taps={taps} labelled={!mobile} labelIn={[0, 2, 4]} />
+      <Vault look={look} taps={taps} labelled={!mobile && !hero} labelIn={[0, 2, 4]} />
       <Mosca look={look} x={s.mosca.x} y={s.mosca.y} count={mobile ? 500 : 900} compact={mobile} />
       <Merkle
         look={look}
@@ -213,7 +222,7 @@ export default function PipelineStage({
       {s.proof && <Hit id="block" at={ROOT} r={0.45} on={setHover} pick={pick} />}
 
       {/* On phones the drawer below shows these values: labels would escape the small stage. */}
-      {!mobile && (
+      {!mobile && !hero && (
         <>
           {/* 01 HARVESTING: the real scan values. */}
           <Anchor
@@ -311,7 +320,7 @@ export default function PipelineStage({
             : ""
         }
         role="ok"
-        show={verified && settled && stage === 4}
+        show={!hero && verified && settled && stage === 4}
       />
       {failed && (
         <Anchor
