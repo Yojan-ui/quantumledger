@@ -1,5 +1,5 @@
 import type { SectorId } from "@qsetu/sim";
-import { fail, parseBody } from "@/lib/server/api";
+import { fail, parseBody, safeMessage } from "@/lib/server/api";
 import { getBus, live } from "@/lib/server/runtime";
 import { TrafficBody } from "@/lib/server/schemas";
 
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   try {
     (await live()).mesh.exercise(b.data.site, sector, adapter);
   } catch (e) {
-    return fail("internal", (e as Error).message, 500);
+    return fail("internal", safeMessage(e), 500);
   }
   return Response.json({ site: b.data.site, ops: getBus().siteCount(b.data.site) });
 }

@@ -1,4 +1,3 @@
-import "server-only";
 /**
  * Structured request logs, one JSON line per event on stdout:
  *   { t, route, status, ms, ip, ...extra }

@@ -86,7 +86,11 @@ const browser = await chromium.launch({
 });
 const metrics = { measuredAt: new Date().toISOString(), base: BASE, runs: {} };
 for (const [w, opts] of Object.entries(VIEWPORTS)) {
-  await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+  await fetch(`${BASE}/api/reset-all`, {
+    method: "POST",
+    // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+    headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+  }).catch(() => {});
   // Recorded run, with a screenshot of each stage after its effect has played.
   const dir = `${out}/.rec-${w}`;
   const ctx = await browser.newContext({ ...opts, recordVideo: { dir, size: opts.viewport } });

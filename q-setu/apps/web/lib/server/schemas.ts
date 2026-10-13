@@ -35,13 +35,13 @@ export const ScanUrlBody = z.object({
 });
 
 export const FindingInput = z.object({
-  ruleId: z.string(),
-  line: z.number().int(),
-  algorithm: z.string(),
+  ruleId: z.string().max(64),
+  line: z.number().int().min(0).max(1_000_000),
+  algorithm: z.string().max(120),
   primitive: z.enum(["pke", "signature", "key-agree", "kem", "hash", "block-cipher", "protocol"]),
   severity: z.enum(["critical", "high", "medium", "low", "info"]),
   quantumVulnerable: z.boolean(),
-  match: z.string(),
+  match: z.string().max(500),
 });
 
 export const PlanBody = z.object({
@@ -108,10 +108,10 @@ export const RoomSendBody = z.object({
     v: z.number(),
     profile: z.enum(["standard", "edge", "maximum"]),
     algIds: z.object({
-      kem: z.string(),
-      sig: z.string().nullable(),
-      kdf: z.string(),
-      aead: z.string(),
+      kem: z.string().max(64),
+      sig: z.string().max(64).nullable(),
+      kdf: z.string().max(64),
+      aead: z.string().max(64),
     }),
     rid: z.string().max(64),
     sid: z.string().max(64).nullable(),

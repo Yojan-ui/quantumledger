@@ -1,5 +1,5 @@
 import { isSealed, openSealedBody, signResponse, HEADER_SIGNATURE } from "@qsetu/web-shield";
-import { fail } from "@/lib/server/api";
+import { fail, safeMessage } from "@/lib/server/api";
 import { getBus } from "@/lib/server/runtime";
 import { getWebShieldKeys } from "@/lib/server/state";
 
@@ -54,9 +54,13 @@ export async function POST(req: Request) {
       alg: "ml-kem-768+x25519",
       ms: performance.now() - t,
       ok: false,
-      detail: (e as Error).message,
+      detail: safeMessage(e, "rejected"),
     });
-    return fail("invalid_input", `Rejected: ${(e as Error).message}`, 400);
+    return fail(
+      "invalid_input",
+      `Rejected: ${safeMessage(e, "the envelope could not be opened")}`,
+      400,
+    );
   }
   if (info.sealed)
     getBus().publish({

@@ -57,7 +57,11 @@ const t0 = Date.now();
 const mark = (s) => console.log(`${((Date.now() - t0) / 1000).toFixed(0).padStart(3)} s  ${s}`);
 
 // Clean slate.
-await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+await fetch(`${BASE}/api/reset-all`, {
+  method: "POST",
+  // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+  headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+}).catch(() => {});
 
 // 1. Hero: the key generated in this browser, the globe assembling, the live ticker (25 s).
 mark("hero");
@@ -129,7 +133,11 @@ mark("end");
 const video = page.video();
 await ctx.close();
 await browser.close();
-await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+await fetch(`${BASE}/api/reset-all`, {
+  method: "POST",
+  // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+  headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+}).catch(() => {});
 
 const webm = `${OUT}demo.webm`;
 renameSync(await video.path(), webm);

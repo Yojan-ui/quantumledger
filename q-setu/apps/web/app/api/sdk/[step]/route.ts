@@ -1,4 +1,4 @@
-import { fail, parseParams } from "@/lib/server/api";
+import { fail, parseParams, readText, safeMessage } from "@/lib/server/api";
 import { getBus } from "@/lib/server/runtime";
 import { SdkStepParams } from "@/lib/server/schemas";
 import { getSdkServer } from "@/lib/server/state";
@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 
 const json = async (req: Request) => {
   try {
-    return { ok: true as const, value: (await req.json()) as unknown };
+    const text = await readText(req, 64 * 1024);
+    if (text === undefined) return { ok: false as const };
+    return { ok: true as const, value: JSON.parse(text) as unknown };
   } catch {
     return { ok: false as const };
   }
@@ -77,9 +79,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ step: string }
       alg: "ml-kem-768+x25519",
       ms: performance.now() - t,
       ok: false,
-      detail: (e as Error).message,
+      detail: safeMessage(e, "rejected"),
     });
-    return fail("invalid_input", (e as Error).message, 400);
+    return fail("invalid_input", safeMessage(e, "That step failed."), 400);
   }
 }
 

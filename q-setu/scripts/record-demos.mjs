@@ -76,7 +76,11 @@ const browser = await chromium.launch({
   channel: process.env.PW_CHANNEL === "" ? undefined : "chrome",
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
 });
-await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+await fetch(`${BASE}/api/reset-all`, {
+  method: "POST",
+  // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+  headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+}).catch(() => {});
 // ONLY=3-qday,4-ledger re-records just those.
 const only = process.env.ONLY?.split(",");
 for (const [name, path, act] of DEMOS.filter(([n]) => !only || only.includes(n))) {
@@ -96,5 +100,9 @@ for (const [name, path, act] of DEMOS.filter(([n]) => !only || only.includes(n))
   rmSync(tmp, { recursive: true, force: true });
   console.log("recorded", name);
 }
-await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+await fetch(`${BASE}/api/reset-all`, {
+  method: "POST",
+  // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+  headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+}).catch(() => {});
 await browser.close();

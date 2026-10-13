@@ -9,6 +9,10 @@ export const dynamic = "force-dynamic";
 
 const g = globalThis as unknown as { __qsetuSignupLimit?: RateLimiter };
 const limiter = (g.__qsetuSignupLimit ??= new RateLimiter(5, 10 * 60_000));
+// However many clients ask, at most 200 confirmation emails a day leave the site: the form can't
+// be turned into a way to mail strangers from our domain.
+const gm = globalThis as unknown as { __qlMailCap?: RateLimiter };
+const mailCap = (gm.__qlMailCap ??= new RateLimiter(200, 86_400_000));
 
 /**
  * POST /api/early-access { kind, name, email, organisation, sector, useCase }: stores an early-access
@@ -24,6 +28,7 @@ export async function POST(req: Request) {
   // A bot filled the hidden field: pretend it worked, store nothing.
   if (website) return Response.json({ ok: true });
   await saveSignup({ ...data, createdAt: new Date().toISOString() });
-  await sendConfirmation(data.email, data.name, data.kind).catch(() => {});
+  if (mailCap.take("all") === 0)
+    await sendConfirmation(data.email, data.name, data.kind).catch(() => {});
   return Response.json({ ok: true });
 }

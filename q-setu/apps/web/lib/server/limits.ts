@@ -1,4 +1,3 @@
-import "server-only";
 /**
  * Shared rate limiting for the API. Each route names its limits (e.g. scans: 10 a minute and 100 a
  * day per client); `take()` records one hit against all of them and reports the first one exceeded.
@@ -95,3 +94,27 @@ export const SCAN_LIMITS: Limit[] = [
   { name: "scan-min", limit: 10, windowMs: 60_000 },
   { name: "scan-day", limit: 100, windowMs: 86_400_000 },
 ];
+
+/** At most this many open event streams per client (each holds a socket and a subscription). */
+export const MAX_STREAMS_PER_CLIENT = 6;
+const gs = globalThis as unknown as { __qlStreams?: Map<string, number> };
+const streams = (gs.__qlStreams ??= new Map());
+
+/**
+ * Reserves a stream slot for this client. Returns a release function, or undefined if the client
+ * already has MAX_STREAMS_PER_CLIENT open (the route answers 429).
+ */
+export function openStreamSlot(req: Request): (() => void) | undefined {
+  const key = clientIp(req);
+  const n = streams.get(key) ?? 0;
+  if (n >= MAX_STREAMS_PER_CLIENT) return undefined;
+  streams.set(key, n + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    const m = (streams.get(key) ?? 1) - 1;
+    if (m <= 0) streams.delete(key);
+    else streams.set(key, m);
+  };
+}

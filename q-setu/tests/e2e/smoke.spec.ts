@@ -116,12 +116,35 @@ test("API: OpenAPI docs, consistent errors, SSRF guard", async ({ request }) => 
   expect(Object.keys(docs.paths)).toEqual(
     expect.arrayContaining(["/api/ledger/verify", "/api/scan/url", "/api/policy"]),
   );
-  const bad = await request.post("/api/simulate", { data: { count: 99 } });
+  // Writes must be same-origin and carry the demo session (security phase 3).
+  const origin = new URL((await request.get("/api/health")).url()).origin;
+  const crossSite = await request.post("/api/simulate", {
+    data: { count: 1 },
+    headers: { origin: "https://evil.example" },
+  });
+  expect(crossSite.status()).toBe(403);
+  const noSession = await request.post("/api/simulate", {
+    data: { count: 1 },
+    headers: { origin },
+  });
+  expect(noSession.status()).toBe(403);
+  // Loading a page issues the session cookie (the request context keeps it).
+  await request.get("/");
+  const bad = await request.post("/api/simulate", { data: { count: 99 }, headers: { origin } });
   expect(bad.status()).toBe(400);
   expect((await bad.json()).error).toMatchObject({ code: "invalid_input" });
-  const ssrf = await request.post("/api/scan/url", { data: { url: "http://169.254.169.254/" } });
-  expect(ssrf.status()).toBeGreaterThanOrEqual(400);
-  expect((await ssrf.json()).error.message).toMatch(/private|public/);
+  const unknown = await request.post("/api/simulate", {
+    data: { count: 1, extra: true },
+    headers: { origin },
+  });
+  expect(unknown.status()).toBe(400);
+  const ssrf = await request.post("/api/scan/url", {
+    data: { url: "http://169.254.169.254/" },
+    headers: { origin },
+  });
+  expect(ssrf.status()).toBe(403);
+  expect((await ssrf.json()).error).toMatchObject({ code: "blocked_target" });
+  expect((await ssrf.json()).error.message).toMatch(/public internet hosts/);
 });
 
 test("Scanner: Java TLS sample scores Critical and yields a CBOM", async ({ page }) => {
