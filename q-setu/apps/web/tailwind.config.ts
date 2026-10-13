@@ -106,6 +106,8 @@ export default {
         /** A key column and its value (the Proof Chain's entry panel). */
         entry: "96px minmax(0, 1fr)",
         keys: "128px minmax(0, 1fr)",
+        /** The HUD terminal: time · verb · subject · value. */
+        term: "56px 64px minmax(0, 1fr) auto",
       },
       keyframes: {
         reveal: {
