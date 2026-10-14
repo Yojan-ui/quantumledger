@@ -1,0 +1,24 @@
+name: q-setu ZAP baseline
+
+# OWASP ZAP's passive baseline scan against a preview deploy of the pull request. It needs a preview
+# environment: set the repository variable PREVIEW_URL (e.g. the PR's Vercel/Render preview URL).
+# Without it the job is skipped, so this never scans anything but our own deploys.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  zap:
+    if: ${{ vars.PREVIEW_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: ${{ vars.PREVIEW_URL }}
+          rules_file_name: q-setu/.zap/rules.tsv
+          fail_action: true
+          allow_issue_writing: false

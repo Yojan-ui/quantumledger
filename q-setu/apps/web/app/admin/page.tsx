@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Button, Container, Label, PageShell, Text } from "@/components/ui";
-import { adminEnabled, isAdmin } from "@/lib/server/admin";
+import { adminState, isAdmin, totpRequired } from "@/lib/server/admin";
 import { listSignups } from "@/lib/server/store";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
@@ -12,13 +12,18 @@ export default async function Admin({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  if (!adminEnabled())
+  const state = adminState();
+  if (state !== "enabled")
     return (
       <PageShell>
         <Container className="py-32">
           <Label>Admin</Label>
           <h1 className="mt-4 text-h2 font-medium text-fg">Admin is disabled.</h1>
-          <Text className="mt-2">Set ADMIN_PASSWORD (12+ characters) to enable it.</Text>
+          <Text className="mt-2">
+            {state === "no_password"
+              ? "Set ADMIN_PASSWORD (12+ characters) to enable it."
+              : "Production admin needs a second factor: set ADMIN_TOTP_SECRET (node scripts/admin-totp.mjs makes one)."}
+          </Text>
         </Container>
       </PageShell>
     );
@@ -40,6 +45,24 @@ export default async function Admin({
               autoComplete="current-password"
               className="h-10 min-w-0 flex-1 rounded-sm border border-line bg-inset px-3 text-small text-fg outline-none focus:border-line-strong"
             />
+            {totpRequired() && (
+              <>
+                <label htmlFor="code" className="sr-only">
+                  6-digit code from your authenticator app
+                </label>
+                <input
+                  id="code"
+                  name="code"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  required
+                  autoComplete="one-time-code"
+                  placeholder="123456"
+                  className="h-10 w-28 rounded-sm border border-line bg-inset px-3 font-mono text-small text-fg outline-none placeholder:text-fg-3 focus:border-line-strong"
+                />
+              </>
+            )}
             <Button variant="primary" type="submit">
               Sign in
             </Button>
@@ -48,7 +71,9 @@ export default async function Admin({
             <Text size="small" className="mt-3">
               {error === "rate"
                 ? "Too many attempts. Try again later."
-                : "That password didn’t work."}
+                : totpRequired()
+                  ? "That password or code didn’t work."
+                  : "That password didn’t work."}
             </Text>
           )}
         </Container>

@@ -31,16 +31,16 @@ export function ServerNote() {
         role="status"
         className="pointer-events-auto flex items-center gap-3 border border-t-0 border-line bg-raised px-3 py-1 font-mono text-micro text-fg-2"
       >
-      <span>{COPY[status]}</span>
-      {status === "down" && (
-        <button
-          type="button"
-          onClick={() => void checkHealth()}
-          className="text-kem underline-offset-4 hover:underline"
-        >
-          Retry
-        </button>
-      )}
+        <span>{COPY[status]}</span>
+        {status === "down" && (
+          <button
+            type="button"
+            onClick={() => void checkHealth()}
+            className="text-kem underline-offset-4 hover:underline"
+          >
+            Retry
+          </button>
+        )}
       </div>
     </div>
   );

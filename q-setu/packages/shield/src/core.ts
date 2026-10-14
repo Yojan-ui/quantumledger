@@ -19,7 +19,10 @@ import {
 export interface ShieldOptions {
   /** Your site key from the dashboard (keep it server-side; ≥ 32 characters). */
   siteKey: string;
-  /** New sites start in "monitor": scored and reported, never blocked, until you switch. */
+  /**
+   * Leave unset to follow the mode chosen in the dashboard (checked once a minute; "monitor" until
+   * the first answer). Set it to pin the mode in code: then the dashboard's switch doesn't apply.
+   */
   mode?: Mode;
   /** Where events are reported; default the QuantumLedger dashboard. `false` to keep them local. */
   reportTo?: string | false;
@@ -88,6 +91,25 @@ export function createShield(opts: ShieldOptions): Shield {
     }
   };
   const timer = setInterval(() => void flush(), 10_000);
+  // The dashboard's mode switch: unless a mode was set in code, follow the site's mode (once a
+  // minute). A failed fetch keeps the current mode.
+  const syncMode = async () => {
+    if (!report || opts.mode) return;
+    try {
+      const r = await fetch(report.replace(/\/events$/, "/config"), {
+        headers: { authorization: `Bearer ${opts.siteKey}` },
+        signal: AbortSignal.timeout(3000),
+      });
+      const j = (await r.json()) as { mode?: Mode };
+      if (r.ok && j.mode && ["off", "monitor", "protect", "strict"].includes(j.mode))
+        guard.setMode(j.mode);
+    } catch {
+      // keep the current mode
+    }
+  };
+  void syncMode();
+  const modeTimer = setInterval(() => void syncMode(), 60_000);
+  modeTimer.unref?.();
   timer.unref?.();
 
   return {
@@ -114,6 +136,9 @@ export function createShield(opts: ShieldOptions): Shield {
       };
     },
     flush,
-    close: () => clearInterval(timer),
+    close: () => {
+      clearInterval(timer);
+      clearInterval(modeTimer);
+    },
   };
 }

@@ -79,7 +79,9 @@ function PresenterInner() {
         router.push(DEMOS[Number(e.key) - 1]!);
       } else if (e.key === "r" || e.key === "R") {
         flash("Resetting every demo…");
-        void resetAll().then(() => flash("Everything reset ✓"));
+        void resetAll().then((ok) =>
+          flash(ok ? "Everything reset ✓" : "Reset needs the admin sign-in (/admin)"),
+        );
       } else if (e.key === "q" || e.key === "Q") {
         setQr((v) => !v);
       } else if (e.key === "Escape") {

@@ -94,6 +94,8 @@ describe("URL scanner: the SSRF attack list", () => {
       "::ffff:127.0.0.1",
       "::ffff:7f00:1",
       "::ffff:a9fe:a9fe",
+      "::ffff:10.0.0.1",
+      "::ffff:a00:1",
       "2002:7f00:1::",
       "64:ff9b::a00:1",
       "fd00::1",
@@ -101,6 +103,12 @@ describe("URL scanner: the SSRF attack list", () => {
     ])
       expect(isPrivateAddress(a), a).toBe(true);
     expect((await blocked("http://[::ffff:127.0.0.1]/")).err.code).toBe("blocked_target");
+    expect((await blocked("http://[::ffff:10.0.0.1]/")).err.code).toBe("blocked_target");
+    // ...and the same address handed back by DNS for a public-looking name.
+    expect(
+      (await blocked("https://mapped.example.com/", { "mapped.example.com": ["::ffff:10.0.0.1"] }))
+        .err.code,
+    ).toBe("blocked_target");
   });
 
   it("allows only https/http, and only ports 443/80", async () => {

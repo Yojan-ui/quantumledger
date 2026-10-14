@@ -18,6 +18,47 @@ never quoted.
 | **QuantumLedger Edge** (IoT profile)                | Meters, medical devices, POS terminals    | ML-KEM-512 + ML-DSA-44, a 64 KB budget, batch-signed readings                                                     |
 | **QuantumLedger Vault** (data at rest)              | Databases and file stores                 | `await vault.put(record)` / `await vault.get(id)`: per-record ML-KEM-wrapped keys, ML-DSA signatures              |
 
+## Shield: quantum-safe TLS and AI-agent defence in front of any website
+
+`/shield` on the site, and `packages/shield-edge`, `packages/shield-guard` and `packages/shield`:
+
+- **Shield Edge** is a reverse proxy that terminates TLS 1.3 with **X25519MLKEM768**.
+  - It's native OpenSSL 3.5 through Node, not JavaScript cryptography.
+  - It counts per connection whether the visitor got the post-quantum key exchange.
+  - It gets certificates from Let's Encrypt and keeps their keys encrypted at rest.
+  - It streams bodies to your origin over pooled keep-alive connections.
+- **The defence engine** scores behaviour per IP, network block and session. Behaviour means rate, routes
+  walked, failures, parallel bursts, and header and TLS fingerprint (JA4) consistency.
+  - It acts in steps: a tighter limit, then a proof-of-work challenge, then a block. Repeat offenders
+    are blocked for longer.
+  - Honeypots, a trap link and a canary key block and alert on first touch.
+  - Modes are Off, Monitor (the default for new sites), Protect and Strict.
+- **Install it one of three ways:**
+  1. DNS: a TXT ownership record, then a CNAME.
+  2. A container: `packages/shield-edge/docker/`.
+  3. One line of middleware, `app.use(shield({ siteKey }))`, for Express, Fastify or Next.js. This gives
+     the defence only: post-quantum TLS needs route 1 or 2.
+- **The dashboard** is at `/app`. It needs a password plus an authenticator code. It lets you add sites,
+  verify DNS, copy install snippets and switch the mode. It shows live metrics, including the % of
+  quantum-safe connections. It sends alerts by email and webhook, and gives a monthly PDF report.
+- **`/shield/live`** attacks the legacy bank app twice, bare and behind Shield Edge, and shows the
+  difference. The attack tools refuse every host but loopback.
+- **Measured** (Apple M4, loopback; `docs/real/benchmarks.md`), against the budget, which fails the build
+  if missed:
+
+  | Measure                                     | Result                       | Budget        |
+  | ------------------------------------------- | ---------------------------- | ------------- |
+  | Added latency, warm connection              | +0.060 ms p50, +0.085 ms p95 | ≤ 2 / ≤ 10 ms |
+  | Extra server CPU per post-quantum handshake | +0.030 ms                    | ≤ 1.5 ms      |
+  | Edge CPU at 1,000 req/s                     | 4.1% of one core             | ≤ 10%         |
+
+- **Honest scope.**
+  - Certificates stay ECDSA, because browsers don't take post-quantum ones yet.
+  - The hop from the edge to your origin is as strong as that hop's own TLS.
+  - A patient agent driving a real browser looks human.
+  - Injection payloads are the job of the optional OWASP CRS container.
+  - Nothing here makes a site impossible to attack.
+
 ## Architecture
 
 ```mermaid
@@ -84,10 +125,11 @@ while Shield carries it over PQC. With `pnpm start`, the API starts the same Shi
   | ----- | ----------------------------------------------------------------------------- |
   | → / ← | Step the current demo forward or back (on other pages, move between sections) |
   | 1–5   | How it works · Deploy · Q-Day · Proof Chain · Scanner                         |
-  | R     | Reset every demo                                                              |
+  | R     | Reset every demo (production: sign in at `/admin` first)                      |
   | ⌘K    | Jump anywhere, or scan a site                                                 |
 
-- **Reset all:** every demo header has a "Reset all" button (the same as R).
+- **Reset all:** every demo header has a "Reset all" button (the same as R). It changes the demos for every visitor,
+  so in production it needs the admin sign-in (password + authenticator code); visitors see "Admin only".
 - **Offline:** start with `NEXT_PUBLIC_OFFLINE=1` (or `QSETU_OFFLINE=1` on the server). Everything runs locally, and
   URL scans of the suggested Indian sites come from pre-cached real scans, labelled with their date. If the venue
   network drops without the flag, scans of those sites fall back automatically.
@@ -183,6 +225,18 @@ docker run -p 3000:3000 \
   an operation that actually ran, with its measured time.
 - The Proof Chain chain and its signatures, the KMS key wrapping and rotation, and the policy hot-swap.
 
+- Shield Edge's post-quantum TLS, its per-connection metric (checked against real handshakes), the defence
+  engine, the tunnel v2 and the benchmarks.
+
+**Built but not exercised from this repository:**
+
+- **Let's Encrypt issuance:** the flow is the maintained `acme-client`'s own, but it needs a public DNS
+  name and port 80 reachable from the internet.
+- **The container image:** the Dockerfile and compose file are written, but Docker wasn't available
+  where they were written, so the image hasn't been built here.
+- **The OWASP CRS WAF service:** it's in the compose file, in detection-only mode.
+- **The ZAP baseline:** it runs per PR once `PREVIEW_URL` is set.
+
 **Simulated (and labelled in the UI):**
 
 - **The classical "today" system uses a ~40-bit RSA key** (`sim/classical/`, `INSECURE_DEMO_ONLY`),
@@ -210,8 +264,9 @@ docker run -p 3000:3000 \
 
 1. **Hackathon MVP** (this repo): the core, five adapters, four demos, the scanner, Proof Chain and the website.
 2. **Pilots:** a bank, a hospital and a university, each running in shadow mode.
-3. **HSM + TLS 1.3:** keys move into HSMs (PKCS#11), and every link uses `X25519MLKEM768`. SLH-DSA
-   (FIPS 205, already in the registry) covers long-lived roots.
+3. **HSM + TLS 1.3:** keys move into HSMs (PKCS#11), and every link uses `X25519MLKEM768`. Shield Edge
+   already does this for visitor traffic. SLH-DSA (FIPS 205, already in the registry) covers long-lived
+   roots.
 4. **Certification:** independent audit, plus alignment with Indian regulators (RBI, CERT-In) and
    sector bodies.
 

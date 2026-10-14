@@ -43,7 +43,8 @@ export function GlPoster() {
 }
 
 const stillPhone = () =>
-  matchMedia("(prefers-reduced-motion: reduce)").matches && matchMedia("(max-width: 767px)").matches;
+  matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  matchMedia("(max-width: 767px)").matches;
 
 /**
  * A 3D window in the site's single WebGL canvas (drei View) that mounts only when it first comes

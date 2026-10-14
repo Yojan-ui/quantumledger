@@ -16,6 +16,7 @@
     "@qsetu/edge": "workspace:*",
     "@qsetu/legacy-bank": "workspace:*",
     "@qsetu/sdk": "workspace:*",
+    "@qsetu/shield-edge": "workspace:*",
     "@qsetu/shield-proxy": "workspace:*",
     "@qsetu/sim": "workspace:*",
     "@qsetu/vault": "workspace:*",

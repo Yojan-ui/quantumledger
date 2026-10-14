@@ -20,8 +20,7 @@ const BASE = process.env.BASE ?? "http://localhost:3000";
 const ONLY = process.env.ONLY?.split(",");
 // AUDIT_OUT (relative to q-setu/) puts a pass's reports somewhere else, e.g. docs/real.
 const OUT = process.env.AUDIT_OUT ?? "docs/smooth";
-const root = new URL(`../${OUT}/`.replace(/\/+$/, "/"), import.meta.url)
-  .pathname;
+const root = new URL(`../${OUT}/`.replace(/\/+$/, "/"), import.meta.url).pathname;
 const videos = `${root}videos-${label}/`;
 mkdirSync(videos, { recursive: true });
 

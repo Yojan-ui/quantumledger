@@ -22,7 +22,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
     /SEAL|VERIFY|LEDGER|HANDSHAKE|KEYGEN|REJECT|ROTATE/,
   );
   // The Readiness Index headline is computed from the measured totals.
-  await expect(page.locator("#index")).toContainText(/\d+% of the Indian sites we checked/);
+  await expect(page.locator("#index")).toContainText(/\d+%\s*of the Indian sites we checked/);
   await expect(page.locator("#analogy")).toContainText("Everything has a lock");
   expect(errors).toEqual([]);
 });
@@ -85,10 +85,13 @@ test("Demo 3: Q-Day exposes classical records, none with QuantumLedger", async (
   await expect(
     page.getByRole("region", { name: "Classical system" }).locator("li").first(),
   ).toBeVisible();
-  await page.getByRole("button", { name: /Go to Q-Day/ }).click();
-  await expect(page.getByText("Exposed · QuantumLedger")).toBeVisible();
-  await expect(page.getByText(/Factored n in \d+ steps/)).toBeVisible();
-  await expect(page.getByText(/AES-256-GCM tag check failed/)).toBeVisible();
+  // Since the wow pass the demo is a film: Play runs it forward to Q-Day.
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(page.getByText("Exposed · QuantumLedger").first()).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/Factored n in \d+ steps/).first()).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/AES-256-GCM tag check failed/).first()).toBeVisible({
+    timeout: 60_000,
+  });
   const stats = page.locator("p.tabular");
   await expect(stats.nth(1)).toHaveText("0");
   expect(Number(await stats.nth(0).innerText())).toBeGreaterThan(0);

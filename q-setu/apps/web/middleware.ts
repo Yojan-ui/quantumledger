@@ -1,19 +1,23 @@
 /**
  * The shared front door for every request (Node runtime).
  *
- * Pages: issue the anonymous demo session cookie if the visitor has none (lib/server/session).
+ * Pages: a fresh Content Security Policy nonce (lib/server/csp), and the anonymous demo session
+ * cookie if the visitor has none (lib/server/session).
  * /api/*:
- *  1. Rate limits per client, by route class (lib/server/api-policy): reads 120/min, writes 30/min,
- *     CPU-heavy routes 10/min, routes that change the demo for everyone 3/min, streams 20/min.
+ *  1. Rate limits by route class (lib/server/api-policy), per demo session where there is one, under
+ *     a per-IP ceiling: reads 600/min, writes 90/min, CPU-heavy routes 40/min, routes that change the
+ *     demo for everyone 12/min, streams 20/min (measured against what the demos really send).
  *  2. Every request that changes data (anything but GET/HEAD) must be same-origin: the Origin header
  *     must match this site (or, without one, Sec-Fetch-Site must say same-origin), which stops
  *     cross-site request forgery; and it must carry a valid demo session cookie, or a bearer
- *     API_TOKEN for scripted clients.
+ *     API_TOKEN for scripted clients. Shield's server-to-server routes authenticate with a site key
+ *     instead (SITE_KEY_ROUTES).
  *  3. Bodies over 300 KB are refused before any route reads them.
  * Every refusal is logged as one structured line (lib/server/log) with a hashed IP.
  */
 import { NextResponse, type NextRequest } from "next/server";
-import { limitsFor, SESSION_EXEMPT } from "@/lib/server/api-policy";
+import { SESSION_EXEMPT, SITE_KEY_ROUTES, limitsFor } from "@/lib/server/api-policy";
+import { contentSecurityPolicy, newNonce, NONCE_HEADER, STATIC_HTML } from "@/lib/server/csp";
 import { take, tooMany } from "@/lib/server/limits";
 import { log } from "@/lib/server/log";
 import {
@@ -76,13 +80,11 @@ export async function middleware(req: NextRequest) {
       const len = Number(req.headers.get("content-length") ?? 0);
       if (len > MAX_BODY) return deny(req, "too_large", "That request is too large.", 413);
       const token = validApiToken(req.headers.get("authorization"));
-      if (!token) {
+      const siteKeyRoute = SITE_KEY_ROUTES.some((r) => r.test(path));
+      if (!token && !siteKeyRoute) {
         if (!sameOrigin(req))
           return deny(req, "forbidden", "Requests must come from this site.", 403);
-        if (
-          !SESSION_EXEMPT.some((r) => r.test(path)) &&
-          !sid
-        )
+        if (!SESSION_EXEMPT.some((r) => r.test(path)) && !sid)
           return deny(
             req,
             "forbidden",
@@ -94,8 +96,21 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Pages: make sure the visitor has a demo session.
-  const res = NextResponse.next();
+  // Pages: a fresh CSP nonce (Next reads it from the request's CSP header and puts it on its own
+  // scripts; the root layout reads x-nonce), and a demo session if the visitor has none.
+  const nonce = newNonce();
+  const csp = contentSecurityPolicy(STATIC_HTML.some((r) => r.test(path)) ? undefined : nonce, {
+    dev: process.env.NODE_ENV === "development",
+    https: secure,
+    ...(process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+      ? { analytics: process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ?? "https://plausible.io" }
+      : {}),
+  });
+  const forward = new Headers(req.headers);
+  forward.set(NONCE_HEADER, nonce);
+  forward.set("content-security-policy", csp);
+  const res = NextResponse.next({ request: { headers: forward } });
+  res.headers.set("content-security-policy", csp);
   if (!validSession(req.cookies.get(SESSION_COOKIE)?.value))
     res.headers.append("set-cookie", sessionCookie(newSession(), secure));
   return res;

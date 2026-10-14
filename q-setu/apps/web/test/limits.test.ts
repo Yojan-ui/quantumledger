@@ -7,7 +7,8 @@ import { describe, expect, it } from "vitest";
 import { limitsFor } from "@/lib/server/api-policy";
 import { take, type Limit } from "@/lib/server/limits";
 
-const req = (ip: string) => new Request("http://x/api/metrics", { headers: { "x-forwarded-for": ip } });
+const req = (ip: string) =>
+  new Request("http://x/api/metrics", { headers: { "x-forwarded-for": ip } });
 
 describe("API limits", () => {
   it("gives each session on one IP its own budget, under an IP ceiling", async () => {

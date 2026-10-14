@@ -135,3 +135,50 @@ export const AnchorBody = z.object({
 });
 
 export const AnchorParams = z.object({ id: z.coerce.number().int().min(1) });
+
+// ── Shield dashboard ─────────────────────────────────────────────────────────────────────────
+const Email = z.string().trim().toLowerCase().email().max(254);
+export const AppSignupBody = z.object({ email: Email, password: z.string().min(12).max(256) });
+export const AppLoginBody = z.object({ email: Email, password: z.string().min(1).max(256) });
+export const AppCodeBody = z.object({ code: z.string().regex(/^\d{6}$/) });
+export const SiteCreateBody = z.object({
+  domain: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(253)
+    .regex(
+      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/,
+      "A domain like www.example.com",
+    ),
+});
+export const SiteSettingsBody = z.object({
+  mode: z.enum(["off", "monitor", "protect", "strict"]).optional(),
+  alertEmail: z.union([Email, z.literal("")]).optional(),
+  alertWebhook: z
+    .union([z.string().url().max(500).startsWith("https://"), z.literal("")])
+    .optional(),
+});
+export const ReportQuery = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) });
+export const ShieldEventsBody = z.object({
+  events: z
+    .array(
+      z.object({
+        type: z.string().max(32),
+        at: z.number().int().nonnegative(),
+        ip: z.string().max(64),
+        path: z.string().max(2000),
+        score: z.number().min(0).max(100),
+        reasons: z.array(z.string().max(200)).max(20),
+        monitorOnly: z.boolean(),
+      }),
+    )
+    .max(500),
+  stats: z
+    .object({
+      pq: z.number().int().nonnegative().max(1e9).optional(),
+      classical: z.number().int().nonnegative().max(1e9).optional(),
+      requests: z.number().int().nonnegative().max(1e9).optional(),
+    })
+    .optional(),
+});

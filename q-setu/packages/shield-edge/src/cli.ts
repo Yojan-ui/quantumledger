@@ -17,6 +17,8 @@
  *   EDGE_HONEYPOTS    comma-separated extra honeypot paths (e.g. /admin if the site has none)
  *   EDGE_TRAP_PATH    the hidden trap link's path
  *   EDGE_CANARY_KEYS  comma-separated canary API keys
+ *   EDGE_SITE_KEY     the site key from the dashboard: report events and counts, follow its mode switch
+ *   EDGE_REPORT_URL   where to report (default https://quantumledger.app/api/shield/events)
  *
  * The admin address also takes POST /mode?m=off|monitor|protect|strict: the emergency switch.
  */
@@ -67,6 +69,7 @@ if (env.EDGE_CERT_FILE && env.EDGE_KEY_FILE) {
 }
 
 const MODES: Mode[] = ["off", "monitor", "protect", "strict"];
+const queue: object[] = [];
 const mode = (env.EDGE_MODE ?? "monitor") as Mode;
 if (!MODES.includes(mode)) fail(`EDGE_MODE must be one of ${MODES.join(", ")}`);
 const list = (v?: string) =>
@@ -83,7 +86,10 @@ const defence = edgeDefence({
   honeypots: [...DEFAULT_HONEYPOTS, ...list(env.EDGE_HONEYPOTS)],
   ...(env.EDGE_TRAP_PATH ? { trapPath: env.EDGE_TRAP_PATH } : {}),
   canaryKeys: list(env.EDGE_CANARY_KEYS),
-  onEvent: (e) => log({ ev: "guard", ...e }),
+  onEvent: (e) => {
+    log({ ev: "guard", ...e });
+    if (queue.length < 1000) queue.push(e);
+  },
 });
 log({ ev: "guard_mode", mode });
 
@@ -140,6 +146,54 @@ if (env.EDGE_HTTP_PORT !== "off") {
       res.end();
     })
     .listen(Number(env.EDGE_HTTP_PORT ?? 80));
+}
+
+// Reporting to the dashboard: events and connection counts every 10 s; its mode switch every 60 s
+// (unless EDGE_MODE pins the mode here).
+if (env.EDGE_SITE_KEY) {
+  const url = env.EDGE_REPORT_URL ?? "https://quantumledger.app/api/shield/events";
+  const auth = { authorization: `Bearer ${env.EDGE_SITE_KEY}` };
+  let last = { pq: 0, classical: 0, requests: 0 };
+  setInterval(() => {
+    const m = edge.metrics.snapshot();
+    const now = {
+      pq: m.connections.X25519MLKEM768,
+      classical: m.connections.X25519 + m.connections.other,
+      requests: m.requests,
+    };
+    const stats = {
+      pq: now.pq - last.pq,
+      classical: now.classical - last.classical,
+      requests: now.requests - last.requests,
+    };
+    const events = queue.splice(0, 500);
+    fetch(url, {
+      method: "POST",
+      headers: { ...auth, "content-type": "application/json" },
+      body: JSON.stringify({ events, stats }),
+      signal: AbortSignal.timeout(5000),
+    }).then(
+      (r) => {
+        if (r.ok) last = now;
+      },
+      () => {},
+    );
+  }, 10_000).unref();
+  if (!env.EDGE_MODE)
+    setInterval(() => {
+      fetch(url.replace(/\/events$/, "/config"), {
+        headers: auth,
+        signal: AbortSignal.timeout(3000),
+      })
+        .then((r) => (r.ok ? (r.json() as Promise<{ mode?: Mode }>) : undefined))
+        .then((j) => {
+          if (j?.mode && MODES.includes(j.mode) && j.mode !== defence.engine.mode) {
+            defence.engine.setMode(j.mode);
+            log({ ev: "guard_mode", mode: j.mode, by: "dashboard" });
+          }
+        })
+        .catch(() => {});
+    }, 60_000).unref();
 }
 
 // Metrics and health on the admin address only.

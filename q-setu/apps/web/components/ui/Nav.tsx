@@ -12,6 +12,7 @@ import { endQday, throwQday, useQday } from "@/lib/client/qday-switch";
 
 export const NAV_LINKS = [
   { href: "/platform", label: "Platform" },
+  { href: "/shield", label: "Shield" },
   { href: "/solutions", label: "Solutions" },
   { href: "/demos", label: "Demos" },
   { href: "/docs", label: "Docs" },

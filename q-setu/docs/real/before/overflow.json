@@ -766,9 +766,7 @@
         "cls": "flex items-center gap-3",
         "text": "Q-Daysimpletechnical⌘KGet early accessMe"
       },
-      "errors": [
-        "Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED"
-      ]
+      "errors": ["Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED"]
     },
     "768": {
       "vw": 768,

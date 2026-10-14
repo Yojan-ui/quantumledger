@@ -38,7 +38,10 @@ export function Architecture() {
           </p>
           <ul className="mt-3 flex flex-col gap-2">
             {CORE.map((c) => (
-              <li key={c} className="rounded-md border border-line bg-raised px-3 py-2 text-small text-fg">
+              <li
+                key={c}
+                className="rounded-md border border-line bg-raised px-3 py-2 text-small text-fg"
+              >
                 {c}
               </li>
             ))}

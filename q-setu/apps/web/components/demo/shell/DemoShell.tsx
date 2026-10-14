@@ -7,7 +7,7 @@ import { resetAll } from "@/lib/client/present";
 
 /** One click (or R in presenter mode) puts every demo back to a clean start. */
 function ResetAll() {
-  const [state, setState] = useState<"idle" | "busy" | "done">("idle");
+  const [state, setState] = useState<"idle" | "busy" | "done" | "denied">("idle");
   return (
     <button
       type="button"
@@ -15,14 +15,20 @@ function ResetAll() {
       onClick={async () => {
         if (state === "busy") return;
         setState("busy");
-        await resetAll();
-        setState("done");
-        setTimeout(() => setState("idle"), 1500);
+        // Resetting every demo changes them for all visitors: production needs the admin sign-in.
+        setState((await resetAll()) ? "done" : "denied");
+        setTimeout(() => setState("idle"), 2500);
       }}
       title="Reset every demo (R in presenter mode)"
       className="h-10 px-2 text-small text-fg-3 transition-colors duration-150 hover:text-fg"
     >
-      {state === "busy" ? "Resetting…" : state === "done" ? "All reset ✓" : "Reset all"}
+      {state === "busy"
+        ? "Resetting…"
+        : state === "done"
+          ? "All reset ✓"
+          : state === "denied"
+            ? "Admin only"
+            : "Reset all"}
     </button>
   );
 }

@@ -99,7 +99,8 @@ export function Scanner() {
       href,
       download: `migration-plan-${filename.replace(/\W+/g, "-")}.md`,
     }).click();
-    URL.revokeObjectURL(href);
+    // Revoked a moment later: revoking at once can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
   }
 
   function choose(id: string) {
@@ -176,7 +177,8 @@ export function Scanner() {
       download: `cbom-${filename.replace(/\W+/g, "-")}.json`,
     });
     a.click();
-    URL.revokeObjectURL(url);
+    // Revoked a moment later: revoking at once can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const field =
