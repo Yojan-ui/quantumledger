@@ -12,6 +12,9 @@ export interface Limit {
   name: string;
   limit: number;
   windowMs: number;
+  /** Whose budget: the client (its demo session if it has one, else its IP; the default), or
+   * always the IP (a ceiling that new sessions can't reset). */
+  per?: "client" | "ip";
 }
 
 export type Verdict = { ok: true } | { ok: false; retryAfter: number; limit: Limit };
@@ -50,10 +53,15 @@ async function upstashTake(key: string, l: Limit): Promise<number | undefined> {
   }
 }
 
-/** Records one hit for this client against every limit; the first one exceeded wins. */
-export async function take(req: Request, limits: Limit[]): Promise<Verdict> {
-  const key = clientIp(req);
+/**
+ * Records one hit for this client against every limit; the first one exceeded wins. `client` is a
+ * verified demo-session id where there is one, so visitors who share an IP (a carrier-grade NAT,
+ * an office) get a budget each; limits marked `per: "ip"` still count the whole IP.
+ */
+export async function take(req: Request, limits: Limit[], client?: string): Promise<Verdict> {
+  const ip = clientIp(req);
   for (const l of limits) {
+    const key = l.per === "ip" || !client ? ip : `s:${client}`;
     const wait = (await upstashTake(key, l)) ?? memoryTake(key, l);
     if (wait > 0) {
       onLimited(key, l);

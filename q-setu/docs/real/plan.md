@@ -64,8 +64,46 @@ over 50 ms at 1440. At baseline, CLS and transition frames at 1440 already pass.
 
 ### 2.3 `pnpm dev`
 
-Not run at baseline: a dev server alongside the production audit would have distorted its numbers. The dev
-check is run with phase A's after-measurements instead.
+Not run at baseline: a dev server alongside the production audit would have distorted its numbers. It was
+run with phase A (2.4).
+
+### 2.4 Phase A results
+
+Production build, same machine and method as the baseline. Reports: `after/overflow.md`, `audit-after.md`.
+
+| Target (from the brief) | Before | After |
+| --- | --- | --- |
+| Horizontal overflow at 360 / 390 / 768 / 1440 (and 1024, added) | **30 pages** overflow, up to +190 px | **0** page×width combinations, all 38 pages |
+| Console errors besides the deliberate 404 | 1440: 2 (the A11 crash and its 429) · 390: 0 · plus 41 × 429 in the screenshot run | 1440: **0** · 390: 1 (`ERR_NETWORK_IO_SUSPENDED` on `/api/stream` on `/about`: Chrome raises it when the operating system suspends network I/O; not a site error, listed rather than hidden) |
+| Worst page CLS (target < 0.05) | 0.019 / 0.0238 | **0.019 / 0.0238** |
+| Worst transition frame at 1440 (target ≤ 50 ms) | 34 ms | **34 ms** |
+| Long tasks at 390, 4× CPU | 204 (worst transition frame 717 ms) | 80 (worst 300 ms) |
+
+What changed, per item:
+- **A1:** the nav shows its links from 1024 px and Q-Day and ⌘K from 1280 px. Below that, the menu holds them,
+  plus the Simple/Technical and Q-Day toggles.
+- **A2:** the phone HUD stacks its panels, and the page scrolls instead of squeezing them. The phase tabs
+  scroll sideways with an edge fade and full labels.
+- **A3:** phones get the platform diagram as a vertical stack. From 768 px the SVG fills the width with no
+  minimum, so nothing scrolls sideways.
+- **A4:** the pill reads "AWAITING TARGET" until a scan result exists.
+- **A5:** the SID / NODES / G readout and "ops/sec" stay invisible, with their space kept, until real
+  values arrive. No dashes and no "0.0".
+- **A6:** the stage title stays on one line and ends in an ellipsis.
+- **A7:** "Waking up the server…" is a slim status line under the nav, after 2 s, instead of a box over the
+  panel.
+- **A8:** "Try tamper" is always visible. Before a scan it uses the secondary text colour (4.6:1 contrast),
+  with "Run a scan first" as a tooltip. It's still reachable by keyboard.
+- **A9:** phones render at most 1.5× DPR. On phones with reduced motion, 3D areas keep their static
+  poster. Desktop reduced motion keeps the still 3D end state (a deliberate exception).
+- **A10:** read limits are now 600/min per demo session, under a 6,000/min ceiling per IP. Every route
+  class has an IP ceiling, so minting sessions doesn't reset it (`test/limits.test.ts`).
+- **A11:** the scanner page ignores error replies from `/api/plan`. Buttons whose label is too long for a
+  phone wrap instead of overflowing.
+
+`pnpm dev` check: `/diagnostics` at 390 and 1440, and a home → ledger → diagnostics run, showed no console
+errors. The dev server needs its own data directory, and must not run while a production server serves
+the same `apps/web/.next`.
 
 ## 3. Shield cost today
 

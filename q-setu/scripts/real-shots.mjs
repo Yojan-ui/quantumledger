@@ -4,7 +4,7 @@
  * `node scripts/real-shots.mjs <label>` → docs/real/<label>/:
  *  - <page>-1440.png and <page>-390.png for every page in the sitemap plus /diagnostics, /join,
  *    /pitch and a scan page (the first screen, 3 s after load);
- *  - overflow.json / overflow.md: at 360, 390, 768 and 1440 px, whether the page is wider than the
+ *  - overflow.json / overflow.md: at 360, 390, 768, 1024 and 1440 px, whether the page is wider than the
  *    device (scrollWidth, or a widened layout viewport, > the device width) and, if so, the widest element sticking out (tag, classes,
  *    right edge), so each overflow points at its cause.
  * Against BASE (default http://localhost:3000), system Chrome.
@@ -29,7 +29,7 @@ const pages = [
 ].filter((p) => !process.env.ONLY || process.env.ONLY.split(",").includes(p));
 const slug = (p) => (p === "/" ? "home" : p.slice(1).replace(/[^a-z0-9]+/gi, "_"));
 
-const WIDTHS = [360, 390, 768, 1440];
+const WIDTHS = [360, 390, 768, 1024, 1440];
 const ctxFor = (w) =>
   w < 768
     ? { ...devices["iPhone 13"], viewport: { width: w, height: 844 } }
@@ -89,7 +89,7 @@ const rows = Object.entries(results).map(
 );
 writeFileSync(
   `${out}overflow.md`,
-  `# Horizontal overflow (${label})\n\n\`node scripts/real-shots.mjs ${label}\` against ${BASE}. Overflow = document scrollWidth − innerWidth, in px (0 = no sideways scroll).\n\n| Page | 360 | 390 | 768 | 1440 | Widest element sticking out |\n| --- | --- | --- | --- | --- | --- |\n${rows.join("\n")}\n`,
+  `# Horizontal overflow (${label})\n\n\`node scripts/real-shots.mjs ${label}\` against ${BASE}. Overflow = document scrollWidth − device width, in px (0 = no sideways scroll).\n\n| Page | ${WIDTHS.join(" | ")} | Widest element sticking out |\n| --- | ${WIDTHS.map(() => "---").join(" | ")} | --- |\n${rows.join("\n")}\n`,
 );
 const bad = Object.values(results).flatMap((r) => WIDTHS.filter((w) => r[w].overflow > 0));
 console.log(`${pages.length} pages; ${bad.length} page×width combinations overflow; wrote ${out}`);

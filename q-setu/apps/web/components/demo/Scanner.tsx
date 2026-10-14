@@ -78,12 +78,14 @@ export function Scanner() {
         hybridPq: probe?.hybridPq,
       }),
     })
-      .then((r) => r.json())
-      .then((p: Plan & { markdown: string }) => {
-        if (!live) return;
+      // An error reply (a 429, a 400) has no plan in it: keep the last plan rather than render one.
+      .then((r) => (r.ok ? (r.json() as Promise<Plan & { markdown: string }>) : undefined))
+      .then((p) => {
+        if (!live || !p) return;
         setPlan(p);
         setDone(new Set());
-      });
+      })
+      .catch(() => {});
     return () => {
       live = false;
     };

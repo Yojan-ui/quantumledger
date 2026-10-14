@@ -20,10 +20,38 @@ export function Architecture() {
   const W = 960;
   const colW = W / ADAPTERS.length;
   return (
-    <figure className="overflow-x-auto">
+    <figure>
+      {/* Phones: the same diagram as a vertical stack, so nothing scrolls sideways. */}
+      <div className="flex flex-col gap-2 md:hidden">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {ADAPTERS.map((a) => (
+            <li key={a.name} className="rounded-lg border border-line-strong bg-raised px-4 py-3">
+              <p className="text-body text-fg">QuantumLedger {a.name}</p>
+              <p className="text-small text-fg-3">{a.where}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="mx-auto h-6 border-l border-dashed border-line-strong" />
+        <div className="rounded-lg border border-line-strong bg-inset p-4">
+          <p className="font-mono text-micro uppercase tracking-widest text-fg-3">
+            @QSETU/CORE · ONE CORE
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {CORE.map((c) => (
+              <li key={c} className="rounded-md border border-line bg-raised px-3 py-2 text-small text-fg">
+                {c}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="rounded-lg border border-line px-4 py-3 text-small text-fg-2">
+          @noble/post-quantum · @noble/curves · @noble/hashes · @noble/ciphers (open-source
+          primitives; audit status on /security)
+        </p>
+      </div>
       <svg
         viewBox={`0 0 ${W} 420`}
-        className="w-full min-w-panel"
+        className="hidden w-full md:block"
         role="img"
         aria-label="Five adapters (Shield, Web, SDK, Edge, Vault) all built on one QuantumLedger core: algorithm registry, hybrid KEM, sessions, envelopes and signatures."
         fontFamily="var(--font-geist-sans), sans-serif"

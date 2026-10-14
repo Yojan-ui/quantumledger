@@ -13,8 +13,10 @@ import { shortError, showToast } from "@/lib/client/toast";
 
 type Variant = "primary" | "secondary";
 
+// On phones a label too long for the screen wraps onto a second line (max-w-full, min-h-10) rather
+// than pushing the page sideways; from sm up buttons are one line, 40 px tall.
 const BASE =
-  "relative inline-flex h-10 overflow-hidden shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 aria-busy:cursor-progress";
+  "relative inline-flex min-h-10 max-w-full overflow-hidden shrink-0 items-center justify-center gap-2 py-2 text-center sm:h-10 sm:py-0 sm:whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 aria-busy:cursor-progress";
 const STYLE: Record<Variant, string> = {
   primary: "bg-fg text-base hover:opacity-90",
   secondary: "border border-line-strong text-fg hover:bg-raised",

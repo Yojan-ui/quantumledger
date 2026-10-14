@@ -27,13 +27,18 @@ export function newSession(): string {
   return `${id}.${sign(id)}`;
 }
 
-export function validSession(value: string | undefined): boolean {
-  if (!value || value.length > 128) return false;
+/** The session's id if the cookie is genuine, else undefined. */
+export function sessionId(value: string | undefined): string | undefined {
+  if (!value || value.length > 128) return undefined;
   const [id, mac] = value.split(".");
-  if (!id || !mac) return false;
+  if (!id || !mac) return undefined;
   const a = Buffer.from(mac);
   const b = Buffer.from(sign(id));
-  return a.length === b.length && timingSafeEqual(a, b);
+  return a.length === b.length && timingSafeEqual(a, b) ? id : undefined;
+}
+
+export function validSession(value: string | undefined): boolean {
+  return sessionId(value) !== undefined;
 }
 
 export function sessionCookie(value: string, secure: boolean): string {

@@ -22,6 +22,7 @@ import { setSfx, useSfx } from "@/lib/client/sfx";
 import { WORDMARK } from "@/lib/brand/mark";
 
 const PILL = {
+  idle: { text: "AWAITING TARGET", cls: "border-line text-fg-3" },
   critical: { text: "THREAT CRITICAL", cls: "border-danger text-danger" },
   mitigating: { text: "MITIGATING", cls: "border-warn text-warn" },
   secured: { text: "SECURED", cls: "border-ok text-ok" },
@@ -70,12 +71,15 @@ export function TopBar({ compact = false }: { compact?: boolean }) {
           </span>
         )}
       </Link>
+      {/* Real values only. Until they exist the readout is invisible but keeps its width (a
+          same-length stand-in), so the bar never re-wraps when they arrive. */}
       <span
-        className="hidden font-mono text-micro uppercase tabular text-fg-3 xl:inline"
+        className={`hidden font-mono text-micro uppercase tabular text-fg-3 xl:inline ${s.patch && metrics ? "" : "invisible"}`}
+        aria-hidden={!(s.patch && metrics) || undefined}
         data-coords
       >
-        SID {s.patch ? s.patch.sessionId.slice(0, 8) : "--------"} · NODES{" "}
-        {metrics?.policy.links ?? "–"} · G{metrics?.policy.generation ?? "–"}
+        SID {s.patch ? s.patch.sessionId.slice(0, 8) : "00000000"} · NODES{" "}
+        {metrics?.policy.links ?? 0} · G{metrics?.policy.generation ?? 0}
       </span>
       <div
         role="radiogroup"

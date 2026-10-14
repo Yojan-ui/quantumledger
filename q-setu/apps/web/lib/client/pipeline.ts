@@ -217,8 +217,9 @@ export function shorExposure(s: PipelineState): { pct: number; sim: boolean } {
   return { pct: ((kexClassical ? 1 : 0) + (certClassical ? 1 : 0)) * 50, sim: false };
 }
 
-/** The status pill. */
-export function threat(s: PipelineState): "critical" | "mitigating" | "secured" {
+/** The status pill. Nothing is judged until a scan result exists. */
+export function threat(s: PipelineState): "idle" | "critical" | "mitigating" | "secured" {
+  if (!s.scan) return "idle";
   if (s.status[4] === "done" && s.sweep?.ok) return "secured";
   if (s.status[2] === "done") return "mitigating";
   return "critical";

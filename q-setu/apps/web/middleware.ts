@@ -20,6 +20,7 @@ import {
   newSession,
   SESSION_COOKIE,
   sessionCookie,
+  sessionId,
   validApiToken,
   validSession,
 } from "@/lib/server/session";
@@ -64,7 +65,8 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.protocol === "https:" || req.headers.get("x-forwarded-proto") === "https";
 
   if (path.startsWith("/api/")) {
-    const v = await take(req, limitsFor(path, req.method));
+    const sid = sessionId(req.cookies.get(SESSION_COOKIE)?.value);
+    const v = await take(req, limitsFor(path, req.method), sid);
     if (!v.ok) {
       log(req, path, 429, 0, { limit: v.limit.name });
       return tooMany(v);
@@ -79,7 +81,7 @@ export async function middleware(req: NextRequest) {
           return deny(req, "forbidden", "Requests must come from this site.", 403);
         if (
           !SESSION_EXEMPT.some((r) => r.test(path)) &&
-          !validSession(req.cookies.get(SESSION_COOKIE)?.value)
+          !sid
         )
           return deny(
             req,

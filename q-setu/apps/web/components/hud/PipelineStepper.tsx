@@ -98,7 +98,8 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
   const locked = (i: number) => i > 0 && s.status[i - 1] !== "done" && s.status[i] !== "done";
   return (
     <div className={`border border-line bg-glass ${className}`} role="group" aria-label="Pipeline">
-      <ol className="grid grid-cols-5">
+      {/* Phones: a row that scrolls sideways with full labels (faded at the edge); md+: five columns. */}
+      <ol className="fade-x flex overflow-x-auto md:grid md:grid-cols-5 md:overflow-visible">
         {STAGES.map((st, i) => {
           const status = s.status[i]!;
           const active = s.stage === i;
@@ -106,7 +107,7 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
           return (
             <li
               key={st.id}
-              className="relative border-r border-line px-2 py-2 last:border-r-0 md:px-3"
+              className="relative w-32 shrink-0 border-r border-line px-2 py-2 last:border-r-0 md:w-auto md:px-3"
               data-stage={st.id}
               data-status={status}
             >
@@ -123,8 +124,7 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
               <p
                 className={`font-mono text-micro uppercase ${active ? role.text : status === "done" ? "text-fg" : "text-fg-3"}`}
               >
-                {status === "done" ? "✓" : st.n} <span className="hidden md:inline">{st.name}</span>
-                <span className="md:hidden">{st.name.slice(0, 3)}</span>
+                {status === "done" ? "✓" : st.n} <span>{st.name}</span>
               </p>
               {locked(i) ? (
                 // Not available yet: deliberately locked (a lock and the step it waits for), not
@@ -176,16 +176,18 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
         >
           Replay · R
         </button>
-        {/* Only once there's an anchored block to tamper with. Its space is kept (invisible and
-            out of the tab order until then), so the row never reflows when it appears. */}
+        {/* Always shown, so the row never reflows. Until there's an anchored block it's disabled in
+            the readable secondary text colour (4.6:1) with a tooltip saying why. aria-disabled, not
+            disabled, keeps it focusable so the reason is reachable from the keyboard too. */}
         <button
           type="button"
-          onClick={() => void actions.tamper()}
-          disabled={busy || !s.proof}
-          aria-hidden={!s.proof || undefined}
-          tabIndex={s.proof ? 0 : -1}
-          data-ripple="danger"
-          className={`h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-danger disabled:opacity-40 ${s.proof ? "" : "invisible"}`}
+          onClick={() => {
+            if (!busy && s.proof) void actions.tamper();
+          }}
+          aria-disabled={busy || !s.proof || undefined}
+          title={s.proof ? "Change one byte of the anchored record" : "Run a scan first"}
+          data-ripple={s.proof ? "danger" : undefined}
+          className={`h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase ${s.proof && !busy ? "text-danger" : "cursor-not-allowed text-fg-3"}`}
         >
           Try tamper
         </button>

@@ -11,6 +11,13 @@ import { useSyncExternalStore } from "react";
 
 export type Quality = 0 | 1 | 2 | 3;
 export const DPR: Record<Quality, number> = { 0: 1.75, 1: 1.25, 2: 1.25, 3: 1 };
+/** Phones (< 768 px wide) never render above 1.5× however dense the screen: a 3× buffer costs
+ * four times the fill rate of 1.5× for detail nobody sees at arm's length. */
+export const PHONE_DPR_CAP = 1.5;
+export const dprCap = (q: Quality) =>
+  typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+    ? Math.min(PHONE_DPR_CAP, DPR[q])
+    : DPR[q];
 
 const state = { quality: 0 as Quality, lost: false };
 const listeners = new Set<() => void>();
