@@ -13,21 +13,22 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsup",
-    "dev": "tsx src/cli.ts"
+    "dev": "tsx src/cli.ts",
+    "bench:tunnel": "tsx bench/tunnel.ts"
   },
   "dependencies": {
     "@qsetu/core": "workspace:*",
-    "@noble/ciphers": "^2.4.0",
-    "@noble/curves": "^2.4.0",
-    "@noble/hashes": "^2.4.0",
-    "@noble/post-quantum": "^0.7.1",
+    "@noble/ciphers": "2.4.0",
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
+    "@noble/post-quantum": "0.7.1",
     "@qsetu/sdk": "workspace:*",
-    "fastify": "^5.12.5"
+    "fastify": "5.12.5"
   },
   "bin": {
     "qsetu-shield": "./dist/cli.js"
   },
   "devDependencies": {
-    "tsup": "^8.5.1"
+    "tsup": "8.5.1"
   }
 }

@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global document, window -- page.evaluate code */
 /**
  * `node scripts/real-shots.mjs <label>` → docs/real/<label>/:
  *  - <page>-1440.png and <page>-390.png for every page in the sitemap plus /diagnostics, /join,
@@ -71,7 +70,9 @@ for (const w of WIDTHS) {
     await page.goto(BASE + path, { waitUntil: "load" }).catch(() => {});
     await page.waitForTimeout(3000);
     if (w === 1440 || w === 390) await page.screenshot({ path: `${out}${slug(path)}-${w}.png` });
-    const o = await page.evaluate(OVERFLOW(w)).catch(() => ({ vw: w, sw: w, overflow: 0, worst: null }));
+    const o = await page
+      .evaluate(OVERFLOW(w))
+      .catch(() => ({ vw: w, sw: w, overflow: 0, worst: null }));
     (results[path] ??= {})[w] = { ...o, errors };
     await page.close();
   }
@@ -82,7 +83,11 @@ writeFileSync(`${out}overflow.json`, JSON.stringify(results, null, 2) + "\n");
 const rows = Object.entries(results).map(
   ([p, r]) =>
     `| \`${p}\` | ${WIDTHS.map((w) => (r[w].overflow > 0 ? `**+${r[w].overflow}**` : "0")).join(" | ")} | ${
-      WIDTHS.map((w) => r[w].worst && r[w].overflow > 0 ? `${w}: \`${r[w].worst.tag}.${r[w].worst.cls.split(" ").slice(0, 4).join(".")}\` → ${r[w].worst.right}px` : "")
+      WIDTHS.map((w) =>
+        r[w].worst && r[w].overflow > 0
+          ? `${w}: \`${r[w].worst.tag}.${r[w].worst.cls.split(" ").slice(0, 4).join(".")}\` → ${r[w].worst.right}px`
+          : "",
+      )
         .filter(Boolean)
         .join("<br>") || "–"
     } |`,

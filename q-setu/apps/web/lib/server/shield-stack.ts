@@ -32,7 +32,14 @@ export function ensureShieldStack(): Promise<"external" | "in-process"> {
     }
     const identity = createIdentity("standard");
     if (!(await up(`${SHIELD_SERVER}/healthz`))) {
-      await startShieldServer({ upstream: LEGACY, listen: PORTS.shieldServer, identity });
+      // The website's own demo: it reads the key in-process, but the "external" case below (pnpm
+      // dev's separate processes) fetches it, so demo mode is on for this local, loopback-only stack.
+      await startShieldServer({
+        upstream: LEGACY,
+        listen: PORTS.shieldServer,
+        identity,
+        demoIdentity: true,
+      });
       await startShieldClient({
         peer: SHIELD_SERVER,
         listen: PORTS.shieldClient,
