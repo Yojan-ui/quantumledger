@@ -19,6 +19,7 @@ import type { DirectorState } from "@/components/director/types";
 import { latticeCube, span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { PushDust } from "@/components/scenes/PushDust";
 import { Thicken } from "@/components/scenes/Thicken";
 
 export interface Film {
@@ -182,6 +183,7 @@ export default function HandshakeFilm({
   const sparkT = useRef(Float32Array.from({ length: SPARKS }, (_, i) => i / SPARKS));
   const react = useReactions(browserOnly);
   // Phones: half the sparks and no focus pull. Reduced motion: no focus pull either.
+  const nearV = useMemo(() => new THREE.Vector3(), []);
   const small = useMemo(() => window.matchMedia("(max-width: 767px)").matches, []);
   const focus = small || state.reduce ? undefined : state.shot.focus;
 
@@ -189,7 +191,7 @@ export default function HandshakeFilm({
   const packetPos = useRef(new THREE.Vector3());
   const track = () => (state.shot.id === "packet" ? packetPos.current : null);
 
-  useFrame(({ clock }, dt) => {
+  useFrame(({ clock, camera }, dt) => {
     if (!active) return;
     const now = performance.now();
     const time = clock.elapsedTime;
@@ -265,11 +267,22 @@ export default function HandshakeFilm({
       ring.current.scale.setScalar(Math.max(0.0001, t) * (1 + 0.08 * v + 0.15 * hit));
       ring.current.rotation.z += dt * (state.reduce ? 0 : 0.15);
       (ring.current.material as THREE.MeshBasicMaterial).color.copy(hit > 0.05 ? c.danger : c.sig);
+      // The camera's orbit round the merge passes by the ring: fade it as the lens nears its tube,
+      // so it never fills the frame.
+      const lc = ring.current.worldToLocal(nearV.copy(camera.position));
+      const tube = Math.hypot(Math.hypot(lc.x, lc.y) - 0.72, lc.z) * ring.current.scale.x;
+      (ring.current.material as THREE.MeshBasicMaterial).opacity = Math.min(
+        1,
+        Math.max(0, (tube - 0.25) / 0.6),
+      );
     }
     // Merge: classical (white) and post-quantum (KEM) halves fly into the HKDF lens and fuse.
     // The hero moment: slow (2.6 s), full-frame, the camera orbiting the lens as the halves fuse.
     const m = film.mergeAt ? (state.reduce ? 1 : span(now - film.mergeAt, 0, MERGE_MS)) : 0;
-    const me = easeToken(m);
+    // Magnetic: a 120 ms wind-up apart, then an accelerating close (cubic) until they touch at 85%.
+    const w = 120 / MERGE_MS / 0.85;
+    const u = Math.min(1, m / 0.85);
+    const me = u < w ? -0.06 * Math.sin((Math.PI * u) / w) : ((u - w) / (1 - w)) ** 3;
     if (halfA.current && halfB.current && lens.current && key.current && flash.current) {
       const flying = m > 0 && m < 0.85;
       halfA.current.visible = halfB.current.visible = flying;
@@ -396,7 +409,7 @@ export default function HandshakeFilm({
       </mesh>
       <mesh ref={ring} position={SERVER} rotation={[0, Math.PI / 2, 0]} scale={0.0001}>
         <torusGeometry args={[0.72, 0.012, 8, 96]} />
-        <meshBasicMaterial color={c.sig} toneMapped={false} />
+        <meshBasicMaterial color={c.sig} toneMapped={false} transparent depthWrite={false} />
       </mesh>
       <mesh ref={halfA} visible={false} rotation={[0, Math.PI / 2, 0]}>
         <sphereGeometry args={[0.3, 32, 16, 0, Math.PI]} />
@@ -420,6 +433,20 @@ export default function HandshakeFilm({
         <octahedronGeometry args={[0.32, 0]} />
         <meshBasicMaterial color={c.ok} wireframe toneMapped={false} />
       </mesh>
+      {/* The fuse's shock: dust round the lens, pushed out when the halves touch (85% of the merge). */}
+      {film.mergeAt !== undefined && (
+        <PushDust
+          color={c.ok}
+          count={small ? 70 : 140}
+          inner={0.6}
+          outer={1.8}
+          opacity={0.4}
+          reduce={state.reduce}
+          since={() =>
+            film.mergeAt ? (performance.now() - film.mergeAt) / 1000 - (MERGE_MS * 0.85) / 1000 : -1
+          }
+        />
+      )}
       <mesh ref={flash} visible={false} rotation={[0, Math.PI / 2, 0]}>
         <ringGeometry args={[0.7, 0.74, 96]} />
         <meshBasicMaterial color={c.ok} transparent depthWrite={false} side={THREE.DoubleSide} />
