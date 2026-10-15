@@ -3,7 +3,10 @@
 /**
  * Twelve great-circle arcs, one per live-mesh route. Every pulse is a real packet from the bus
  * (LiveTraffic): its travel time follows the measured latency, and an arc lights up while it carries
- * traffic, then settles back. A rejected (tampered) packet snaps halfway and its arc flashes saffron.
+ * traffic, then settles back. A packet is thrown along its arc: fast out, slowest at the apex, fast
+ * in (lib/motion throwArc), with a short fading trail sampled from its own recent path (a faster
+ * packet leaves a longer streak), and its landing ripples on the destination node (accent if sealed,
+ * warn if classical). A rejected (tampered) packet snaps halfway and its arc flashes saffron.
  * The director still decides which arc a chapter is about; that one stays fully bright.
  */
 import { useFrame, useThree } from "@react-three/fiber";
@@ -17,6 +20,12 @@ import { ARCS, arcPoints, toVec3 } from "./geo";
 import { palette } from "./palette";
 import { setPinned, world, type PacketInfo } from "./store";
 import { set3 } from "@/components/scenes/geometry";
+import { throwArc } from "@/lib/motion";
+
+/** Points per packet: the head and its trail. */
+const TRAIL = 6;
+/** Seconds between trail samples (the trail is sampled in time, so speed stretches it). */
+const TRAIL_DT = 0.035;
 
 const SEG = 64;
 const N = ARCS.length;
@@ -198,14 +207,16 @@ export function Arcs() {
 
   const pulses = useMemo(() => {
     const n = 64;
+    const pts = n * TRAIL;
     const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-    g.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(n), 1));
-    g.setAttribute("aWarn", new THREE.BufferAttribute(new Float32Array(n), 1));
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pts * 3), 3));
+    g.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(pts), 1));
+    g.setAttribute("aWarn", new THREE.BufferAttribute(new Float32Array(pts), 1));
+    g.setAttribute("aAlpha", new THREE.BufferAttribute(new Float32Array(pts).fill(1), 1));
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 3);
     const m = new THREE.ShaderMaterial({
-      vertexShader: `attribute float aSize; attribute float aWarn; varying float vWarn; uniform float uPR; void main(){ vWarn = aWarn; vec4 mv = modelViewMatrix*vec4(position,1.); gl_Position = projectionMatrix*mv; gl_PointSize = aSize*uPR/-mv.z; }`,
-      fragmentShader: `uniform vec3 uColor; uniform vec3 uWarn; varying float vWarn; void main(){ float d = length(gl_PointCoord-.5); if (d > .5) discard; gl_FragColor = vec4(mix(uColor, uWarn, vWarn), smoothstep(.5,.2,d)); }`,
+      vertexShader: `attribute float aSize; attribute float aWarn; attribute float aAlpha; varying float vWarn; varying float vAlpha; uniform float uPR; void main(){ vWarn = aWarn; vAlpha = aAlpha; vec4 mv = modelViewMatrix*vec4(position,1.); gl_Position = projectionMatrix*mv; gl_PointSize = aSize*uPR/-mv.z; }`,
+      fragmentShader: `uniform vec3 uColor; uniform vec3 uWarn; varying float vWarn; varying float vAlpha; void main(){ float d = length(gl_PointCoord-.5); if (d > .5) discard; gl_FragColor = vec4(mix(uColor, uWarn, vWarn), smoothstep(.5,.2,d) * vAlpha); }`,
       uniforms: {
         uPR: { value: pr },
         uColor: { value: c.warn.clone() },
@@ -337,6 +348,7 @@ export function Arcs() {
     const pos = pulses.g.attributes.position!.array as Float32Array;
     const size = pulses.g.attributes.aSize!.array as Float32Array;
     const warn = pulses.g.attributes.aWarn!.array as Float32Array;
+    const alpha = pulses.g.attributes.aAlpha!.array as Float32Array;
     size.fill(0);
     let k = 0;
     // Compacted in place (no new array per frame).
@@ -352,16 +364,28 @@ export function Arcs() {
       }
       if (l.t >= 1) {
         world.harvested++;
-        if (l.arriveAt && params.accent === "accent")
-          world.ripples.push({ city: l.arriveAt, at: performance.now() });
+        if (l.arriveAt)
+          world.ripples.push({
+            city: l.arriveAt,
+            at: performance.now(),
+            tone: params.accent === "accent" ? "accent" : "warn",
+          });
         continue;
       }
-      if (k < pulses.n) {
-        pointOnArc(l.arc, l.reverse ? 1 - l.t : l.t, tmp);
-        set3(pos, k, tmp.x, tmp.y, tmp.z);
-        warn[k] = l.doomed ? Math.min(1, l.t * 2) : 0;
-        slots.current[k] = l;
-        size[k++] = l.size * Math.min(1, level[l.arc]! * 1.6 + 0.25);
+      if (k + TRAIL <= pulses.n * TRAIL) {
+        // The head (slot k, the one a click inspects), then its trail: the same throw, earlier.
+        const head = l.size * Math.min(1, level[l.arc]! * 1.6 + 0.25);
+        for (let j = 0; j < TRAIL; j++) {
+          const tj = l.t - j * TRAIL_DT * l.speed;
+          if (j > 0 && tj <= 0) break;
+          const u = throwArc(Math.max(0, tj));
+          pointOnArc(l.arc, l.reverse ? 1 - u : u, tmp);
+          set3(pos, k, tmp.x, tmp.y, tmp.z);
+          warn[k] = l.doomed ? Math.min(1, tj * 2) : 0;
+          slots.current[k] = j === 0 ? l : undefined;
+          alpha[k] = j === 0 ? 1 : (1 - j / TRAIL) ** 1.5 * 0.7;
+          size[k++] = j === 0 ? head : head * (1 - j / (TRAIL + 1)) * 0.75;
+        }
       }
       list[keep++] = l;
     }
@@ -370,6 +394,7 @@ export function Arcs() {
     pulses.g.attributes.position!.needsUpdate = true;
     pulses.g.attributes.aSize!.needsUpdate = true;
     pulses.g.attributes.aWarn!.needsUpdate = true;
+    pulses.g.attributes.aAlpha!.needsUpdate = true;
   });
 
   return (

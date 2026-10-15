@@ -2,9 +2,12 @@
 
 /**
  * Camera and globe choreography. Each frame: find the page's visible globe area, ask the director
- * for the pose, ease towards it (critically damped, never bouncy), add slow auto-rotation (faster
- * while the page scrolls), a drag fling with inertia and a slight cursor tilt, and frame the globe inside that area.
- * After 3 s without a drag the globe springs back to the shot's framing; a double-click re-frames at once.
+ * for the pose, and move towards it on springs (lib/motion): distance, tilt and heading start from
+ * rest, accelerate and settle (ζ ≈ 0.9, no bounce), so a chapter change is one smooth move along the
+ * director's spline, not an exponential lurch. Add slow auto-rotation (faster while the page
+ * scrolls), a drag fling with inertia and a slight cursor tilt, and frame the globe inside that area.
+ * After 3 s without a drag the globe springs back to the shot's framing with a slight overshoot and
+ * settle; a double-click re-frames at once (a stiffer spring).
  */
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
@@ -12,6 +15,13 @@ import * as THREE from "three";
 import { direct } from "./director";
 import { facing } from "./geo";
 import { world } from "./store";
+import { Spring, stepSpring } from "@/lib/motion";
+
+/** Chapter moves: ~1.5 s to arrive, a whisper of overshoot. */
+const MOVE = { mass: 1, stiffness: 14, damping: 6.8 };
+/** The spin back to the shot after a drag: a visible settle. */
+const BACK = { mass: 1, stiffness: 9, damping: 3.6 };
+const REFRAME = { mass: 1, stiffness: 60, damping: 11 };
 
 const damp = (cur: number, target: number, lambda: number, dt: number) =>
   cur + (target - cur) * (1 - Math.exp(-lambda * dt));
@@ -53,6 +63,12 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
   /** Scroll velocity (px/s), smoothed; the globe spins faster while the page scrolls. */
   const scroll = useRef({ y: 0, t: 0, v: 0, boost: 0 });
   const reduce = useRef(false);
+  const springs = useRef({
+    dist: new Spring(5, MOVE),
+    tilt: new Spring(0, MOVE),
+    yaw: new Spring(0, MOVE),
+    init: false,
+  });
 
   useEffect(() => {
     reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -131,13 +147,35 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     const fitDist = size.height / (0.85 * Math.max(160, Math.min(r.width, r.height)) * 0.3249);
     // A directed shot (Demo 2) is already eased by its tween: follow it closely.
     const shot = world.mode === "deploy" && !!world.shot;
-    s.dist = damp(s.dist, (p.dist / 3) * fitDist, reduce.current ? 50 : shot ? 12 : 2.2, dt);
+    // A directed shot follows its own tween closely; chapter moves ride the springs.
+    const sp = springs.current;
+    const distTo = (p.dist / 3) * fitDist;
+    if (!sp.init || reduce.current) {
+      sp.dist.set(distTo);
+      sp.tilt.set(p.tilt);
+      sp.yaw.set(p.yaw);
+      sp.init = true;
+    }
+    sp.dist.target = distTo;
+    sp.tilt.target = p.tilt;
+    sp.yaw.target = p.yaw;
+    if (shot) {
+      s.dist = damp(s.dist, distTo, 12, dt);
+      sp.dist.set(s.dist);
+    } else s.dist = sp.dist.step(dt);
     // Tilt and yaw: the camera orbits a point on the globe's near surface (the shot's lat/lon, which
     // the globe turns to face the camera), so a pitched shot reads as a low angle over the land with
     // a level horizon, not a tilted globe. Head-on shots (tilt 0) look at the centre as before.
     const kt = reduce.current ? 50 : shot ? 12 : 2;
-    s.tilt = damp(s.tilt, p.tilt, kt, dt);
-    s.yaw = damp(s.yaw, p.yaw, kt, dt);
+    if (shot || reduce.current) {
+      s.tilt = damp(s.tilt, p.tilt, kt, dt);
+      s.yaw = damp(s.yaw, p.yaw, kt, dt);
+      sp.tilt.set(s.tilt);
+      sp.yaw.set(s.yaw);
+    } else {
+      s.tilt = sp.tilt.step(dt);
+      s.yaw = sp.yaw.step(dt);
+    }
     const T = (s.tilt * Math.PI) / 180;
     const Y = (s.yaw * Math.PI) / 180;
     const pz = Math.min(1, s.tilt / 35);
@@ -162,12 +200,17 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
     if (!reduce.current && p.spin > 0.005) s.spin = wrap(s.spin + (p.spin + sc.boost) * dt);
     else s.spin = damp(s.spin, 0, 1.6, dt);
     if (!ptr.current.down) {
-      s.drag += s.dragV * dt;
-      s.dragV = damp(s.dragV, 0, 1.6, dt);
       const now = performance.now();
       const reframing = now - ptr.current.reframeAt < 1200;
-      if (reframing || p.spin <= 0.005 || now - ptr.current.upAt > 3000)
-        s.drag = damp(wrap(s.drag), 0, reframing ? 6 : 1.2, dt);
+      if (reduce.current) s.drag = damp(wrap(s.drag), 0, 6, dt);
+      else if (reframing || p.spin <= 0.005 || now - ptr.current.upAt > 3000) {
+        // Spring back to the shot: the fling's remaining velocity carries into it.
+        [s.drag, s.dragV] = stepSpring(wrap(s.drag), s.dragV, 0, dt, reframing ? REFRAME : BACK);
+      } else {
+        // Inertia: the fling coasts and slows (friction).
+        s.drag += s.dragV * dt;
+        s.dragV = damp(s.dragV, 0, 1.6, dt);
+      }
     }
     s.tiltX = damp(s.tiltX, ptr.current.y * 0.04, 2, dt);
     s.tiltY = damp(s.tiltY, ptr.current.x * 0.06, 2, dt);

@@ -12,6 +12,7 @@ import { Thicken } from "@/components/scenes/Thicken";
 import { RoomArcs } from "./RoomArcs";
 import { ScanArc } from "./ScanArc";
 import { LedgerCore } from "./LedgerCore";
+import { Shell } from "./Shell";
 import type { Dots } from "./shapes";
 import { world } from "./store";
 
@@ -53,6 +54,7 @@ export function World({ dots }: { dots: Dots }) {
           <IndexBars />
           <LedgerCore />
         </Thicken>
+        <Shell />
       </group>
     </>
   );

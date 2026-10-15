@@ -96,7 +96,7 @@ export function Nodes() {
     g.rotateX(Math.PI / 2);
     return g;
   }, []);
-  const active = useRef<{ city: number; at: number }[]>([]);
+  const active = useRef<{ city: number; at: number; warn: boolean }[]>([]);
   const safe = useRef(new Float32Array(NODES.length));
   const vis = useRef(0);
   const sockVis = useRef(0);
@@ -276,7 +276,7 @@ export function Nodes() {
       const q = world.ripples.shift()!;
       const ci = CITY_INDEX.get(q.city);
       if (ci !== undefined && active.current.length < MAX_RIPPLES)
-        active.current.push({ city: ci, at: q.at });
+        active.current.push({ city: ci, at: q.at, warn: q.tone === "warn" });
     }
     // In place: no new array per frame.
     {
@@ -291,9 +291,11 @@ export function Nodes() {
         place(rp, i, ROUTE_CITIES[0]!.pos, 0);
         continue;
       }
+      // A landing: the ring leaves fast and slows as it spreads (ease-out), fading as it goes.
       const t = (now - a.at) / RIPPLE_MS;
-      place(rp, i, ROUTE_CITIES[a.city]!.pos, 0.01 + t * 0.03);
-      col.copy(c.accent).multiplyScalar(1 - t);
+      const r = 1 - (1 - t) ** 3;
+      place(rp, i, ROUTE_CITIES[a.city]!.pos, 0.01 + r * 0.03);
+      col.copy(a.warn ? c.warn : c.accent).multiplyScalar((1 - t) ** 1.5 * (a.warn ? 0.7 : 1));
       rp.setColorAt(i, col);
     }
 

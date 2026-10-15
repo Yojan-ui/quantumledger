@@ -92,8 +92,8 @@ export const world = {
   /** Highlighted adapter socket on the globe (0..4), or -1. */
   socket: -1,
   showPulseKinds: { saffron: true, cyan: true },
-  /** City ripples (sealed packets arriving), drained by the scene. */
-  ripples: [] as { city: string; at: number }[],
+  /** City ripples (packets landing), drained by the scene: sealed ones in the accent, classical in warn. */
+  ripples: [] as { city: string; at: number; tone?: "accent" | "warn" }[],
   /** Screen position (CSS px) of the highlighted socket, written by the scene each frame. */
   socketScreen: null as { x: number; y: number } | null,
   /** Seconds-scale breathing for the atmosphere; false under reduced motion. */
