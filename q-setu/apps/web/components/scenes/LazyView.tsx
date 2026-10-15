@@ -83,10 +83,12 @@ export function LazyView({
     invalidateAreas();
   }, [mounted, onScreen]);
   const ready = useCallback(() => ref.current?.setAttribute("data-ready", ""), []);
+  // A scene that fails shows its poster again (see SceneBoundary).
+  const fail = useCallback(() => ref.current?.removeAttribute("data-ready"), []);
   return (
     <div ref={ref} data-3d role="img" aria-label={label} className={`relative ${className}`}>
       {mounted && (
-        <SceneView className="absolute inset-0" onReady={ready}>
+        <SceneView className="absolute inset-0" onReady={ready} onFail={fail}>
           {children(onScreen)}
         </SceneView>
       )}

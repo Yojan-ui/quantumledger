@@ -73,15 +73,17 @@ export function SceneView({
   children,
   className,
   onReady,
+  onFail,
 }: {
   children: ReactNode;
   className?: string;
   onReady?: () => void;
+  onFail?: () => void;
 }) {
   return (
     <View className={className}>
-      {/* FirstFrame sits inside the boundary: a scene that fails never reports ready. */}
-      <SceneBoundary>
+      {/* A scene that fails draws nothing and calls onFail, so its area shows the poster again. */}
+      <SceneBoundary onError={onFail}>
         {children}
         <Precompile />
         {onReady && <FirstFrame onReady={onReady} />}

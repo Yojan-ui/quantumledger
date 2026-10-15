@@ -16,6 +16,12 @@ Recordings: `node scripts/motion-record.mjs docs/motion2/after-2` → `docs/moti
 
 ## Frame times
 
+> **Correction (after review 2):** these are requestAnimationFrame times, so they show the page
+> ticking at 60 fps, not how often the 3D drew. A later check (`scripts/check-3d.mjs`, which counts
+> WebGL draws) found the 3D drew only every other frame, about 30 fps, everywhere except the Shield
+> dive. The cause was the frame driver in `WorldScene.tsx`; fixed in 9480f59, after which every 3D
+> page measures 59.9–60.3 fps.
+
 | Scene             | p50 / p95 (ms) | > 20 ms | Worst frame, at           |
 | ----------------- | -------------- | ------- | ------------------------- |
 | Diagnostics       | 16.7 / 16.8    | 0.19%   | 100 ms, 613 ms after load |
