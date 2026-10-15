@@ -292,7 +292,9 @@ export function ComparisonTable() {
     return () => io.disconnect();
   }, []);
   return (
-    <div className="overflow-x-auto">
+    // overflow-y-hidden: rows sliding in would otherwise make this box scroll vertically for a
+    // moment and take the page's wheel (a visible jump back).
+    <div className="overflow-x-auto overflow-y-hidden">
       <table ref={table} className="w-full min-w-panel table-fixed text-left">
         <caption className="sr-only">
           <Copy
