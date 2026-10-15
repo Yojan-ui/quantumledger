@@ -17,6 +17,7 @@ import type { DirectorState } from "@/components/director/types";
 import { span } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { burst, piece, sceneTime, wobble, type Piece } from "@/lib/motion";
 import { makeLook, type Look } from "@/components/scenes/pipeline/look";
 import { CountdownRing } from "@/components/scenes/pipeline/Mosca";
 import { tap, Vault, type Taps } from "@/components/scenes/pipeline/Vault";
@@ -29,6 +30,9 @@ const SHARDS = 6;
 const ORB = new THREE.Vector3(0, 0, -2.4);
 /** The beat between the key falling and the packets breaking. */
 const FREEZE_MS = 300;
+/** Each classical packet's shards: deterministic velocities and spins, one set per packet. */
+const PIECES: Piece[][] = Array.from({ length: MAX }, (_, i) => burst(SHARDS, 0.07, 101 + i, 0.75));
+const shardRot = new THREE.Euler();
 
 const mine = (e: { source: string }) => e.source === "browser";
 
@@ -168,9 +172,18 @@ export default function QDayFilm({
     const broke = !!breakAt && now >= breakAt;
     if (!broke) frozenAt.current = null;
     else frozenAt.current ??= t;
-    // Q-Day: a 300 ms freeze (everything holds), then the classical packets shatter in slow
-    // motion (2.4 s); the QuantumLedger packets glint and keep going.
-    const b = broke ? (state.reduce ? 1 : easeToken(span(now - breakAt - FREEZE_MS, 0, 2400))) : 0;
+    // Q-Day: a 300 ms freeze (everything holds: the wind-up), then the impact. The classical
+    // packets burst into shards with their own velocity and spin, falling under light gravity,
+    // while time slows around the impact (1 → 0.2 → 1); the QuantumLedger packets glint and take
+    // the shock as a lurch that rings down.
+    const since = broke ? (now - breakAt) / 1000 : 0;
+    const at = FREEZE_MS / 1000;
+    const tau = broke
+      ? state.reduce
+        ? 2.5
+        : Math.max(0, sceneTime(since, at, 0.2, 0.2, 0.6) - sceneTime(at, at, 0.2, 0.2, 0.6))
+      : 0;
+    const b = Math.min(1, tau / 2.2);
     const glint = breakAt
       ? pulse(breakAt + FREEZE_MS, 900) + 0.6 * pulse(react.current.reject, 500)
       : 0;
@@ -199,21 +212,21 @@ export default function QDayFilm({
       const ce = classicalEdges.current[i];
       if (ce) ce.matrix.copy(o.matrix);
       for (let k = 0; k < SHARDS; k++) {
-        const a = i * 1.7 + k * 1.05;
-        o.position.set(
-          x + Math.cos(a) * b * 1.1,
-          ROW + Math.sin(a * 1.3) * b * 0.8 + b * 0.35,
-          Math.sin(a) * b * 1.0,
-        );
-        o.rotation.set(a * b * 2, a, b * 1.4);
+        piece(PIECES[i]![k]!, tau, o.position, shardRot, { drag: 1.8, gravity: -0.45 });
+        o.position.x += x;
+        o.position.y += ROW;
+        o.rotation.copy(shardRot);
         o.scale.setScalar(on * (broke ? 1 - 0.4 * b : 0.0001));
         o.updateMatrix();
         sh.setMatrixAt(i * SHARDS + k, o.matrix);
       }
       // QuantumLedger packet: keeps moving, and refracts the shock wave as a brief KEM glint.
-      o.position.set(packetX(i, t), -ROW, 0);
-      o.rotation.set(0, 0, 0);
-      o.scale.setScalar(on * (1 + 0.25 * Math.min(1, glint)));
+      const qx = packetX(i, t);
+      // The shock wave spreads from the centre: it reaches each packet after |x| / 8 s.
+      const shock = breakAt && !state.reduce ? wobble(since - at - Math.abs(qx) / 8, 2.2, 3.2) : 0;
+      o.position.set(qx, -ROW + 0.06 * shock, 0);
+      o.rotation.set(0, 0, 0.12 * shock);
+      o.scale.setScalar(on * (1 + 0.25 * Math.min(1, glint)) * (1 + 0.05 * shock));
       o.updateMatrix();
       qm.setMatrixAt(i, o.matrix);
       const qe = qsetuEdges.current[i];

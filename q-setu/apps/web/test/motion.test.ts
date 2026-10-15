@@ -106,3 +106,27 @@ describe("camera", () => {
     expect(p.distanceTo(m.to.pos)).toBeLessThan(0.01);
   });
 });
+
+describe("ballistics", () => {
+  it("sceneTime is continuous, slower around the impact, and catches up to real time's pace", async () => {
+    const { sceneTime } = await import("@/lib/motion");
+    let prev = 0;
+    for (let t = 0.01; t < 3; t += 0.01) {
+      const s = sceneTime(t, 1);
+      const rate = (s - prev) / 0.01;
+      expect(rate).toBeGreaterThan(0.19);
+      expect(rate).toBeLessThan(1.01);
+      prev = s;
+    }
+    expect((sceneTime(1.1, 1) - sceneTime(1.0, 1)) / 0.1).toBeCloseTo(0.2, 2);
+    expect(sceneTime(3, 1) - sceneTime(2.9, 1)).toBeCloseTo(0.1, 6);
+  });
+  it("pieces fly out and fall", async () => {
+    const { burst, piece } = await import("@/lib/motion");
+    const [p] = burst(1, 0.3, 7);
+    const a = piece(p!, 0, new THREE.Vector3(), new THREE.Euler()).clone();
+    const b = piece(p!, 2, new THREE.Vector3(), new THREE.Euler());
+    expect(a.distanceTo(p!.start)).toBeLessThan(1e-9);
+    expect(b.distanceTo(a)).toBeGreaterThan(0.3);
+  });
+});

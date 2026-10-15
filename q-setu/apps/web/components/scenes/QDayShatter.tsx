@@ -1,20 +1,27 @@
 "use client";
 
 /**
- * Q-Day, as one shock wave: the classical packet (RSA key transport) breaks into 40 glass shards with
- * saffron edges and drifts apart; the QuantumLedger packet (ML-KEM) only refracts the wave, a ripple through
- * its glass, and stays whole. Plays once on Q-Day, in under 1.2 s; `still` shows the end state.
+ * Q-Day, as one shock wave: the classical packet (RSA key transport) trembles and squeezes for a
+ * beat (the wind-up), then breaks into 40 glass shards with saffron edges. Each shard has its own
+ * velocity and spin and falls under light gravity with drag (lib/motion ballistics, closed form), and
+ * time slows around the impact (1 → 0.2 → 1). The QuantumLedger packet (ML-KEM) takes the shock wave
+ * as a wobble (it lurches and rings down) and stays whole. Plays once on Q-Day in 2 s; `still` shows
+ * the end state.
  */
 import { MeshTransmissionMaterial, PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { easeToken } from "@/lib/ease";
+import { burst, piece, sceneTime, wobble } from "@/lib/motion";
 import { palette } from "@/components/world/palette";
 import { Thicken } from "@/components/scenes/Thicken";
 
 const SHARDS = 40;
-const DURATION = 1150;
+const DURATION = 2000;
+/** The wind-up before the break, and the impact (s). */
+const IMPACT = 0.18;
+/** The shock reaches the QuantumLedger packet after crossing the gap (s). */
+const SHOCK_DELAY = 0.12;
 
 export default function QDayShatter({
   qday,
@@ -50,23 +57,9 @@ export default function QDayShatter({
     g.computeVertexNormals();
     return g;
   }, []);
-  // Each shard: a start point inside the packet, a drift direction and a spin.
-  const shards = useMemo(
-    () =>
-      Array.from({ length: SHARDS }, (_, i) => {
-        const r = (k: number) => Math.sin(i * 12.9898 + k * 78.233) * 0.5;
-        const start = new THREE.Vector3(r(1) * 0.5, r(2) * 0.5, r(3) * 0.5);
-        return {
-          start,
-          dir: start
-            .clone()
-            .normalize()
-            .multiplyScalar(0.9 + Math.abs(r(4))),
-          spin: new THREE.Euler(r(5) * 6, r(6) * 6, r(7) * 6),
-        };
-      }),
-    [],
-  );
+  // Each shard: a start point inside the packet, a velocity and a spin (deterministic).
+  const shards = useMemo(() => burst(SHARDS, 0.25, 11, 1.5), []);
+  const rot = useMemo(() => new THREE.Euler(), []);
 
   useEffect(() => {
     at.current = qday ? performance.now() : 0;
@@ -74,27 +67,36 @@ export default function QDayShatter({
 
   useFrame(({ clock }) => {
     if (!active) return;
-    const t = qday ? (still ? 1 : Math.min(1, (performance.now() - at.current) / DURATION)) : 0;
-    const e = easeToken(t);
+    // Real seconds since Q-Day, and scene seconds since the impact (slowed around it).
+    const t = qday ? (still ? DURATION / 1000 : (performance.now() - at.current) / 1000) : 0;
+    const tau = qday ? sceneTime(t, IMPACT) - sceneTime(IMPACT, IMPACT) : 0;
+    const e = Math.min(1, Math.max(0, tau / 0.9));
+    const broken = qday && t >= IMPACT;
     if (classical.current) {
-      classical.current.visible = !qday;
+      classical.current.visible = !broken;
       classical.current.rotation.y = 0.5 + clock.elapsedTime * 0.12;
+      // The wind-up: it trembles and squeezes as the wave arrives.
+      const w = qday && !still ? Math.min(1, t / IMPACT) : 0;
+      classical.current.scale.set(1 + 0.06 * w, 1 - 0.1 * w, 1 + 0.06 * w);
+      classical.current.position.x = -X + (w > 0 ? Math.sin(t * 90) * 0.02 * w : 0);
     }
     if (qsetu.current) {
       qsetu.current.rotation.y = -0.5 - clock.elapsedTime * 0.12;
-      // The shock wave passes through the glass: a brief ripple, then calm.
-      const wave = qday && !still ? Math.sin(Math.PI * t) : 0;
-      qsetu.current.scale.setScalar(1 + 0.04 * wave);
-      if (mtm.current) mtm.current.distortion = 0.1 + 0.9 * wave;
+      // The shock wave: a lurch away from the break, then a damped ring-down to calm.
+      const k = qday && !still ? wobble(t - IMPACT - SHOCK_DELAY, 2.4, 3.5) : 0;
+      qsetu.current.scale.setScalar(1 + 0.06 * k);
+      qsetu.current.position.x = X + 0.08 * Math.max(0, k);
+      qsetu.current.rotation.z = 0.06 * k;
+      if (mtm.current) mtm.current.distortion = 0.1 + 0.9 * Math.abs(k);
     }
     const g = glass.current;
     const ed = edges.current;
     if (!g || !ed) return;
-    g.visible = ed.visible = qday;
+    g.visible = ed.visible = broken;
     shards.forEach((s, i) => {
-      o.position.copy(s.start).addScaledVector(s.dir, e);
+      piece(s, tau, o.position, rot);
       o.position.x -= X;
-      o.rotation.set(s.spin.x * e, s.spin.y * e, s.spin.z * e);
+      o.rotation.copy(rot);
       o.scale.setScalar(1 - 0.35 * e);
       o.updateMatrix();
       g.setMatrixAt(i, o.matrix);
