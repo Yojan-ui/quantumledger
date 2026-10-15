@@ -140,8 +140,12 @@ export function WorldCanvas() {
       if (idleId && typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(idleId);
     };
   }, [pathname]);
+  // ?nocanvas=1 hides the WebGL canvas (the motion pass's visual check: everything left is UI).
+  const [nocanvas, setNocanvas] = useState(false);
+  useEffect(() => setNocanvas(new URLSearchParams(location.search).get("nocanvas") === "1"), []);
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden" data-world>
+      {nocanvas && <style>{"[data-world] canvas { visibility: hidden !important; }"}</style>}
       <GlobeGlow />
       {dots && <WorldScene key={build} dots={dots} onRestored={restored} />}
     </div>
