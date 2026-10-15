@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global window -- page.evaluate code */
 /**
  * `node scripts/motion-check.mjs <path> <outDir> [step...]`: opens a page at 1440×900 (BASE, default
  * http://localhost:3001), runs the steps, and reports console errors (shader compile errors included).

@@ -372,9 +372,11 @@ export function DeployDemo() {
     tick();
   }
   function startDive(s: (typeof SITES)[number]) {
-    if (running || reel.busy || dive) return;
-    reel.stop();
+    // Picking a system always selects it; the dive waits for a deploy or a film move to finish.
     setAdapter(s.adapter);
+    if (running || reel.busy) return;
+    // Another system while diving: re-target (the globe comes back and flies on to the new node).
+    reel.stop();
     world.shot = { pose: { ...pose.current }, extrude: 1, focus: s.id, model: true };
     setDive({ site: s, phase: "in" });
     fly({ dist: 1.03, lat: s.lat, lon: s.lon, spin: 0, tilt: 70, yaw: 15 }, 1600, () =>
@@ -392,6 +394,23 @@ export function DeployDemo() {
     fly(shot.pose, 1500, () => setDive(null));
   }
   useEffect(() => () => cancelAnimationFrame(flight.current), []);
+  /** The film takes over: leave the scene at once; the next shot flies from the node. */
+  function exitDive() {
+    if (!dive) return;
+    cancelAnimationFrame(flight.current);
+    setDive(null);
+    world.shot = {
+      pose: { ...pose.current },
+      extrude: shot.extrude,
+      focus: shot.zoom ? site.id : null,
+      model: shot.zoom,
+    };
+  }
+  /** Film controls, each leaving any dive first. */
+  const film = {
+    to: (i: number) => (exitDive(), reel.to(i)),
+    play: () => (exitDive(), reel.play()),
+  };
   // A node clicked on the globe dives too.
   const clicked = useWorld((w) => w.dive);
   useEffect(() => {
@@ -418,17 +437,17 @@ export function DeployDemo() {
       title="Demo 2 · Deploy anywhere"
       caption="Pick a system and deploy its QuantumLedger adapter for real. Grey nodes are harvestable today; sealed nodes turn cyan."
       controls={
-        <Button onClick={() => reel.to(shots.length - 1)} disabled={running || reel.busy}>
+        <Button onClick={() => film.to(shots.length - 1)} disabled={running || reel.busy}>
           Deploy all
         </Button>
       }
       meter={<ComputeMeter reading={reading} profile={adapter === "edge" ? "edge" : "standard"} />}
       console={<LiveConsole drawer title="Live console · deployed nodes" filter={consoleFilter} />}
-      onAutoplay={() => void reel.play()}
+      onAutoplay={() => void film.play()}
       tryIt={{
         hint: "Deploy one adapter, then all of them: watch each system's traffic switch to ML-KEM",
         disabled: running || reel.busy || reel.playing,
-        run: () => reel.play(),
+        run: () => film.play(),
       }}
     >
       <div className="grid grid-cols-1 gap-12">
@@ -497,7 +516,7 @@ export function DeployDemo() {
             </dl>
             <Button
               variant="primary"
-              onClick={() => reel.to(3)}
+              onClick={() => film.to(3)}
               disabled={running || reel.busy}
               className="w-full"
             >
