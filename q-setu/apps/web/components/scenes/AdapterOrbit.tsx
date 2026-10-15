@@ -9,7 +9,10 @@
  *   SDK     a package: a cube in a cube
  *   Edge    a chip with pins on all four sides
  *   Vault   a vault door with a locking wheel and bolts
- * The object in focus lights its accents in --kem. Reduced motion: the camera cuts, nothing spins.
+ * The object in focus lights its accents in --kem. Everything turns like a mechanism, not a motor:
+ * the package's core and the vault's wheel turn in detents (a quick move that clicks past its stop and
+ * settles, then a hold), and the ring view snaps to the adapter nearest the scroll on a stiff spring,
+ * overshooting a hair and settling like a detent. Reduced motion: the camera cuts, nothing turns.
  */
 import { PerspectiveCamera, RoundedBox } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
@@ -19,6 +22,19 @@ import { palette } from "@/components/world/palette";
 import { Dust } from "./Dust";
 import { Studio } from "./Studio";
 import { Thicken } from "@/components/scenes/Thicken";
+import { Spring, springIn } from "@/lib/motion";
+
+/**
+ * A detent turn: `step` radians every `period` s, each move a stiff spring (ζ 0.35, 3 Hz) released at
+ * the start of its period, so it clicks past the stop and settles, then holds. Offset by `phase` s.
+ */
+const detent = (t: number, step: number, period: number, phase = 0) => {
+  const u = t + phase;
+  const n = Math.floor(u / period);
+  return step * (n + springIn(u - n * period, 0.35, 3));
+};
+/** The ring's detent: stiff, a small overshoot. */
+const CLICK = { mass: 1, stiffness: 70, damping: 9.5 };
 
 export const ADAPTER_ORDER = ["shield", "web", "sdk", "edge", "vault"] as const;
 const RING = 5.2;
@@ -150,8 +166,9 @@ function Browser({ m, accent }: { m: ReturnType<typeof useMaterials>; accent: TH
 
 function Package({ m, accent }: { m: ReturnType<typeof useMaterials>; accent: THREE.Material }) {
   const inner = useRef<THREE.Group>(null);
-  useFrame((_, dt) => {
-    if (inner.current && !reduceMotion()) inner.current.rotation.y += dt * 0.4;
+  useFrame(({ clock }) => {
+    if (inner.current && !reduceMotion())
+      inner.current.rotation.y = detent(clock.elapsedTime, Math.PI / 2, 2.4);
   });
   return (
     <group>
@@ -204,8 +221,9 @@ function Chip({ m, accent }: { m: ReturnType<typeof useMaterials>; accent: THREE
 
 function VaultDoor({ m, accent }: { m: ReturnType<typeof useMaterials>; accent: THREE.Material }) {
   const wheel = useRef<THREE.Group>(null);
-  useFrame((_, dt) => {
-    if (wheel.current && !reduceMotion()) wheel.current.rotation.z += dt * 0.25;
+  useFrame(({ clock }) => {
+    if (wheel.current && !reduceMotion())
+      wheel.current.rotation.z = detent(clock.elapsedTime, Math.PI / 3, 2.0, 0.9);
   });
   return (
     <group>
@@ -282,14 +300,20 @@ export default function AdapterOrbit({ focus, active }: { focus: { v: number }; 
   const m = useMaterials();
   const cam = useRef<THREE.PerspectiveCamera>(null);
   const size = useThree((st) => st.size);
-  const angle = useRef(0);
+  const angle = useRef(new Spring(0, CLICK));
   useFrame((_, dt) => {
     const c = cam.current;
     if (!c || !active) return;
-    // Orbit the ring so the adapter in focus faces the camera, from slightly above.
-    const target = focus.v * STEP;
-    angle.current += (target - angle.current) * (reduceMotion() ? 1 : Math.min(1, dt * 3));
-    const a = angle.current;
+    // Orbit the ring so the adapter in focus faces the camera, from slightly above: the view clicks
+    // to the nearest adapter (a detent), never parks between two.
+    const target = Math.round(focus.v) * STEP;
+    const sp = angle.current;
+    if (reduceMotion()) sp.set(target);
+    else {
+      sp.target = target;
+      sp.step(dt);
+    }
+    const a = sp.x;
     // From outside the ring, slightly above; the aim point sits left of the object, so it lands
     // right of centre (the headline is top-left, the cards along the bottom).
     // Phones are narrow: further back, aimed dead centre (no room for the off-centre framing).
