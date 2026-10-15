@@ -1,6 +1,7 @@
 export { CertStore, validDomain, type CertPair } from "./certs";
 export {
   assertPqSupport,
+  HARDENED_HEADERS,
   PQ_GROUPS,
   startEdge,
   TICKET_ROTATE_MS,
@@ -20,6 +21,7 @@ export {
   runSuite,
   TargetRefused,
   tlsCheck,
+  type AttackId,
   type AttackResult,
   type Target,
 } from "./attacks";

@@ -16,6 +16,8 @@ const nextConfig = {
     "@qsetu/shield-proxy",
     "@qsetu/legacy-bank",
     "@qsetu/shield-edge",
+    "@qsetu/shield",
+    "@qsetu/shield-guard",
   ],
   serverExternalPackages: [
     "fastify",

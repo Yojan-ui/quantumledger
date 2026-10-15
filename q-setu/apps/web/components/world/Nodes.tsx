@@ -12,7 +12,7 @@ import { easeToken } from "@/lib/ease";
 import { params } from "./director";
 import { NODES, ROUTE_CITIES, SOCKETS } from "./geo";
 import { palette } from "./palette";
-import { setHover, world, setPinned } from "./store";
+import { notify, setHover, world, setPinned } from "./store";
 import { burst } from "@/lib/client/burst";
 import { set3 } from "@/components/scenes/geometry";
 
@@ -321,6 +321,15 @@ export function Nodes() {
           setHover({ id: n.id, label: `${n.label} · ${n.city}` });
         }}
         onPointerOut={() => setHover(null)}
+        onClick={(e) => {
+          // Demo 2: clicking a system's node dives into it.
+          if (world.mode !== "deploy" || vis.current < 0.5 || e.instanceId === undefined) return;
+          const n = NODES[e.instanceId]!;
+          if (n.sector !== world.sector) return;
+          e.stopPropagation();
+          world.dive = n.id;
+          notify();
+        }}
       >
         <circleGeometry args={[1, 24]} />
         <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />

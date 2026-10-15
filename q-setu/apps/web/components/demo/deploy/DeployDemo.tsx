@@ -21,8 +21,11 @@ import { errText } from "@/lib/client/api";
 import { useMetrics } from "@/lib/client/live";
 import type { OpEvent } from "@/lib/live/types";
 import { BEFORE_AFTER, runAdapter, SNIPPETS, type RunResult } from "./adapters";
-import { notify, world, type NodeState } from "@/components/world/store";
+import { notify, useWorld, world, type NodeState } from "@/components/world/store";
 import { burst } from "@/lib/client/burst";
+import { pushLocal } from "@/lib/client/live";
+import { anticipate } from "@/lib/motion";
+import { ShieldDive } from "@/components/scenes/shield/ShieldDive";
 
 // The certificate scenario (QR encode + scan) sits below the film: its code loads on demand.
 const CertificateFlow = dynamic(() => import("./CertificateFlow").then((m) => m.CertificateFlow), {
@@ -48,7 +51,13 @@ interface GlobeShot extends Shot {
   zoom: boolean;
 }
 
-function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
+function shotsFor(
+  site: (typeof SITES)[number],
+  sector: string,
+  /** Systems sealed so far, of how many: the "all" shot's caption counts the real deploys. */
+  done: number,
+  total: number,
+): GlobeShot[] {
   const cam = {
     position: [0, 0, 0] as [number, number, number],
     target: [0, 0, 0] as [number, number, number],
@@ -103,8 +112,14 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
       pose: { dist: 2.7, lat: 20, lon: 80, spin: 0, tilt: 0, yaw: 0 },
       extrude: 0.5,
       zoom: false,
-      caption: `Every ${sector} system now seals its traffic with ML-KEM.`,
-      simple: `Every ${sector} system now uses quantum-safe locks.`,
+      caption:
+        done < total
+          ? `Sealing every ${sector} system for real: ${done} of ${total} done.`
+          : `Every ${sector} system now seals its traffic with ML-KEM.`,
+      simple:
+        done < total
+          ? `Adding quantum-safe locks, one system at a time: ${done} of ${total} done.`
+          : `Every ${sector} system now uses quantum-safe locks.`,
     },
   ];
 }
@@ -166,17 +181,39 @@ export function DeployDemo() {
     setError(undefined);
     setTamper(undefined);
     setStates((s) => ({ ...s, [site.id]: "deploying" }));
+    const t0 = performance.now();
     try {
       const r = await runAdapter(a, sector);
       setResult(r);
       setReading(r.meter);
       setStates((s) => ({ ...s, [site.id]: "protected" }));
+      // The console line, the counter and the caption all change on this one real event.
+      pushLocal({
+        op: "SEAL",
+        source: a,
+        alg: a === "edge" ? "ml-kem-512+ml-dsa-44" : "ml-kem-768+x25519",
+        ms: performance.now() - t0,
+        ok: true,
+        site: site.id,
+        sector,
+        detail: `${ADAPTERS[a].product} deployed · ${site.label}`,
+      });
       // Done: a short burst from the deployed node (its label's anchor on screen).
       const at = world.focusScreen;
       if (at) burst(at);
     } catch (e) {
       setError((e as Error).message);
       setStates((s) => ({ ...s, [site.id]: "vulnerable" }));
+      pushLocal({
+        op: "REJECT",
+        source: a,
+        alg: "ml-kem-768+x25519",
+        ms: performance.now() - t0,
+        ok: false,
+        site: site.id,
+        sector,
+        detail: `${ADAPTERS[a].product} deploy failed · ${(e as Error).message}`,
+      });
     } finally {
       setRunning(false);
     }
@@ -203,7 +240,11 @@ export function DeployDemo() {
   // ── Staging: shots on the site's globe. The camera pose is tweened with the motion easing on an
   // arc (it lifts away from the surface mid-flight), and each shot waits for its real deploys. ──
   const site = sectorSites.find((s) => s.adapter === adapter)!;
-  const shots = useMemo(() => shotsFor(site, sector), [site, sector]);
+  const sealed = sectorSites.filter((s) => states[s.id] === "protected").length;
+  const shots = useMemo(
+    () => shotsFor(site, sector, sealed, sectorSites.length),
+    [site, sector, sealed, sectorSites.length],
+  );
   const director = useDirector(shots);
   const reel = useFilm(director, {
     last: shots.length - 1,
@@ -293,6 +334,75 @@ export function DeployDemo() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── The dive: from the globe into a system, where "Shield plugs in" plays (its dots re-form from
+  // the globe's), and back out. A camera flight on the globe with a 120 ms wind-up; reduced motion cuts.
+  const [dive, setDive] = useState<{
+    site: (typeof SITES)[number];
+    phase: "in" | "scene" | "out";
+  } | null>(null);
+  const flight = useRef(0);
+  function fly(to: Pose, ms: number, done: () => void) {
+    cancelAnimationFrame(flight.current);
+    const from = { ...pose.current };
+    const set = (k: number) => {
+      let dl = to.lon - from.lon;
+      if (dl > 180) dl -= 360;
+      if (dl < -180) dl += 360;
+      pose.current = {
+        lat: from.lat + (to.lat - from.lat) * k,
+        lon: from.lon + dl * k,
+        dist: from.dist + (to.dist - from.dist) * k,
+        spin: to.spin,
+        tilt: (from.tilt ?? 0) + ((to.tilt ?? 0) - (from.tilt ?? 0)) * k,
+        yaw: (from.yaw ?? 0) + ((to.yaw ?? 0) - (from.yaw ?? 0)) * k,
+      };
+      if (world.shot) world.shot.pose = pose.current;
+    };
+    if (director.state.reduce) {
+      set(1);
+      return done();
+    }
+    const t0 = performance.now();
+    const tick = () => {
+      const t = (performance.now() - t0) / 1000;
+      set(anticipate(t, ms / 1000));
+      if (t < ms / 1000 + 0.12) flight.current = requestAnimationFrame(tick);
+      else done();
+    };
+    tick();
+  }
+  function startDive(s: (typeof SITES)[number]) {
+    if (running || reel.busy || dive) return;
+    reel.stop();
+    setAdapter(s.adapter);
+    world.shot = { pose: { ...pose.current }, extrude: 1, focus: s.id, model: true };
+    setDive({ site: s, phase: "in" });
+    fly({ dist: 1.03, lat: s.lat, lon: s.lon, spin: 0, tilt: 70, yaw: 15 }, 1600, () =>
+      setDive((d) => d && { ...d, phase: "scene" }),
+    );
+  }
+  function endDive() {
+    setDive((d) => d && { ...d, phase: "out" });
+    world.shot = {
+      pose: { ...pose.current },
+      extrude: shot.extrude,
+      focus: shot.zoom ? site.id : null,
+      model: shot.zoom,
+    };
+    fly(shot.pose, 1500, () => setDive(null));
+  }
+  useEffect(() => () => cancelAnimationFrame(flight.current), []);
+  // A node clicked on the globe dives too.
+  const clicked = useWorld((w) => w.dive);
+  useEffect(() => {
+    if (!clicked) return;
+    world.dive = null;
+    const s = sectorSites.find((x) => x.id === clicked);
+    if (s) startDive(s);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clicked]);
+  const inScene = dive?.phase === "scene";
+
   async function tamperVault() {
     if (!result?.vaultId) return;
     await fetch(`/api/vault/${result.vaultId}/tamper`, { method: "POST" });
@@ -342,7 +452,7 @@ export function DeployDemo() {
                   type="button"
                   role="radio"
                   aria-checked={adapter === a}
-                  onClick={() => setAdapter(a)}
+                  onClick={() => startDive(site)}
                   className="flex w-full items-center justify-between gap-4 border-t border-line py-3 text-left"
                 >
                   <span>
@@ -409,7 +519,8 @@ export function DeployDemo() {
         <section className="order-first min-w-0 space-y-12">
           <div className="full-bleed relative border-y border-line">
             <div
-              data-world-focus
+              // While the scene is on, the globe steps aside (it doesn't draw in this slot).
+              {...(inScene ? {} : { "data-world-focus": "" })}
               data-world-drag
               className="h-stage-full min-h-stage"
               role="img"
@@ -417,7 +528,7 @@ export function DeployDemo() {
             />
             <p
               aria-hidden
-              className={`pointer-events-none absolute left-4 top-4 font-mono text-h3 tabular transition-opacity duration-300 md:left-6 md:top-6 ${shot.id === "all" && director.state.settled ? "opacity-100" : "opacity-0"}`}
+              className={`pointer-events-none absolute left-4 top-4 font-mono text-h3 tabular transition-opacity duration-300 md:left-6 md:top-6 ${shot.id === "all" && !dive ? "opacity-100" : "opacity-0"}`}
             >
               <span className={protectedCount === sectorSites.length ? "text-ok" : "text-fg"}>
                 {protectedCount} / {sectorSites.length}
@@ -425,7 +536,7 @@ export function DeployDemo() {
               <span className="text-small text-fg-2">systems quantum-safe</span>
             </p>
             <NodeLabel
-              show={director.state.settled && shot.zoom}
+              show={director.state.settled && shot.zoom && !dive}
               title={`${site.label} · ${site.city}`}
               role={states[site.id] === "protected" ? "ok" : "warn"}
               value={
@@ -437,16 +548,25 @@ export function DeployDemo() {
               }
               code={shot.id === "integrate" ? snippet.code : undefined}
             />
-            <DirectorHUD
-              director={director}
-              steps={STEP_BAR}
-              playing={reel.playing}
-              busy={reel.busy}
-              onToggle={() => void reel.play()}
-              onNext={() => void reel.next()}
-              onPrev={reel.prev}
-              onReplay={reset}
-            />
+            {!dive && (
+              <DirectorHUD
+                director={director}
+                steps={STEP_BAR}
+                playing={reel.playing}
+                busy={reel.busy}
+                onToggle={() => void reel.play()}
+                onNext={() => void reel.next()}
+                onPrev={reel.prev}
+                onReplay={reset}
+              />
+            )}
+            {dive && (
+              <ShieldDive
+                site={{ id: dive.site.id, label: dive.site.label, sector }}
+                open={inScene}
+                onBack={endDive}
+              />
+            )}
           </div>
           <div className="flex justify-between gap-4">
             <Label as="p">

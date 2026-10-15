@@ -13,7 +13,7 @@ import { SOLUTIONS } from "@/data/solutions";
 import { ADAPTERS } from "./chapters";
 import { useJourney } from "@/lib/client/journey";
 
-const AdapterOrbit = dynamic(() => import("@/components/scenes/AdapterOrbit"), { ssr: false });
+const ShieldSlot = dynamic(() => import("@/components/scenes/shield/ShieldSlot"), { ssr: false });
 
 /** Simple-mode lines for each adapter (no acronyms). */
 const PLAIN: Record<string, string> = {
@@ -82,9 +82,9 @@ export function Adapters() {
         <div className="absolute inset-0">
           <LazyView
             className="h-full w-full"
-            label={`The five QuantumLedger adapters as objects on a ring; in view: ${ADAPTERS[hot]?.name}`}
+            label={`Shield plugs into a bank's website, from a recorded real run: scan, install, a quantum-safe handshake, fixes and a signed report. In view: ${ADAPTERS[hot]?.name}`}
           >
-            {(on) => <AdapterOrbit focus={focus} active={on} />}
+            {(on) => <ShieldSlot focus={focus} steps={ADAPTERS.length - 1} active={on} />}
           </LazyView>
         </div>
         <div className="hero-scrim pointer-events-none absolute inset-0" aria-hidden />

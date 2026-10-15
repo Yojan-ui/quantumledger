@@ -55,13 +55,23 @@ const TRAFFIC_ROUTES = [/^\/api\/traffic$/];
 /** The live attack demo sends ~1,500 local requests per run: 2 runs per 10 minutes per client. */
 const LIVE: Limit = { name: "api-shield-live", limit: 2, windowMs: 10 * 60_000 };
 const LIVE_IP: Limit = { name: "api-shield-live-ip", limit: 6, windowMs: 10 * 60_000, per: "ip" };
-const LIVE_ROUTES = [/^\/api\/shield\/live$/];
+const LIVE_ROUTES = [/^\/api\/shield\/live$/, /^\/api\/shield\/plugin\/attack$/];
+/** "Shield plugs in": ~20 loopback requests and one signature per run. */
+const PLUGIN: Limit = { name: "api-shield-plugin", limit: 6, windowMs: 10 * 60_000 };
+const PLUGIN_IP: Limit = {
+  name: "api-shield-plugin-ip",
+  limit: 30,
+  windowMs: 10 * 60_000,
+  per: "ip",
+};
+const PLUGIN_ROUTES = [/^\/api\/shield\/plugin$/];
 
 export function limitsFor(path: string, method: string): Limit[] {
   const write = method !== "GET" && method !== "HEAD";
   if (STREAM_ROUTES.some((r) => r.test(path))) return [STREAM, STREAM_IP];
   if (TRAFFIC_ROUTES.some((r) => r.test(path))) return [TRAFFIC, TRAFFIC_IP];
   if (LIVE_ROUTES.some((r) => r.test(path))) return [LIVE, LIVE_IP, WRITE_IP];
+  if (PLUGIN_ROUTES.some((r) => r.test(path))) return [PLUGIN, PLUGIN_IP, WRITE_IP];
   const out = write ? [WRITE, WRITE_IP] : [READ, READ_IP];
   if (HEAVY_ROUTES.some((r) => r.test(path))) out.push(HEAVY, HEAVY_IP);
   if (write && GLOBAL_ROUTES.some((r) => r.test(path))) out.push(GLOBAL);

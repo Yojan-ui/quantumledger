@@ -54,6 +54,9 @@ export interface Target {
   servername?: string;
 }
 
+/** The suite's five attacks, in the order they run. */
+export type AttackId = "burst" | "scan" | "injection" | "honeypot" | "crawler";
+
 export interface AttackResult {
   attack: string;
   sent: number;
@@ -113,7 +116,10 @@ export async function runSuite(
   onEach?: (r: AttackResult) => void,
   /** Called before each attack (the live demo gives each attack a fresh defence state). */
   beforeEach?: (attack: string) => void,
+  /** Run only these attacks (default: all five, in order). */
+  only?: readonly AttackId[],
 ): Promise<AttackResult[]> {
+  const want = (id: AttackId) => !only || only.includes(id);
   await assertAllowedTarget(target.url);
   const base = new URL(target.url);
   const secure = base.protocol === "https:";
@@ -182,7 +188,7 @@ export async function runSuite(
   };
 
   // 1. Burst: 1,000 at once.
-  {
+  if (want("burst")) {
     const [s, ms] = await timed(() =>
       Promise.all(
         Array.from({ length: 1000 }, () =>
@@ -193,7 +199,7 @@ export async function runSuite(
     done(tally("Burst of 1,000 parallel requests", s, ms));
   }
   // 2. Route scan.
-  {
+  if (want("scan")) {
     const [s, ms] = await timed(async () => {
       const out: number[] = [];
       for (let i = 0; i < 200; i++)
@@ -207,7 +213,7 @@ export async function runSuite(
     done(tally("Route scan (200 likely paths)", s, ms));
   }
   // 3. Injection payloads.
-  {
+  if (want("injection")) {
     const payloads = [
       "' OR '1'='1' --",
       "1; DROP TABLE accounts;--",
@@ -238,7 +244,7 @@ export async function runSuite(
     );
   }
   // 4. Honeypots, then the canary key, then an ordinary request from the same client.
-  {
+  if (want("honeypot")) {
     const [s, ms] = await timed(async () => [
       await send("GET", "/.env"),
       await send("GET", "/.git/config"),
@@ -256,7 +262,7 @@ export async function runSuite(
     );
   }
   // 5. A crawler taking everything at speed.
-  {
+  if (want("crawler")) {
     const [s, ms] = await timed(async () => {
       const out: number[] = [];
       for (let i = 0; i < 150; i++)

@@ -53,7 +53,31 @@ const ALLOWED = [
 ];
 
 /** Files outside the 3D folders that the pass may touch, and why. Keep this short. */
-const MOUNTING = {};
+const MOUNTING = {
+  // Part 4's event source ("Shield plugs in": every beat from a real run). Server and package code
+  // only, no pages or UI; ported from the parked art-direction branch (5313bab) at the user's choice.
+  "apps/web/app/api/shield/plugin/route.ts": "real-run event stream for the Shield scene",
+  "apps/web/app/api/shield/plugin/attack/route.ts": "real attack run for the Shield scene",
+  "apps/web/lib/server/shield-plugin.ts": "the run behind the Shield scene's events",
+  "apps/web/lib/server/api-policy.ts": "rate limits for the two Shield scene routes",
+  "apps/web/lib/shield-score.ts": "the readiness score the scene shows",
+  "apps/legacy-bank/src/app.ts": "the bundled bank's real headers (the scan's findings)",
+  "packages/shield-edge/src/attacks.ts": "attack subset for the scene's Attack beat",
+  "packages/shield-edge/src/edge.ts": "the harden option behind the scene's Fix beat",
+  "packages/shield-edge/src/index.ts": "exports the harden option",
+  "packages/shield-edge/test/harden.test.ts": "tests the harden option",
+  "apps/web/test/shield-plugin.test.ts": "tests the Shield scene's event source",
+  "apps/web/data/shield-runs.json": "recorded real runs (offline, scroll-driven slot)",
+  "apps/web/scripts/record-shield-run.mts": "records shield-runs.json",
+  "apps/web/public/scenes/legacy-bank.jpg": "the bank page, sampled into the website's dots",
+  "apps/web/next.config.mjs": "transpiles @qsetu/shield for the event source",
+  "apps/web/package.json": "@qsetu/shield dependency for the event source",
+  "pnpm-lock.yaml": "the @qsetu/shield workspace link",
+  // Mounting and the Part 4 state bug.
+  "apps/web/components/demo/deploy/DeployDemo.tsx":
+    "the dive into the Shield scene, and the counter / caption / console state bug",
+  "apps/web/components/home/Sections.tsx": "the Shield scene in the Deploy anywhere 3D slot",
+};
 
 const bad = [];
 for (const p of [...changed].sort()) {

@@ -76,6 +76,9 @@ importers:
       '@qsetu/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
+      '@qsetu/shield':
+        specifier: workspace:*
+        version: link:../../packages/shield
       '@qsetu/shield-edge':
         specifier: workspace:*
         version: link:../../packages/shield-edge

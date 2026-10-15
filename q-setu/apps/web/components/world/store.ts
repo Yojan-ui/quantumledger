@@ -110,6 +110,8 @@ export const world = {
   shot: null as null | { pose: Pose; extrude: number; focus: string | null; model: boolean },
   /** Screen position (CSS px) of the focused node, written by the scene each frame (null = off stage). */
   focusScreen: null as { x: number; y: number } | null,
+  /** Demo 2: a node clicked on the globe, to dive into (the demo clears it). */
+  dive: null as string | null,
   /** Demo 2's "all sealed" wave: when it started (performance.now()), 0 = none. */
   waveAt: 0,
   /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */

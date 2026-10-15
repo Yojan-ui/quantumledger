@@ -97,7 +97,27 @@ export interface EdgeOptions {
   onResponse?: (req: GuardInput, status: number) => void;
   /** Called with one line of structured JSON per notable event. Never receives key material. */
   log?: (event: Record<string, unknown>) => void;
+  /**
+   * Security headers added to every proxied response the origin didn't set itself: `true` for
+   * HARDENED_HEADERS, or your own map. Absent = the edge adds nothing (it still strips Server and
+   * X-Powered-By).
+   */
+  harden?: boolean | Record<string, string>;
 }
+
+/**
+ * The edge's hardening preset. Everything here is safe to enforce on a site the edge knows nothing
+ * about, except a full content policy: that one ships Report-Only, so it reports what it would block
+ * without breaking a page, until the site owner switches it on.
+ */
+export const HARDENED_HEADERS: Readonly<Record<string, string>> = {
+  "strict-transport-security": "max-age=63072000; includeSubDomains",
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "content-security-policy": "frame-ancestors 'none'",
+  "content-security-policy-report-only":
+    "default-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'",
+};
 
 const HOP_BY_HOP = new Set([
   "connection",
@@ -142,8 +162,13 @@ function requestHeaders(h: IncomingHttpHeaders): OutgoingHttpHeaders {
 /** Response headers that would reveal the stack, and hop-by-hop ones HTTP/2 forbids. */
 const RESPONSE_STRIPPED = new Set([...HOP_BY_HOP, "server", "x-powered-by", "x-aspnet-version"]);
 
-function responseHeaders(h: IncomingHttpHeaders): OutgoingHttpHeaders {
+function responseHeaders(
+  h: IncomingHttpHeaders,
+  add?: Readonly<Record<string, string>>,
+): OutgoingHttpHeaders {
   const out: OutgoingHttpHeaders = {};
+  // The origin's own value wins: the edge only fills in what is missing.
+  for (const [k, v] of Object.entries(add ?? {})) if (h[k] === undefined) out[k] = v;
   const named = new Set(
     String(h.connection ?? "")
       .split(",")
@@ -191,6 +216,7 @@ export interface Edge {
 }
 
 export async function startEdge(opts: EdgeOptions): Promise<Edge> {
+  const harden = opts.harden === true ? HARDENED_HEADERS : opts.harden || undefined;
   const groups = opts.groups ?? PQ_GROUPS;
   const minVersion = opts.minVersion ?? "TLSv1.2";
   const log = opts.log ?? (() => {});
@@ -394,7 +420,7 @@ export async function startEdge(opts: EdgeOptions): Promise<Edge> {
       if (settled) return;
       settled = true;
       const status = ores.statusCode ?? 502;
-      res.writeHead(status, responseHeaders(ores.headers));
+      res.writeHead(status, responseHeaders(ores.headers, harden));
       done(status);
       ores.pipe(res as NodeJS.WritableStream);
       ores.on("error", () => res.destroy());
