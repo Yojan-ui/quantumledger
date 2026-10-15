@@ -1,10 +1,11 @@
 "use client";
 
 import { PerformanceMonitor, Preload, View } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect } from "react";
 import { any3dOnScreen, dprCap, gfx, setLost, setQuality, useGfx } from "@/lib/client/gfx";
+import { SceneBoundary } from "./SceneBoundary";
 import type { Dots } from "./shapes";
 import { World } from "./World";
 
@@ -22,6 +23,12 @@ function Driver() {
     gsap.ticker.add(tick);
     return () => gsap.ticker.remove(tick);
   }, [invalidate]);
+  // The ticker alone draws only every other frame: R3F stops its loop after a frame nothing asked
+  // to follow, and a restart from the ticker lands a frame late. A request made inside a frame
+  // books the next one, so the loop keeps going while 3D is on screen (GSAP still runs first).
+  useFrame(() => {
+    if (any3dOnScreen()) invalidate();
+  });
   return null;
 }
 
@@ -60,7 +67,9 @@ export default function WorldScene({ dots, onRestored }: { dots: Dots; onRestore
         onIncline={() => setQuality(gfx.quality - 1)}
       />
       <Driver />
-      <World dots={dots} />
+      <SceneBoundary>
+        <World dots={dots} />
+      </SceneBoundary>
       <View.Port />
       {/* Compile shaders and upload textures before anything first appears. */}
       <Preload all />

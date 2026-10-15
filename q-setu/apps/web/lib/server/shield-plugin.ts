@@ -33,6 +33,7 @@ import {
 } from "@qsetu/shield-edge";
 import { connectForTest, describeTls, HYBRID_GROUP } from "@/lib/live/tls";
 import { checkHeaders, edgeScore, type Checks } from "@/lib/shield-score";
+import { safeMessage } from "./api";
 import { DATA_DIR } from "./runtime";
 
 /** Express middleware, as the legacy bank's `use` option takes it. */
@@ -328,11 +329,12 @@ export async function runPlugin(
   g.__qsetuPlugin = true;
   const t0 = performance.now();
   const closers: (() => unknown)[] = [];
-  const dir = mkdtempSync(join(tmpdir(), "shield-plugin-"));
+  let dir: string | undefined;
   const sim = [`(sim) the site is the bundled demo bank at ${DEMO_DOMAIN}, on loopback`];
   if (mode !== "code") sim.push(NOTE[mode]);
   sim.push("(sim) the harvester counts handshakes it could record; nothing is stored");
   try {
+    dir = mkdtempSync(join(tmpdir(), "shield-plugin-"));
     emit({ t: "start", domain: DEMO_DOMAIN, mode, sim });
     // 1. Scan the site as it is today.
     const plain = await bank();
@@ -354,7 +356,8 @@ export async function runPlugin(
         siteKey: randomBytes(32).toString("base64url"),
         mode: "protect",
         reportTo: false,
-      }) as unknown as RequestHandler;
+      }) as unknown as RequestHandler & { shield: { close: () => void } };
+      closers.push(() => mw.shield.close());
       const shielded = await bank([mw]);
       closers.push(shielded.close);
       const front = await classicalFront(shielded.url);
@@ -395,7 +398,8 @@ export async function runPlugin(
     emit({ t: "report", url: `/verified/${DEMO_DOMAIN}`, signedAt });
     emit({ t: "done", ms: Math.round(performance.now() - t0) });
   } catch (e) {
-    emit({ t: "error", message: (e as Error).message.slice(0, 200) });
+    // The detail (paths, ports, OpenSSL) is logged on the server, not sent to the visitor.
+    emit({ t: "error", message: safeMessage(e) });
   } finally {
     for (const c of closers.reverse()) {
       try {
@@ -404,7 +408,7 @@ export async function runPlugin(
         /* already closed */
       }
     }
-    rmSync(dir, { recursive: true, force: true });
+    if (dir) rmSync(dir, { recursive: true, force: true });
     g.__qsetuPlugin = false;
   }
 }
@@ -419,39 +423,43 @@ export const SCENE_ATTACKS = ["burst", "honeypot", "crawler"] as const;
 export async function runPluginAttack(): Promise<AttackResult[] | "busy"> {
   if (g.__qsetuPlugin) return "busy";
   g.__qsetuPlugin = true;
-  const dir = mkdtempSync(join(tmpdir(), "shield-attack-"));
-  const plain = await bank();
-  const pair = selfSignedCert([DEMO_DOMAIN], 1);
-  const certs = new CertStore(dir, randomBytes(32).toString("base64"), {
-    ecdhCurve: PQ_GROUPS,
-    minVersion: "TLSv1.2",
-  });
-  certs.put(DEMO_DOMAIN, pair);
-  const fresh = () =>
-    edgeDefence({
-      mode: "protect",
-      secret: randomBytes(32).toString("base64"),
-      // The suite's planted key (packages/shield-edge/src/attacks.ts): first touch blocks.
-      canaryKeys: ["qsk_canary_demo_9b1c"],
-      powBits: 16,
-    });
-  let defence = fresh();
-  const edge = await startEdge({
-    port: 0,
-    host: "127.0.0.1",
-    origin: plain.url,
-    certs,
-    fallbackCert: pair,
-    harden: true,
-    guard: (gi) => defence.guard!(gi),
-    intercept: {
-      path: "/.well-known/qsetu/pow",
-      maxBytes: 2048,
-      handle: (b, gi) => defence.intercept!.handle(b, gi),
-    },
-    onResponse: (gi, s) => defence.onResponse!(gi, s),
-  });
+  // Everything after taking the lock is inside the try, so a failed setup still releases it.
+  let dir: string | undefined;
+  let plain: Awaited<ReturnType<typeof bank>> | undefined;
+  let edge: Awaited<ReturnType<typeof startEdge>> | undefined;
   try {
+    dir = mkdtempSync(join(tmpdir(), "shield-attack-"));
+    plain = await bank();
+    const pair = selfSignedCert([DEMO_DOMAIN], 1);
+    const certs = new CertStore(dir, randomBytes(32).toString("base64"), {
+      ecdhCurve: PQ_GROUPS,
+      minVersion: "TLSv1.2",
+    });
+    certs.put(DEMO_DOMAIN, pair);
+    const fresh = () =>
+      edgeDefence({
+        mode: "protect",
+        secret: randomBytes(32).toString("base64"),
+        // The suite's planted key (packages/shield-edge/src/attacks.ts): first touch blocks.
+        canaryKeys: ["qsk_canary_demo_9b1c"],
+        powBits: 16,
+      });
+    let defence = fresh();
+    edge = await startEdge({
+      port: 0,
+      host: "127.0.0.1",
+      origin: plain.url,
+      certs,
+      fallbackCert: pair,
+      harden: true,
+      guard: (gi) => defence.guard!(gi),
+      intercept: {
+        path: "/.well-known/qsetu/pow",
+        maxBytes: 2048,
+        handle: (b, gi) => defence.intercept!.handle(b, gi),
+      },
+      onResponse: (gi, s) => defence.onResponse!(gi, s),
+    });
     return await runSuite(
       { label: "Shield", url: `https://127.0.0.1:${edge.address().port}`, servername: DEMO_DOMAIN },
       undefined,
@@ -461,9 +469,9 @@ export async function runPluginAttack(): Promise<AttackResult[] | "busy"> {
       SCENE_ATTACKS,
     );
   } finally {
-    await edge.close();
-    plain.close();
-    rmSync(dir, { recursive: true, force: true });
+    await edge?.close().catch(() => {});
+    plain?.close();
+    if (dir) rmSync(dir, { recursive: true, force: true });
     g.__qsetuPlugin = false;
   }
 }

@@ -4,6 +4,7 @@ import { View } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, type ReactNode } from "react";
 import type * as THREE from "three";
+import { SceneBoundary } from "./SceneBoundary";
 
 /**
  * Compiles every shader the View will ever draw as soon as its scene has mounted, so nothing
@@ -79,9 +80,12 @@ export function SceneView({
 }) {
   return (
     <View className={className}>
-      {children}
-      <Precompile />
-      {onReady && <FirstFrame onReady={onReady} />}
+      {/* FirstFrame sits inside the boundary: a scene that fails never reports ready. */}
+      <SceneBoundary>
+        {children}
+        <Precompile />
+        {onReady && <FirstFrame onReady={onReady} />}
+      </SceneBoundary>
     </View>
   );
 }

@@ -67,6 +67,8 @@ const MOUNTING = {
   "packages/shield-edge/src/index.ts": "exports the harden option",
   "packages/shield-edge/test/harden.test.ts": "tests the harden option",
   "apps/web/test/shield-plugin.test.ts": "tests the Shield scene's event source",
+  "apps/web/test/shield-plugin-lock.test.ts":
+    "tests that a failed Shield scene run releases its lock",
   "apps/web/data/shield-runs.json": "recorded real runs (offline, scroll-driven slot)",
   "apps/web/scripts/record-shield-run.mts": "records shield-runs.json",
   "apps/web/public/scenes/legacy-bank.jpg": "the bank page, sampled into the website's dots",
