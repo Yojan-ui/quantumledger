@@ -30,3 +30,5 @@ docs/real/videos-*/
 docs/motion2/baseline/noise/
 docs/motion2/*/nocanvas/diff/
 docs/motion2/*/diff/
+docs/motion2/videos-*/
+docs/motion2/*/*.webm

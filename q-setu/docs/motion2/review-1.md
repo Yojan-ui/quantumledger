@@ -1,0 +1,73 @@
+# Motion pass, review 1
+
+Branch `motion-pass`, from `shield-real` (8a28bc3, the look before the parked art-direction redesign).
+Recordings: `node scripts/motion-record.mjs docs/motion2/after-1` → `docs/motion2/after-1/<scene>.webm`
+(1440×900; kept out of git, regenerate with the same command) and `fps.json` (the same scenes
+replayed unrecorded on this machine's GPU: frame times from requestAnimationFrame).
+
+Scenes recorded: the diagnostics pipeline, the homepage end to end (globe chapters, How it works,
+Q-Day, the Shield slot), the three demo films, and Demo 2 four ways: a dive into a system with each
+install route (DNS, container, one line of code; then the attack where the route has one, then Back),
+and Deploy all.
+
+## Per scene
+
+| Scene | Weight (anticipation, settle) | One main action at a time | Every beat from a real event | Counter, caption, console agree | Below 50 fps |
+| --- | --- | --- | --- | --- | --- |
+| Diagnostics pipeline | Yes: camera moves are 1.2–1.8 s splines with a wind-up and a settle; the lattice springs in as a wave from the patch; Merkle parents drop and settle, the lock snaps past closed | Yes: the camera arrives, then the stage's effect starts (look.ts waits CAMERA_MS) | Yes: every effect is timed from its pipeline event (scan, patch, anchor, sweep result) | Yes (unchanged: the HUD, terminal and stage read the same pipeline state) | No: p50 16.7 ms, p95 16.8, 0.18% of frames > 20 ms |
+| Globe (homepage) | Yes: chapter moves ride springs from rest; a released drag coasts, then springs back with a slight overshoot; packets are thrown (slow at the apex) and land with a ripple | Yes | Yes: packets are real bus events; ripples on their real arrival | n/a | No: p50 16.7, p95 16.7, 0.13% > 20 ms |
+| How it works (homepage cubes, Demo 1 film) | Yes: a wind-up apart, an accelerating magnetic close, a squash-and-settle fuse, dust pushed out and drifting back | Yes | Yes: the film's fuse is the real HKDF merge; the homepage version is scroll-scrubbed | n/a | No: p50 16.7, p95 16.7, 0.07% > 20 ms |
+| Q-Day (homepage, Demo 3 film) | Yes: the 300 ms freeze is the wind-up; shards fly, spin and fall with slow motion around the impact (1 → 0.2 → 1); QuantumLedger packets lurch and ring down | Yes | Yes: the break is the real Q-Day event | n/a | No: p50 16.7, p95 16.8, 0.09% > 20 ms |
+| Proof Chain (Demo 4 film) | Yes: the links are a verlet rope; tamper jolts #42 and the chain after it sags and swings; the verify pulse stops dead and recoils; restore snaps it taut, last block first | Yes | Yes: the edit, each verification result and the restore | Yes (the film's console and labels read the same ledger state) | No: p50 16.7, p95 16.8, 0.06% > 20 ms |
+| Adapter sockets | Detents with a click-settle (package core, vault wheel, ring view) | Yes | Scroll-driven | n/a | not measured: the homepage slot now shows the Shield scene, so AdapterOrbit is unmounted (see below) |
+| Shield plugs in (Demo 2 dive) | Yes: DNS (line re-plugs, Shield winds up, overshoots, seats), container (rack slide, hard stop), code (types, assembles from the server's dots); packets re-form sphere → lattice; badges spring in as a cascade; the probe is thrown; attack packets bounce | Yes: the camera moves to each beat's subject, then the beat plays; each beat holds ≥ 1.2 s after its motion (HOLD) | Yes: every beat waits for its event from a real run (`/api/shield/plugin`), and its motion is a function of the time since | Yes: the 3D labels, the HUD caption and the console lines are all `view(events, t)` | No: DNS p50 16.7 / 0.04% > 20 ms; container 0.04%; code 0.05% |
+| Deploy all | — | Yes | Yes: real adapter runs, in turn | Yes, fixed: the caption counts the real deploys ("3 of 5 done") until all are sealed, the "N / 5" counter shows for the whole shot, and each finished deploy pushes its console line at the moment the counter changes | No: 0.01% > 20 ms |
+
+## Worst single frames
+
+Every scene has one or two frames of 67–100 ms (`fps.json`, "worst"): isolated, never a run of slow
+frames (at most 0.18% of frames over 20 ms). This run didn't record when they happened; review 2
+records each one's time (`spikes` in `fps.json`) to find their cause.
+
+## The visual check: the UI outside the 3D
+
+`python3 scripts/motion-diff.py docs/motion2/baseline/nocanvas docs/motion2/after-1/nocanvas
+docs/motion2/baseline/noise/1 docs/motion2/baseline/noise/2`: 79 screens, canvas hidden. 72 match.
+The 7 that don't are all live content, or attached to the 3D:
+
+- `demo_deploy-01`, `demo_qday-01`: console timestamps (an hour later than the baseline's noise runs).
+- `demos-01`, `diagnostics-01`, `home-01`: live readouts (console lines, values, the fps counter).
+- `home-07`: the Readiness Index's labels, pinned to its 3D bars.
+- `demo_deploy-02`: the globe's soft glow (a DOM layer of the world, behind the globe), placed by the
+  globe camera, which now moves on springs.
+
+No layout, colour, font, spacing or copy differs anywhere else. The fixed pieces of Demo 2 that are
+new are inside the globe slot (the dive's controls and the scene's labels), and the slot's size is
+unchanged.
+
+## Departures from the brief, and why
+
+- **Depth of field** is the site's existing stand-in (focus dimming: off-subject parts soften during a
+  move and come back as it settles). True depth of field is a post-process over the whole canvas, and
+  the site draws every scene through one canvas, so it can't be applied per view.
+- **LedgerChain and SocketModel** were not mounted anywhere on `shield-real`. The rope and the detent
+  motion went to what visitors see: the Proof Chain film (`LedgerFilm`) and `AdapterOrbit`.
+- **The homepage's Deploy anywhere slot** now shows the Shield scene, as asked. Its five cards still
+  describe five adapters, so the scene and the card in view don't always match, and AdapterOrbit's new
+  detent motion is no longer on screen anywhere.
+- **The Shield scene's event source** (server and package code, no UI) was ported from the parked
+  branch at the user's choice; `scripts/check-motion-only.mjs` lists each file as an exception.
+
+## Checks
+
+| Check | Result |
+| --- | --- |
+| `node scripts/check-motion-only.mjs` | ✓ every changed path is 3D motion or a listed exception |
+| Canvas-hidden pixel diff | 72 of 79 screens identical; the 7 others are live content or attached to the 3D (above) |
+| `pnpm audit:glitch after-1` (`docs/motion2/audit-after-1.md`) | 0 hydration warnings, 0 WebGL messages, 0 contexts lost. Console errors: the 404 page's own status (both widths) and one `ERR_NETWORK_IO_SUSPENDED` on two pages (the machine suspended the network mid-run). Failed requests are aborted prefetches on navigation: per page the same as `shield-real` (re-audited side by side: `/demo/deploy` 6 vs 5, `/demo/ledger` 5 vs 6, `/join` 6 vs 6). `/join` at 390 showed CLS 0.094 once (the form's fieldset, not 3D); three more runs on each build: 0 every time |
+| `pnpm lint` | ✓ (after fixing two lint errors in the new scripts) |
+| `pnpm test` | ✓ 233 tests |
+| `pnpm build` | ✓ |
+| `pnpm check:budget` | ✓ 242.2 KB initial JS on `/` (shield-real: 244.3 KB) |
+| `pnpm test:e2e` | ✓ after one fix: picking a system in Demo 2 must always select it (the dive had swallowed the click while a deploy ran). Three tests that failed under parallel load pass on their own |
+| Deploy all, sampled every 1.5 s on the production build | Caption, counters and console agree at every sample ("4 of 5 done" / 4 / 5, then "Every fintech system…" / 5 / 5) |

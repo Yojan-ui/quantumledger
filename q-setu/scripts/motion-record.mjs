@@ -7,7 +7,7 @@
  *   - recorded to <outDir>/<scene>.webm (system Chrome, software GL so the video is deterministic);
  *   - then played again unrecorded on the real GPU, measuring frame times (rAF deltas), into
  *     <outDir>/fps.json: per scene, p50 / p95 frame time, the share of frames over 20 ms (< 50 fps)
- *     and the worst frame.
+ *     and the worst frame, and when each frame over 50 ms happened (ms since the page started).
  * ONLY=deploy-dns,ledger limits the scenes.
  */
 import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -134,14 +134,15 @@ const FPS_PROBE = () => {
   w.__frames = [];
   let last = performance.now();
   const tick = (now) => {
-    w.__frames.push(now - last);
+    w.__frames.push([now, now - last]);
     last = now;
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 };
 
-const stats = (a) => {
+const stats = (pairs) => {
+  const a = pairs.map((p) => p[1]);
   const s = [...a].sort((x, y) => x - y);
   const q = (p) => s[Math.min(s.length - 1, Math.floor(p * s.length))] ?? 0;
   return {
@@ -150,6 +151,8 @@ const stats = (a) => {
     p95: +q(0.95).toFixed(1),
     over20: +((s.filter((x) => x > 20).length / Math.max(1, s.length)) * 100).toFixed(2),
     worst: +(s[s.length - 1] ?? 0).toFixed(1),
+    /** Every frame over 50 ms: [ms since the page started, frame time]. */
+    spikes: pairs.filter((p) => p[1] > 50).map((p) => [Math.round(p[0]), +p[1].toFixed(1)]),
   };
 };
 
