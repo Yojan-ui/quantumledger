@@ -62,7 +62,9 @@ for (const path of PAGES) {
       if (document.head) add();
       else document.addEventListener("DOMContentLoaded", add);
     }, HIDE);
-  const res = await page.goto(BASE + path, { waitUntil: "load" }).catch(() => null);
+  const res = await page
+    .goto(BASE + path, { waitUntil: "load", timeout: 90_000 })
+    .catch(() => null);
   if (!res || res.status() >= 400) {
     console.log(`skip ${path} (${res?.status() ?? "no response"})`);
     await page.close();
@@ -77,7 +79,11 @@ for (const path of PAGES) {
       await page.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), y);
       await page.waitForTimeout(700);
       const n = String(i + 1).padStart(2, "0");
-      await page.screenshot({ path: `${out}${slug(path)}-${n}.png`, animations: "disabled" });
+      await page.screenshot({
+        path: `${out}${slug(path)}-${n}.png`,
+        animations: "disabled",
+        timeout: 90_000,
+      });
     }
   }
   console.log(path);

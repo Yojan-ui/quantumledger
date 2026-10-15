@@ -170,7 +170,7 @@ if (process.env.MEASURE !== "1") {
       recordVideo: { dir, size: { width: 1440, height: 900 } },
     });
     const page = await ctx.newPage();
-    await page.goto(BASE + path, { waitUntil: "load" });
+    await page.goto(BASE + path, { waitUntil: "load", timeout: 90_000 });
     await play(page);
     const video = page.video();
     await ctx.close();
@@ -187,7 +187,7 @@ if (process.env.MEASURE !== "1") {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await ctx.newPage();
     await page.addInitScript(FPS_PROBE);
-    await page.goto(BASE + path, { waitUntil: "load" });
+    await page.goto(BASE + path, { waitUntil: "load", timeout: 90_000 });
     await play(page);
     const frames = await page.evaluate(() => window.__frames.slice(30));
     fps[id] = stats(frames);

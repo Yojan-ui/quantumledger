@@ -8,9 +8,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        106
-      ],
+      "longTasks": [106],
       "scroll": {
         "frames": 289,
         "worst": 17,
@@ -29,9 +27,7 @@
       "shifts": [
         {
           "value": 0.0023,
-          "nodes": [
-            "div.mt-8"
-          ]
+          "nodes": ["div.mt-8"]
         }
       ],
       "failed": [
@@ -144,9 +140,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        76
-      ],
+      "longTasks": [76],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -551,9 +545,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        77
-      ],
+      "longTasks": [77],
       "scroll": {
         "frames": 262,
         "worst": 50,
@@ -672,9 +664,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        103
-      ],
+      "longTasks": [103],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -777,9 +767,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        92
-      ],
+      "longTasks": [92],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -890,9 +878,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        90
-      ],
+      "longTasks": [90],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1011,9 +997,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        82
-      ],
+      "longTasks": [82],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1136,9 +1120,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        76
-      ],
+      "longTasks": [76],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1323,9 +1305,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        95
-      ],
+      "longTasks": [95],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1428,9 +1408,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        78
-      ],
+      "longTasks": [78],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1496,9 +1474,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        78
-      ],
+      "longTasks": [78],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1553,9 +1529,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        78
-      ],
+      "longTasks": [78],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1574,9 +1548,7 @@
       "shifts": [
         {
           "value": 0.0122,
-          "nodes": [
-            "div.pointer-events-none.absolute.inset-x-0"
-          ]
+          "nodes": ["div.pointer-events-none.absolute.inset-x-0"]
         },
         {
           "value": 0.003,
@@ -1611,9 +1583,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        77
-      ],
+      "longTasks": [77],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1960,9 +1930,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        91
-      ],
+      "longTasks": [91],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -4412,10 +4380,7 @@
       "shifts": [
         {
           "value": 0.0132,
-          "nodes": [
-            "fieldset.mt-8",
-            "::after."
-          ]
+          "nodes": ["fieldset.mt-8", "::after."]
         }
       ],
       "failed": [
@@ -4452,9 +4417,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        78
-      ],
+      "longTasks": [78],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -4781,12 +4744,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        108,
-        56,
-        68,
-        200
-      ],
+      "longTasks": [108, 56, 68, 200],
       "scroll": {
         "frames": 278,
         "worst": 33,
@@ -4805,9 +4763,7 @@
       "shifts": [
         {
           "value": 0.0054,
-          "nodes": [
-            "div.absolute.right-5.top-6"
-          ]
+          "nodes": ["div.absolute.right-5.top-6"]
         }
       ],
       "failed": [
@@ -4836,11 +4792,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        54,
-        99,
-        187
-      ],
+      "longTasks": [54, 99, 187],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -4883,10 +4835,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        51,
-        117
-      ],
+      "longTasks": [51, 117],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -4933,10 +4882,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        53,
-        121
-      ],
+      "longTasks": [53, 121],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -4999,11 +4945,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        52,
-        115,
-        196
-      ],
+      "longTasks": [52, 115, 196],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5050,11 +4992,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        53,
-        119,
-        192
-      ],
+      "longTasks": [53, 119, 192],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5097,11 +5035,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        54,
-        117,
-        189
-      ],
+      "longTasks": [54, 117, 189],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5148,11 +5082,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        52,
-        119,
-        195
-      ],
+      "longTasks": [52, 119, 195],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5195,11 +5125,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        53,
-        118,
-        193
-      ],
+      "longTasks": [53, 118, 193],
       "scroll": {
         "frames": 267,
         "worst": 17,
@@ -5246,15 +5172,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        52,
-        93,
-        131,
-        92,
-        415,
-        66,
-        73
-      ],
+      "longTasks": [52, 93, 131, 92, 415, 66, 73],
       "scroll": {
         "frames": 279,
         "worst": 17,
@@ -5273,18 +5191,11 @@
       "shifts": [
         {
           "value": 0.0077,
-          "nodes": [
-            "div.absolute.bottom-3.left-3",
-            "dd.min-w-0.truncate.text-right"
-          ]
+          "nodes": ["div.absolute.bottom-3.left-3", "dd.min-w-0.truncate.text-right"]
         },
         {
           "value": 0.0076,
-          "nodes": [
-            "button.h-8.rounded-sm.border",
-            "(text)",
-            "dd.min-w-0.truncate.text-right"
-          ]
+          "nodes": ["button.h-8.rounded-sm.border", "(text)", "dd.min-w-0.truncate.text-right"]
         },
         {
           "value": 0.005,
@@ -5308,9 +5219,7 @@
         },
         {
           "value": 0.0013,
-          "nodes": [
-            "div.absolute.bottom-3.left-3"
-          ]
+          "nodes": ["div.absolute.bottom-3.left-3"]
         }
       ],
       "failed": [
@@ -5343,10 +5252,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        96,
-        224
-      ],
+      "longTasks": [96, 224],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5393,11 +5299,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        54,
-        96,
-        196
-      ],
+      "longTasks": [54, 96, 196],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5448,12 +5350,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        57,
-        73,
-        56,
-        210
-      ],
+      "longTasks": [57, 73, 56, 210],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5472,9 +5369,7 @@
       "shifts": [
         {
           "value": 0.0059,
-          "nodes": [
-            "div.pointer-events-none.absolute.inset-x-0"
-          ]
+          "nodes": ["div.pointer-events-none.absolute.inset-x-0"]
         }
       ],
       "failed": [
@@ -5507,11 +5402,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        61,
-        165,
-        211
-      ],
+      "longTasks": [61, 165, 211],
       "scroll": {
         "frames": 264,
         "worst": 17,
@@ -5554,11 +5445,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        81,
-        110,
-        280
-      ],
+      "longTasks": [81, 110, 280],
       "scroll": {
         "frames": 265,
         "worst": 17,
@@ -5586,9 +5473,7 @@
         },
         {
           "value": 0.0059,
-          "nodes": [
-            "div.pointer-events-none.absolute.inset-x-0"
-          ]
+          "nodes": ["div.pointer-events-none.absolute.inset-x-0"]
         }
       ],
       "failed": []
@@ -5604,11 +5489,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        64,
-        88,
-        276
-      ],
+      "longTasks": [64, 88, 276],
       "scroll": {
         "frames": 267,
         "worst": 17,
@@ -5647,10 +5528,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        72,
-        161
-      ],
+      "longTasks": [72, 161],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5701,10 +5579,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        57,
-        132
-      ],
+      "longTasks": [57, 132],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5747,10 +5622,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        58,
-        128
-      ],
+      "longTasks": [58, 128],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5801,11 +5673,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        58,
-        128,
-        212
-      ],
+      "longTasks": [58, 128, 212],
       "scroll": {
         "frames": 269,
         "worst": 17,
@@ -5848,10 +5716,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        73,
-        165
-      ],
+      "longTasks": [73, 165],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -5894,10 +5759,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        58,
-        127
-      ],
+      "longTasks": [58, 127],
       "scroll": {
         "frames": 262,
         "worst": 17,
@@ -5956,10 +5818,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        57,
-        126
-      ],
+      "longTasks": [57, 126],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6006,10 +5865,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        60,
-        133
-      ],
+      "longTasks": [60, 133],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6056,10 +5912,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        59,
-        133
-      ],
+      "longTasks": [59, 133],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6154,10 +6007,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        57,
-        126
-      ],
+      "longTasks": [57, 126],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6236,10 +6086,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        59,
-        140
-      ],
+      "longTasks": [59, 140],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6298,10 +6145,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        58,
-        126
-      ],
+      "longTasks": [58, 126],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6380,10 +6224,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        60,
-        140
-      ],
+      "longTasks": [60, 140],
       "scroll": {
         "frames": 262,
         "worst": 17,
@@ -6450,10 +6291,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        59,
-        137
-      ],
+      "longTasks": [59, 137],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6528,10 +6366,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        58,
-        139
-      ],
+      "longTasks": [58, 139],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6610,10 +6445,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        64,
-        150
-      ],
+      "longTasks": [64, 150],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6692,11 +6524,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        60,
-        90,
-        214
-      ],
+      "longTasks": [60, 90, 214],
       "scroll": {
         "frames": 262,
         "worst": 17,
@@ -6783,10 +6611,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        88,
-        199
-      ],
+      "longTasks": [88, 199],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6857,11 +6682,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        137,
-        65,
-        334
-      ],
+      "longTasks": [137, 65, 334],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6920,10 +6741,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        89,
-        202
-      ],
+      "longTasks": [89, 202],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -6998,10 +6816,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        90,
-        198
-      ],
+      "longTasks": [90, 198],
       "scroll": {
         "frames": 262,
         "worst": 17,
@@ -7088,11 +6903,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        74,
-        91,
-        219
-      ],
+      "longTasks": [74, 91, 219],
       "scroll": {
         "frames": 262,
         "worst": 17,
@@ -7111,9 +6922,7 @@
       "shifts": [
         {
           "value": 0.0936,
-          "nodes": [
-            "fieldset.mt-8"
-          ]
+          "nodes": ["fieldset.mt-8"]
         }
       ],
       "failed": [
@@ -7134,11 +6943,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        111,
-        79,
-        227
-      ],
+      "longTasks": [111, 79, 227],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -7185,12 +6990,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        59,
-        119,
-        63,
-        270
-      ],
+      "longTasks": [59, 119, 63, 270],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -7262,10 +7062,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        90,
-        197
-      ],
+      "longTasks": [90, 197],
       "scroll": {
         "frames": 261,
         "worst": 17,

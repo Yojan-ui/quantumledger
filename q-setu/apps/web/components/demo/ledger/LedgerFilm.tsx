@@ -33,9 +33,8 @@ const SPAN = (120 * Math.PI) / 180;
 /** The verification pulse: one block every 220 ms (slow enough to follow), stopping at a break. */
 const STEP_MS = 220;
 const CASCADE_MS = 90;
-/** The edited block cracking open, and the chain after it sagging. */
+/** The edited block cracking open. */
 const CRACK_MS = 900;
-const SAG_MS = 900;
 
 /** The blocks on the radar disc (disc-local: world x, and −(z + R) about its centre at z = −R). */
 const RADAR_MARKS: [number, number][] = Array.from({ length: 12 }, (_, i) => {

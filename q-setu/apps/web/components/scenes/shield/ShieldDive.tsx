@@ -90,7 +90,8 @@ export function ShieldDive({
     void story.run("dns");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-  useEffect(() => () => story.stop(), [story.stop]);
+  const stop = story.stop;
+  useEffect(() => () => stop(), [stop]);
 
   // The camera follows the story's beat.
   useEffect(() => {
