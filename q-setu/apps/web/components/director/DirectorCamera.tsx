@@ -1,9 +1,12 @@
 "use client";
 
 /**
- * The director's camera (inside a drei View). Between shots it flies on a gentle arc, not a straight
- * line, over 0.7–1.0 s with the motion token easing, and settles with a 1–2° roll. While a shot is held
- * it drifts slowly (2–3% of the distance over 8 s), so the scene never looks frozen.
+ * The director's camera (inside a drei View). Between shots it flies a spline (lib/motion/camera): a
+ * dolly when the subject stays put, a crane over the midpoint when it moves, an orbit when the view
+ * swings round. A big move eases back for 120 ms first (anticipation); the move takes 1.2–1.8 s
+ * (longer for longer moves) with zero velocity at both ends, the look-at point leads slightly, and it
+ * arrives with a small settle and a 1–2° roll that levels out. It never cuts. While a shot is held it
+ * drifts slowly (2–3% of the distance over 8 s), so the scene never looks frozen.
  * Reduced motion: cuts straight to the shot, no drift.
  *
  * Optional `orbit`: the viewer can drag (and fling) to orbit and scroll to zoom around the shot's subject;
@@ -12,10 +15,9 @@
  */
 import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { easeToken } from "@/lib/ease";
+import { planMove, sampleMove, travelled, type CameraMove } from "@/lib/motion";
 import type { DirectorState } from "./types";
 
 const v = (a: [number, number, number]) => new THREE.Vector3(...a);
@@ -25,7 +27,7 @@ export function DirectorCamera({
   onSettled,
   drift = 0.025,
   track,
-  range = [0.7, 1.0],
+  range = [1.2, 1.8],
   orbit,
   zoom = true,
   shiftX = 0,
@@ -38,7 +40,7 @@ export function DirectorCamera({
   drift?: number;
   /** Optional moving subject: while it returns a point, the camera looks at it and slides along. */
   track?: () => THREE.Vector3 | null;
-  /** Move duration range in seconds (shorter for short hops). */
+  /** Move duration range in seconds, within 1.2–1.8 (longer moves take longer). */
   range?: [number, number];
   /** The element whose drags orbit the camera (and wheel zooms); omit for a directed-only camera. */
   orbit?: () => HTMLElement | null;
@@ -76,6 +78,14 @@ export function DirectorCamera({
   const roll = useRef(0);
   const settled = useRef(false);
   const first = useRef(true);
+  /** The move in flight: its spline, start time (s), fov and roll side. */
+  const move = useRef<{
+    m: CameraMove;
+    start: number;
+    fromFov: number;
+    toFov: number;
+    side: number;
+  } | null>(null);
 
   useEffect(() => {
     const c = cam.current;
@@ -86,6 +96,7 @@ export function DirectorCamera({
     settled.current = false;
     if (state.reduce || first.current) {
       first.current = false;
+      move.current = null;
       base.current.copy(to);
       look.current.copy(toLook);
       c.fov = toFov;
@@ -94,49 +105,23 @@ export function DirectorCamera({
       onSettled();
       return;
     }
-    const from = base.current.clone();
-    const fromLook = look.current.clone();
-    const fromFov = c.fov;
-    // Arc: lift the midpoint up and out, proportional to the distance travelled.
-    const dist = from.distanceTo(to);
-    const mid = from.clone().lerp(to, 0.5);
-    const out = mid
-      .clone()
-      .sub(toLook)
-      .normalize()
-      .multiplyScalar(dist * 0.18);
-    const ctrl = mid.add(out).add(new THREE.Vector3(0, dist * 0.12, 0));
-    const curve = new THREE.QuadraticBezierCurve3(from, ctrl, to);
-    // Each move takes between range[0] and range[1] seconds, longer for longer hops.
-    const duration = Math.min(range[1], Math.max(range[0], range[0] + dist * 0.05));
     // A new shot re-frames: the viewer's orbit eases back to zero.
     Object.assign(user.current, { ty: 0, tp: 0, tz: 1 });
-    const p = { t: 0 };
-    const side = Math.sign(to.x - from.x || 1);
-    // Inside a gsap.context, killed on unmount or when the next shot starts (it then blends from
-    // wherever the camera is now: `from` is the current position, not the old start).
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        onComplete: () => {
-          settled.current = true;
-          onSettled();
-        },
-      });
-      tl.to(p, {
-        t: 1,
-        duration,
-        ease: easeToken,
-        onUpdate: () => {
-          curve.getPoint(p.t, base.current);
-          look.current.lerpVectors(fromLook, toLook, p.t);
-          c.fov = fromFov + (toFov - fromFov) * p.t;
-          c.updateProjectionMatrix();
-          // Roll in during the move, settle to level at the end (max ~1.5°).
-          roll.current = side * 0.026 * Math.sin(Math.PI * p.t);
-        },
-      });
-    });
-    return () => ctx.kill();
+    // The move starts from wherever the camera is now (mid-move included), so it never jumps.
+    const m = planMove(
+      { pos: base.current.clone(), look: look.current.clone() },
+      { pos: to, look: toLook },
+    );
+    const lo = Math.max(1.2, range[0]);
+    const hi = Math.min(1.8, Math.max(lo, range[1]));
+    m.duration = Math.min(hi, Math.max(lo, m.duration));
+    move.current = {
+      m,
+      start: performance.now() / 1000,
+      fromFov: c.fov,
+      toFov,
+      side: Math.sign(to.x - base.current.x || 1),
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.index, state.take, state.reduce]);
 
@@ -213,6 +198,22 @@ export function DirectorCamera({
   useFrame(({ clock }, dt) => {
     const c = cam.current;
     if (!c) return;
+    const mv = move.current;
+    if (mv) {
+      const t = performance.now() / 1000 - mv.start;
+      const done = sampleMove(mv.m, t, base.current, look.current);
+      const k = travelled(mv.m, t);
+      c.fov = mv.fromFov + (mv.toFov - mv.fromFov) * k;
+      c.updateProjectionMatrix();
+      // Roll in during the move, level at the end (max ~1.5°).
+      roll.current = mv.side * 0.026 * Math.sin(Math.PI * k);
+      // Settled on arrival (the effects of the shot start); the settle itself runs on.
+      if (k >= 1 && !settled.current) {
+        settled.current = true;
+        onSettled();
+      }
+      if (done) move.current = null;
+    }
     const d = base.current.length();
     // The hold drift (no allocation per frame: one reused vector).
     const sway = swayV.current;

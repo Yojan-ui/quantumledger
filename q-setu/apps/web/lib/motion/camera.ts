@@ -6,7 +6,7 @@
  * damped overshoot. While a framing holds, a very slow drift keeps it alive.
  */
 import * as THREE from "three";
-import { clamp01, smootherstep, wobble } from "./timing";
+import { clamp01, smootherstep, WINDUP, wobble } from "./timing";
 
 export type MoveKind = "dolly" | "crane" | "orbit";
 
@@ -66,14 +66,33 @@ export function planMove(from: Framing, to: Framing, kind = chooseMove(from, to)
 const tmp = new THREE.Vector3();
 
 /**
- * Evaluates a move `t` seconds in, into `pos` / `look`. Returns true once arrived. The look leads the
- * position by ~8% of the move, and the last 15% carries a small settle.
+ * Evaluates a move `t` seconds in, into `pos` / `look`. Returns true once arrived and settled. A big
+ * move (over 3 units) first eases back for 120 ms (anticipation: up to 4% of the distance, at most
+ * 0.25); the look leads the position by ~8% of the move; the arrival carries a small settle.
+ * `travelled(m, t)` is the travel progress 0..1 (for focus pulls and fov).
  */
+export const travelled = (m: CameraMove, t: number) =>
+  smootherstep(clamp01((t - (m.from.pos.distanceTo(m.to.pos) > 3 ? WINDUP : 0)) / m.duration));
+
 export function sampleMove(m: CameraMove, t: number, pos: THREE.Vector3, look: THREE.Vector3) {
+  const d = m.from.pos.distanceTo(m.to.pos);
+  const windup = d > 3 ? WINDUP : 0;
+  if (t < windup) {
+    const dip = Math.min(0.25, d * 0.04) * Math.sin(((t / windup) * Math.PI) / 2) ** 2;
+    pos.copy(m.from.pos).add(tmp.copy(m.from.pos).sub(m.to.pos).normalize().multiplyScalar(dip));
+    look.copy(m.from.look);
+    return false;
+  }
+  t -= windup;
   const u = clamp01(t / m.duration);
   const e = smootherstep(u);
   m.path.getPoint(e, pos);
   m.lookPath.getPoint(Math.min(1, smootherstep(clamp01(u * 1.08))), look);
+  if (windup && u < 1) {
+    // Blend out of the wind-up over the first fifth of the travel.
+    const dip = Math.min(0.25, d * 0.04) * (1 - smootherstep(u * 5));
+    pos.add(tmp.copy(m.from.pos).sub(m.to.pos).normalize().multiplyScalar(dip));
+  }
   if (u >= 1) {
     // The settle: a damped push along the travel direction, centimetres, gone in half a second.
     const s = wobble(t - m.duration, 1.6, 7) * 0.04 * m.from.pos.distanceTo(m.to.pos);

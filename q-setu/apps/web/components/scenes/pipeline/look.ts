@@ -42,6 +42,8 @@ export interface Look {
     result: number;
   };
   morph: number;
+  /** Seconds since the real patch (the lattice wave's clock), -1 before it. */
+  morphT: number;
   lift: number;
   /** Radar progress 0..1 (where the sweep line is), and the angle it stopped at if tampered. */
   sweep: number;
@@ -75,6 +77,7 @@ export function makeLook(c: Palette): Look {
       result: Infinity,
     },
     morph: 0,
+    morphT: -1,
     lift: 0,
     sweep: 0,
     green: () => 0,
@@ -88,7 +91,7 @@ export function makeLook(c: Palette): Look {
 
 /** Updates `L` in place for this frame. `sweepStart` = when the RESCAN stage began. */
 /** The camera's longest move: a stage's effect waits for it so it's seen from its own shot. */
-export const CAMERA_MS = 1600;
+export const CAMERA_MS = 1950; // the longest move (1.8 s) after its 120 ms wind-up
 
 export function updateLook(
   L: Look,
@@ -117,6 +120,8 @@ export function updateLook(
   const r = L.reduce;
   // DEFEND: the swarm assembles into a lattice over 1.2 s after the real handshake.
   L.morph = s.status[2] === "done" ? (r ? 1 : easeToken(Math.min(1, L.since.patch / MORPH_MS))) : 0;
+  // The lattice wave (Swarm): every node springs into place, spreading from where the patch lands.
+  L.morphT = s.status[2] === "done" ? (r ? 100 : L.since.patch / 1000) : -1;
   // SCORE: the sphere lifts while the risk is on screen.
   const liftTo = s.stage === 1 ? 0.55 : 0;
   L.lift += (liftTo - L.lift) * (r ? 1 : 0.06);
