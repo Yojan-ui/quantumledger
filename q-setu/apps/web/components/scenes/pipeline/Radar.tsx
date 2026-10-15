@@ -14,7 +14,7 @@ import * as THREE from "three";
 import type { Look } from "./look";
 import { CLIENT, SERVER, VAULT } from "./geometry";
 
-const MAX_MARKS = 8;
+const MAX_MARKS = 12;
 /** Disc-local (x, y) of the pipeline's objects: world (x, -z) relative to the disc's centre. */
 const PIPELINE_MARKS: [number, number][] = [
   [CLIENT.x, -CLIENT.z],

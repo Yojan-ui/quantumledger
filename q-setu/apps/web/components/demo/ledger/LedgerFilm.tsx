@@ -3,8 +3,13 @@
 /**
  * Demo 4 as a film. Twelve real ledger entries on an arc, linked by SIG lines (hash + ML-DSA
  * signature): six around #42, a gap, then the six newest, which shift along as live entries arrive.
- * Tamper: #42 flickers to DANGER and every link after it dims and drops in a cascade. Verify: a scan
- * beam passes each block (OK) and stops at the first break. Restore repairs the chain in reverse.
+ * The links are a light rope (lib/motion Rope: verlet, three points per link), so they hang and swing.
+ * Tamper: #42 jolts, flickers to DANGER and cracks; the blocks after it are let go and the links after
+ * it slacken, so that part of the chain sags between the break and the newest block and swings.
+ * Verify: a scan beam passes each block (OK) and a pulse runs along the rope; it stops dead at the
+ * first break, recoils, and jolts the broken block. Restore pulls the chain taut: the links take up
+ * their length again and each block springs back to its place, last first.
+ * Every motion starts at a real event (the edit, the verification result, the restore).
  */
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -15,6 +20,7 @@ import type { DirectorState } from "@/components/director/types";
 import { span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { Rope, springIn, wobble } from "@/lib/motion";
 import { makeLook, type Look } from "@/components/scenes/pipeline/look";
 import { Radar } from "@/components/scenes/pipeline/Radar";
 import { Thicken } from "@/components/scenes/Thicken";
@@ -30,6 +36,17 @@ const CASCADE_MS = 90;
 /** The edited block cracking open, and the chain after it sagging. */
 const CRACK_MS = 900;
 const SAG_MS = 900;
+
+/** The blocks on the radar disc (disc-local: world x, and −(z + R) about its centre at z = −R). */
+const RADAR_MARKS: [number, number][] = Array.from({ length: 12 }, (_, i) => {
+  const t = (i + (i >= 6 ? 0.8 : 0)) / (12 - 1 + 0.8);
+  const a = -((120 * Math.PI) / 180) / 2 + ((120 * Math.PI) / 180) * t;
+  return [7 * Math.sin(a), -7 * Math.cos(a)];
+});
+
+/** Rope points per link (block to block). */
+const SUB = 4;
+const LINKS = (N - 1) * SUB;
 
 /** Where block i sits on the arc (a gap between the two halves). */
 export function blockPos(i: number, out = new THREE.Vector3()) {
@@ -154,10 +171,30 @@ export default function LedgerFilm({
   );
   const linkGeo = useMemo(() => {
     const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array((N - 1) * 6), 3));
-    g.setAttribute("color", new THREE.BufferAttribute(new Float32Array((N - 1) * 6), 3));
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(LINKS * 6), 3));
+    g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(LINKS * 6), 3));
     return g;
   }, []);
+  // The rope: block i is point i·SUB; the points between are the link's cord.
+  const rope = useMemo(() => {
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i < N; i++) {
+      const a = blockPos(i);
+      pts.push(a);
+      if (i < N - 1) {
+        const b = blockPos(i + 1);
+        for (let k = 1; k < SUB; k++) pts.push(a.clone().lerp(b, k / SUB));
+      }
+    }
+    const r = new Rope(pts);
+    r.gravity.set(0, -3, 0);
+    r.damping = 0.975;
+    return { r, rest: r.rest.slice() };
+  }, []);
+  /** Where each block was when the restore began (it springs from there back to its place). */
+  const restoreFrom = useRef<{ at: number; pos: THREE.Vector3[] } | null>(null);
+  const kicked = useRef(0);
+  const arc = useMemo(() => new THREE.Vector3(), []);
   const beam = useRef<THREE.Mesh>(null);
   const p = useMemo(() => new THREE.Vector3(), []);
   const q = useMemo(() => new THREE.Vector3(), []);
@@ -166,7 +203,7 @@ export default function LedgerFilm({
   const head = useMemo(() => blockPos(N - 1), []);
   const target = useMemo(() => blockPos(TARGET_INDEX), []);
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     if (!active) return;
     const now = performance.now();
     const reduce = state.reduce;
@@ -184,6 +221,7 @@ export default function LedgerFilm({
     L.reduce = reduce;
     L.sweepOk = verify ? broken < 0 : undefined;
     L.dim = () => 1;
+    L.now = now;
     // The Merkle build: leaves rise from the newest blocks, pair up, hash to the root (Stage 4).
     const mt = merkle ? now - merkle.at : -1;
     treeAt.forEach((at, k) => {
@@ -219,30 +257,74 @@ export default function LedgerFilm({
     const tm = treeEdges.material as THREE.LineBasicMaterial;
     tm.color.copy(c.sig);
     tm.opacity = mt > 700 ? (state.shot.id === "chain" ? 0.6 : 0.2) : 0;
+    // ── The rope. ─────────────────────────────────────────────────────────────────────────
+    const R_ = rope.r;
+    const slack = tamperedAt ? now - tamperedAt - 300 : -1;
+    // The break point: the edited block jolts on the edit, and again when the pulse hits it.
+    const hitAt = verify && broken >= 0 ? verify.at + broken * STEP_MS : 0;
+    const jolt = reduce
+      ? 0
+      : (tamperedAt ? wobble((now - tamperedAt) / 1000, 5, 6) * 0.12 : 0) +
+        (hitAt ? wobble((now - hitAt) / 1000, 6, 7) * 0.07 : 0);
+    if (restoredAt && !tamperedAt) {
+      if (restoreFrom.current?.at !== restoredAt)
+        restoreFrom.current = {
+          at: restoredAt,
+          pos: Array.from({ length: N }, (_, i) => R_.p[i * SUB]!.clone()),
+        };
+    } else restoreFrom.current = null;
+    for (let i = 0; i < N; i++) {
+      blockPos(i, arc);
+      arc.y += reduce ? 0 : 0.03 * Math.sin(t * 0.8 + i * 0.6);
+      const n = i * SUB;
+      const after = i > TARGET_INDEX && i < N - 1;
+      if (reduce) {
+        // Reduced motion: the old composed state, no simulation.
+        const j = i - TARGET_INDEX;
+        const sag = i > TARGET_INDEX && tamperedAt ? 0.55 * (1 - Math.exp(-j / 2.2)) : 0;
+        R_.pin(n, arc.setY(arc.y - (i < N - 1 ? sag : 0)));
+      } else if (after && slack > 0) {
+        if (R_.pinned[n]) {
+          R_.release(n);
+          // Let go with a sideways shove: the hanging part swings, not just drops.
+          if (kicked.current !== tamperedAt && i === TARGET_INDEX + 1) {
+            kicked.current = tamperedAt;
+            R_.kick(n, { x: 0, y: -1.2, z: 1.6 });
+          }
+        }
+      } else if (after && restoreFrom.current) {
+        // Restore: each block springs from where it hung back to its place, last block first.
+        const k = springIn((now - restoredAt - (N - 1 - i) * CASCADE_MS) / 1000, 0.45, 1.8);
+        R_.pin(n, q.copy(restoreFrom.current.pos[i]!).lerp(arc, k));
+      } else if (i === TARGET_INDEX) R_.pin(n, arc.setY(arc.y - jolt));
+      else R_.pin(n, arc);
+    }
+    // Slack links after the break (the chain sags); taut everywhere else (restore pulls it in).
+    for (let k = 0; k < R_.rest.length; k++) {
+      const block = Math.floor(k / SUB);
+      R_.rest[k] = rope.rest[k]! * (tamperedAt && block >= TARGET_INDEX + 1 ? 1.07 : 1.004);
+    }
+    if (reduce) {
+      for (let i = 0; i < N - 1; i++)
+        for (let k = 1; k < SUB; k++)
+          R_.p[i * SUB + k]!.copy(R_.p[i * SUB]!).lerp(R_.p[(i + 1) * SUB]!, k / SUB);
+    } else R_.step(Math.min(dt, 1 / 30));
+
     const pos = linkGeo.attributes.position!.array as Float32Array;
     const lc = linkGeo.attributes.color!.array as Float32Array;
     for (let i = 0; i < N; i++) {
       const g = blocks.current[i];
       const m = mats[i]!;
-      blockPos(i, p);
-      // Cascade after the edit: every block past #42 drops and dims, 60 ms apart; restore lifts them
-      // back in reverse order (last block first).
+      p.copy(R_.p[i * SUB]!);
       const after = i > TARGET_INDEX;
-      const down = tamperedAt
-        ? easeToken(span(now - tamperedAt - 300 - (i - TARGET_INDEX) * CASCADE_MS, 0, SAG_MS))
-        : restoredAt
-          ? 1 - easeToken(span(now - restoredAt - (N - 1 - i) * CASCADE_MS, 0, 500))
-          : 0;
-      const d = after && !reduce ? down : after && tamperedAt ? 1 : 0;
-      // The chain sags after the broken link: deeper the further from it, like a hanging cable.
+      // How far this block has dropped from its place (for the dimming and the tip).
+      const d = after ? Math.min(1, Math.max(0, (blockPos(i, q).y - p.y) / 0.5)) : 0;
       const j = i - TARGET_INDEX;
-      const sag = after ? 0.55 * (1 - Math.exp(-j / 2.2)) : 0;
-      p.y = -sag * d + (reduce ? 0 : 0.03 * Math.sin(t * 0.8 + i * 0.6));
       const fresh = i === N - 1 && headAt ? easeToken(span(now - headAt, 0, 500)) : 1;
       if (g) {
         g.position.copy(p);
         g.lookAt(0, p.y, R * 0.6);
-        // Hanging blocks tip towards the break.
+        // Hanging blocks tip with the rope's slope.
         if (after && d > 0) g.rotateZ(0.22 * d * Math.min(1, j / 3));
         g.scale.setScalar(Math.max(0.0001, fresh));
       }
@@ -279,38 +361,47 @@ export default function LedgerFilm({
       m.fill.color.copy(col);
       m.line.opacity = 1 - 0.6 * d;
       m.fill.opacity = 0.1 * (1 - 0.6 * d) + (isBad ? 0.12 : 0);
-      if (i > 0) {
-        blockPos(i - 1, q);
-        set3(pos, (i - 1) * 2, q.x, q.y, q.z);
-        set3(pos, (i - 1) * 2 + 1, p.x, p.y, p.z);
-        // The link into a block is broken from the edit onward; the gap is drawn faint.
-        const gap = i === N / 2;
-        const lcol = linkCol.copy(c.sig);
-        if (tamperedAt && i > TARGET_INDEX) lcol.lerp(c.text3, 0.8);
-        if (gap) lcol.multiplyScalar(0.25);
-        set3(lc, (i - 1) * 2, lcol.r, lcol.g, lcol.b);
-        set3(lc, (i - 1) * 2 + 1, lcol.r, lcol.g, lcol.b);
-      }
+    }
+    // The cord: every rope segment, coloured by the link it belongs to (the link into block b).
+    for (let k = 0; k < LINKS; k++) {
+      const a = R_.p[k]!;
+      const b = R_.p[k + 1]!;
+      set3(pos, k * 2, a.x, a.y, a.z);
+      set3(pos, k * 2 + 1, b.x, b.y, b.z);
+      const into = Math.floor(k / SUB) + 1;
+      const gap = into === N / 2;
+      const lcol = linkCol.copy(c.sig);
+      // The link into a block is broken from the edit onward; the gap is drawn faint.
+      if (tamperedAt && into > TARGET_INDEX) lcol.lerp(c.text3, 0.8);
+      if (gap) lcol.multiplyScalar(0.25);
+      set3(lc, k * 2, lcol.r, lcol.g, lcol.b);
+      set3(lc, k * 2 + 1, lcol.r, lcol.g, lcol.b);
     }
     linkGeo.attributes.position!.needsUpdate = linkGeo.attributes.color!.needsUpdate = true;
-    // The verification pulse: a point of light gliding block to block along the links. It stops
-    // dead at the first break, flares red and fades; on an intact chain it runs to the newest block.
+    // The verification pulse: a point of light running along the rope block to block. It stops
+    // dead at the first break (a recoil, a red flare, the block jolts) and fades; on an intact chain
+    // it runs to the newest block.
     if (pulse.current) {
       const g = pulse.current;
       if (!verify || reduce) g.visible = false;
       else {
         const run = (now - verify.at) / STEP_MS;
         const stop = broken >= 0 ? broken : N - 1;
-        const f = Math.min(stop, Math.max(0, run));
-        const i0 = Math.floor(f);
-        blockPos(i0, p);
-        blockPos(Math.min(N - 1, i0 + 1), q);
-        p.lerp(q, f - i0);
+        const f = Math.min(stop, Math.max(0, run)) * SUB;
+        const i0 = Math.min(LINKS - 1, Math.floor(f));
+        p.copy(R_.p[i0]!).lerp(R_.p[Math.min(LINKS, i0 + 1)]!, f - i0);
         const since = (run - stop) * STEP_MS; // ms since it reached the stop
         const fade = since > 0 ? Math.max(0, 1 - since / 1200) : 1;
         g.visible = fade > 0.01;
-        g.position.set(p.x, p.y + 0.05, p.z);
         const hit = broken >= 0 && since > 0;
+        // The recoil: knocked back along the rope a touch, ringing down.
+        if (hit && stop > 0) {
+          q.copy(R_.p[Math.max(0, stop * SUB - 1)]!)
+            .sub(p)
+            .normalize();
+          p.addScaledVector(q, 0.1 * Math.max(0, wobble(since / 1000, 4, 8)));
+        }
+        g.position.set(p.x, p.y + 0.05, p.z);
         pulseMat.color.copy(hit ? c.danger : c.ok);
         haloMat.color.copy(pulseMat.color);
         pulseMat.opacity = fade;
@@ -350,6 +441,7 @@ export default function LedgerFilm({
           ((210 + 120 * Math.max(0, Math.min(1, (scannedRef.current + 0.5) / N))) * Math.PI) / 180
         }
         on={() => !!verify && (id === "verify" || id === "broken" || id === "restore")}
+        marks={RADAR_MARKS}
       />
       {treeAt.map((_, k) => (
         <group key={k} ref={(g) => void (nodes.current[k] = g)} visible={false}>
