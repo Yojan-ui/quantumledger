@@ -11,6 +11,7 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
 import { curl } from "@/lib/motion";
+import { gfx } from "@/lib/client/gfx";
 
 /** Out to a peak at τ, then back: t·e^(1 − t/τ)/τ (peak 1 at t = τ). */
 export const shove = (t: number, tau = 0.18) => (t <= 0 ? 0 : (t / tau) * Math.exp(1 - t / tau));
@@ -80,6 +81,8 @@ export function PushDust({
   const v = useMemo(() => new THREE.Vector3(), []);
 
   useFrame(({ clock, gl }) => {
+    // Half on phones and at the quality ladder's step 2 (the dots are already in random order).
+    g.setDrawRange(0, gfx.quality >= 2 || window.innerWidth < 768 ? Math.ceil(count / 2) : count);
     m.uniforms.uColor!.value.copy(color);
     m.uniforms.uPR!.value = gl.getPixelRatio();
     const pos = g.attributes.position!.array as Float32Array;

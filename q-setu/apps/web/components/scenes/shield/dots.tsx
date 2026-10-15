@@ -15,6 +15,11 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import * as THREE from "three";
 import { SPRING } from "@/components/scenes/glsl";
+import { gfx } from "@/lib/client/gfx";
+
+/** Phones and the quality ladder's step 2 draw half the dots. */
+export const halfDots = () =>
+  gfx.quality >= 2 || (typeof window !== "undefined" && window.innerWidth < 768);
 
 const vertex = /* glsl */ `
   attribute vec3 aScatter; attribute float aDelay; attribute float aBright;
@@ -152,7 +157,8 @@ export function DotCloud({
 }: {
   cloud: Cloud;
   color: THREE.Color;
-  opacity?: number;
+  /** A number, or read each frame (a focus pull). */
+  opacity?: number | (() => number);
   size?: number;
   origin?: [number, number, number];
   spread?: number;
@@ -164,6 +170,18 @@ export function DotCloud({
   const { g, m } = useMemo(() => {
     const n = cloud.positions.length / 3;
     const r = rng(n * 7 + 11);
+    // Shuffle (deterministically): any prefix is an even sample of the whole shape.
+    const order = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [order[i], order[j]] = [order[j]!, order[i]!];
+    }
+    const positions = new Float32Array(n * 3);
+    const brights = new Float32Array(n);
+    order.forEach((o, i) => {
+      positions.set(cloud.positions.subarray(o * 3, o * 3 + 3), i * 3);
+      brights[i] = cloud.bright?.[o] ?? 1;
+    });
     const scatter = new Float32Array(n * 3);
     const delay = new Float32Array(n);
     const [ox, oy, oz] = origin;
@@ -173,20 +191,17 @@ export function DotCloud({
       const q = Math.sqrt(1 - u * u);
       const s = spread * (0.4 + r());
       scatter.set([q * Math.cos(a) * s, u * s, q * Math.sin(a) * s], i * 3);
-      const x = cloud.positions[i * 3]! - ox;
-      const y = cloud.positions[i * 3 + 1]! - oy;
-      const z = cloud.positions[i * 3 + 2]! - oz;
+      const x = positions[i * 3]! - ox;
+      const y = positions[i * 3 + 1]! - oy;
+      const z = positions[i * 3 + 2]! - oz;
       // The wave front at 5 units/s, in 60 ms beats.
       delay[i] = Math.round(Math.sqrt(x * x + y * y + z * z) / 5 / 0.06) * 0.06;
     }
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(cloud.positions, 3));
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setAttribute("aScatter", new THREE.BufferAttribute(scatter, 3));
     geo.setAttribute("aDelay", new THREE.BufferAttribute(delay, 1));
-    geo.setAttribute(
-      "aBright",
-      new THREE.BufferAttribute(cloud.bright ?? new Float32Array(n).fill(1), 1),
-    );
+    geo.setAttribute("aBright", new THREE.BufferAttribute(brights, 1));
     const mat = new THREE.ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
@@ -196,7 +211,7 @@ export function DotCloud({
         uSize: { value: size },
         uPR: { value: 1 },
         uColor: { value: new THREE.Color() },
-        uOpacity: { value: opacity },
+        uOpacity: { value: 1 },
         uOffset: { value: new THREE.Vector3() },
       },
       transparent: true,
@@ -207,11 +222,13 @@ export function DotCloud({
   }, [cloud]);
   useFrame(({ gl }) => {
     const u = m.uniforms;
+    // Half the dots on phones and at the ladder's step 2 (they're shuffled, so the shape holds).
+    g.setDrawRange(0, halfDots() ? Math.ceil(g.attributes.position!.count / 2) : Infinity);
     const k = clock();
     u.uForm!.value = k.form;
     u.uLeave!.value = k.leave;
     u.uPR!.value = gl.getPixelRatio();
-    u.uOpacity!.value = opacity;
+    u.uOpacity!.value = typeof opacity === "function" ? opacity() : opacity;
     (u.uColor!.value as THREE.Color).copy(color);
     const o = offset?.();
     (u.uOffset!.value as THREE.Vector3).set(o?.x ?? 0, o?.y ?? 0, o?.z ?? 0);

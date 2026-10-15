@@ -33,6 +33,7 @@ import { Anchor } from "@/components/director/Anchor";
 import { DirectorCamera } from "@/components/director/DirectorCamera";
 import type { DirectorState } from "@/components/director/types";
 import { latticeCube, set3 } from "@/components/scenes/geometry";
+import { gfx } from "@/lib/client/gfx";
 import { Thicken } from "@/components/scenes/Thicken";
 import { palette } from "@/components/world/palette";
 import { CHECKS } from "@/lib/shield-score";
@@ -191,6 +192,20 @@ export default function ShieldPlugIn({
   const bt = reduce ? 99 : btIn;
   /** Seconds into beat `b` as seen now: −1 before it, large once past it. */
   const at = (b: number) => (beat > b ? 99 : beat < b ? -1 : bt);
+  // Focus pull (the site's stand-in for depth of field): while the camera moves, whatever isn't this
+  // beat's subject softens, and comes back as the shot settles. Not on phones, or at the ladder's
+  // last step.
+  const SUBJECT: Record<string, string[]> = {
+    scan: ["web", "line", "server", "devices"],
+    install: ["shield", "line", "server"],
+    handshake: ["shield", "line"],
+    harvest: ["harvester", "line"],
+    fix: ["web", "server"],
+    verify: ["web", "server", "shield", "line", "devices", "harvester"],
+    attack: ["shield", "line"],
+  };
+  const focusK = useRef(1);
+  const dim = (part: string) => (SUBJECT[BEATS[v.beat]!]?.includes(part) ? 1 : focusK.current);
   const clock = () => ({
     form: reduce || !formAt ? 99 : (performance.now() - formAt) / 1000,
     leave: leaveAt && !reduce ? (performance.now() - leaveAt) / 1000 : -1,
@@ -442,8 +457,11 @@ export default function ShieldPlugIn({
   const col = useMemo(() => new THREE.Color(), []);
   const shieldPos = useMemo(() => new THREE.Vector3(), []);
 
-  useFrame(({ gl, clock: frameClock }) => {
+  useFrame(({ gl, clock: frameClock }, dt) => {
     if (!active) return;
+    const pullFocus =
+      !reduce && !state.settled && gfx.quality < 3 && window.innerWidth >= 768 ? 0.45 : 1;
+    focusK.current += (pullFocus - focusK.current) * Math.min(1, dt * 4);
     const pr = gl.getPixelRatio();
     const now = frameClock.elapsedTime;
     const installAt = at(1);
@@ -803,6 +821,7 @@ export default function ShieldPlugIn({
           origin={[0, -1.6, 0]}
           clock={clock}
           size={34}
+          opacity={() => dim("web")}
         />
       )}
       <mesh position={WEB} renderOrder={-1}>
@@ -818,12 +837,12 @@ export default function ShieldPlugIn({
         color={c.text3}
         position={[SERVER.x, SERVER.y, SERVER.z]}
         clock={clock}
-        opacity={0.9}
+        opacity={() => 0.9 * dim("server")}
       />
       <DotCloud
         cloud={devices}
         color={c.text}
-        opacity={0.7}
+        opacity={() => 0.7 * dim("devices")}
         clock={clock}
         origin={[-5.6, -0.35, 0]}
       />
@@ -832,7 +851,7 @@ export default function ShieldPlugIn({
         color={c.danger}
         position={[HARVESTER.x, HARVESTER.y, HARVESTER.z]}
         clock={clock}
-        opacity={0.55}
+        opacity={() => 0.55 * dim("harvester")}
       />
       <mesh position={[TAP_X, LINE_Y, 0]} material={tapMat} rotation={[0, Math.PI / 2, 0]}>
         <torusGeometry args={[0.09, 0.012, 6, 32]} />

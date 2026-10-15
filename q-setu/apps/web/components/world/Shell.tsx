@@ -6,7 +6,7 @@
  * chapter move and every drag the shell slides over the land and ocean dots, and the three layers read
  * as near, mid and far. The shell also trails the globe's turn on a soft spring (follow-through), so a
  * fling or a chapter swing ends with the near layer catching up a moment later. Static under reduced
- * motion; halved by the quality ladder.
+ * motion; halved on phones and by the quality ladder.
  */
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
@@ -80,7 +80,7 @@ export function Shell() {
     if (!p?.parent) return;
     const u = m.uniforms;
     u.uIn!.value += ((world.focusRect ? 1 : 0) - u.uIn!.value) * Math.min(1, dt * 1.5);
-    g.setDrawRange(0, gfx.quality >= 2 ? N >> 1 : N);
+    g.setDrawRange(0, gfx.quality >= 2 || window.innerWidth < 768 ? N >> 1 : N);
     const f = follow.current;
     const ry = p.parent.rotation.y;
     const rx = p.parent.rotation.x;
