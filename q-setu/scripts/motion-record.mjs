@@ -8,7 +8,7 @@
  *   - then played again unrecorded on the real GPU, measuring frame times (rAF deltas), into
  *     <outDir>/fps.json: per scene, p50 / p95 frame time, the share of frames over 20 ms (< 50 fps)
  *     and the worst frame, and when each frame over 50 ms happened (ms since the page started).
- * ONLY=deploy-dns,ledger limits the scenes.
+ * ONLY=deploy-dns,ledger limits the scenes; MEASURE=1 only measures.
  */
 import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
@@ -157,8 +157,8 @@ const stats = (pairs) => {
 };
 
 const fps = {};
-// 1. Recorded (software GL, so the video doesn't depend on this machine's GPU timing).
-{
+// 1. Recorded (software GL, so the video doesn't depend on this machine's GPU timing). MEASURE=1 skips it.
+if (process.env.MEASURE !== "1") {
   const browser = await chromium.launch({
     channel: "chrome",
     args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],

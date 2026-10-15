@@ -737,6 +737,8 @@ export default function ShieldPlugIn({
 
   // ── Labels (the films' anchored labels), each shown when its beat has happened. ──
   const show = labels && (state.settled || reduce);
+  // Phones: one label per beat, the one that matters (the caption and console carry the rest).
+  const phone = size.width < 768;
   const before = v.before;
   const checks = before?.checks;
   const fixed = (id: string) => v.fixes[id as keyof typeof v.fixes];
@@ -919,7 +921,7 @@ export default function ShieldPlugIn({
           label={f.label}
           value={f.value}
           role={findingRole(f.id)}
-          show={show && scanned && (id === "scan" || id === "fix")}
+          show={show && !phone && scanned && (id === "scan" || id === "fix")}
         />
       ))}
       <Anchor
@@ -940,7 +942,7 @@ export default function ShieldPlugIn({
         label="Recorder (sim)"
         value={`${v.recorded} handshakes recorded · ${v.exposed} open at Q-Day${v.upgraded && beat >= 3 ? " · new captures unreadable" : ""}`}
         role="danger"
-        show={show && (id === "scan" || id === "harvest")}
+        show={show && (phone ? id === "harvest" : id === "scan" || id === "harvest")}
       />
       {v.handshake && (
         <Anchor
@@ -970,7 +972,7 @@ export default function ShieldPlugIn({
           label="Signed report"
           value="ML-DSA-65 · verified"
           role="sig"
-          show={show && id === "verify"}
+          show={show && !phone && id === "verify"}
         />
       )}
       {v.attack && (

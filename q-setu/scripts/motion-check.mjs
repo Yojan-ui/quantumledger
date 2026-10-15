@@ -18,7 +18,13 @@ const browser = await chromium.launch({
   channel: "chrome",
   args: process.env.GPU === "1" ? [] : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
 });
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+// W=390 checks a phone (844 tall, 2× density, touch).
+const W = Number(process.env.W ?? 1440);
+const page = await browser.newPage(
+  W < 768
+    ? { viewport: { width: W, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
+    : { viewport: { width: W, height: 900 } },
+);
 const errors = [];
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
 page.on("console", (m) => {
