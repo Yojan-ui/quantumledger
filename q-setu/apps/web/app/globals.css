@@ -211,6 +211,34 @@
       outline-color: var(--kem);
     }
   }
+  /* Zero trust: a sealed headline is blank until its ciphertext arrives (lib/client/trust). */
+  html[data-seal^="pending"] [data-seal-text] {
+    color: transparent;
+  }
+  /* Ciphertext stands in for a headline's letters: Geist Mono, a size down, dim. */
+  .seal-hex {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.8em;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-3);
+  }
+  .seal-bad .seal-hex {
+    color: var(--danger);
+  }
+  /* The faint --kem flash as a verified headline resolves into words. */
+  .seal-flash {
+    animation: seal-flash 700ms var(--ease) both;
+  }
+  @keyframes seal-flash {
+    from {
+      text-shadow: 0 0 14px color-mix(in srgb, var(--kem) 45%, transparent);
+      color: color-mix(in srgb, var(--kem) 55%, var(--text));
+    }
+    to {
+      text-shadow: 0 0 14px transparent;
+    }
+  }
   /* A sideways-scrolling row that fades out at its right edge (only while it can scroll). */
   .fade-x {
     mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);

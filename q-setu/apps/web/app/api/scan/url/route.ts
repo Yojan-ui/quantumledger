@@ -5,6 +5,7 @@ import { hostFromInput, ScanError } from "@/lib/live/tls";
 import { SCAN_LIMITS, take, tooMany } from "@/lib/server/limits";
 import { log } from "@/lib/server/log";
 import { ScanUrlBody } from "@/lib/server/schemas";
+import { signed } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ function cachedOnlyScan(url: string) {
  *  - 10 scans a minute and 100 a day per client (cached answers are free: no network);
  *  - errors are a fixed code and message; the detail goes to the server log only.
  */
-export async function POST(req: Request) {
+export const POST = signed(async function POST(req: Request) {
   const b = await parseBody(req, ScanUrlBody);
   if (!b.ok) return b.res;
   if (!b.data.cachedOnly) {
@@ -51,4 +52,4 @@ export async function POST(req: Request) {
     log(req, "scan", 422, performance.now() - t, { code: se.code, detail: se.detail });
     return fail(se.code, se.message, se.code === "blocked_target" ? 403 : 422);
   }
-}
+});

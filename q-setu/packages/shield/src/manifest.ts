@@ -11,35 +11,17 @@
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { base64ToBytes, bytesToBase64, getSig, keyId, type Identity } from "@qsetu/core";
+import type { Identity } from "@qsetu/core";
+import {
+  MANIFEST_PATH,
+  signManifest,
+  verifyManifest,
+  type Manifest,
+  type VerifyResult,
+} from "./manifest-format";
 
-export const MANIFEST_PATH = "/.well-known/qsetu-manifest.json";
-const DOMAIN_SEP = "qsetu-manifest-v1\n";
+export * from "./manifest-format";
 
-export interface Manifest {
-  v: 1;
-  alg: "ML-DSA-65";
-  keyId: string;
-  site: string;
-  generated: string;
-  /** URL path → "sha384-<base64>". */
-  files: Record<string, string>;
-  signature: string;
-}
-
-/** JSON with object keys sorted at every level: the exact bytes that get signed. */
-export function canonical(v: unknown): string {
-  if (Array.isArray(v)) return `[${v.map(canonical).join(",")}]`;
-  if (v && typeof v === "object")
-    return `{${Object.keys(v as object)
-      .sort()
-      .map((k) => `${JSON.stringify(k)}:${canonical((v as Record<string, unknown>)[k])}`)
-      .join(",")}}`;
-  return JSON.stringify(v);
-}
-
-const signedBytes = (m: Omit<Manifest, "signature">) =>
-  new TextEncoder().encode(DOMAIN_SEP + canonical(m));
 export const sri = (data: Uint8Array) =>
   `sha384-${createHash("sha384").update(data).digest("base64")}`;
 
@@ -63,8 +45,6 @@ export interface BuildOptions {
 }
 
 export function buildManifest(o: BuildOptions): Manifest {
-  if (o.identity.profile !== "standard")
-    throw new Error("The manifest is signed with ML-DSA-65 (the standard profile)");
   const include = o.include ?? /\.(js|mjs|css|wasm|json|html|svg|woff2?)$/;
   const files: Record<string, string> = {};
   for (const [dir, prefix] of o.roots)
@@ -73,43 +53,7 @@ export function buildManifest(o: BuildOptions): Manifest {
       const url = `${prefix.replace(/\/$/, "")}/${relative(dir, f).split(sep).join("/")}`;
       files[url] = sri(readFileSync(f));
     }
-  const unsigned = {
-    v: 1 as const,
-    alg: "ML-DSA-65" as const,
-    keyId: keyId(o.identity.publicKey),
-    site: o.site,
-    generated: (o.now ?? new Date()).toISOString(),
-    files,
-  };
-  const signature = getSig("ml-dsa-65").sign(signedBytes(unsigned), o.identity.secretKey);
-  return { ...unsigned, signature: bytesToBase64(signature) };
-}
-
-export type VerifyResult = { ok: true } | { ok: false; reason: "format" | "key" | "signature" };
-
-/** Checks the signature against the pinned public key (base64 or bytes). */
-export function verifyManifest(m: unknown, publicKey: string | Uint8Array): VerifyResult {
-  const pk = typeof publicKey === "string" ? base64ToBytes(publicKey) : publicKey;
-  const x = m as Manifest;
-  if (
-    !x ||
-    x.v !== 1 ||
-    x.alg !== "ML-DSA-65" ||
-    typeof x.signature !== "string" ||
-    typeof x.files !== "object"
-  )
-    return { ok: false, reason: "format" };
-  if (x.keyId !== keyId(pk)) return { ok: false, reason: "key" };
-  const { signature, ...unsigned } = x;
-  let sig: Uint8Array;
-  try {
-    sig = base64ToBytes(signature);
-  } catch {
-    return { ok: false, reason: "format" };
-  }
-  return getSig("ml-dsa-65").verify(sig, signedBytes(unsigned), pk)
-    ? { ok: true }
-    : { ok: false, reason: "signature" };
+  return signManifest({ site: o.site, files, identity: o.identity, now: o.now });
 }
 
 export interface CheckReport {

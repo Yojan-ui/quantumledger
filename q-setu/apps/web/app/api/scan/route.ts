@@ -2,12 +2,13 @@ import { scan } from "@qsetu/core";
 import { parseBody } from "@/lib/server/api";
 import { getBus } from "@/lib/server/runtime";
 import { ScanBody } from "@/lib/server/schemas";
+import { signed } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** POST /api/scan { text, filename? } → findings, 0–100 score, CycloneDX CBOM. */
-export async function POST(req: Request) {
+export const POST = signed(async function POST(req: Request) {
   const b = await parseBody(req, ScanBody);
   if (!b.ok) return b.res;
   const t = performance.now();
@@ -22,4 +23,4 @@ export async function POST(req: Request) {
     detail: `${r.findings.length} findings · ${r.grade}`,
   });
   return Response.json(r);
-}
+});

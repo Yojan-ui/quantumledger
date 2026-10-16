@@ -9,6 +9,8 @@ import { ScanSite } from "@/components/home/ScanSite";
 import { Adapters, Solutions, WhyQSetu } from "@/components/home/Sections";
 import { Story } from "@/components/home/Story";
 import { WhatsNew } from "@/components/home/WhatsNew";
+import { ZeroTrustStrip } from "@/components/trust/HeroTrust";
+import { TrustRail } from "@/components/trust/TrustRail";
 import { Footer } from "@/components/ui/Footer";
 import { Nav } from "@/components/ui/Nav";
 import { pageMeta } from "@/lib/meta";
@@ -31,6 +33,7 @@ export default function Home() {
       <Nav />
       <main id="main">
         <Hero />
+        <ZeroTrustStrip />
         <JoinLive />
         <Analogy index="02" />
         <IndexSection index="03" />
@@ -45,6 +48,7 @@ export default function Home() {
         <EarlyAccess />
       </main>
       <Footer />
+      <TrustRail />
     </>
   );
 }

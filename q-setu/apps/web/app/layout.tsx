@@ -17,7 +17,7 @@ import { Shortcuts } from "@/components/ui/Shortcuts";
 import { ToastHost } from "@/components/ui/ToastHost";
 import { QDayOverlay } from "@/components/ui/QDayOverlay";
 import { serverToken } from "@/lib/brand/tokens-server";
-import { COPY_MODE_SCRIPT } from "@/lib/copy-mode-script";
+import { COPY_MODE_SCRIPT, SEAL_SCRIPT } from "@/lib/copy-mode-script";
 import { NONCE_HEADER } from "@/lib/server/csp";
 import { SITE_NAME, SITE_URL } from "@/lib/meta";
 import "./globals.css";
@@ -79,6 +79,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         {/* Simple / Technical copy, applied before first paint (no flash of the other version). */}
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: COPY_MODE_SCRIPT }} />
+        {/* Homepage headlines wait for their ciphertext (zero trust: lib/client/trust). */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: SEAL_SCRIPT }} />
       </head>
       <body>
         <script

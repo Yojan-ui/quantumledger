@@ -18,6 +18,7 @@ import type { ScanView } from "@/lib/scan-types";
 import { hs } from "./handshake-crypto";
 import { pushLocal } from "./live";
 import { errText } from "./api";
+import { verifiedFetch } from "@/lib/client/trust";
 
 export const STAGES = [
   { id: "detect", n: "01", name: "DETECT", cta: "Run scan", role: "danger" },
@@ -162,8 +163,9 @@ export function usePipeline<T>(select: (s: PipelineState) => T): T {
   );
 }
 
+/** Every pipeline response is signed by the site; it is verified before the stage uses it. */
 const post = async <T>(url: string, body?: unknown): Promise<T> => {
-  const r = await fetch(url, {
+  const r = await verifiedFetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),

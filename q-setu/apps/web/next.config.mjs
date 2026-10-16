@@ -1,11 +1,14 @@
 import { createMDX } from "fumadocs-mdx/next";
 import { STATIC_SECURITY_HEADERS } from "./lib/server/security-headers.mjs";
+import { sitePublicKey } from "./lib/site-key.mjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   devIndicators: false,
+  // The site's ML-DSA-65 public key, pinned into the bundle: the browser verifies against it.
+  env: { NEXT_PUBLIC_QSETU_SITE_KEY: sitePublicKey() },
   transpilePackages: [
     "@qsetu/core",
     "@qsetu/sdk",

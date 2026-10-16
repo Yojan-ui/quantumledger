@@ -31,6 +31,7 @@ import { tap, Vault, type Taps } from "./pipeline/Vault";
 import { hero as heroState } from "@/lib/client/hero";
 import { Thicken } from "@/components/scenes/Thicken";
 import { Crystal } from "./pipeline/Crystal";
+import { KeyField } from "./pipeline/KeyField";
 import { Dust } from "./Dust";
 import { Studio } from "./Studio";
 
@@ -210,6 +211,8 @@ export default function PipelineStage({
       {/* The rim light takes the stage's role colour. */}
       <pointLight position={[0, 2, -5]} intensity={8} distance={14} color={role} />
 
+      {/* The hero's backdrop: this visitor's own ML-KEM-768 public key, one dot per byte. */}
+      {hero && <KeyField look={look} />}
       <Background look={look} progress={doneCount / 5} />
       <Swarm look={look} count={count} intro={hero} />
       <Crystal look={look} />

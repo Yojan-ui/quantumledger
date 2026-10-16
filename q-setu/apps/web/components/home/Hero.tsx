@@ -11,6 +11,15 @@ import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { HERO } from "./chapters";
+import { HeroTrust } from "@/components/trust/HeroTrust";
+import { SealedText, sealedClass, sealedLine, useSealed } from "@/components/trust/Sealed";
+import { HERO_LINES } from "@/lib/trust/headlines";
+
+/** One sentence of the headline: sealed until its beat lands, then verified and decrypted. */
+function HeroLine({ text, visible }: { text: string; visible: boolean }) {
+  const v = useSealed(text, visible);
+  return <span className={sealedClass(v)}>{sealedLine(text, 0, text.length, v)}</span>;
+}
 
 // The QR encoder loads after first paint; the hero's text never waits for it.
 const RoomQR = dynamic(() => import("@/components/room/RoomQR").then((m) => m.RoomQR), {
@@ -43,7 +52,7 @@ export function Hero() {
     return () => io.disconnect();
   }, []);
 
-  const lines = HERO.title.split(/(?<=\.)\s+/);
+  const lines = HERO_LINES;
   return (
     <section
       ref={ref}
@@ -63,15 +72,15 @@ export function Hero() {
         <div data-hero className="absolute inset-x-5 bottom-24 md:inset-x-8 md:bottom-16">
           <h1 className="max-w-container text-hero font-medium text-fg">
             <span className="sr-only">{HERO.title.replace(/‑/g, "-")}</span>
-            <span aria-hidden data-beat={beat} className="block">
+            <span aria-hidden data-beat={beat} data-seal-text className="block">
               <span data-line="1" className="block">
-                {lines[0]}
+                <HeroLine text={lines[0]!} visible />
               </span>
               <span data-line="2" className="inline-block">
-                {lines[1]}
+                <HeroLine text={lines[1]!} visible={beat >= 2} />
               </span>{" "}
               <span data-line="3" className="inline-block">
-                {lines[2]}
+                <HeroLine text={lines[2]!} visible={beat >= 3} />
               </span>
             </span>
           </h1>
@@ -91,6 +100,7 @@ export function Hero() {
           </div>
         </div>
       </Container>
+      <HeroTrust />
       {/* Without JavaScript every line shows (the beats are a script-driven reveal). */}
       <noscript>
         <style>{`[data-beat] [data-line]{opacity:1!important;transform:none!important}`}</style>
@@ -132,7 +142,7 @@ export function JoinLive() {
         <div className="flex flex-col items-center">
           <SectionLabel label="Join live" role="kem" />
           <p className="max-w-text text-h1-sm font-medium text-fg md:text-display">
-            Seal a message from your phone. Watch it land here.
+            <SealedText text="Seal a message from your phone. Watch it land here." />
           </p>
         </div>
         <div className="pointer-events-auto flex flex-col items-center gap-4 border border-line bg-base p-5">
