@@ -6,7 +6,7 @@
  * The box is laid out by lib/client/labels: kept inside its stage and clear of other labels.
  */
 import { Html } from "@react-three/drei";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { registerLabel } from "@/lib/client/labels";
 import type { Role } from "@/components/ui/Role";
 
@@ -33,14 +33,21 @@ export function Anchor({
   show: boolean;
   side?: "up" | "down";
 }) {
-  const box = useRef<HTMLDivElement>(null);
   const reg = useRef<ReturnType<typeof registerLabel>>(undefined);
-  useEffect(() => {
-    if (!box.current) return;
-    reg.current = registerLabel(box.current, side);
-    return () => reg.current?.remove();
-  }, [side]);
+  const shown = useRef(show);
+  shown.current = show;
+  // <Html> renders its children in a separate React root, after this component's effects: a callback
+  // ref registers the box when it really mounts (an effect here would find no box and never lay it out).
+  const box = useCallback(
+    (el: HTMLDivElement | null) => {
+      reg.current?.remove();
+      reg.current = el ? registerLabel(el, side) : undefined;
+      reg.current?.show(shown.current);
+    },
+    [side],
+  );
   useEffect(() => reg.current?.show(show), [show]);
+  useEffect(() => () => reg.current?.remove(), []);
   return (
     <Html position={position} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
       {/* Visual only: each stage describes itself to screen readers (and the page states the result). */}

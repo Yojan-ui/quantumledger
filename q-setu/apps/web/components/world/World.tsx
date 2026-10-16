@@ -7,6 +7,7 @@ import { Arcs } from "./Arcs";
 import { Globe } from "./Globe";
 import { IndexBars } from "./IndexBars";
 import { Nodes } from "./Nodes";
+import { Seat } from "./Seat";
 import { Rig } from "./Rig";
 import { Thicken } from "@/components/scenes/Thicken";
 import { RoomArcs } from "./RoomArcs";
@@ -49,6 +50,7 @@ export function World({ dots }: { dots: Dots }) {
           <Globe dots={dots} />
           <Arcs />
           <Nodes />
+          <Seat />
           <ScanArc />
           <RoomArcs />
           <IndexBars />

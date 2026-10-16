@@ -11,6 +11,7 @@ import { LazyView } from "@/components/scenes/LazyView";
 import { Button, Label, Text } from "@/components/ui";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { hexPreview, us } from "@/lib/format";
 import { errText } from "@/lib/client/api";
 import { hs } from "@/lib/client/handshake-crypto";
@@ -63,13 +64,13 @@ const STEP_BAR: Step[] = [
 const SHOTS: Shot[] = [
   {
     id: "establish",
-    camera: { position: [0, 1.6, 9], target: [0, 0, 0], fov: 38 },
+    camera: { position: [0, 1.5, 9], target: [0, 0.45, 0], fov: 38 },
     caption: "Client and server share no secret yet; anything sent is public.",
     simple: "Your phone and the server share no secret yet.",
   },
   {
     id: "client",
-    camera: { position: [-2.2, 0.8, 4.6], target: [-2.6, 0.35, 0], fov: 38 },
+    camera: { position: [-2.1, 1.3, 4.4], target: [-2.6, 0.75, 0], fov: 38 },
     focus: "client",
     step: 0,
     caption: "The client creates a one-time X25519 key share.",
@@ -77,7 +78,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: "packet",
-    camera: { position: [0, 1.6, 4.2], target: [0, 0.9, 0], fov: 40 },
+    camera: { position: [0, 1.9, 5.4], target: [0, 1.1, 0], fov: 40 },
     focus: "packet",
     step: 0,
     caption: "The ClientHello carries that share to the server, in the open.",
@@ -85,7 +86,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: "server",
-    camera: { position: [2.2, 0.7, 4.8], target: [2.6, 0.3, 0], fov: 38 },
+    camera: { position: [2.1, 1.4, 4.6], target: [2.6, 0.8, 0], fov: 38 },
     focus: "server",
     step: 1,
     caption: "The server signs a fresh ML-KEM key; the client checks the signature.",
@@ -93,7 +94,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: "merge",
-    camera: { position: [2.1, 0.7, 1.7], target: [0, 0.05, 0], fov: 36 },
+    camera: { position: [0.5, 1.6, 5.2], target: [0, 0.95, 0], fov: 38 },
     focus: "merge",
     step: 2,
     caption: "Classical and post-quantum secrets merge through HKDF into one key.",
@@ -101,14 +102,14 @@ const SHOTS: Shot[] = [
   },
   {
     id: "pullback",
-    camera: { position: [0, 2.4, 8.5], target: [0, 0, 0], fov: 38 },
+    camera: { position: [0, 2.2, 8.6], target: [0, 0.35, 0], fov: 38 },
     step: 3,
     caption: "Every message is now sealed with AES-256-GCM, in microseconds.",
     simple: "Every message is now locked, in millionths of a second.",
   },
   {
     id: "attack",
-    camera: { position: [0.6, 1.4, 4.4], target: [2.2, 0.4, 0], fov: 40 },
+    camera: { position: [0.9, 1.7, 4.8], target: [2.2, 1.1, 0], fov: 40 },
     focus: "server",
     step: 1,
     caption: "A forged ML-KEM key fails the ML-DSA signature check.",
@@ -235,7 +236,13 @@ export function HandshakeDemo() {
         ok: true,
         detail: "ClientHello",
       });
-      patch({ shareHex: hexPreview(c.x25519, 8), helloBytes: c.bytes });
+      patch({
+        shareHex: hexPreview(c.x25519, 8),
+        shareAt: performance.now(),
+        helloBytes: c.bytes,
+        helloMs: c.ms,
+        x25519Bytes: c.x25519.length,
+      });
       setReading({ label: "Step 1 · ClientHello", cpuMs: c.ms, bytesAdded: c.bytes });
       await send({
         dir: "c2s",
@@ -256,7 +263,12 @@ export function HandshakeDemo() {
         ok: true,
         detail: "ServerHello signed",
       });
-      patch({ signedAt: performance.now(), kemPkBytes: s.kemPkBytes, sigBytes: s.sigBytes });
+      patch({
+        signedAt: performance.now(),
+        kemPkBytes: s.kemPkBytes,
+        sigBytes: s.sigBytes,
+        respondMs: s.ms,
+      });
       setReading({
         label: `Step 2 · ServerHello (${kemName} keygen + ${sigName} sign)`,
         cpuMs: s.ms,
@@ -292,7 +304,12 @@ export function HandshakeDemo() {
         bytes: f.bytes,
         hex: hexPreview(f.kemCiphertext, 32),
       });
-      patch({ sessionId: f.sessionId, finishBytes: f.bytes });
+      patch({
+        sessionId: f.sessionId,
+        finishBytes: f.bytes,
+        finishMs: f.tc + f.ts,
+        ctBytes: f.kemCiphertext.length,
+      });
       pushLocal({
         op: "HANDSHAKE",
         alg: `${kemName}+x25519`.toLowerCase(),
@@ -485,9 +502,14 @@ export function HandshakeDemo() {
               />
             )}
           </LazyView>
+          <StagePurpose>
+            two key halves combine into one shared key, so a quantum computer can’t read the
+            session.
+          </StagePurpose>
           <DirectorHUD
             director={director}
             steps={STEP_BAR}
+            beat={reel.beat}
             playing={reel.playing}
             busy={reel.busy}
             onToggle={() => void reel.play()}

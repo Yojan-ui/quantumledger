@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
 import { useDirector } from "@/components/director/useDirector";
@@ -49,7 +50,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: "tamper",
-    camera: { position: [-2.5, 1.1, 2.6], target: [-3.45, 0, -0.9], fov: 40 },
+    camera: { position: [-2.1, 1.5, 3.6], target: [-3.3, 0, -0.9], fov: 40 },
     focus: "target",
     step: 2,
     caption: `An insider edits entry #${TARGET} directly in the database.`,
@@ -375,9 +376,14 @@ export function LedgerDemo() {
               />
             )}
           </LazyView>
+          <StagePurpose>
+            editing one past entry breaks every signature check after it, and verification finds
+            where.
+          </StagePurpose>
           <DirectorHUD
             director={director}
             steps={STEP_BAR}
+            beat={reel.beat}
             playing={reel.playing}
             busy={reel.busy}
             onToggle={() => void reel.play()}

@@ -6,11 +6,13 @@
  * The links are a light rope (lib/motion Rope: verlet, three points per link), so they hang and swing.
  * Tamper: #42 jolts, flickers to DANGER and cracks; the blocks after it are let go and the links after
  * it slacken, so that part of the chain sags between the break and the newest block and swings.
- * Verify: a scan beam passes each block (OK) and a pulse runs along the rope; it stops dead at the
- * first break, recoils, and jolts the broken block. Restore pulls the chain taut: the links take up
+ * Verify: a small sweep ring moves block to block (OK as each link checks) and a soft pulse runs
+ * along the rope; both stop hard at the first break: the pulse recoils and the broken block jolts.
+ * Blocks are solid (emissive in their role colour); links are thick (drei Line, 3 px). Restore pulls the chain taut: the links take up
  * their length again and each block springs back to its place, last first.
  * Every motion starts at a real event (the edit, the verification result, the restore).
  */
+import { Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -21,8 +23,6 @@ import { span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { Rope, springIn, wobble } from "@/lib/motion";
-import { makeLook, type Look } from "@/components/scenes/pipeline/look";
-import { Radar } from "@/components/scenes/pipeline/Radar";
 import { Thicken } from "@/components/scenes/Thicken";
 
 export const N = 12;
@@ -35,13 +35,6 @@ const STEP_MS = 220;
 const CASCADE_MS = 90;
 /** The edited block cracking open. */
 const CRACK_MS = 900;
-
-/** The blocks on the radar disc (disc-local: world x, and −(z + R) about its centre at z = −R). */
-const RADAR_MARKS: [number, number][] = Array.from({ length: 12 }, (_, i) => {
-  const t = (i + (i >= 6 ? 0.8 : 0)) / (12 - 1 + 0.8);
-  const a = -((120 * Math.PI) / 180) / 2 + ((120 * Math.PI) / 180) * t;
-  return [7 * Math.sin(a), -7 * Math.cos(a)];
-});
 
 /** Rope points per link (block to block). */
 const SUB = 4;
@@ -87,21 +80,20 @@ export default function LedgerFilm({
   merkle,
 }: LedgerFilmProps) {
   const c = useMemo(palette, []);
-  // Stage 5's radar, under the arc: its line follows the verification scan and stops at a break.
-  const look = useRef<Look>(makeLook(c));
-  const scannedRef = useRef(-1);
   // Stage 4's Merkle build over the four newest blocks.
   const nodes = useRef<(THREE.Group | null)[]>([]);
-  const nodeGeo = useMemo(
-    () => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.16, 0.16, 0.16)),
-    [],
-  );
+  const nodeGeo = useMemo(() => new THREE.BoxGeometry(0.16, 0.16, 0.16), []);
   const nodeMats = useMemo(
     () =>
       Array.from(
         { length: 7 },
         () =>
-          new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
+          new THREE.MeshStandardMaterial({
+            transparent: true,
+            roughness: 0.35,
+            metalness: 0.1,
+            emissiveIntensity: 0.6,
+          }),
       ),
     [],
   );
@@ -126,12 +118,8 @@ export default function LedgerFilm({
     return [...leaves, ...mid, root];
   }, []);
   const geo = useMemo(() => new THREE.BoxGeometry(0.62, 0.44, 0.44), []);
-  const edges = useMemo(() => new THREE.EdgesGeometry(geo), [geo]);
   // The edited block's two halves (it cracks open along its middle when the row is tampered with).
-  const half = useMemo(() => {
-    const g = new THREE.BoxGeometry(0.31, 0.44, 0.44);
-    return { g, e: new THREE.EdgesGeometry(g) };
-  }, []);
+  const half = useMemo(() => ({ g: new THREE.BoxGeometry(0.3, 0.44, 0.44) }), []);
   const whole = useRef<THREE.Group>(null);
   const halves = useRef<(THREE.Group | null)[]>([]);
   const pulse = useRef<THREE.Group>(null);
@@ -154,26 +142,37 @@ export default function LedgerFilm({
   const mats = useMemo(
     () =>
       Array.from({ length: N }, () => ({
-        fill: new THREE.MeshBasicMaterial({
-          color: c.text3.clone(),
+        fill: new THREE.MeshStandardMaterial({
+          color: c.sig.clone(),
+          emissive: c.sig.clone(),
+          emissiveIntensity: 0.35,
+          roughness: 0.4,
+          metalness: 0.1,
           transparent: true,
-          depthWrite: false,
-          opacity: 0.08,
-        }),
-        line: new THREE.LineBasicMaterial({
-          color: c.text3.clone(),
-          transparent: true,
-          depthWrite: false,
         }),
       })),
     [c],
   );
+  // The links: scratch arrays written each frame, copied into the thick line's own buffers.
   const linkGeo = useMemo(() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(LINKS * 6), 3));
     g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(LINKS * 6), 3));
     return g;
   }, []);
+  const linkInit = useMemo(
+    () => ({
+      points: Array.from({ length: LINKS * 2 }, (_, k) => blockPos(Math.floor(k / (2 * SUB)))),
+      colors: Array.from(
+        { length: LINKS * 2 },
+        () => [c.sig.r, c.sig.g, c.sig.b] as [number, number, number],
+      ),
+    }),
+    [c],
+  );
+  const links = useRef<THREE.Mesh>(null);
+  const sweep = useRef<THREE.Mesh>(null);
+  const sweepAt = useMemo(() => new THREE.Vector3(0, -10, 0), []);
   // The rope: block i is point i·SUB; the points between are the link's cord.
   const rope = useMemo(() => {
     const pts: THREE.Vector3[] = [];
@@ -194,7 +193,6 @@ export default function LedgerFilm({
   const restoreFrom = useRef<{ at: number; pos: THREE.Vector3[] } | null>(null);
   const kicked = useRef(0);
   const arc = useMemo(() => new THREE.Vector3(), []);
-  const beam = useRef<THREE.Mesh>(null);
   const p = useMemo(() => new THREE.Vector3(), []);
   const q = useMemo(() => new THREE.Vector3(), []);
   const col = useMemo(() => new THREE.Color(), []);
@@ -208,19 +206,12 @@ export default function LedgerFilm({
     const reduce = state.reduce;
     const t = reduce ? 0 : clock.elapsedTime;
     const broken = verify?.broken ?? -1;
-    // The scan beam: one block every STEP_MS from the left; it stops at the break.
+    // The scan: one block every STEP_MS from the left; it stops at the break.
     const scanned = verify
       ? reduce
         ? N
         : Math.min(broken >= 0 ? broken + 1 : N, (now - verify.at) / STEP_MS)
       : -1;
-    scannedRef.current = scanned;
-    const L = look.current;
-    L.active = active;
-    L.reduce = reduce;
-    L.sweepOk = verify ? broken < 0 : undefined;
-    L.dim = () => 1;
-    L.now = now;
     // The Merkle build: leaves rise from the newest blocks, pair up, hash to the root (Stage 4).
     const mt = merkle ? now - merkle.at : -1;
     treeAt.forEach((at, k) => {
@@ -234,7 +225,8 @@ export default function LedgerFilm({
       else g.position.copy(at);
       const flash = mt >= 0 && !reduce ? Math.max(0, 1 - Math.abs(mt - delay - 300) / 250) : 0;
       nodeMats[k]!.color.copy(c.sig).lerp(c.text, flash);
-      nodeMats[k]!.opacity = state.shot.id === "chain" ? 0.95 : 0.35;
+      nodeMats[k]!.emissive.copy(nodeMats[k]!.color);
+      nodeMats[k]!.opacity = state.shot.id === "chain" ? 1 : 0.35;
     });
     const tp = treeEdges.geometry.attributes.position!.array as Float32Array;
     [
@@ -356,10 +348,10 @@ export default function LedgerFilm({
       else if (scanned > i) col.copy(c.ok);
       else col.copy(c.sig);
       if (d > 0 && !isBad) col.lerp(c.text3, 0.7 * d);
-      m.line.color.copy(col);
       m.fill.color.copy(col);
-      m.line.opacity = 1 - 0.6 * d;
-      m.fill.opacity = 0.1 * (1 - 0.6 * d) + (isBad ? 0.12 : 0);
+      m.fill.emissive.copy(col);
+      m.fill.emissiveIntensity = isBad ? 0.75 : 0.35;
+      m.fill.opacity = 1 - 0.55 * d;
     }
     // The cord: every rope segment, coloured by the link it belongs to (the link into block b).
     for (let k = 0; k < LINKS; k++) {
@@ -376,7 +368,22 @@ export default function LedgerFilm({
       set3(lc, k * 2, lcol.r, lcol.g, lcol.b);
       set3(lc, k * 2 + 1, lcol.r, lcol.g, lcol.b);
     }
-    linkGeo.attributes.position!.needsUpdate = linkGeo.attributes.color!.needsUpdate = true;
+    // Into the thick line (LineSegments2): same layout, start xyz + end xyz per segment.
+    const lg = links.current?.geometry;
+    if (lg) {
+      const ps = (lg.attributes.instanceStart as THREE.InterleavedBufferAttribute | undefined)
+        ?.data;
+      const cs = (lg.attributes.instanceColorStart as THREE.InterleavedBufferAttribute | undefined)
+        ?.data;
+      if (ps) {
+        (ps.array as Float32Array).set(pos);
+        ps.needsUpdate = true;
+      }
+      if (cs) {
+        (cs.array as Float32Array).set(lc);
+        cs.needsUpdate = true;
+      }
+    }
     // The verification pulse: a point of light running along the rope block to block. It stops
     // dead at the first break (a recoil, a red flare, the block jolts) and fades; on an intact chain
     // it runs to the newest block.
@@ -408,19 +415,31 @@ export default function LedgerFilm({
         g.scale.setScalar(hit ? 1 + 1.4 * easeToken(Math.min(1, since / 300)) : 1);
       }
     }
-    if (beam.current) {
-      const on =
-        verify &&
-        scanned >= 0 &&
-        scanned < N &&
-        !(broken >= 0 && scanned >= broken + 1 && now - verify.at > (broken + 1) * STEP_MS + 600);
-      beam.current.visible = !!on && !reduce;
-      blockPos(Math.min(N - 1, Math.max(0, Math.floor(scanned))), q);
-      beam.current.position.set(q.x, 0.1, q.z);
-      beam.current.lookAt(0, 0.1, R * 0.6);
-      (beam.current.material as THREE.MeshBasicMaterial).color.copy(
-        broken >= 0 && scanned >= broken ? c.danger : c.ok,
+    // The sweep ring: a small ring under the block being checked, springing block to block; --ok
+    // while links pass, --danger where the chain breaks. Reduced motion: it sits at the break.
+    if (sweep.current) {
+      const done = verify && broken < 0 && scanned >= N && now - verify.at > N * STEP_MS + 500;
+      const on = !!verify && scanned >= 0 && !done && (!reduce || broken >= 0);
+      sweep.current.visible = on;
+      const at = Math.min(
+        N - 1,
+        Math.max(0, broken >= 0 && scanned >= broken ? broken : Math.floor(scanned)),
       );
+      q.copy(R_.p[at * SUB]!);
+      q.y -= 0.34;
+      if (reduce || sweepAt.y < -5) sweepAt.copy(q);
+      else sweepAt.lerp(q, 1 - Math.exp(-dt * 16));
+      sweep.current.position.copy(sweepAt);
+      const hit = broken >= 0 && scanned >= broken;
+      const m = sweep.current.material as THREE.MeshStandardMaterial;
+      m.color.copy(hit ? c.danger : c.ok);
+      m.emissive.copy(m.color);
+      sweep.current.scale.setScalar(
+        hit && !reduce
+          ? 1 + 0.25 * Math.max(0, wobble((now - verify!.at - broken * STEP_MS) / 1000, 4, 6))
+          : 1,
+      );
+      sweep.current.rotation.z = reduce ? 0 : t * 1.2;
     }
   });
 
@@ -431,20 +450,9 @@ export default function LedgerFilm({
     <Thicken>
       <DirectorCamera state={state} onSettled={onSettled} drift={0.02} />
       <fog attach="fog" args={[c.bg, 8, 20]} />
-      {/* The radar disc: the arc's blocks sit on a circle round (0, 0, -7), from 210° to 330°. */}
-      <Radar
-        look={look}
-        center={[0, -0.62, -R]}
-        radius={R + 0.8}
-        angle={() =>
-          ((210 + 120 * Math.max(0, Math.min(1, (scannedRef.current + 0.5) / N))) * Math.PI) / 180
-        }
-        on={() => !!verify && (id === "verify" || id === "broken" || id === "restore")}
-        marks={RADAR_MARKS}
-      />
       {treeAt.map((_, k) => (
         <group key={k} ref={(g) => void (nodes.current[k] = g)} visible={false}>
-          <lineSegments geometry={nodeGeo} material={nodeMats[k]} />
+          <mesh geometry={nodeGeo} material={nodeMats[k]} />
         </group>
       ))}
       <primitive object={treeEdges} />
@@ -469,9 +477,17 @@ export default function LedgerFilm({
           opacity={0.06}
         />
       </gridHelper>
-      <lineSegments geometry={linkGeo}>
-        <lineBasicMaterial vertexColors transparent depthWrite={false} opacity={0.9} />
-      </lineSegments>
+      <Line
+        ref={links as never}
+        segments
+        points={linkInit.points}
+        vertexColors={linkInit.colors}
+        lineWidth={3}
+        transparent
+        opacity={0.95}
+        depthWrite={false}
+        frustumCulled={false}
+      />
       {Array.from({ length: N }, (_, i) => (
         <group
           key={i}
@@ -485,13 +501,11 @@ export default function LedgerFilm({
         >
           <group ref={i === TARGET_INDEX ? whole : undefined}>
             <mesh geometry={geo} material={mats[i]!.fill} />
-            <lineSegments geometry={edges} material={mats[i]!.line} />
           </group>
           {i === TARGET_INDEX &&
             [0, 1].map((side) => (
               <group key={side} ref={(h) => void (halves.current[side] = h)} visible={false}>
                 <mesh geometry={half.g} material={mats[i]!.fill} />
-                <lineSegments geometry={half.e} material={mats[i]!.line} />
               </group>
             ))}
         </group>
@@ -504,14 +518,13 @@ export default function LedgerFilm({
           <sphereGeometry args={[0.24, 20, 14]} />
         </mesh>
       </group>
-      <mesh ref={beam} visible={false}>
-        <planeGeometry args={[0.04, 1.3]} />
-        <meshBasicMaterial
+      <mesh ref={sweep} visible={false} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.42, 0.03, 10, 64]} />
+        <meshStandardMaterial
           color={c.ok}
-          transparent
-          depthWrite={false}
-          opacity={0.8}
-          toneMapped={false}
+          emissive={c.ok}
+          emissiveIntensity={0.8}
+          roughness={0.3}
         />
       </mesh>
 

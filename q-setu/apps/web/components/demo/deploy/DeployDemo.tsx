@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { SectorSwitcher } from "@/components/demo/shell/SectorSwitcher";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
@@ -25,7 +26,6 @@ import { notify, useWorld, world, type NodeState } from "@/components/world/stor
 import { burst } from "@/lib/client/burst";
 import { pushLocal } from "@/lib/client/live";
 import { anticipate } from "@/lib/motion";
-import { ShieldDive } from "@/components/scenes/shield/ShieldDive";
 
 // The certificate scenario (QR encode + scan) sits below the film: its code loads on demand.
 const CertificateFlow = dynamic(() => import("./CertificateFlow").then((m) => m.CertificateFlow), {
@@ -251,14 +251,22 @@ export function DeployDemo() {
     need: async (i) => {
       const id = shots[i]!.id;
       if (id === "integrate" && statesRef.current[site.id] !== "protected") await deploy(adapter);
-      if (id === "all") await deployAll();
+    },
+    // "All": the camera pulls back first, then each system is sealed in view, one real deploy at a
+    // time; the counter, the caption and the console line all change on that one event.
+    onArrive: (id) => {
+      if (id === "all") void deployAll();
     },
     hold: (id) => (id === "integrate" ? 2600 : id === "target" ? 1800 : undefined),
     restart: () => reset(),
   });
   const shot = director.state.shot as GlobeShot;
   const pose = useRef<Pose>({ ...shots[0]!.pose });
+  /** True while an adapter is seating: the camera is the seat's, not the film's. */
+  const seatingRef = useRef(false);
   useEffect(() => {
+    // A deploy during a seat changes the counts (and so the shot objects): don't re-frame then.
+    if (seatingRef.current) return;
     const to = shot.pose;
     world.shot = {
       pose: { ...pose.current },
@@ -334,14 +342,12 @@ export function DeployDemo() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── The dive: from the globe into a system, where "Shield plugs in" plays (its dots re-form from
-  // the globe's), and back out. A camera flight on the globe with a 120 ms wind-up; reduced motion cuts.
-  const [dive, setDive] = useState<{
-    site: (typeof SITES)[number];
-    phase: "in" | "scene" | "out";
-  } | null>(null);
+  // ── Clicking a system: the camera dives to its node, the adapter seats into its socket while the
+  // real deploy runs (components/world/Seat), the node turns --ok, and the camera flies back out to
+  // the whole globe. A flight on the globe with a 120 ms wind-up; reduced motion cuts.
+  const [seating, setSeating] = useState<{ id: string; phase: "in" | "seat" | "out" } | null>(null);
   const flight = useRef(0);
-  function fly(to: Pose, ms: number, done: () => void) {
+  function fly(to: Pose, ms: number): Promise<void> {
     cancelAnimationFrame(flight.current);
     const from = { ...pose.current };
     const set = (k: number) => {
@@ -358,69 +364,69 @@ export function DeployDemo() {
       };
       if (world.shot) world.shot.pose = pose.current;
     };
-    if (director.state.reduce) {
-      set(1);
-      return done();
-    }
-    const t0 = performance.now();
-    const tick = () => {
-      const t = (performance.now() - t0) / 1000;
-      set(anticipate(t, ms / 1000));
-      if (t < ms / 1000 + 0.12) flight.current = requestAnimationFrame(tick);
-      else done();
-    };
-    tick();
+    return new Promise((done) => {
+      if (director.state.reduce) {
+        set(1);
+        return done();
+      }
+      const t0 = performance.now();
+      const tick = () => {
+        const t = (performance.now() - t0) / 1000;
+        set(anticipate(t, ms / 1000));
+        if (t < ms / 1000 + 0.12) flight.current = requestAnimationFrame(tick);
+        else done();
+      };
+      tick();
+    });
   }
-  function startDive(s: (typeof SITES)[number]) {
-    // Picking a system always selects it; the dive waits for a deploy or a film move to finish.
+  async function seat(s: (typeof SITES)[number]) {
+    // Picking a system always selects it; the seat waits for a deploy or a film move to finish.
     setAdapter(s.adapter);
-    if (running || reel.busy) return;
-    // Another system while diving: re-target (the globe comes back and flies on to the new node).
+    if (running || reel.busy || seatingRef.current) return;
+    seatingRef.current = true;
     reel.stop();
-    world.shot = { pose: { ...pose.current }, extrude: 1, focus: s.id, model: true };
-    setDive({ site: s, phase: "in" });
-    fly({ dist: 1.03, lat: s.lat, lon: s.lon, spin: 0, tilt: 70, yaw: 15 }, 1600, () =>
-      setDive((d) => d && { ...d, phase: "scene" }),
-    );
+    try {
+      setSeating({ id: s.id, phase: "in" });
+      world.shot = { pose: { ...pose.current }, extrude: 1, focus: s.id, model: true };
+      await fly({ dist: 1.1, lat: s.lat + 1.4, lon: s.lon, spin: 0, tilt: 55, yaw: 15 }, 1600);
+      setSeating({ id: s.id, phase: "seat" });
+      world.seat = { site: s.id, adapter: s.adapter, at: performance.now(), done: 0 };
+      if (statesRef.current[s.id] !== "protected") await deploy(s.adapter);
+      if (world.seat) world.seat.done = performance.now();
+      // The click and settle (~0.6 s), then the beat's hold.
+      await wait(director.state.reduce ? 1200 : 1800);
+      setSeating({ id: s.id, phase: "out" });
+      const back = shot.zoom ? shots[0]!.pose : shot.pose;
+      world.shot = { pose: { ...pose.current }, extrude: shot.extrude, focus: null, model: false };
+      await fly(back, 1500);
+    } finally {
+      world.seat = null;
+      seatingRef.current = false;
+      setSeating(null);
+    }
   }
-  function endDive() {
-    setDive((d) => d && { ...d, phase: "out" });
-    world.shot = {
-      pose: { ...pose.current },
-      extrude: shot.extrude,
-      focus: shot.zoom ? site.id : null,
-      model: shot.zoom,
-    };
-    fly(shot.pose, 1500, () => setDive(null));
-  }
-  useEffect(() => () => cancelAnimationFrame(flight.current), []);
-  /** The film takes over: leave the scene at once; the next shot flies from the node. */
-  function exitDive() {
-    if (!dive) return;
-    cancelAnimationFrame(flight.current);
-    setDive(null);
-    world.shot = {
-      pose: { ...pose.current },
-      extrude: shot.extrude,
-      focus: shot.zoom ? site.id : null,
-      model: shot.zoom,
-    };
-  }
-  /** Film controls, each leaving any dive first. */
-  const film = {
-    to: (i: number) => (exitDive(), reel.to(i)),
-    play: () => (exitDive(), reel.play()),
-  };
-  // A node clicked on the globe dives too.
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(flight.current);
+      world.seat = null;
+    },
+    [],
+  );
+  // A node clicked on the globe seats its adapter too.
   const clicked = useWorld((w) => w.dive);
   useEffect(() => {
     if (!clicked) return;
     world.dive = null;
     const s = sectorSites.find((x) => x.id === clicked);
-    if (s) startDive(s);
+    if (s) void seat(s);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clicked]);
-  const inScene = dive?.phase === "scene";
+  const seatSite = seating ? sectorSites.find((x) => x.id === seating.id) : undefined;
+  /** Film controls: none while an adapter is seating. */
+  const film = {
+    to: (i: number) => (seatingRef.current ? Promise.resolve() : reel.to(i)),
+    play: () => (seatingRef.current ? Promise.resolve() : reel.play()),
+  };
 
   async function tamperVault() {
     if (!result?.vaultId) return;
@@ -471,7 +477,7 @@ export function DeployDemo() {
                   type="button"
                   role="radio"
                   aria-checked={adapter === a}
-                  onClick={() => startDive(site)}
+                  onClick={() => void seat(site)}
                   className="flex w-full items-center justify-between gap-4 border-t border-line py-3 text-left"
                 >
                   <span>
@@ -538,16 +544,21 @@ export function DeployDemo() {
         <section className="order-first min-w-0 space-y-12">
           <div className="full-bleed relative border-y border-line">
             <div
-              // While the scene is on, the globe steps aside (it doesn't draw in this slot).
-              {...(inScene ? {} : { "data-world-focus": "" })}
+              data-world-focus
               data-world-drag
               className="h-stage-full min-h-stage"
               role="img"
               aria-label={`Globe zoomed to India showing ${sectorSites.length} ${sector} systems; ${protectedCount} protected by QuantumLedger.`}
             />
+            <StagePurpose>
+              one adapter per system switches its traffic to quantum-safe keys; sealed nodes turn
+              green.
+            </StagePurpose>
+            {/* The counter: the same states as the caption and the console line (one event each). */}
             <p
               aria-hidden
-              className={`pointer-events-none absolute left-4 top-4 font-mono text-h3 tabular transition-opacity duration-300 md:left-6 md:top-6 ${shot.id === "all" && !dive ? "opacity-100" : "opacity-0"}`}
+              data-label-avoid
+              className={`pointer-events-none absolute left-4 top-12 font-mono text-h3 tabular transition-opacity duration-300 md:left-6 md:top-14 ${(shot.id === "all" && !seating) || seating?.phase === "out" ? "opacity-100" : "opacity-0"}`}
             >
               <span className={protectedCount === sectorSites.length ? "text-ok" : "text-fg"}>
                 {protectedCount} / {sectorSites.length}
@@ -555,7 +566,7 @@ export function DeployDemo() {
               <span className="text-small text-fg-2">systems quantum-safe</span>
             </p>
             <NodeLabel
-              show={director.state.settled && shot.zoom && !dive}
+              show={(director.state.settled && shot.zoom && !seating) || seating?.phase === "seat"}
               title={`${site.label} · ${site.city}`}
               role={states[site.id] === "protected" ? "ok" : "warn"}
               value={
@@ -566,11 +577,13 @@ export function DeployDemo() {
                     : "classical TLS · harvestable"
               }
               code={shot.id === "integrate" ? snippet.code : undefined}
+              lift={seating ? 64 : 0}
             />
-            {!dive && (
+            {!seating && (
               <DirectorHUD
                 director={director}
                 steps={STEP_BAR}
+                beat={reel.beat}
                 playing={reel.playing}
                 busy={reel.busy}
                 onToggle={() => void reel.play()}
@@ -579,11 +592,14 @@ export function DeployDemo() {
                 onReplay={reset}
               />
             )}
-            {dive && (
-              <ShieldDive
-                site={{ id: dive.site.id, label: dive.site.label, sector }}
-                open={inScene}
-                onBack={endDive}
+            {seating && seatSite && (
+              <SeatCaption
+                key={`${seating.id}-${states[seatSite.id] === "protected" ? 1 : 0}`}
+                text={
+                  states[seatSite.id] === "protected"
+                    ? `${seatSite.label} now seals its traffic with ML-KEM: ${protectedCount} of ${sectorSites.length} sealed.`
+                    : `Seating the ${ADAPTERS[seatSite.adapter].product} adapter into ${seatSite.label}…`
+                }
               />
             )}
           </div>
@@ -642,6 +658,22 @@ export function DeployDemo() {
 }
 
 const TEXT = { ok: "text-ok", warn: "text-warn" } as const;
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** The seat's caption, in the film HUD's style: it changes on the deploy event itself. */
+function SeatCaption({ text }: { text: string }) {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center p-4 md:p-6">
+      <p
+        className="max-w-text overflow-hidden pb-1 text-center text-body font-medium text-fg md:text-h3"
+        aria-live="polite"
+        data-label-avoid
+      >
+        <span className="block animate-mask-up">{text}</span>
+      </p>
+    </div>
+  );
+}
 
 /**
  * The focused node's anchored label (and, while integrating, the adapter snippet typing itself in),
@@ -653,14 +685,19 @@ function NodeLabel({
   value,
   role,
   code,
+  lift = 0,
 }: {
   show: boolean;
   title: string;
   value: string;
   role: "ok" | "warn";
   code?: string;
+  /** Extra px above the node (clear of an adapter seating on it). */
+  lift?: number;
 }) {
   const el = useRef<HTMLDivElement>(null);
+  const liftRef = useRef(lift);
+  liftRef.current = lift;
   const [typed, setTyped] = useState(0);
   useEffect(() => {
     let raf = 0;
@@ -669,7 +706,8 @@ function NodeLabel({
       const d = el.current;
       if (d) {
         d.style.visibility = s ? "visible" : "hidden";
-        if (s) d.style.transform = `translate(${s.x}px, ${s.y}px) translate(-50%, -100%)`;
+        if (s)
+          d.style.transform = `translate(${s.x}px, ${s.y - liftRef.current}px) translate(-50%, -100%)`;
       }
       raf = requestAnimationFrame(tick);
     };

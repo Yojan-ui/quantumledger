@@ -201,7 +201,8 @@ export function Nodes() {
           const dm = dome.material as THREE.LineBasicMaterial;
           const fall = since < 0 ? 0 : world.breathe ? easeToken(Math.min(1, since / 900)) : 1;
           const on = modelVis.current * (since >= 0 ? 1 : 0);
-          dome.visible = on > 0.01;
+          // While an adapter is seating (components/world/Seat), it is the node's hero moment.
+          dome.visible = on > 0.01 && !world.seat;
           nrm.copy(n.pos).normalize();
           dome.position.copy(n.pos).multiplyScalar(1.02 + 0.12 * (1 - fall));
           dome.quaternion.setFromUnitVectors(up, nrm);

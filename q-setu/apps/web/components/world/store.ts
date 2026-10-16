@@ -112,6 +112,11 @@ export const world = {
   focusScreen: null as { x: number; y: number } | null,
   /** Demo 2: a node clicked on the globe, to dive into (the demo clears it). */
   dive: null as string | null,
+  /**
+   * Demo 2: an adapter seating into a node's socket. `at` when it appeared (performance.now()),
+   * `done` when the real deploy finished (0 while it runs: the adapter lowers, then clicks home).
+   */
+  seat: null as null | { site: string; adapter: string; at: number; done: number },
   /** Demo 2's "all sealed" wave: when it started (performance.now()), 0 = none. */
   waveAt: 0,
   /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */

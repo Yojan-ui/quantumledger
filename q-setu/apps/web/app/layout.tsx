@@ -78,9 +78,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         {/* Simple / Technical copy, applied before first paint (no flash of the other version). */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: COPY_MODE_SCRIPT }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: COPY_MODE_SCRIPT }}
+        />
         {/* Homepage headlines wait for their ciphertext (zero trust: lib/client/trust). */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: SEAL_SCRIPT }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: SEAL_SCRIPT }}
+        />
       </head>
       <body>
         <script

@@ -2,11 +2,17 @@
 
 import type { ScanResult, Severity } from "@qsetu/core";
 import { SCAN_SAMPLES } from "@qsetu/core/samples";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
+import { LazyView } from "@/components/scenes/LazyView";
 import { Button, Code, Heading, Label, MiniStat, Stat, Text } from "@/components/ui";
 import { errText } from "@/lib/client/api";
 import { usePresent } from "@/lib/client/present";
+import { useReducedMotion } from "@/lib/client/motion";
 import type { Plan } from "@/lib/live/plan";
+
+const ScannerBars = dynamic(() => import("./ScannerBars"), { ssr: false, loading: () => null });
 
 const LIFETIMES = [1, 5, 10, 25] as const;
 
@@ -41,6 +47,12 @@ export function Scanner() {
   const [lifetime, setLifetime] = useState<number>(10);
   const [plan, setPlan] = useState<Plan & { markdown: string }>();
   const [done, setDone] = useState<Set<string>>(new Set());
+  // When the latest result arrived: its bars grow from then (the scan itself is the beat).
+  const [resultAt, setResultAt] = useState(0);
+  useEffect(() => {
+    if (result) setResultAt(performance.now());
+  }, [result]);
+  const reduce = useReducedMotion();
 
   // /demo/scanner?url=host#url (the hero's "Scan your site" link) focuses the URL field and runs it.
   useEffect(() => {
@@ -290,6 +302,36 @@ export function Scanner() {
         ) : (
           <Text size="small">Pick a sample or paste your own, then press Scan.</Text>
         )}
+        {/* Always on the page (the site's one canvas starts only where a 3D area exists at load). */}
+        <div className="relative mt-8 overflow-hidden rounded-sm border border-line">
+          <LazyView
+            className="h-stage-sm"
+            label={
+              result
+                ? `Readiness ${result.score} of 100 (${result.grade}): ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium and ${result.summary.low} low findings.`
+                : "Readiness bars appear here after a scan."
+            }
+          >
+            {(onScreen) => (
+              <ScannerBars
+                at={resultAt}
+                result={
+                  result && {
+                    score: result.score,
+                    grade: result.grade,
+                    summary: result.summary,
+                    hybridPq: probe?.hybridPq,
+                  }
+                }
+                active={onScreen}
+                reduce={reduce}
+              />
+            )}
+          </LazyView>
+          <StagePurpose>
+            how ready this system is for quantum-safe cryptography, in totals.
+          </StagePurpose>
+        </div>
       </aside>
 
       {result && (

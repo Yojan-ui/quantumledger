@@ -8,6 +8,8 @@
  *  2. clamps the box inside that stage (8 px in from the edge);
  *  3. walks the boxes top to bottom and pushes an overlapping one away along its leader line
  *     (labels above their point move up, labels below move down), then re-clamps;
+ *  3b. moves any box that still covers a fixed obstacle in its stage ([data-label-avoid]: the
+ *     caption, the control pill, the purpose line) to the nearer side of it, and re-clamps;
  *  4. eases each box towards its offset (transform only), so labels slide rather than jump.
  * All reads happen before all writes (one layout per frame).
  */
@@ -31,6 +33,12 @@ function stageRects(): DOMRect[] {
     .filter((r) => r.width > 0 && r.height > 0);
 }
 
+function avoidRects(): DOMRect[] {
+  return [...document.querySelectorAll<HTMLElement>("[data-label-avoid]")]
+    .map((e) => e.getBoundingClientRect())
+    .filter((r) => r.width > 0 && r.height > 0);
+}
+
 function tick() {
   raf = labels.size ? requestAnimationFrame(tick) : 0;
   if (!raf) return;
@@ -38,6 +46,7 @@ function tick() {
   for (const l of labels) any ||= l.on || !!l.dx || !!l.dy;
   if (!any) return;
   const stages = stageRects();
+  const avoid = avoidRects();
   type Item = {
     l: Label;
     n: { left: number; top: number; right: number; bottom: number };
@@ -109,6 +118,24 @@ function tick() {
       // Move along the leader: an "up" label further up (the one above), a "down" label further down.
       if (a.l.side === "up") a.ty -= A.b - B.t + GAP;
       else b.ty += A.b - B.t + GAP;
+    }
+  }
+  items.forEach(clamp);
+  // Obstacles win: a label never covers the caption or the controls (it goes above or below them).
+  for (const it of items) {
+    for (const o of avoid) {
+      const B = {
+        l: it.n.left + it.tx,
+        r: it.n.right + it.tx,
+        t: it.n.top + it.ty,
+        b: it.n.bottom + it.ty,
+      };
+      if (o.left >= B.r || B.l >= o.right || o.top >= B.b || B.t >= o.bottom) continue;
+      const up = B.b - o.top + GAP;
+      const down = o.bottom - B.t + GAP;
+      // Prefer the side with room inside the stage; otherwise the shorter move.
+      const roomUp = !it.st || B.t - up >= it.st.top + PAD;
+      it.ty += roomUp && (up <= down || !it.st || B.b + down > it.st.bottom - PAD) ? -up : down;
     }
   }
   items.forEach(clamp);

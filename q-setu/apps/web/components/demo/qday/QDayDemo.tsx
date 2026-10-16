@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { SectorSwitcher } from "@/components/demo/shell/SectorSwitcher";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
@@ -54,29 +55,29 @@ const STEP_BAR: Step[] = [
 const SHOTS: Shot[] = [
   {
     id: "split",
-    camera: { position: [0, 0.7, 8], target: [0, -0.3, -0.6], fov: 40 },
+    camera: { position: [0, 0.4, 8.6], target: [-0.4, -0.55, 0], fov: 40 },
     step: 0,
     caption: "An adversary records both systems' encrypted traffic, today.",
     simple: "An attacker copies both systems' locked messages, today.",
   },
   {
     id: "timelapse",
-    camera: { position: [-2.2, 1.6, 8.6], target: [0, 0, -1], fov: 40 },
-    focus: "orb",
+    camera: { position: [-2.1, 0.3, 5.4], target: [-2.8, -1.0, 0.2], fov: 40 },
+    focus: "drum",
     step: 1,
     caption: "Years pass; the recordings are kept, unreadable for now.",
     simple: "Years pass. The copies wait, still locked.",
   },
   {
     id: "climax",
-    camera: { position: [0, 0.4, 5.6], target: [0, -0.15, -0.4], fov: 40 },
+    camera: { position: [0, 0.9, 5.6], target: [0, 0.3, 0], fov: 40 },
     step: 2,
     caption: "Q-Day: classical keys fall, and the recorded data opens.",
     simple: "Q-Day: the old locks break, and the copies open.",
   },
   {
     id: "aftermath",
-    camera: { position: [0, 1.4, 8.4], target: [0, -0.35, -0.4], fov: 40 },
+    camera: { position: [0, 0.6, 8.4], target: [-0.3, -0.45, 0], fov: 40 },
     step: 3,
     caption: "Classical records are exposed; QuantumLedger records stay sealed.",
     simple: "Old-lock records are exposed. QuantumLedger records stay locked.",
@@ -328,7 +329,7 @@ export function QDayDemo() {
       <div className="full-bleed relative mb-12 overflow-hidden border-y border-line">
         <LazyView
           className="h-stage-full min-h-stage"
-          label={`Two corridors of recorded packets, classical and QuantumLedger, watched by an adversary. Year ${year}. ${qday ? "Q-Day: classical packets break open; QuantumLedger packets stay whole." : "Recording traffic."}`}
+          label={`One line of packets, classical and hybrid, copied into an attacker's drum. Year ${year}. ${qday ? "Q-Day: classical packets break open; hybrid packets stay whole." : "Recording traffic."}`}
         >
           {(onScreen) => (
             <QDayFilm
@@ -346,7 +347,14 @@ export function QDayDemo() {
             />
           )}
         </LazyView>
-        <div className="pointer-events-none absolute left-4 top-4 md:left-6 md:top-6" aria-hidden>
+        <StagePurpose>
+          recorded traffic opens at Q-Day unless it was sealed with a hybrid key.
+        </StagePurpose>
+        <div
+          className="pointer-events-none absolute left-4 top-12 md:left-6 md:top-14"
+          aria-hidden
+          data-label-avoid
+        >
           <span
             className={`tabular block font-mono text-h2 transition-colors duration-300 ${qday ? "text-warn" : "text-fg"}`}
           >
@@ -357,6 +365,7 @@ export function QDayDemo() {
         <DirectorHUD
           director={director}
           steps={STEP_BAR}
+          beat={reel.beat}
           playing={reel.playing}
           busy={reel.busy}
           onToggle={() => void reel.play()}

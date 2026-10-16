@@ -24,6 +24,7 @@ export function DirectorHUD({
   onPrev,
   onReplay,
   busy = false,
+  beat,
 }: {
   director: Director;
   steps: Step[];
@@ -33,9 +34,16 @@ export function DirectorHUD({
   onPrev: () => void;
   onReplay: () => void;
   busy?: boolean;
+  /**
+   * The film's beat (useFilm): when given, the caption is that shot's and changes only when its
+   * real event has happened and the camera has arrived, never as the camera starts to move.
+   */
+  beat?: number;
 }) {
-  const { shot, index } = director.state;
+  const { shot, index, take } = director.state;
   const step = shot.step ?? -1;
+  const shownIndex = beat ?? index;
+  const shown = shownIndex === index ? shot : (director.shots[shownIndex] ?? shot);
 
   usePresent({
     next: onNext,
@@ -76,13 +84,17 @@ export function DirectorHUD({
       <p
         className="max-w-text overflow-hidden pb-1 text-center text-body font-medium text-fg md:text-h3"
         aria-live="polite"
+        data-label-avoid
       >
-        <span key={`${index}-${director.state.take}`} className="block animate-mask-up">
-          <Copy simple={shot.simple ?? shot.caption} technical={shot.caption} />
+        <span key={`${shownIndex}-${take}`} className="block animate-mask-up">
+          <Copy simple={shown.simple ?? shown.caption} technical={shown.caption} />
         </span>
       </p>
       {/* The floating pill: the step bar and Prev / Next / Play / Replay, bottom centre. */}
-      <div className="pointer-events-auto flex max-w-full items-center justify-center gap-x-3 rounded-full border border-line bg-glass px-3 py-2 md:gap-x-4">
+      <div
+        data-label-avoid
+        className="pointer-events-auto flex max-w-full items-center justify-center gap-x-3 rounded-full border border-line bg-glass px-3 py-2 md:gap-x-4"
+      >
         <ol className="flex items-center gap-2 font-mono text-label uppercase" aria-label="Shots">
           {steps.map((s, i) => (
             <li
