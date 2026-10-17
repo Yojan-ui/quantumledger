@@ -8,13 +8,15 @@
  * it slacken, so that part of the chain sags between the break and the newest block and swings.
  * Verify: a small sweep ring moves block to block (OK as each link checks) and a soft pulse runs
  * along the rope; both stop hard at the first break: the pulse recoils and the broken block jolts.
- * Blocks are solid (emissive in their role colour); links are thick (drei Line, 3 px). Restore pulls the chain taut: the links take up
- * their length again and each block springs back to its place, last first.
+ * Blocks are glass (fresnel rims) with a glowing seal inside, in their role colour; the links are
+ * an energy tube that follows the rope, carrying the verify pulse as a comet. When the pulse slams
+ * into the break, sparks burst there and the stage takes the impact. The edited block's halves burn
+ * in a red dissolve, and the sagging part of the chain flickers. Restore pulls the chain taut: the
+ * links take up their length again and each block springs back to its place, last first.
  * Every motion starts at a real event (the edit, the verification result, the restore).
  */
-import { Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Anchor } from "@/components/director/Anchor";
 import { DirectorCamera } from "@/components/director/DirectorCamera";
@@ -24,6 +26,12 @@ import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { Rope, springIn, wobble } from "@/lib/motion";
 import { Thicken } from "@/components/scenes/Thicken";
+import { useBudget } from "@/components/fx/budget";
+import { makeDynamicTube } from "@/components/fx/DynamicTube";
+import { FXStage, useFX } from "@/components/fx/FXStage";
+import { energyTube, glass, solid } from "@/components/fx/materials";
+import { makeParticles } from "@/components/fx/Particles";
+import { StageSet } from "@/components/fx/StageSet";
 
 export const N = 12;
 /** Index on the arc of the entry the insider edits. */
@@ -67,7 +75,16 @@ export interface LedgerFilmProps {
   onPick?: (i: number) => void;
 }
 
-export default function LedgerFilm({
+export default function LedgerFilm(props: LedgerFilmProps) {
+  const c = useMemo(palette, []);
+  return (
+    <FXStage background={c.bg} active={props.active} reduce={props.state.reduce}>
+      <Scene {...props} />
+    </FXStage>
+  );
+}
+
+function Scene({
   state,
   onSettled,
   active,
@@ -80,6 +97,25 @@ export default function LedgerFilm({
   merkle,
 }: LedgerFilmProps) {
   const c = useMemo(palette, []);
+  const fx = useFX();
+  const budget = useBudget();
+  // Sparks where the verify pulse slams into the break.
+  const sparks = useMemo(() => {
+    const p = makeParticles(Math.round(budget.particles * 0.25), {
+      colorA: c.danger,
+      colorB: c.warn,
+      radius: 0.12,
+      size: 0.03,
+      seed: 21,
+    });
+    p.u.uBurstSpeed.value = 1.6;
+    p.u.uAmp.value = 0.5;
+    p.u.uOpacity.value = 0;
+    p.u.uBright.value = 1.4;
+    return p;
+  }, [budget.particles, c]);
+  useEffect(() => () => sparks.dispose(), [sparks]);
+  const sparked = useRef(0);
   // Stage 4's Merkle build over the four newest blocks.
   const nodes = useRef<(THREE.Group | null)[]>([]);
   const nodeGeo = useMemo(() => new THREE.BoxGeometry(0.16, 0.16, 0.16), []);
@@ -139,20 +175,20 @@ export default function LedgerFilm({
     [],
   );
   const blocks = useRef<(THREE.Group | null)[]>([]);
+  // Each block: a glass shell with a glowing seal inside; the edited block's halves burn red.
   const mats = useMemo(
     () =>
       Array.from({ length: N }, () => ({
-        fill: new THREE.MeshStandardMaterial({
-          color: c.sig.clone(),
-          emissive: c.sig.clone(),
-          emissiveIntensity: 0.35,
-          roughness: 0.4,
-          metalness: 0.1,
-          transparent: true,
-        }),
+        shell: glass(c.sig, { rim: 1.7, body: 0.06 }),
+        seal: solid(c.sig, { glow: 1.1 }),
       })),
     [c],
   );
+  const crackMat = useMemo(() => solid(c.danger, { glow: 0.8, edge: c.danger }), [c]);
+  const sealGeo = useMemo(() => new THREE.OctahedronGeometry(0.11, 0), []);
+  const tube = useMemo(() => makeDynamicTube(LINKS + 1, 8), []);
+  const tubeMat = useMemo(() => energyTube(c.sig, { base: 0.9, vertexColors: true }), [c]);
+  const tubeRgb = useMemo(() => new Float32Array((LINKS + 1) * 3), []);
   // The links: scratch arrays written each frame, copied into the thick line's own buffers.
   const linkGeo = useMemo(() => {
     const g = new THREE.BufferGeometry();
@@ -160,17 +196,6 @@ export default function LedgerFilm({
     g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(LINKS * 6), 3));
     return g;
   }, []);
-  const linkInit = useMemo(
-    () => ({
-      points: Array.from({ length: LINKS * 2 }, (_, k) => blockPos(Math.floor(k / (2 * SUB)))),
-      colors: Array.from(
-        { length: LINKS * 2 },
-        () => [c.sig.r, c.sig.g, c.sig.b] as [number, number, number],
-      ),
-    }),
-    [c],
-  );
-  const links = useRef<THREE.Mesh>(null);
   const sweep = useRef<THREE.Mesh>(null);
   const sweepAt = useMemo(() => new THREE.Vector3(0, -10, 0), []);
   // The rope: block i is point i·SUB; the points between are the link's cord.
@@ -200,11 +225,13 @@ export default function LedgerFilm({
   const head = useMemo(() => blockPos(N - 1), []);
   const target = useMemo(() => blockPos(TARGET_INDEX), []);
 
-  useFrame(({ clock }, dt) => {
+  useFrame(({ clock, gl }, dt) => {
     if (!active) return;
     const now = performance.now();
     const reduce = state.reduce;
     const t = reduce ? 0 : clock.elapsedTime;
+    sparks.u.uTime.value = t;
+    sparks.u.uPR.value = gl.getPixelRatio();
     const broken = verify?.broken ?? -1;
     // The scan: one block every STEP_MS from the left; it stops at the break.
     const scanned = verify
@@ -331,6 +358,8 @@ export default function LedgerFilm({
               ? 1 - easeToken(span(now - restoredAt, 0, 600))
               : 0;
         if (whole.current) whole.current.visible = k <= 0.001;
+        // The halves burn at their broken edges (a red noise dissolve).
+        crackMat.uniforms.uDissolve!.value = reduce ? 0.3 : 0.32 * k;
         halves.current.forEach((h, side) => {
           if (!h) return;
           const sgn = side === 0 ? -1 : 1;
@@ -348,10 +377,15 @@ export default function LedgerFilm({
       else if (scanned > i) col.copy(c.ok);
       else col.copy(c.sig);
       if (d > 0 && !isBad) col.lerp(c.text3, 0.7 * d);
-      m.fill.color.copy(col);
-      m.fill.emissive.copy(col);
-      m.fill.emissiveIntensity = isBad ? 0.75 : 0.35;
-      m.fill.opacity = 1 - 0.55 * d;
+      // The sagging part of the chain flickers, as if losing power.
+      const flick =
+        after && tamperedAt && !reduce && i < N - 1
+          ? 0.75 + 0.25 * Math.sin(now / 47 + i * 1.7) * Math.sin(now / 113 + i)
+          : 1;
+      (m.shell.uniforms.uColor!.value as THREE.Color).copy(col);
+      (m.seal.uniforms.uColor!.value as THREE.Color).copy(col);
+      m.seal.uniforms.uGlow!.value = (isBad ? 1.6 : 1.1) * flick;
+      m.shell.uniforms.uOpacity!.value = (1 - 0.5 * d) * flick;
     }
     // The cord: every rope segment, coloured by the link it belongs to (the link into block b).
     for (let k = 0; k < LINKS; k++) {
@@ -368,29 +402,25 @@ export default function LedgerFilm({
       set3(lc, k * 2, lcol.r, lcol.g, lcol.b);
       set3(lc, k * 2 + 1, lcol.r, lcol.g, lcol.b);
     }
-    // Into the thick line (LineSegments2): same layout, start xyz + end xyz per segment.
-    const lg = links.current?.geometry;
-    if (lg) {
-      const ps = (lg.attributes.instanceStart as THREE.InterleavedBufferAttribute | undefined)
-        ?.data;
-      const cs = (lg.attributes.instanceColorStart as THREE.InterleavedBufferAttribute | undefined)
-        ?.data;
-      if (ps) {
-        (ps.array as Float32Array).set(pos);
-        ps.needsUpdate = true;
-      }
-      if (cs) {
-        (cs.array as Float32Array).set(lc);
-        cs.needsUpdate = true;
-      }
+    // The energy tube along the rope, coloured link by link (the colour of the link into each point).
+    for (let k = 0; k <= LINKS; k++) {
+      const src = Math.min(LINKS - 1, Math.max(0, k - 1));
+      tubeRgb[k * 3] = lc[src * 6]!;
+      tubeRgb[k * 3 + 1] = lc[src * 6 + 1]!;
+      tubeRgb[k * 3 + 2] = lc[src * 6 + 2]!;
     }
+    tube.update(R_.p, 0.045, tubeRgb);
+    tubeMat.uniforms.uTime!.value = t;
+    void pos;
     // The verification pulse: a point of light running along the rope block to block. It stops
     // dead at the first break (a recoil, a red flare, the block jolts) and fades; on an intact chain
     // it runs to the newest block.
     if (pulse.current) {
       const g = pulse.current;
-      if (!verify || reduce) g.visible = false;
-      else {
+      if (!verify || reduce) {
+        g.visible = false;
+        tubeMat.uniforms.uHeads!.value[0] = -1;
+      } else {
         const run = (now - verify.at) / STEP_MS;
         const stop = broken >= 0 ? broken : N - 1;
         const f = Math.min(stop, Math.max(0, run)) * SUB;
@@ -408,12 +438,26 @@ export default function LedgerFilm({
           p.addScaledVector(q, 0.1 * Math.max(0, wobble(since / 1000, 4, 8)));
         }
         g.position.set(p.x, p.y + 0.05, p.z);
+        // The pulse as a comet in the tube, and the slam into the break.
+        tubeMat.uniforms.uHeads!.value[0] = fade > 0.01 ? f / LINKS : -1;
+        if (hit && sparked.current !== verify.at) {
+          sparked.current = verify.at;
+          fx.hit(0.8);
+        }
         pulseMat.color.copy(hit ? c.danger : c.ok);
         haloMat.color.copy(pulseMat.color);
         pulseMat.opacity = fade;
         haloMat.opacity = 0.3 * fade * (hit ? 1.6 : 1);
         g.scale.setScalar(hit ? 1 + 1.4 * easeToken(Math.min(1, since / 300)) : 1);
       }
+    }
+    // Sparks: a burst at the break, the moment the pulse reaches it.
+    {
+      const hitAt = verify && broken >= 0 ? verify.at + broken * STEP_MS : 0;
+      const st = hitAt ? (now - hitAt) / 1000 : -1;
+      if (hitAt) sparks.u.uCenter.value.copy(R_.p[broken * SUB]!);
+      sparks.u.uBurst.value = !reduce && st >= 0 && st < 3 ? st + 0.001 : -1;
+      sparks.u.uOpacity.value = !reduce && st >= 0 && st < 3 ? 1 - st / 3 : 0;
     }
     // The sweep ring: a small ring under the block being checked, springing block to block; --ok
     // while links pass, --danger where the chain breaks. Reduced motion: it sits at the break.
@@ -468,26 +512,9 @@ export default function LedgerFilm({
       <ambientLight intensity={0.5} />
       <directionalLight position={[2, 5, 5]} intensity={0.8} />
       <directionalLight position={[0, 2, -8]} intensity={0.3} color={c.sig} />
-      <gridHelper args={[30, 60, c.text3, c.text3]} position={[0, -0.6, -2]}>
-        <meshBasicMaterial
-          attach="material"
-          color={c.text3}
-          transparent
-          depthWrite={false}
-          opacity={0.06}
-        />
-      </gridHelper>
-      <Line
-        ref={links as never}
-        segments
-        points={linkInit.points}
-        vertexColors={linkInit.colors}
-        lineWidth={3}
-        transparent
-        opacity={0.95}
-        depthWrite={false}
-        frustumCulled={false}
-      />
+      <mesh geometry={tube.geometry} material={tubeMat} frustumCulled={false} />
+      <primitive object={sparks.points} />
+      <StageSet y={-1.3} coneColor={c.sig} coneAt={[0, -3.5]} coneStrength={0.1} />
       {Array.from({ length: N }, (_, i) => (
         <group
           key={i}
@@ -500,12 +527,13 @@ export default function LedgerFilm({
           onPointerOut={() => (document.body.style.cursor = "")}
         >
           <group ref={i === TARGET_INDEX ? whole : undefined}>
-            <mesh geometry={geo} material={mats[i]!.fill} />
+            <mesh geometry={geo} material={mats[i]!.shell} />
+            <mesh geometry={sealGeo} material={mats[i]!.seal} />
           </group>
           {i === TARGET_INDEX &&
             [0, 1].map((side) => (
               <group key={side} ref={(h) => void (halves.current[side] = h)} visible={false}>
-                <mesh geometry={half.g} material={mats[i]!.fill} />
+                <mesh geometry={half.g} material={crackMat} />
               </group>
             ))}
         </group>

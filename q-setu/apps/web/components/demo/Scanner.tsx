@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { LazyView } from "@/components/scenes/LazyView";
+import type { ScanPillar } from "./ScannerBars";
 import { Button, Code, Heading, Label, MiniStat, Stat, Text } from "@/components/ui";
 import { errText } from "@/lib/client/api";
 import { usePresent } from "@/lib/client/present";
@@ -47,10 +48,22 @@ export function Scanner() {
   const [lifetime, setLifetime] = useState<number>(10);
   const [plan, setPlan] = useState<Plan & { markdown: string }>();
   const [done, setDone] = useState<Set<string>>(new Set());
-  // When the latest result arrived: its bars grow from then (the scan itself is the beat).
-  const [resultAt, setResultAt] = useState(0);
+  // This session's scans, as pillars (the scan itself is the beat): kind and score only.
+  const [pillars, setPillars] = useState<ScanPillar[]>([]);
   useEffect(() => {
-    if (result) setResultAt(performance.now());
+    if (!result) return;
+    setPillars((h) =>
+      [
+        ...h,
+        {
+          at: performance.now(),
+          score: result.score,
+          grade: result.grade,
+          kind: probe ? "live TLS" : "pasted config",
+        },
+      ].slice(-5),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result]);
   const reduce = useReducedMotion();
 
@@ -309,27 +322,13 @@ export function Scanner() {
             label={
               result
                 ? `Readiness ${result.score} of 100 (${result.grade}): ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium and ${result.summary.low} low findings.`
-                : "Readiness bars appear here after a scan."
+                : "Each scan rises here as a glass pillar, filled to its readiness score."
             }
           >
-            {(onScreen) => (
-              <ScannerBars
-                at={resultAt}
-                result={
-                  result && {
-                    score: result.score,
-                    grade: result.grade,
-                    summary: result.summary,
-                    hybridPq: probe?.hybridPq,
-                  }
-                }
-                active={onScreen}
-                reduce={reduce}
-              />
-            )}
+            {(onScreen) => <ScannerBars pillars={pillars} active={onScreen} reduce={reduce} />}
           </LazyView>
           <StagePurpose>
-            how ready this system is for quantum-safe cryptography, in totals.
+            each scan rises as a pillar filled to its readiness score, in totals only.
           </StagePurpose>
         </div>
       </aside>

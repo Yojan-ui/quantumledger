@@ -3,32 +3,36 @@
 /**
  * Demo 1 as a short film: two keys combine so a quantum computer can't read the session.
  *
- * The browser (left) and the server (right) are glass blocks. Each builds one half of the key out
- * of two solid pieces, each piece appearing only once its real value exists:
- *   - the browser's X25519 share (--kem) when the ClientHello is made;
- *   - the server's X25519 share (--kem) and its ML-KEM-768 key (--sig), with the ML-DSA signature
- *     ring round them, when the signed ServerHello is made;
- *   - the browser's ML-KEM-768 ciphertext (--sig) when it encapsulates (the finish).
- * Merge: the two halves fly to the centre, lock together with a pulse and become one --ok "shared
- * key" cube (the real HKDF session). Then AES-256-GCM messages run along the link as capsules; an
- * attack is a --danger capsule that shatters on the signature ring.
- * Motion is springs with a slight overshoot; reduced motion shows each shot's composed end state.
- * Real bus events (seal / verify / rotate) nudge the object they belong to.
+ * The browser (left) and the server (right) are glass blocks with fresnel rims, standing on the
+ * stage's reflective floor under a cone of light. Over each hangs a cloud of curl-noise particles.
+ *   - ClientHello: the browser's cloud gathers into a glowing X25519 key shard (--kem), and a comet
+ *     carries the share along the arc tube to the server.
+ *   - Signed ServerHello: the server's cloud gathers into its ML-KEM-768 shard (--sig), inside a glass
+ *     ML-DSA signature ring.
+ *   - The merge (the hero moment): both shards fire across as comets along energy tubes, collide in
+ *     the middle (bloom flash, a shockwave ring on the air and the floor, a particle burst, a camera
+ *     punch-in and shake) and fuse into one faceted --ok crystal: the real HKDF session key, labelled
+ *     with the real handshake time and byte sizes.
+ *   - Messages: AES-256-GCM comets stream along the link; the crystal pulses on each real seal.
+ *   - Attack: a --danger comet hits the signature ring and bursts.
+ * Everything appears when its real crypto has happened. Reduced motion: each shot's composed still.
  */
-import { Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Anchor } from "@/components/director/Anchor";
 import { DirectorCamera } from "@/components/director/DirectorCamera";
 import { pulse, useReactions } from "@/components/director/reactions";
 import type { DirectorState } from "@/components/director/types";
 import { span } from "@/components/scenes/geometry";
-import { PushDust } from "@/components/scenes/PushDust";
-import { Thicken } from "@/components/scenes/Thicken";
+import { useBudget } from "@/components/fx/budget";
+import { FXStage, useFX } from "@/components/fx/FXStage";
+import { energyTube, glass, solid } from "@/components/fx/materials";
+import { makeParticles } from "@/components/fx/Particles";
+import { StageSet } from "@/components/fx/StageSet";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
-import { burst, piece, springIn, type Piece } from "@/lib/motion";
+import { springIn } from "@/lib/motion";
 
 export interface Film {
   shareHex?: string;
@@ -57,55 +61,52 @@ export interface Film {
   rekeyAt?: number;
 }
 
-export const CLIENT = new THREE.Vector3(-2.6, 0, 0);
-export const SERVER = new THREE.Vector3(2.6, 0, 0);
-/** Where each side builds its half of the key (above its block), and where the halves lock. */
-const BUILD_C = new THREE.Vector3(-2.6, 1.2, 0);
-const BUILD_S = new THREE.Vector3(2.6, 1.2, 0);
+export const CLIENT = new THREE.Vector3(-2.7, -0.35, 0);
+export const SERVER = new THREE.Vector3(2.7, -0.2, 0);
+const FLOOR = -1.1;
+/** Where each side's key shard forms (over its block), and where they collide. */
+const SHARD_C = new THREE.Vector3(-2.7, 1.05, 0);
+const SHARD_S = new THREE.Vector3(2.7, 1.05, 0);
 const CENTER = new THREE.Vector3(0, 1.0, 0);
-/** One key piece: a quarter of the final cube (the halves split left/right, X25519 over ML-KEM). */
-const Q = 0.3;
-const GAP = 0.03;
-const ARC = new THREE.CubicBezierCurve3(
-  new THREE.Vector3(-2.1, 0.55, 0),
-  new THREE.Vector3(-1, 2.1, 0.3),
-  new THREE.Vector3(1, 2.1, 0.3),
-  new THREE.Vector3(2.1, 0.55, 0),
-);
-const ARC_POINTS = ARC.getPoints(64);
-const LINK_Y = -0.15;
-const LINK: [number, number, number][] = [
-  [-2.15, LINK_Y, 0],
-  [2.15, LINK_Y, 0],
-];
+const ARC = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(-2.3, 0.6, 0),
+  new THREE.Vector3(-1.2, 2.0, 0.25),
+  new THREE.Vector3(1.2, 2.0, 0.25),
+  new THREE.Vector3(2.3, 0.6, 0),
+]);
+const FIRE_C = new THREE.CatmullRomCurve3([
+  SHARD_C,
+  new THREE.Vector3(-1.5, 1.45, 0.35),
+  new THREE.Vector3(-0.5, 1.1, 0.1),
+  CENTER,
+]);
+const FIRE_S = new THREE.CatmullRomCurve3([
+  SHARD_S,
+  new THREE.Vector3(1.5, 1.45, 0.35),
+  new THREE.Vector3(0.5, 1.1, 0.1),
+  CENTER,
+]);
+const LINK = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(-2.25, -0.15, 0),
+  new THREE.Vector3(0, -0.05, 0.15),
+  new THREE.Vector3(2.25, -0.15, 0),
+]);
 const PACKET_MS = 1600;
 const ATTACK_MS = 1500;
-/** The merge: the browser's ML-KEM piece appears, the halves fly, lock (at LOCK), turn --ok. */
+/** The merge: a short charge, the flight, the collision at HIT, the crystal settling. */
 const MERGE_MS = 2600;
-const LOCK = 0.62;
-const MSGS = 18;
-const SHARDS = 14;
-const ATTACK_FROM = new THREE.Vector3(0.6, 2.8, 1.4);
-const ATTACK_TO = new THREE.Vector3(BUILD_S.x - 0.55, BUILD_S.y, 0.05);
-const SHARD_PIECES: Piece[] = burst(SHARDS, 0.06, 7, 1.4);
-const shardRot = new THREE.Euler();
+const FIRE_FROM = 0.18;
+const HIT = 0.55;
+const MSGS = 6;
 
 const browserOnly = (e: { source: string }) => e.source === "browser";
-/** A spring with a slight overshoot and settle (about 9% over, settled in ~0.6 s). */
 const sp = (ms: number, reduce: boolean) =>
-  reduce ? 1 : ms <= 0 ? 0 : springIn(ms / 1000, 0.6, 1.8);
+  reduce ? 1 : ms <= 0 ? 0 : springIn(ms / 1000, 0.55, 1.8);
 const fmtB = (n?: number) => (n === undefined ? "…" : `${n.toLocaleString("en-IN")} B`);
 const fmtMs = (n?: number) =>
   n === undefined ? "…" : `${n < 10 ? n.toFixed(2) : n.toFixed(1)} ms`;
 
-export default function HandshakeFilm({
-  state,
-  onSettled,
-  film,
-  kemName,
-  sigName,
-  active,
-}: {
+interface Props {
   state: DirectorState;
   onSettled: () => void;
   film: Film;
@@ -113,234 +114,276 @@ export default function HandshakeFilm({
   sigName: string;
   /** False while the stage is off screen: skip all per-frame work. */
   active: boolean;
-}) {
-  const c = useMemo(palette, []);
-  const reduce = state.reduce;
-  const small = useMemo(() => window.matchMedia("(max-width: 767px)").matches, []);
+}
 
-  const geo = useMemo(
-    () => ({
-      piece: new THREE.BoxGeometry(Q - GAP, Q - GAP, 2 * Q - GAP),
-      key: new THREE.BoxGeometry(2 * Q, 2 * Q, 2 * Q),
-      capsule: new THREE.CapsuleGeometry(0.05, 0.14, 4, 12).rotateZ(Math.PI / 2),
-      packet: new THREE.CapsuleGeometry(0.08, 0.2, 4, 16).rotateZ(Math.PI / 2),
-      shard: new THREE.TetrahedronGeometry(0.07, 0),
-      ring: new THREE.TorusGeometry(0.52, 0.022, 12, 96),
-      pulse: new THREE.TorusGeometry(0.5, 0.012, 8, 96),
-    }),
-    [],
+export default function HandshakeFilm(props: Props) {
+  const c = useMemo(palette, []);
+  return (
+    <FXStage background={c.bg} active={props.active} reduce={props.state.reduce}>
+      <Scene {...props} />
+    </FXStage>
   );
-  const mat = useMemo(() => {
-    const solid = (col: THREE.Color, glow = 0.5) =>
-      new THREE.MeshStandardMaterial({
-        color: col.clone(),
-        emissive: col.clone(),
-        emissiveIntensity: glow,
-        roughness: 0.35,
-        metalness: 0.1,
-        transparent: true,
-      });
-    const glass = () =>
-      new THREE.MeshPhysicalMaterial({
-        color: c.text3.clone(),
-        transparent: true,
-        opacity: 0.28,
-        roughness: 0.12,
-        emissive: c.text3.clone(),
-        emissiveIntensity: 0.12,
-        metalness: 0,
-        clearcoat: 1,
-        clearcoatRoughness: 0.1,
-        depthWrite: false,
-      });
+}
+
+function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
+  const c = useMemo(palette, []);
+  const fx = useFX();
+  const budget = useBudget();
+  const reduce = state.reduce;
+
+  const geo = useMemo(() => {
+    const shard = new THREE.OctahedronGeometry(0.26, 0);
+    shard.scale(0.62, 1.55, 0.62);
+    const crystal = new THREE.IcosahedronGeometry(0.42, 0).toNonIndexed();
+    crystal.computeVertexNormals();
     return {
-      client: glass(),
-      server: glass(),
-      xC: solid(c.kem),
-      kC: solid(c.sig),
-      xS: solid(c.kem),
-      kS: solid(c.sig),
-      key: solid(c.ok, 0.6),
-      packet: solid(c.kem, 0.8),
-      msg: solid(c.kem, 0.8),
-      ring: solid(c.sig, 0.7),
-      attack: solid(c.danger, 0.8),
-      shard: solid(c.danger, 0.7),
-      pulse: new THREE.MeshBasicMaterial({
-        color: c.ok.clone(),
-        transparent: true,
-        depthWrite: false,
+      shard,
+      crystal,
+      shell: new THREE.IcosahedronGeometry(0.55, 1),
+      arc: new THREE.TubeGeometry(ARC, 160, 0.022, 10, false),
+      fireC: new THREE.TubeGeometry(FIRE_C, 120, 0.03, 10, false),
+      fireS: new THREE.TubeGeometry(FIRE_S, 120, 0.03, 10, false),
+      link: new THREE.TubeGeometry(LINK, 160, 0.03, 10, false),
+      head: new THREE.SphereGeometry(0.075, 20, 14),
+      ring: new THREE.TorusGeometry(0.62, 0.025, 12, 96),
+      wave: new THREE.TorusGeometry(1, 0.012, 8, 128),
+      floorWave: new THREE.RingGeometry(0.96, 1, 128),
+    };
+  }, []);
+  const mat = useMemo(
+    () => ({
+      client: glass(c.text3, { rim: 2.6, body: 0.07 }),
+      server: glass(c.text3, { rim: 2.6, body: 0.07 }),
+      shardC: solid(c.kem, { glow: 1.05 }),
+      shardS: solid(c.sig, { glow: 1.05 }),
+      crystal: solid(c.ok, { glow: 0.9, light: new THREE.Vector3(0.6, 1, 0.3) }),
+      shell: glass(c.ok, { rim: 2.8, body: 0.03 }),
+      sigRing: glass(c.sig, { rim: 3, body: 0.25, power: 1.6 }),
+      arc: energyTube(c.kem, { base: 0.5 }),
+      fireC: energyTube(c.kem, { base: 0 }),
+      fireS: energyTube(c.sig, { base: 0 }),
+      link: energyTube(c.kem, { base: 0.18 }),
+      head: new THREE.MeshBasicMaterial({
+        color: c.kem.clone().multiplyScalar(4),
         toneMapped: false,
       }),
+      danger: new THREE.MeshBasicMaterial({
+        color: c.danger.clone().multiplyScalar(4),
+        toneMapped: false,
+      }),
+      wave: new THREE.MeshBasicMaterial({
+        color: c.ok.clone().multiplyScalar(3),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        toneMapped: false,
+      }),
+      floorWave: new THREE.MeshBasicMaterial({
+        color: c.ok.clone().multiplyScalar(2),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      }),
+    }),
+    [c],
+  );
+  // One particle cloud per side (half the budget each); rebuilt only when the budget changes tier.
+  const clouds = useMemo(() => {
+    const n = Math.round(budget.particles / 2);
+    return {
+      c: makeParticles(n, {
+        colorA: c.kem,
+        colorB: c.text,
+        center: SHARD_C,
+        radius: 0.75,
+        seed: 3,
+      }),
+      s: makeParticles(n, {
+        colorA: c.sig,
+        colorB: c.text,
+        center: SHARD_S,
+        radius: 0.75,
+        seed: 7,
+      }),
     };
-  }, [c]);
+  }, [budget.particles, c]);
+  useEffect(() => () => (clouds.c.dispose(), clouds.s.dispose()), [clouds]);
 
-  const clientG = useRef<THREE.Group>(null);
-  const serverG = useRef<THREE.Group>(null);
-  const halfC = useRef<THREE.Group>(null);
-  const halfS = useRef<THREE.Group>(null);
-  const pieces = useRef<(THREE.Mesh | null)[]>([]);
-  const keyCube = useRef<THREE.Mesh>(null);
-  const ring = useRef<THREE.Mesh>(null);
-  const lockRing = useRef<THREE.Mesh>(null);
-  const packet = useRef<THREE.Mesh>(null);
-  const msgs = useRef<THREE.InstancedMesh>(null);
-  const attackPkt = useRef<THREE.Mesh>(null);
-  const shards = useRef<THREE.InstancedMesh>(null);
-  const arcLine = useRef<{ material: { color: THREE.Color; opacity: number } }>(null);
-  const linkLine = useRef<{ material: { color: THREE.Color; opacity: number } }>(null);
-  const o = useMemo(() => new THREE.Object3D(), []);
-  const v = useMemo(() => new THREE.Vector3(), []);
-  const w = useMemo(() => new THREE.Vector3(), []);
-  const msgT = useRef(Float32Array.from({ length: MSGS }, (_, i) => i / MSGS));
-  const packetPos = useRef(new THREE.Vector3());
+  const r = {
+    clientG: useRef<THREE.Group>(null),
+    serverG: useRef<THREE.Group>(null),
+    shardC: useRef<THREE.Mesh>(null),
+    shardS: useRef<THREE.Mesh>(null),
+    crystal: useRef<THREE.Group>(null),
+    sigRing: useRef<THREE.Mesh>(null),
+    wave: useRef<THREE.Mesh>(null),
+    floorWave: useRef<THREE.Mesh>(null),
+    packet: useRef<THREE.Mesh>(null),
+    msgs: useRef<(THREE.Mesh | null)[]>([]),
+    attack: useRef<THREE.Mesh>(null),
+  };
   const react = useReactions(browserOnly);
+  const v = useMemo(() => new THREE.Vector3(), []);
+  const packetPos = useRef(new THREE.Vector3());
+  const msgT = useRef(Float32Array.from({ length: MSGS }, (_, i) => i / MSGS));
+  const hitDone = useRef(0);
+  const attackDone = useRef(0);
+  const clock = useRef(0);
   const track = () => (state.shot.id === "packet" ? packetPos.current : null);
 
-  useFrame(({ clock }, dt) => {
+  useFrame(({ gl }, dt) => {
     if (!active) return;
     const now = performance.now();
-    const t = reduce ? 0 : clock.elapsedTime;
+    if (!reduce) clock.current += dt;
+    const t = clock.current;
     const id = state.shot.id;
-    const rot = pulse(react.current.rotate, 700);
-    const rekey = film.rekeyAt && !reduce ? easeToken(Math.min(1, (now - film.rekeyAt) / 700)) : 1;
-
-    // The blocks: a slow breath, a nudge on each real re-key.
-    for (const g of [clientG.current, serverG.current]) {
-      if (!g) continue;
-      g.scale.setScalar((reduce ? 1 : 1 + 0.01 * Math.sin(t * 1.1)) * (1 + 0.03 * rot));
-      g.rotation.y = (g === clientG.current ? 0.35 : -0.35) * rekey;
+    const pr = gl.getPixelRatio();
+    for (const p of [clouds.c, clouds.s]) {
+      p.u.uTime.value = t;
+      p.u.uPR.value = pr;
     }
-    const keyed = !!film.sessionId;
-    mat.client.color.lerp(keyed ? c.ok : c.text3, Math.min(1, dt * 3));
-    mat.server.color.lerp(keyed ? c.ok : c.text3, Math.min(1, dt * 3));
+    const rot = pulse(react.current.rotate, 700);
 
-    // ── The pieces. Each springs in when its real value exists. ───────────────────────────
+    // The blocks breathe, and turn --ok once the session exists.
+    const keyed = !!film.sessionId;
+    for (const [g, m] of [
+      [r.clientG.current, mat.client],
+      [r.serverG.current, mat.server],
+    ] as const) {
+      if (g) g.scale.setScalar((reduce ? 1 : 1 + 0.01 * Math.sin(t * 1.1)) * (1 + 0.03 * rot));
+      (m.uniforms.uColor!.value as THREE.Color).lerp(keyed ? c.ok : c.text3, Math.min(1, dt * 3));
+    }
+
+    // ── The shards gather out of their clouds. ──────────────────────────────────────────────
     const mergeMs = film.mergeAt ? now - film.mergeAt : -1;
     const m = film.mergeAt ? (reduce ? 1 : span(mergeMs, 0, MERGE_MS)) : 0;
-    const ctIn = film.mergeAt ? sp(mergeMs, reduce) : film.sessionId ? 1 : 0;
-    const grow = [
-      film.shareAt ? sp(now - film.shareAt, reduce) : 0, // browser X25519
-      ctIn, // browser ML-KEM ciphertext (made on the finish)
-      film.signedAt ? sp(now - film.signedAt, reduce) : 0, // server X25519
-      film.signedAt ? sp(now - film.signedAt - 180, reduce) : 0, // server ML-KEM-768 key
+    const gC = film.shareAt ? (reduce ? 1 : span(now - film.shareAt, 0, 1100)) : 0;
+    const gS = film.signedAt ? (reduce ? 1 : span(now - film.signedAt, 0, 1100)) : 0;
+    clouds.c.u.uGather.value = gC * (m > HIT ? 0 : 1);
+    clouds.s.u.uGather.value = gS * (m > HIT ? 0 : 1);
+    clouds.c.u.uShapeAt.value.copy(SHARD_C);
+    clouds.s.u.uShapeAt.value.copy(SHARD_S);
+    clouds.c.u.uShapeSize.value.set(0.34, 0.8, 0.34);
+    clouds.s.u.uShapeSize.value.set(0.34, 0.8, 0.34);
+    // Each shard solidifies as its cloud lands (a reverse dissolve), then spins, waiting.
+    const fire = reduce ? (film.mergeAt ? 1 : 0) : easeToken(span(m, FIRE_FROM, HIT));
+    const shards: [THREE.Mesh | null, number, THREE.CatmullRomCurve3, THREE.ShaderMaterial][] = [
+      [r.shardC.current, gC, FIRE_C, mat.shardC],
+      [r.shardS.current, gS, FIRE_S, mat.shardS],
     ];
-    const locked = m >= LOCK;
-    pieces.current.forEach((p, i) => {
-      if (!p) return;
-      p.visible = grow[i]! > 0.001 && !locked;
-      p.scale.setScalar(Math.max(0.0001, grow[i]!));
-    });
-    // The flight: both halves lift and close on the centre, from 22% to LOCK of the merge.
-    const f = reduce ? (film.mergeAt ? 1 : 0) : easeToken(span(m, 0.22, LOCK));
-    const lift = Math.sin(Math.PI * f) * 0.35;
-    if (halfC.current) {
-      halfC.current.position.lerpVectors(BUILD_C, w.copy(CENTER).add(v.set(-Q / 2, 0, 0)), f);
-      halfC.current.position.y += lift;
-      halfC.current.rotation.y = reduce ? 0 : 0.4 * Math.sin(t * 0.6) * (1 - f);
+    for (const [s, g, curve, sm] of shards) {
+      if (!s) continue;
+      s.visible = g > 0.05 && m < HIT;
+      sm.uniforms.uDissolve!.value = 1 - easeToken(span(g, 0.35, 1));
+      // A charge-up spin before firing, then the flight along its tube.
+      const spin = reduce ? 0 : t * 1.2 + 14 * easeToken(span(m, 0, FIRE_FROM));
+      curve.getPointAt(Math.min(1, fire), s.position);
+      s.rotation.set(0, spin, fire * 1.4 * (curve === FIRE_C ? -1 : 1));
+      sm.uniforms.uGlow!.value = 1.05 + 1.6 * span(m, 0.05, HIT);
     }
-    if (halfS.current) {
-      halfS.current.position.lerpVectors(BUILD_S, w.copy(CENTER).add(v.set(Q / 2, 0, 0)), f);
-      halfS.current.position.y += lift;
-      halfS.current.rotation.y = reduce ? 0 : -0.4 * Math.sin(t * 0.6) * (1 - f);
+    // The firing tubes carry each shard's comet tail.
+    mat.fireC.uniforms.uHeads!.value[0] = m > FIRE_FROM && m < HIT + 0.05 ? fire : -1;
+    mat.fireS.uniforms.uHeads!.value[0] = m > FIRE_FROM && m < HIT + 0.05 ? fire : -1;
+    mat.fireC.uniforms.uOpacity!.value = mat.fireS.uniforms.uOpacity!.value =
+      1 - span(m, HIT, HIT + 0.15);
+
+    // ── The collision: flash, shockwave, burst, punch-in; one --ok crystal. ────────────────
+    const hitAt = film.mergeAt ? film.mergeAt + HIT * MERGE_MS : 0;
+    const since = hitAt ? now - hitAt : -1;
+    if (hitAt && since >= 0 && hitDone.current !== film.mergeAt && !reduce) {
+      hitDone.current = film.mergeAt!;
+      fx.hit(1);
     }
-    // Lock: one --ok cube, a click (spring from 0.85) and a pulse ring.
-    const lockMs = film.mergeAt ? mergeMs - LOCK * MERGE_MS : -1;
-    if (keyCube.current) {
-      // Only once the halves have locked (or, under reduced motion, once the session exists).
-      const on = reduce ? (film.sessionId ? 1 : 0) : locked ? 1 : 0;
-      keyCube.current.visible = on > 0;
-      const click =
-        reduce || !film.mergeAt ? 1 : 0.85 + 0.15 * springIn(Math.max(0, lockMs) / 1000, 0.45, 2.4);
-      keyCube.current.scale.setScalar(click * (1 + 0.06 * pulse(react.current.seal, 400)));
-      keyCube.current.rotation.set(0.35, reduce ? 0.6 : 0.6 + t * 0.35, 0);
-      mat.key.emissiveIntensity =
-        0.6 + (reduce ? 0 : 0.8 * Math.max(0, 1 - Math.max(0, lockMs) / 500));
+    for (const p of [clouds.c, clouds.s]) {
+      const burst = !reduce && since >= 0 && since < 4000;
+      p.u.uBurst.value = burst ? since / 1000 : -1;
+      if (burst) p.u.uCenter.value.copy(CENTER);
+      else if (!film.mergeAt) p.u.uCenter.value.copy(p === clouds.c ? SHARD_C : SHARD_S);
+      p.u.uOpacity.value = film.mergeAt && since >= 4000 ? 0 : 0.9;
     }
-    if (lockRing.current) {
-      const k = !reduce && lockMs > 0 ? span(lockMs, 0, 900) : 0;
-      lockRing.current.visible = k > 0 && k < 1;
-      lockRing.current.scale.setScalar(0.6 + 2.2 * easeToken(k));
-      mat.pulse.opacity = 0.9 * (1 - k);
+    fx.punch = reduce
+      ? 0
+      : since >= 0
+        ? Math.max(0, 1 - Math.abs(since - 150) / 1100)
+        : span(m, 0, HIT) * 0.6;
+    fx.focus =
+      id === "client"
+        ? SHARD_C
+        : id === "server"
+          ? SHARD_S
+          : id === "packet"
+            ? packetPos.current
+            : CENTER;
+    if (r.crystal.current) {
+      const on = reduce ? (film.sessionId ? 1 : 0) : since >= 0 ? 1 : 0;
+      const g = r.crystal.current;
+      g.visible = on > 0;
+      const k = reduce ? 1 : springIn(Math.max(0, since) / 1000, 0.4, 1.9);
+      g.scale.setScalar(Math.max(0.0001, k * (1 + 0.07 * pulse(react.current.seal, 400))));
+      g.rotation.set(0.35, reduce ? 0.6 : t * 0.45, 0.1);
+      mat.crystal.uniforms.uGlow!.value =
+        0.9 + (reduce ? 0 : 5 * Math.exp(-Math.max(0, since) / 260));
+    }
+    if (r.wave.current && r.floorWave.current) {
+      const k = !reduce && since >= 0 ? span(since, 0, 1100) : 1;
+      r.wave.current.visible = r.floorWave.current.visible = k < 1;
+      r.wave.current.scale.setScalar(0.3 + 4.5 * easeToken(k));
+      r.floorWave.current.scale.setScalar(0.4 + 6 * easeToken(k));
+      mat.wave.opacity = 1 - k;
+      mat.floorWave.opacity = 0.8 * (1 - k);
     }
 
-    // The signature ring round the server's half: on when signed; flashes on verify; red on attack.
-    if (ring.current) {
-      const s = film.signedAt ? sp(now - film.signedAt - 300, reduce) : 0;
-      const hit = film.attackAt ? pulse(film.attackAt + ATTACK_MS, 600) : 0;
-      ring.current.visible = s > 0.001 && f < 0.05;
-      ring.current.scale.setScalar(
-        Math.max(0.0001, s) * (1 + 0.08 * pulse(react.current.verify, 600) + 0.15 * hit),
+    // The signature ring round the server's shard: glass, --sig; flashes on verify, --danger on attack.
+    if (r.sigRing.current) {
+      const s = film.signedAt ? sp(now - film.signedAt - 400, reduce) : 0;
+      const hit = film.attackAt ? pulse(film.attackAt + ATTACK_MS, 700) : 0;
+      r.sigRing.current.visible = s > 0.001 && m < FIRE_FROM;
+      r.sigRing.current.scale.setScalar(
+        Math.max(0.0001, s) * (1 + 0.08 * pulse(react.current.verify, 600) + 0.2 * hit),
       );
-      ring.current.rotation.z += reduce ? 0 : dt * 0.25;
-      mat.ring.color.copy(hit > 0.05 ? c.danger : c.sig);
-      mat.ring.emissive.copy(mat.ring.color);
+      r.sigRing.current.rotation.set(0, reduce ? 0 : t * 0.5, 0);
+      (mat.sigRing.uniforms.uColor!.value as THREE.Color).copy(hit > 0.05 ? c.danger : c.sig);
     }
 
-    // The ClientHello: a --kem capsule along the arc (the arc lights while it travels).
+    // The ClientHello: a comet along the arc.
     const pt = film.packetAt ? (now - film.packetAt) / PACKET_MS : -1;
-    if (packet.current) {
-      const along = reduce ? (id === "packet" && film.helloBytes ? 0.5 : -1) : pt;
-      packet.current.visible = along >= 0 && along < 1;
-      ARC.getPoint(easeToken(Math.min(1, Math.max(0, along))), packetPos.current);
-      packet.current.position.copy(packetPos.current);
-      ARC.getTangent(Math.min(1, Math.max(0, along)), v);
-      packet.current.rotation.z = Math.atan2(v.y, v.x);
-    }
-    if (arcLine.current) {
-      const lit = pt >= 0 && pt < 1.2 ? 1 : 0;
-      arcLine.current.material.color.copy(c.text3).lerp(c.kem, lit * 0.8);
-      arcLine.current.material.opacity = 0.35 + 0.45 * lit;
+    const along = reduce ? (id === "packet" && film.helloBytes ? 0.5 : -1) : pt;
+    mat.arc.uniforms.uHeads!.value[0] = along >= 0 && along <= 1 ? easeToken(along) : -1;
+    if (r.packet.current) {
+      r.packet.current.visible = along >= 0 && along < 1;
+      ARC.getPointAt(easeToken(Math.min(1, Math.max(0, along))), packetPos.current);
+      r.packet.current.position.copy(packetPos.current);
     }
 
-    // AES-256-GCM messages: capsules along the link, brighter on each real seal.
-    const ms = msgs.current;
-    if (ms) {
-      ms.visible = !!film.sparks;
-      ms.count = small ? MSGS / 2 : MSGS;
-      const glow = 1 + 0.5 * pulse(react.current.seal, 400);
-      for (let i = 0; i < MSGS; i++) {
-        msgT.current[i] = reduce ? i / MSGS : (msgT.current[i]! + dt * 0.55) % 1;
-        const u = msgT.current[i]!;
-        o.position.set(LINK[0]![0] + (LINK[1]![0] - LINK[0]![0]) * u, LINK_Y, 0);
-        o.rotation.set(0, 0, 0);
-        o.scale.setScalar(glow * Math.min(1, Math.sin(Math.PI * u) * 3));
-        o.updateMatrix();
-        ms.setMatrixAt(i, o.matrix);
+    // AES-256-GCM messages: comets streaming along the link.
+    for (let i = 0; i < MSGS; i++) {
+      msgT.current[i] = reduce ? i / MSGS : (msgT.current[i]! + dt * 0.45) % 1;
+      const u = msgT.current[i]!;
+      mat.link.uniforms.uHeads!.value[i] = film.sparks ? u : -1;
+      const h = r.msgs.current[i];
+      if (h) {
+        h.visible = !!film.sparks;
+        LINK.getPointAt(u, h.position);
+        h.scale.setScalar(0.7 + 0.5 * pulse(react.current.seal, 400));
       }
-      ms.instanceMatrix.needsUpdate = true;
     }
-    if (linkLine.current) {
-      linkLine.current.material.color.copy(film.sparks ? c.kem : c.text3);
-      linkLine.current.material.opacity = film.sparks ? 0.7 : 0.3;
+    mat.link.uniforms.uBase!.value = film.sparks ? 0.6 : 0.3;
+
+    // Attack: a --danger comet along the arc into the ring, and a burst there.
+    const a = film.attackAt ? (now - film.attackAt) / ATTACK_MS : -1;
+    if (r.attack.current) {
+      r.attack.current.visible = !reduce && a >= 0 && a < 1;
+      ARC.getPointAt(Math.min(1, Math.max(0, easeToken(a))), v);
+      r.attack.current.position.copy(v).lerp(SHARD_S, span(a, 0.8, 1));
+    }
+    if (film.attackAt && a >= 1 && attackDone.current !== film.attackAt && !reduce) {
+      attackDone.current = film.attackAt;
+      fx.hit(0.7);
     }
 
-    // Attack: a --danger capsule hits the signature ring and shatters (velocity, spin, gravity).
-    if (attackPkt.current && shards.current) {
-      const a = film.attackAt ? (now - film.attackAt) / ATTACK_MS : -1;
-      attackPkt.current.visible = !reduce && a >= 0 && a < 1;
-      attackPkt.current.position.lerpVectors(
-        ATTACK_FROM,
-        ATTACK_TO,
-        easeToken(Math.min(1, Math.max(0, a))),
-      );
-      const tau = film.attackAt
-        ? reduce
-          ? 0.5
-          : Math.max(0, (now - film.attackAt - ATTACK_MS) / 1000)
-        : 0;
-      shards.current.visible = !!film.attackAt && tau > 0 && tau < 1.6;
-      const fade = 1 - span(tau, 0.9, 1.6);
-      for (let i = 0; i < SHARDS; i++) {
-        piece(SHARD_PIECES[i]!, tau, o.position, shardRot, { drag: 1.6, gravity: -0.9 });
-        o.position.add(ATTACK_TO);
-        o.rotation.copy(shardRot);
-        o.scale.setScalar(Math.max(0.0001, fade));
-        o.updateMatrix();
-        shards.current.setMatrixAt(i, o.matrix);
-      }
-      shards.current.instanceMatrix.needsUpdate = true;
-    }
+    for (const tube of [mat.arc, mat.fireC, mat.fireS, mat.link]) tube.uniforms.uTime!.value = t;
   });
 
   const show = state.settled;
@@ -349,153 +392,112 @@ export default function HandshakeFilm({
     film.helloMs !== undefined && film.respondMs !== undefined && film.finishMs !== undefined
       ? film.helloMs + film.respondMs + film.finishMs
       : undefined;
-  // During the merge the camera orbits ~25° round the lock (none under reduced motion).
+  // During the merge the camera orbits ~25° round the collision (none under reduced motion).
   const mergeOrbit = () =>
     film.mergeAt && id === "merge" && !reduce
       ? 0.45 * easeToken(span(performance.now() - film.mergeAt, 0, MERGE_MS))
       : 0;
-  // The four pieces: [browser X25519, browser ML-KEM ct, server X25519, server ML-KEM key].
-  const pieceAt: [number, number, number][] = [
-    [0, Q / 2, 0],
-    [0, -Q / 2, 0],
-    [0, Q / 2, 0],
-    [0, -Q / 2, 0],
-  ];
-  const pieceMat = [mat.xC, mat.kC, mat.xS, mat.kS];
   return (
-    <Thicken>
+    <>
       <DirectorCamera state={state} onSettled={onSettled} track={track} autoYaw={mergeOrbit} />
-      <fog attach="fog" args={[c.bg, 7, 18]} />
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[3, 5, 4]} intensity={1.1} />
-      <directionalLight position={[-4, 1, -5]} intensity={0.5} color={c.kem} />
-      <gridHelper args={[24, 48, c.text3, c.text3]} position={[0, -1.1, 0]}>
-        <meshBasicMaterial
-          attach="material"
-          color={c.text3}
-          transparent
-          depthWrite={false}
-          opacity={0.07}
-        />
-      </gridHelper>
+      <fog attach="fog" args={[c.bg, 8, 20]} />
+      <StageSet y={FLOOR} coneColor={c.kem} coneAt={[0, 0]} coneStrength={0.12} />
 
-      {/* The two ends: glass blocks (the browser a slab, the server a tower). */}
-      <group ref={clientG} position={CLIENT}>
+      {/* The two ends: glass blocks with fresnel rims. */}
+      <group ref={r.clientG} position={CLIENT}>
         <mesh material={mat.client}>
-          <boxGeometry args={[0.9, 1.2, 0.18]} />
+          <boxGeometry args={[0.95, 1.4, 0.2]} />
         </mesh>
       </group>
-      <group ref={serverG} position={SERVER}>
+      <group ref={r.serverG} position={SERVER}>
         <mesh material={mat.server}>
-          <boxGeometry args={[0.85, 1.5, 0.7]} />
+          <boxGeometry args={[0.9, 1.8, 0.75]} />
         </mesh>
       </group>
 
-      {/* The links: the open arc the ClientHello travels, and the sealed link messages run on. */}
-      <Line
-        ref={arcLine as never}
-        points={ARC_POINTS}
-        lineWidth={2.5}
-        color={c.text3}
-        transparent
-        opacity={0.35}
-        depthWrite={false}
-      />
-      <Line
-        ref={linkLine as never}
-        points={LINK}
-        lineWidth={2.5}
-        color={c.text3}
-        transparent
-        opacity={0.3}
-        depthWrite={false}
+      {/* The particle clouds the shards gather out of (and burst into at the collision). */}
+      <primitive object={clouds.c.points} />
+      <primitive object={clouds.s.points} />
+      <mesh ref={r.shardC} geometry={geo.shard} material={mat.shardC} visible={false} />
+      <mesh ref={r.shardS} geometry={geo.shard} material={mat.shardS} visible={false} />
+      <mesh
+        ref={r.sigRing}
+        geometry={geo.ring}
+        material={mat.sigRing}
+        position={SHARD_S}
+        visible={false}
       />
 
-      {/* Each side's half of the key: X25519 (--kem) over ML-KEM-768 (--sig). */}
-      <group ref={halfC} position={BUILD_C}>
-        {[0, 1].map((i) => (
-          <mesh
-            key={i}
-            ref={(m) => void (pieces.current[i] = m)}
-            geometry={geo.piece}
-            material={pieceMat[i]}
-            position={pieceAt[i]}
-            visible={false}
-          />
-        ))}
+      {/* Energy tubes: the open arc, each shard's firing path, and the sealed link. */}
+      <mesh geometry={geo.arc} material={mat.arc} />
+      <mesh geometry={geo.fireC} material={mat.fireC} />
+      <mesh geometry={geo.fireS} material={mat.fireS} />
+      <mesh geometry={geo.link} material={mat.link} />
+      <mesh ref={r.packet} geometry={geo.head} material={mat.head} visible={false} />
+      {Array.from({ length: MSGS }, (_, i) => (
+        <mesh
+          key={i}
+          ref={(x) => void (r.msgs.current[i] = x)}
+          geometry={geo.head}
+          material={mat.head}
+          visible={false}
+        />
+      ))}
+      <mesh ref={r.attack} geometry={geo.head} material={mat.danger} visible={false} />
+
+      {/* The shared key: a faceted --ok crystal in a glass shell, and the shockwave. */}
+      <group ref={r.crystal} position={CENTER} visible={false}>
+        <mesh geometry={geo.crystal} material={mat.crystal} />
+        <mesh geometry={geo.shell} material={mat.shell} />
       </group>
-      <group ref={halfS} position={BUILD_S}>
-        {[2, 3].map((i) => (
-          <mesh
-            key={i}
-            ref={(m) => void (pieces.current[i] = m)}
-            geometry={geo.piece}
-            material={pieceMat[i]}
-            position={pieceAt[i]}
-            visible={false}
-          />
-        ))}
-        <mesh ref={ring} geometry={geo.ring} material={mat.ring} visible={false} />
-      </group>
-      <mesh ref={keyCube} geometry={geo.key} material={mat.key} position={CENTER} visible={false} />
       <mesh
-        ref={lockRing}
-        geometry={geo.pulse}
-        material={mat.pulse}
+        ref={r.wave}
+        geometry={geo.wave}
+        material={mat.wave}
         position={CENTER}
         visible={false}
       />
-      {film.mergeAt !== undefined && (
-        <PushDust
-          color={c.ok}
-          count={small ? 60 : 120}
-          inner={0.5}
-          outer={1.6}
-          opacity={0.4}
-          reduce={reduce}
-          since={() =>
-            film.mergeAt ? (performance.now() - film.mergeAt - LOCK * MERGE_MS) / 1000 : -1
-          }
-        />
-      )}
-
-      <mesh ref={packet} geometry={geo.packet} material={mat.packet} visible={false} />
-      <instancedMesh ref={msgs} args={[geo.capsule, mat.msg, MSGS]} visible={false} />
-      <mesh ref={attackPkt} geometry={geo.packet} material={mat.attack} visible={false} />
-      <instancedMesh ref={shards} args={[geo.shard, mat.shard, SHARDS]} visible={false} />
+      <mesh
+        ref={r.floorWave}
+        geometry={geo.floorWave}
+        material={mat.floorWave}
+        position={[CENTER.x, FLOOR + 0.01, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        visible={false}
+      />
 
       {/* Labels: real values, shown once the camera has settled on their beat. */}
       <Anchor
-        position={[-2.6, -0.75, 0]}
+        position={[CLIENT.x, FLOOR + 0.25, 0]}
         label="Browser"
         value="client · this tab"
         show={show && (id === "establish" || id === "pullback")}
         side="down"
       />
       <Anchor
-        position={[2.6, -0.9, 0]}
+        position={[SERVER.x, FLOOR + 0.25, 0]}
         label="Server"
         value={`${sigName} identity`}
         show={show && (id === "establish" || id === "pullback")}
         side="down"
       />
       <Anchor
-        position={[BUILD_C.x, BUILD_C.y + 0.4, 0]}
-        label="X25519 share"
+        position={[SHARD_C.x, SHARD_C.y + 0.6, 0]}
+        label="X25519 key shard"
         role="kem"
         value={`${fmtB(film.x25519Bytes)} · ${fmtMs(film.helloMs)}`}
         show={show && id === "client" && !!film.shareHex}
       />
       <Anchor
-        position={[0, 2.25, 0.3]}
+        position={[0, 2.3, 0.25]}
         label="ClientHello · in the open"
         role="kem"
         value={fmtB(film.helloBytes)}
         show={show && id === "packet"}
       />
       <Anchor
-        position={[BUILD_S.x, BUILD_S.y + 0.65, 0]}
-        label={`X25519 + ${kemName} key · ${sigName} signed`}
+        position={[SHARD_S.x, SHARD_S.y + 0.75, 0]}
+        label={`${kemName} key shard · ${sigName} signed`}
         role="sig"
         value={
           film.kemPkBytes && film.sigBytes
@@ -505,8 +507,8 @@ export default function HandshakeFilm({
         show={show && id === "server" && !!film.signedAt}
       />
       <Anchor
-        position={[CENTER.x, CENTER.y + 0.55, 0]}
-        label="Shared key · HKDF-SHA256"
+        position={[CENTER.x, CENTER.y + 0.75, 0]}
+        label="Shared key"
         role="ok"
         value={
           film.sessionId
@@ -516,7 +518,7 @@ export default function HandshakeFilm({
         show={show && id === "merge" && !!film.sessionId}
       />
       <Anchor
-        position={[0, LINK_Y - 0.25, 0]}
+        position={[0, -0.4, 0]}
         label="AES-256-GCM messages"
         role="kem"
         side="down"
@@ -528,12 +530,12 @@ export default function HandshakeFilm({
         show={show && id === "pullback" && !!film.sparks}
       />
       <Anchor
-        position={[ATTACK_TO.x, ATTACK_TO.y + 0.6, 0]}
+        position={[SHARD_S.x - 0.4, SHARD_S.y + 0.8, 0]}
         label={`${sigName} verify ✗ · rejected`}
         role="danger"
         value="forged ML-KEM key, original signature"
         show={show && id === "attack" && !!film.attackRejected}
       />
-    </Thicken>
+    </>
   );
 }

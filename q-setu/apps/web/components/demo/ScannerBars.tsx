@@ -1,176 +1,184 @@
 "use client";
 
 /**
- * The scanner's result as solid bars: one for the readiness score (out of 100, coloured by its
- * grade: --danger critical, --warn at risk, --ok quantum-ready) and one per severity (how many
- * findings), plus a node for the live TLS probe's key exchange when there is one (--ok if it
- * negotiated hybrid ML-KEM, --warn if not). Aggregates only: nothing is ranked or named. Each new
- * result grows the bars with a spring (a slight overshoot, then settle); static under reduced motion.
+ * The scanner's results as glass pillars on the stage's reflective floor: each scan of this session
+ * (up to five, in the order they were made) rises out of the floor as a glass pillar with a fresnel
+ * rim, filled with liquid light up to its readiness score, in its grade's colour (--danger critical,
+ * --warn at risk, --ok quantum-ready). A scan beam sweeps across them and flares when a new result
+ * lands. Aggregates only: each pillar is one scan's score; nothing is named or ranked.
+ * Static under reduced motion.
  */
 import { PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Anchor } from "@/components/director/Anchor";
+import { FXStage, useFX } from "@/components/fx/FXStage";
+import { glass, solid } from "@/components/fx/materials";
+import { StageSet } from "@/components/fx/StageSet";
 import { palette } from "@/components/world/palette";
 import { springIn } from "@/lib/motion";
 
-export interface ScanTotals {
+export interface ScanPillar {
+  /** When this scan's result arrived (performance.now()). */
+  at: number;
   score: number;
   grade: "Critical" | "At risk" | "Quantum-ready";
-  summary: { critical: number; high: number; medium: number; low: number };
-  /** The live TLS probe, if this result came from one. */
-  hybridPq?: boolean;
+  /** What was scanned, by kind only ("live TLS", "pasted config"). */
+  kind: string;
 }
 
 export interface ScannerBarsProps {
-  /** When this result arrived (performance.now()): the bars grow from here. */
-  at: number;
-  /** The latest result's totals (none yet: an empty floor). */
-  result: ScanTotals | undefined;
+  pillars: ScanPillar[];
   active: boolean;
   reduce: boolean;
 }
 
-const GAP = 0.85;
-const MAX_H = 2;
-/** Severity counts are drawn against 10 findings (more than 10 reach the top). */
-const CAP = 10;
+const H = 2.2;
+const GAP = 1.05;
+const FLOOR = 0;
+const MAX = 5;
 
-export default function ScannerBars({ at, result, active, reduce }: ScannerBarsProps) {
+export default function ScannerBars(props: ScannerBarsProps) {
   const c = useMemo(palette, []);
-  const score = result?.score ?? 0;
-  const grade = result?.grade ?? "Critical";
-  const hybridPq = result?.hybridPq;
-  const summary = result?.summary;
-  const geo = useMemo(() => new THREE.BoxGeometry(0.5, 1, 0.5).translate(0, 0.5, 0), []);
-  const node = useMemo(() => new THREE.IcosahedronGeometry(0.22, 1), []);
-  const bars = useMemo(() => {
-    if (!summary) return [];
-    const gradeCol = grade === "Quantum-ready" ? c.ok : grade === "At risk" ? c.warn : c.danger;
-    const rows: { key: string; label: string; value: string; h: number; col: THREE.Color }[] = [
-      {
-        key: "score",
-        label: "Readiness",
-        value: `${score} / 100`,
-        h: (score / 100) * MAX_H,
-        col: gradeCol,
-      },
-      { key: "critical", label: "Critical", value: String(summary.critical), h: 0, col: c.danger },
-      { key: "high", label: "High", value: String(summary.high), h: 0, col: c.warn },
-      { key: "medium", label: "Medium", value: String(summary.medium), h: 0, col: c.sig },
-      { key: "low", label: "Low", value: String(summary.low), h: 0, col: c.text3 },
-    ];
-    for (const r of rows.slice(1))
-      r.h = (Math.min(CAP, summary[r.key as keyof typeof summary]) / CAP) * MAX_H * 0.8;
-    return rows.map((r, i) => ({
-      ...r,
-      x: (i - (rows.length - 1) / 2) * GAP + (i === 0 ? -0.25 : 0.1),
-      mat: new THREE.MeshStandardMaterial({
-        color: r.col.clone(),
-        emissive: r.col.clone(),
-        emissiveIntensity: 0.4,
-        roughness: 0.35,
-        metalness: 0.1,
-      }),
-    }));
-  }, [c, score, grade, summary]);
-  const nodeMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: (hybridPq ? c.ok : c.warn).clone(),
-        emissive: (hybridPq ? c.ok : c.warn).clone(),
-        emissiveIntensity: 0.5,
-        roughness: 0.3,
-      }),
-    [c, hybridPq],
+  return (
+    <FXStage background={c.bg} active={props.active} reduce={props.reduce}>
+      <Scene {...props} />
+    </FXStage>
   );
-  // Fit the whole row (bars and the probe node) to the stage's width, whatever its aspect.
-  const aspect = useThree((st) => st.size.width / Math.max(1, st.size.height));
-  const rowW = (bars.length + (hybridPq !== undefined ? 1 : 0)) * GAP + 1.4;
-  const fit = Math.max(5.2, rowW / 2 / (Math.tan((19 * Math.PI) / 180) * aspect));
-  const cx = hybridPq !== undefined ? 0.45 : 0;
-  const meshes = useRef<(THREE.Mesh | null)[]>([]);
-  const probe = useRef<THREE.Mesh>(null);
+}
 
-  useFrame(({ clock }) => {
+const roleOf = (g: ScanPillar["grade"]) =>
+  g === "Quantum-ready" ? "ok" : g === "At risk" ? "warn" : "danger";
+
+function Scene({ pillars, active, reduce }: ScannerBarsProps) {
+  const c = useMemo(palette, []);
+  const fx = useFX();
+  const colOf = (g: ScanPillar["grade"]) =>
+    g === "Quantum-ready" ? c.ok : g === "At risk" ? c.warn : c.danger;
+  const geo = useMemo(
+    () => ({
+      shell: new THREE.CylinderGeometry(0.3, 0.3, H, 48, 1, true).translate(0, H / 2, 0),
+      liquid: new THREE.CylinderGeometry(0.26, 0.26, 1, 48).translate(0, 0.5, 0),
+      cap: new THREE.TorusGeometry(0.3, 0.02, 10, 48).rotateX(Math.PI / 2),
+      beam: new THREE.PlaneGeometry(0.025, H + 0.6),
+    }),
+    [],
+  );
+  const mats = useMemo(
+    () =>
+      Array.from({ length: MAX }, () => ({
+        shell: glass(c.text3, { rim: 1.6, body: 0.04 }),
+        liquid: solid(c.ok, { glow: 1.1 }),
+        cap: new THREE.MeshBasicMaterial({ toneMapped: false }),
+      })),
+    [c],
+  );
+  const beamMat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: c.kem.clone().multiplyScalar(2.5),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      }),
+    [c],
+  );
+  const shown = pillars.slice(-MAX);
+  const xs = shown.map((_, i) => (i - (shown.length - 1) / 2) * GAP);
+  // Fit the whole row to the stage's width, whatever its aspect.
+  const aspect = useThree((st) => st.size.width / Math.max(1, st.size.height));
+  const rowW = Math.max(3, shown.length) * GAP + 1.6;
+  const fit = Math.max(4.6, rowW / 2 / (Math.tan((19 * Math.PI) / 180) * aspect));
+  const groups = useRef<(THREE.Group | null)[]>([]);
+  const liquids = useRef<(THREE.Mesh | null)[]>([]);
+  const caps = useRef<(THREE.Mesh | null)[]>([]);
+  const beam = useRef<THREE.Mesh>(null);
+  const clock = useRef(0);
+  const last = useRef(0);
+
+  useFrame((_, dt) => {
     if (!active) return;
     const now = performance.now();
-    bars.forEach((b, i) => {
-      const m = meshes.current[i];
-      if (!m) return;
-      // Each bar grows with a spring, 90 ms after the one before.
-      const k = reduce ? 1 : springIn((now - at - i * 90) / 1000, 0.55, 1.6);
-      m.scale.set(1, Math.max(0.0001, Math.max(0.02, b.h) * k), 1);
-    });
-    if (probe.current) {
-      const k = reduce ? 1 : springIn((now - at - 500) / 1000, 0.5, 1.8);
-      probe.current.scale.setScalar(Math.max(0.0001, k));
-      probe.current.rotation.y = reduce ? 0.4 : clock.elapsedTime * 0.4;
+    if (!reduce) clock.current += dt;
+    const t = clock.current;
+    const newest = shown[shown.length - 1]?.at ?? 0;
+    if (newest && newest !== last.current && !reduce) {
+      last.current = newest;
+      fx.hit(0.25);
     }
+    shown.forEach((p, i) => {
+      const g = groups.current[i];
+      const l = liquids.current[i];
+      const cap = caps.current[i];
+      const m = mats[i]!;
+      if (!g || !l || !cap) return;
+      // The pillar rises out of the floor (a spring), then the liquid fills to the score.
+      const rise = reduce ? 1 : springIn((now - p.at) / 1000, 0.55, 1.5);
+      const fill = reduce ? 1 : springIn((now - p.at - 450) / 1000, 0.5, 1.2);
+      g.position.set(xs[i]!, FLOOR - H * (1 - Math.min(1, rise)), 0);
+      g.scale.set(1, Math.max(0.0001, rise), 1);
+      const level = Math.max(0.03, (p.score / 100) * (H - 0.08)) * Math.max(0.0001, fill);
+      l.scale.set(1, level, 1);
+      cap.position.y = level;
+      const col = colOf(p.grade);
+      (m.shell.uniforms.uColor!.value as THREE.Color).copy(col);
+      (m.liquid.uniforms.uColor!.value as THREE.Color).copy(col);
+      // The liquid's light breathes a little, as if it were moving.
+      m.liquid.uniforms.uGlow!.value = 1.1 + (reduce ? 0 : 0.15 * Math.sin(t * 2.2 + i));
+      m.cap.color.copy(col).multiplyScalar(3);
+    });
+    // The scan beam sweeps across the row (and flares when a result lands).
+    if (beam.current) {
+      const span = rowW / 2;
+      const flare = newest ? Math.max(0, 1 - (now - newest) / 900) : 0;
+      beam.current.visible = shown.length > 0;
+      beam.current.position.set(
+        reduce ? -span : -span + ((t * 0.5) % 1) * span * 2,
+        FLOOR + (H + 0.6) / 2,
+        0.4,
+      );
+      beamMat.opacity = 0.3 + 0.6 * flare;
+    }
+    fx.focus = null;
   });
 
-  const top = (h: number) => Math.max(0.02, h) + 0.15;
   return (
     <>
       <PerspectiveCamera
         makeDefault
-        position={[cx, 1.2 + fit * 0.18, fit]}
+        position={[0, 1.9 + fit * 0.12, fit]}
         fov={38}
-        onUpdate={(cam) => cam.lookAt(cx, 0.85, 0)}
+        onUpdate={(cam) => cam.lookAt(0, 1.0, 0)}
       />
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[3, 5, 4]} intensity={1.1} />
-      <directionalLight position={[-3, 2, -3]} intensity={0.35} color={c.kem} />
-      <gridHelper args={[10, 20, c.text3, c.text3]} position={[0, 0, 0]}>
-        <meshBasicMaterial
-          attach="material"
-          color={c.text3}
-          transparent
-          depthWrite={false}
-          opacity={0.08}
-        />
-      </gridHelper>
-      {bars.map((b, i) => (
-        <group key={b.key} position={[b.x, 0, 0]}>
+      <fog attach="fog" args={[c.bg, fit + 2, fit + 12]} />
+      <StageSet y={FLOOR} coneColor={c.kem} coneAt={[0, 0]} coneStrength={0.1} />
+      {shown.map((p, i) => (
+        <group key={p.at} ref={(g) => void (groups.current[i] = g)} position={[xs[i]!, FLOOR, 0]}>
+          <mesh geometry={geo.shell} material={mats[i]!.shell} />
           <mesh
-            ref={(m) => void (meshes.current[i] = m)}
-            geometry={geo}
-            material={b.mat}
-            scale={[1, 0.0001, 1]}
+            ref={(l) => void (liquids.current[i] = l)}
+            geometry={geo.liquid}
+            material={mats[i]!.liquid}
+          />
+          <mesh
+            ref={(m) => void (caps.current[i] = m)}
+            geometry={geo.cap}
+            material={mats[i]!.cap}
           />
           <Anchor
-            // Staggered (above the bar, then below its base) so neighbours never collide.
-            position={i % 2 === 1 ? [0, -0.12, 0.3] : [0, top(b.h), 0]}
-            side={i % 2 === 1 ? "down" : "up"}
-            // One line for the counts (the stage is narrow); two for the score.
-            label={b.key === "score" ? b.label : `${b.value} ${b.label}`}
-            value={b.key === "score" ? b.value : undefined}
-            role={
-              b.key === "score"
-                ? grade === "Quantum-ready"
-                  ? "ok"
-                  : grade === "At risk"
-                    ? "warn"
-                    : "danger"
-                : undefined
-            }
+            position={i % 2 === 0 ? [0, H + 0.25, 0] : [0, -0.15, 0.4]}
+            side={i % 2 === 0 ? "up" : "down"}
+            label={`Scan ${pillars.length - shown.length + i + 1} · ${p.kind}`}
+            value={`${p.score} / 100 · ${p.grade}`}
+            role={roleOf(p.grade)}
             show={active}
           />
         </group>
       ))}
-      {hybridPq !== undefined && bars.length > 0 && (
-        <group position={[bars[bars.length - 1]!.x + GAP + 0.1, 0.5, 0]}>
-          <mesh ref={probe} geometry={node} material={nodeMat} />
-          <Anchor
-            position={[0, 0.45, 0]}
-            label="Live TLS"
-            value={hybridPq ? "hybrid ML-KEM ✓" : "classical only"}
-            role={hybridPq ? "ok" : "warn"}
-            show={active}
-          />
-        </group>
-      )}
+      <mesh ref={beam} geometry={geo.beam} material={beamMat} visible={false} />
     </>
   );
 }

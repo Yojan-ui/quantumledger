@@ -388,7 +388,8 @@ export function DeployDemo() {
     try {
       setSeating({ id: s.id, phase: "in" });
       world.shot = { pose: { ...pose.current }, extrude: 1, focus: s.id, model: true };
-      await fly({ dist: 1.1, lat: s.lat + 1.4, lon: s.lon, spin: 0, tilt: 55, yaw: 15 }, 1600);
+      // Low over the surface: the camera passes through the globe's dot shell on the way in.
+      await fly({ dist: 1.05, lat: s.lat + 1.1, lon: s.lon, spin: 0, tilt: 60, yaw: 15 }, 1700);
       setSeating({ id: s.id, phase: "seat" });
       world.seat = { site: s.id, adapter: s.adapter, at: performance.now(), done: 0 };
       if (statesRef.current[s.id] !== "protected") await deploy(s.adapter);
