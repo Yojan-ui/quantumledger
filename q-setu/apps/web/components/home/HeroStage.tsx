@@ -28,7 +28,13 @@ import {
   usePipeline,
 } from "@/lib/client/pipeline";
 
-const PipelineStage = dynamic(() => import("@/components/scenes/PipelineStage"), { ssr: false });
+const PipelineStage = dynamic(
+  () =>
+    import("@/components/scenes/PipelineStage").catch(
+      () => import("@/components/scenes/PipelineStage"),
+    ),
+  { ssr: false },
+);
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

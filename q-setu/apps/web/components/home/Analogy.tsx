@@ -15,7 +15,13 @@ import { Term } from "@/components/ui/Term";
 import { LazyView } from "@/components/scenes/LazyView";
 import { footnote } from "@/data/facts";
 
-const AnalogyMorph = dynamic(() => import("@/components/scenes/AnalogyMorph"), { ssr: false });
+const AnalogyMorph = dynamic(
+  () =>
+    import("@/components/scenes/AnalogyMorph").catch(
+      () => import("@/components/scenes/AnalogyMorph"),
+    ),
+  { ssr: false },
+);
 
 const STEPS = [
   {

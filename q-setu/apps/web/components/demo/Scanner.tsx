@@ -13,7 +13,10 @@ import { usePresent } from "@/lib/client/present";
 import { useReducedMotion } from "@/lib/client/motion";
 import type { Plan } from "@/lib/live/plan";
 
-const ScannerBars = dynamic(() => import("./ScannerBars"), { ssr: false, loading: () => null });
+const ScannerBars = dynamic(() => import("./ScannerBars").catch(() => import("./ScannerBars")), {
+  ssr: false,
+  loading: () => null,
+});
 
 const LIFETIMES = [1, 5, 10, 25] as const;
 

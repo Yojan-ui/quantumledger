@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Container, Label, Legend, ROLES, SectionLabel, Text, TextLink } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { LazyView } from "@/components/scenes/LazyView";
+import { SceneBoundary } from "@/components/world/SceneBoundary";
 import { world } from "@/components/world/store";
 import { STEPS } from "./chapters";
 import { SealedCost } from "./SealedCost";
@@ -13,8 +14,17 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // The Q-Day widget breaks real (tiny) RSA in the browser; its code loads only when the section is near.
-const HarvestQDay = dynamic(() => import("./HarvestQDay"), { ssr: false, loading: () => null });
-const HandshakeCubes = dynamic(() => import("@/components/scenes/HandshakeCubes"), { ssr: false });
+const HarvestQDay = dynamic(() => import("./HarvestQDay").catch(() => import("./HarvestQDay")), {
+  ssr: false,
+  loading: () => null,
+});
+const HandshakeCubes = dynamic(
+  () =>
+    import("@/components/scenes/HandshakeCubes").catch(
+      () => import("@/components/scenes/HandshakeCubes"),
+    ),
+  { ssr: false },
+);
 
 const N = STEPS.length;
 
@@ -183,7 +193,9 @@ export function Story() {
             </div>
             {active < 2 && near && (
               <div className="mt-8">
-                <HarvestQDay progress={v / 2} />
+                <SceneBoundary>
+                  <HarvestQDay progress={v / 2} />
+                </SceneBoundary>
               </div>
             )}
           </div>

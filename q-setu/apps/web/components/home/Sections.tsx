@@ -13,7 +13,13 @@ import { SOLUTIONS } from "@/data/solutions";
 import { ADAPTERS } from "./chapters";
 import { useJourney } from "@/lib/client/journey";
 
-const ShieldSlot = dynamic(() => import("@/components/scenes/shield/ShieldSlot"), { ssr: false });
+const ShieldSlot = dynamic(
+  () =>
+    import("@/components/scenes/shield/ShieldSlot").catch(
+      () => import("@/components/scenes/shield/ShieldSlot"),
+    ),
+  { ssr: false },
+);
 
 /** Simple-mode lines for each adapter (no acronyms). */
 const PLAIN: Record<string, string> = {

@@ -22,7 +22,9 @@ import { BEATS, type InstallMode, type View } from "./model";
 import { shotCamera } from "./ShieldPlugIn";
 import { useShieldStory } from "./useShieldStory";
 
-const ShieldPlugIn = dynamic(() => import("./ShieldPlugIn"), { ssr: false });
+const ShieldPlugIn = dynamic(() => import("./ShieldPlugIn").catch(() => import("./ShieldPlugIn")), {
+  ssr: false,
+});
 
 const MODES: { id: InstallMode; label: string }[] = [
   { id: "dns", label: "DNS" },

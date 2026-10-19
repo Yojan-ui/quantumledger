@@ -3,11 +3,15 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setLost } from "@/lib/client/gfx";
+import { SceneBoundary } from "./SceneBoundary";
 import { world } from "./store";
 import type { Dots } from "./shapes";
 import { usePathname } from "next/navigation";
 
-const WorldScene = dynamic(() => import("./WorldScene"), { ssr: false, loading: () => null });
+const WorldScene = dynamic(() => import("./WorldScene").catch(() => import("./WorldScene")), {
+  ssr: false,
+  loading: () => null,
+});
 
 /**
  * Mounted once in the root layout. After load (when the browser is idle) a worker samples the land
@@ -147,7 +151,11 @@ export function WorldCanvas() {
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden" data-world>
       {nocanvas && <style>{"[data-world] canvas { visibility: hidden !important; }"}</style>}
       <GlobeGlow />
-      {dots && <WorldScene key={build} dots={dots} onRestored={restored} />}
+      {dots && (
+        <SceneBoundary>
+          <WorldScene key={build} dots={dots} onRestored={restored} />
+        </SceneBoundary>
+      )}
     </div>
   );
 }

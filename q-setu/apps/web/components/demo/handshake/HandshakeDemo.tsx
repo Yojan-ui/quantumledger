@@ -20,7 +20,10 @@ import { useStepper } from "@/lib/client/useStepper";
 import type { OpEvent, PolicyState } from "@/lib/live/types";
 import type { Film } from "./HandshakeFilm";
 
-const HandshakeFilm = dynamic(() => import("./HandshakeFilm"), { ssr: false, loading: () => null });
+const HandshakeFilm = dynamic(
+  () => import("./HandshakeFilm").catch(() => import("./HandshakeFilm")),
+  { ssr: false, loading: () => null },
+);
 
 /** One handshake packet, for the accessible byte list. */
 interface ScenePacket {

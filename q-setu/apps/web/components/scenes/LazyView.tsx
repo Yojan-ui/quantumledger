@@ -2,12 +2,18 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { SceneBoundary } from "@/components/world/SceneBoundary";
 import { invalidateAreas } from "@/lib/client/gfx";
 
-// drei's View (and with it three.js) loads only when a scene first scrolls near.
-const SceneView = dynamic(() => import("@/components/world/SceneView").then((m) => m.SceneView), {
-  ssr: false,
-});
+// drei's View (and with it three.js) loads only when a scene first scrolls near. A chunk that fails
+// to load is fetched once more; if it fails again the area's SceneBoundary keeps its poster.
+const SceneView = dynamic(
+  () =>
+    import("@/components/world/SceneView")
+      .catch(() => import("@/components/world/SceneView"))
+      .then((m) => m.SceneView),
+  { ssr: false },
+);
 
 /**
  * The static stand-in for a 3D scene: a faint wireframe sphere and floor in the scene's own frame.
@@ -88,9 +94,11 @@ export function LazyView({
   return (
     <div ref={ref} data-3d role="img" aria-label={label} className={`relative ${className}`}>
       {mounted && (
-        <SceneView className="absolute inset-0" onReady={ready} onFail={fail}>
-          {children(onScreen)}
-        </SceneView>
+        <SceneBoundary onError={fail}>
+          <SceneView className="absolute inset-0" onReady={ready} onFail={fail}>
+            {children(onScreen)}
+          </SceneView>
+        </SceneBoundary>
       )}
       <GlPoster />
     </div>

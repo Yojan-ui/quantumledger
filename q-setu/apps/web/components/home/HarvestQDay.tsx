@@ -10,7 +10,13 @@ import dynamic from "next/dynamic";
 import { LazyView } from "@/components/scenes/LazyView";
 import { Odometer } from "@/components/ui/Odometer";
 
-const QDayShatter = dynamic(() => import("@/components/scenes/QDayShatter"), { ssr: false });
+const QDayShatter = dynamic(
+  () =>
+    import("@/components/scenes/QDayShatter").catch(
+      () => import("@/components/scenes/QDayShatter"),
+    ),
+  { ssr: false },
+);
 
 interface Row {
   id: string;
