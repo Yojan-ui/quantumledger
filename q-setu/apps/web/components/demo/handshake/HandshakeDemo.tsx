@@ -295,7 +295,8 @@ export function HandshakeDemo() {
         detail: "server hello verified",
       });
       say(`Client verified ${sigName} signature ✓ (pinned server key)`, "ok");
-      patch({ verified: true });
+      // The signed handshake verified: the key halves gain mass now (with the real verify time).
+      patch({ verified: true, verifiedAt: performance.now(), verifyMs: f.tc });
       await send({
         dir: "c2s",
         kind: "finish",
@@ -331,7 +332,13 @@ export function HandshakeDemo() {
       const m = await hs.messages(14);
       const per = m.per;
       const first = m.sealed[0]!;
-      patch({ sparks: true, perUs: per, perSecond: 1e6 / per });
+      patch({
+        sparks: true,
+        perUs: per,
+        perSecond: 1e6 / per,
+        // The first message's real bytes: it folds into a brick (seal) and unfolds at the server (open).
+        msg: { plain: m.plain, cipher: m.cipher, opened: m.openedPlain, at: performance.now() },
+      });
       pushLocal({
         op: "SEAL",
         alg: `${kemName}+x25519`.toLowerCase(),

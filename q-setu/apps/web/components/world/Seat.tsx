@@ -16,6 +16,7 @@ import { useBudget } from "@/components/fx/budget";
 import { glass, solid } from "@/components/fx/materials";
 import { makeParticles } from "@/components/fx/Particles";
 import { springIn } from "@/lib/motion";
+import { CONDENSE_MS } from "@/components/fx/mass";
 import { NODES } from "./geo";
 import { palette } from "./palette";
 import { world } from "./store";
@@ -62,7 +63,7 @@ export function Seat() {
       colorA: c.kem,
       colorB: c.text,
       radius: 0.06,
-      size: 0.0016,
+      size: 0.0032,
       seed: 31,
     });
     p.u.uAmp.value = 0.8;
@@ -79,9 +80,10 @@ export function Seat() {
   const n = useMemo(() => new THREE.Vector3(), []);
   const local = useMemo(() => new THREE.Vector3(), []);
   const hit = useRef(0);
+  const fall = useRef({ y: 0, v: 0, landed: 0, for: 0 });
   const ringGeo = useMemo(() => new THREE.TorusGeometry(1, 0.006, 8, 160).rotateX(Math.PI / 2), []);
 
-  useFrame(({ clock, gl }) => {
+  useFrame(({ clock, gl }, dt) => {
     const g = group.current;
     const a = adapter.current;
     const sv = server.current;
@@ -130,29 +132,56 @@ export function Seat() {
     cloud.u.uCenter.value.copy(shapeAt);
     cloud.u.uShapeAt.value.copy(shapeAt);
     cloud.u.uShapeSize.value.setScalar(S * 1.15);
-    cloud.u.uGather.value = still ? 1 : Math.min(1, (now - s.at) / 2000);
+    // Trust gives mass: until the real deploy check passes the adapter is only a ghost (a loose,
+    // weightless, jittering cloud). On `done` its points condense (CONDENSE_MS) and it takes its
+    // weight: the solid shape thunks into being, falls into the socket, bounces and settles.
+    const sinceDone = s.done ? now - s.done : -1;
+    const cond = still ? (s.done ? 1 : 0) : s.done ? Math.min(1, sinceDone / CONDENSE_MS) : 0;
+    cloud.u.uGather.value = cond;
+    cloud.u.uAmp.value = 0.8 * (1 - cond) + 0.1;
+    cloud.u.uOpacity.value =
+      cond >= 1 ? Math.max(0, 0.8 * (1 - (sinceDone - CONDENSE_MS) / 250)) : s.done ? 0.85 : 0.7;
+    cloud.points.visible = !!node && (!s.done || sinceDone < CONDENSE_MS + 260);
 
-    // The solid adapter: appears as the cloud lands, waits, then clicks home on the real `done`.
-    const appear = still ? 1 : Math.max(0, Math.min(1, (now - s.at - 1400) / 500));
-    let h = S * 2.6 + HOVER * 0.6;
-    if (s.done) {
-      const k = still ? 1 : springIn((now - s.done) / 1000, 0.32, 3.2);
-      h = h + (S * 2.4 - h) * k;
-      if (hit.current < s.done) {
-        hit.current = s.done;
-        world.fxHit = { at: now, s: 0.8 };
-        world.waveAt = now;
+    const top = S * 2.6 + HOVER * 0.6;
+    const seat = S * 2.4;
+    if (!s.done) {
+      fall.current = { y: top, v: 0, landed: 0, for: s.at };
+    } else if (fall.current.for !== s.done) {
+      fall.current = { y: top, v: 0, landed: 0, for: s.done };
+    }
+    const F = fall.current;
+    if (still) F.y = s.done ? seat : top;
+    else if (cond >= 1) {
+      const h = Math.min(dt, 1 / 30);
+      F.v += -9.8 * 0.05 * h;
+      F.y += F.v * h;
+      if (F.y < seat) {
+        F.y = seat;
+        if (F.v < -0.004) {
+          if (!F.landed) {
+            F.landed = now;
+            // Landed with its weight: the impact, and the --ok wave across the globe.
+            world.fxHit = { at: now, s: 0.8 };
+            world.waveAt = now;
+            hit.current = now;
+          }
+          F.v = -F.v * 0.3;
+        } else F.v = 0;
       }
     }
-    a.position.set(0, h, 0);
-    a.scale.setScalar(Math.max(0.0001, S * appear));
-    a.rotation.y = still || s.done ? 0 : clock.elapsedTime * 0.8;
-    mat.adapter.uniforms.uDissolve!.value = 1 - appear;
-    const ok = s.done ? Math.min(1, (now - s.done) / 300) : 0;
+    a.visible = cond >= 0.8;
+    a.position.set(0, F.y, 0);
+    const thunk = still || cond < 1 ? 0 : Math.exp(-Math.max(0, sinceDone - CONDENSE_MS) / 120);
+    const land = F.landed && !still ? Math.exp(-(now - F.landed) / 110) : 0;
+    const sq = 0.2 * thunk + 0.18 * land;
+    a.scale.set(S * (1 + sq * 0.5), S * (1 - sq), S * (1 + sq * 0.5));
+    a.rotation.y = 0;
+    mat.adapter.uniforms.uDissolve!.value = 1 - cond;
+    const ok = F.landed ? Math.min(1, (now - F.landed) / 300) : still && s.done ? 1 : 0;
     (mat.adapter.uniforms.uColor!.value as THREE.Color).copy(c.kem).lerp(c.ok, ok);
-    // The click's flash: a bloom spike that settles.
-    mat.adapter.uniforms.uGlow!.value =
-      0.9 + (s.done && !still ? 4 * Math.exp(-(now - s.done) / 280) : 0);
+    // The landing's flash: a bloom spike that settles.
+    mat.adapter.uniforms.uGlow!.value = 0.9 + 1.2 * thunk + 3 * land;
   });
 
   return (

@@ -31,6 +31,7 @@ import { StageSet } from "@/components/fx/StageSet";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { springIn, wobble } from "@/lib/motion";
+import { FoldSheet } from "@/components/fx/fold";
 
 const LEN = 9;
 const Y = 0.35;
@@ -44,6 +45,9 @@ const SLOW = 0.2;
 /** Seconds (real) at 0.2×, then the ramp back to 1×. */
 const SLOW_HOLD = 1.6;
 const SLOW_RAMP = 1.4;
+const FRONT_CLASSICAL = new THREE.Vector3(-1.9, -0.1, 1.3);
+const FRONT_HYBRID_A = new THREE.Vector3(1.7, -0.2, 1.4);
+const FRONT_HYBRID_B = new THREE.Vector3(2.6, -0.2, 1.2);
 const LINE = new THREE.LineCurve3(
   new THREE.Vector3(-LEN / 2, Y, 0),
   new THREE.Vector3(LEN / 2, Y, 0),
@@ -68,6 +72,8 @@ export interface QDayFilmProps {
   small: boolean;
   /** The estimated Q-Day year (from facts.ts). */
   qDayYear: number;
+  /** Real recorded ciphertexts: one classical record's, and QuantumLedger records'. */
+  samples: { classical?: Uint8Array; hybrid: Uint8Array[] };
 }
 
 export default function QDayFilm(props: QDayFilmProps) {
@@ -91,9 +97,45 @@ function Scene({
   qExposed,
   small,
   qDayYear,
+  samples,
 }: QDayFilmProps) {
   const c = useMemo(palette, []);
   const fx = useFX();
+  // ── Encryption is folding. The recorded classical traffic is a crumpled sheet in the recorder;
+  // at Q-Day the (simulated) quantum attacker pulls it out and smooths it flat: readable. The
+  // hybrid records are folded bricks: the attack starts to unfold them, they jam and crumple. ──
+  const folds = useMemo(() => {
+    const col = { plain: c.warn, cipher: c.kem, sig: c.sig, danger: c.danger };
+    return {
+      classical: new FoldSheet(col, { tile: 0.13, seed: 3 }),
+      hybrid: [
+        new FoldSheet(col, { tile: 0.1, seed: 5 }),
+        new FoldSheet(col, { tile: 0.1, seed: 9 }),
+      ],
+    };
+  }, [c]);
+  useEffect(
+    () => () => {
+      folds.classical.dispose();
+      folds.hybrid.forEach((f) => f.dispose());
+    },
+    [folds],
+  );
+  useEffect(() => {
+    const enc = new TextEncoder();
+    const leak = enc.encode(leaks[0] ?? "");
+    folds.classical.setBytes(
+      leak.length ? leak : (samples.classical ?? new Uint8Array()),
+      samples.classical ?? leak,
+    );
+    folds.hybrid.forEach((f, i) => {
+      const ct = samples.hybrid[i] ?? samples.hybrid[0] ?? new Uint8Array(64);
+      f.setBytes(new Uint8Array(0), ct);
+    });
+  }, [folds, samples, leaks]);
+  const classicalG = useRef<THREE.Group>(null);
+  const hybridG = useRef<(THREE.Group | null)[]>([]);
+  const foldPos = useMemo(() => new THREE.Vector3(), []);
   const budget = useBudget();
   const reduce = state.reduce;
   const n = small ? MAX / 2 : MAX;
@@ -303,6 +345,31 @@ function Scene({
     mat.hybrid.uniforms.uGlow!.value = broke ? 1.0 : 0.7;
     mat.tube.uniforms.uTime!.value = t;
     mat.tube.uniforms.uBase!.value = broke ? 0.3 : 0.55;
+
+    // The folds: crumpled in the recorder until Q-Day; then pulled out and smoothed (classical),
+    // and the hybrid bricks try to open, jam at a crease and crumple.
+    const pull = broke ? (reduce ? 1 : easeToken(span(since - at, 0, 0.9))) : 0;
+    if (classicalG.current) {
+      foldPos.set(RECORDER.x, RECORDER.y + 0.75, RECORDER.z).lerp(FRONT_CLASSICAL, pull);
+      classicalG.current.position.copy(foldPos);
+      classicalG.current.scale.setScalar(0.55 + 0.45 * pull);
+      const f = folds.classical;
+      if (!broke) {
+        if (f.kind !== "crumpled") f.setCrumpled();
+      } else if (f.kind !== "smooth") f.smooth(reduce ? now - 1e6 : breakAt + FREEZE_MS + 600);
+      f.update(now, reduce);
+    }
+    folds.hybrid.forEach((f, k) => {
+      const g = hybridG.current[k];
+      if (!g) return;
+      g.position.copy(k === 0 ? FRONT_HYBRID_A : FRONT_HYBRID_B);
+      g.rotation.set(-0.35, 0.5 - k * 0.25, 0.15);
+      if (!broke) {
+        if (f.kind !== "sealed") f.setSealed();
+      } else if (f.kind !== "jam")
+        f.jam(reduce ? now - 1e6 : breakAt + FREEZE_MS + 300 + k * 260, 1 + k);
+      f.update(now, reduce);
+    });
   });
 
   const id = state.shot.id;
@@ -340,6 +407,33 @@ function Scene({
         <mesh geometry={geo.mouth} material={mat.mouth} position={[0, 0.5, 0]} />
       </group>
 
+      <group ref={classicalG}>
+        <primitive object={folds.classical.group} />
+      </group>
+      {folds.hybrid.map((f, k) => (
+        <group key={k} ref={(g) => void (hybridG.current[k] = g)}>
+          <primitive object={f.group} />
+        </group>
+      ))}
+      <Anchor
+        position={[FRONT_CLASSICAL.x, FRONT_CLASSICAL.y + 0.7, FRONT_CLASSICAL.z]}
+        label="Classical record · unfolded by the attacker (sim)"
+        value={leaks[0] ? (leaks[0].length > 26 ? `${leaks[0].slice(0, 25)}…` : leaks[0]) : "…"}
+        role="warn"
+        show={show && (id === "climax" || id === "aftermath") && !!breakAt}
+      />
+      <Anchor
+        position={[
+          (FRONT_HYBRID_A.x + FRONT_HYBRID_B.x) / 2,
+          FRONT_HYBRID_A.y - 0.4,
+          FRONT_HYBRID_A.z,
+        ]}
+        side="down"
+        label="Hybrid records · won't unfold"
+        value="the folds jam: tag mismatch"
+        role="danger"
+        show={show && (id === "climax" || id === "aftermath") && !!breakAt}
+      />
       <mesh
         ref={r.wave}
         geometry={geo.wave}

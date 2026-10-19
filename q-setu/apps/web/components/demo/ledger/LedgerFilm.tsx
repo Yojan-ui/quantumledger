@@ -115,6 +115,31 @@ function Scene({
     return p;
   }, [budget.particles, c]);
   useEffect(() => () => sparks.dispose(), [sparks]);
+  // Trust gives mass: the newest entry arrives as a ghost and gains mass once signed; #42, once
+  // edited, loses its mass and becomes a --danger ghost (the blocks after it fall).
+  const ghosts = useMemo(() => {
+    const mk = (seed: number) => {
+      const p = makeParticles(Math.round(Math.min(2400, budget.particles * 0.06)), {
+        colorA: c.sig,
+        colorB: c.text,
+        radius: 0.32,
+        size: 0.03,
+        seed,
+      });
+      p.u.uAmp.value = 0.6;
+      p.u.uOpacity.value = 0;
+      p.u.uShapeSize.value.set(0.62, 0.44, 0.44);
+      return p;
+    };
+    return { head: mk(41), bad: mk(43) };
+  }, [budget.particles, c]);
+  useEffect(
+    () => () => {
+      ghosts.head.dispose();
+      ghosts.bad.dispose();
+    },
+    [ghosts],
+  );
   const sparked = useRef(0);
   // Stage 4's Merkle build over the four newest blocks.
   const nodes = useRef<(THREE.Group | null)[]>([]);
@@ -338,9 +363,33 @@ function Scene({
       // How far this block has dropped from its place (for the dimming and the tip).
       const d = after ? Math.min(1, Math.max(0, (blockPos(i, q).y - p.y) / 0.5)) : 0;
       const j = i - TARGET_INDEX;
-      const fresh = i === N - 1 && headAt ? easeToken(span(now - headAt, 0, 500)) : 1;
+      // The newest entry: a ghost for a moment, then it condenses (it is signed), takes its
+      // weight and drops into its place with a small bounce.
+      const GHOST_MS = 450;
+      const headSince = i === N - 1 && headAt && !reduce ? now - headAt : 1e9;
+      const fresh = headSince < GHOST_MS + 200 ? 0 : 1;
+      if (i === N - 1) {
+        const u = ghosts.head.u;
+        u.uTime.value = t;
+        u.uPR.value = gl.getPixelRatio();
+        u.uCenter.value.copy(p).setY(p.y + 0.55);
+        u.uShapeAt.value.copy(p).setY(p.y + 0.55);
+        u.uGather.value = span(headSince, GHOST_MS, GHOST_MS + 200);
+        u.uOpacity.value = headSince < GHOST_MS + 400 ? 0.5 : 0;
+      }
+      const fallT = (headSince - GHOST_MS - 200) / 1000;
+      let lift = 0;
+      if (i === N - 1 && fallT < 1.2) {
+        // Free fall from 0.55 up, then a small decaying bounce.
+        const T = Math.sqrt((2 * 0.55) / 6);
+        lift =
+          fallT < T
+            ? 0.55 - 3 * fallT * fallT
+            : 0.08 * Math.abs(Math.sin(((fallT - T) * Math.PI) / 0.2)) * Math.exp(-(fallT - T) * 6);
+      }
       if (g) {
         g.position.copy(p);
+        g.position.y += lift;
         g.lookAt(0, p.y, R * 0.6);
         // Hanging blocks tip with the rope's slope.
         if (after && d > 0) g.rotateZ(0.22 * d * Math.min(1, j / 3));
@@ -357,16 +406,28 @@ function Scene({
             : restoredAt
               ? 1 - easeToken(span(now - restoredAt, 0, 600))
               : 0;
-        if (whole.current) whole.current.visible = k <= 0.001;
-        // The halves burn at their broken edges (a red noise dissolve).
-        crackMat.uniforms.uDissolve!.value = reduce ? 0.3 : 0.32 * k;
-        halves.current.forEach((h, side) => {
-          if (!h) return;
-          const sgn = side === 0 ? -1 : 1;
-          h.visible = k > 0.001;
-          h.position.set(sgn * (0.155 + 0.12 * k), -0.05 * k, 0);
-          h.rotation.set(0, sgn * 0.2 * k, -sgn * 0.32 * k);
-        });
+        // Edited: #42 loses its mass. No solid shape at all, only a --danger ghost that flickers
+        // where it hung; restored, its points condense again and it takes its weight (a thunk).
+        const restoring = !tamperedAt && restoredAt && !reduce ? now - restoredAt : 1e9;
+        const ghostNow = !!tamperedAt || restoring < 320;
+        if (whole.current) {
+          whole.current.visible = !ghostNow;
+          const thunk = restoring < 900 ? Math.exp(-Math.max(0, restoring - 320) / 120) : 0;
+          whole.current.scale.set(1 + 0.1 * thunk, 1 - 0.2 * thunk, 1 + 0.1 * thunk);
+        }
+        crackMat.uniforms.uDissolve!.value = 0;
+        halves.current.forEach((h) => h && (h.visible = false));
+        void k;
+        const u = ghosts.bad.u;
+        u.uTime.value = t;
+        u.uPR.value = gl.getPixelRatio();
+        u.uCenter.value.copy(p);
+        u.uShapeAt.value.copy(p);
+        u.uGather.value = tamperedAt ? 0 : span(restoring, 0, 320);
+        const flick = tamperedAt && !reduce ? (Math.sin(now / 38) > -0.2 ? 1 : 0.3) : 1;
+        u.uColorA.value.copy(tamperedAt ? c.danger : c.sig);
+        u.uColorB.value.copy(tamperedAt ? c.warn : c.text);
+        u.uOpacity.value = ghostNow ? 0.95 * flick : 0;
       }
       // Colour: SIG at rest; OK once the scan has passed; DANGER for the edited block.
       const isBad = i === TARGET_INDEX && !!tamperedAt;
@@ -514,6 +575,8 @@ function Scene({
       <directionalLight position={[0, 2, -8]} intensity={0.3} color={c.sig} />
       <mesh geometry={tube.geometry} material={tubeMat} frustumCulled={false} />
       <primitive object={sparks.points} />
+      <primitive object={ghosts.head.points} />
+      <primitive object={ghosts.bad.points} />
       <StageSet y={-1.3} coneColor={c.sig} coneAt={[0, -3.5]} coneStrength={0.1} />
       {Array.from({ length: N }, (_, i) => (
         <group

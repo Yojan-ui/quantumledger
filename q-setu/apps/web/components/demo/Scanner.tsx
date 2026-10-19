@@ -3,7 +3,7 @@
 import type { ScanResult, Severity } from "@qsetu/core";
 import { SCAN_SAMPLES } from "@qsetu/core/samples";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { LazyView } from "@/components/scenes/LazyView";
 import type { ScanPillar } from "./ScannerBars";
@@ -50,6 +50,11 @@ export function Scanner() {
   const [done, setDone] = useState<Set<string>>(new Set());
   // This session's scans, as pillars (the scan itself is the beat): kind and score only.
   const [pillars, setPillars] = useState<ScanPillar[]>([]);
+  // When the scan in flight started: its result's pillar shows the real scan time.
+  const scanFrom = useRef(0);
+  useEffect(() => {
+    if (busy) scanFrom.current = performance.now();
+  }, [busy]);
   useEffect(() => {
     if (!result) return;
     setPillars((h) =>
@@ -60,6 +65,7 @@ export function Scanner() {
           score: result.score,
           grade: result.grade,
           kind: probe ? "live TLS" : "pasted config",
+          ms: scanFrom.current ? performance.now() - scanFrom.current : undefined,
         },
       ].slice(-5),
     );
@@ -325,7 +331,9 @@ export function Scanner() {
                 : "Each scan rises here as a glass pillar, filled to its readiness score."
             }
           >
-            {(onScreen) => <ScannerBars pillars={pillars} active={onScreen} reduce={reduce} />}
+            {(onScreen) => (
+              <ScannerBars pillars={pillars} pending={busy} active={onScreen} reduce={reduce} />
+            )}
           </LazyView>
           <StagePurpose>
             each scan rises as a pillar filled to its readiness score, in totals only.

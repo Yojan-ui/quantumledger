@@ -28,6 +28,7 @@ import { pushLocal } from "@/lib/client/live";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
 import { openStream } from "@/lib/client/server";
+import { base64ToBytes } from "@qsetu/core";
 
 /** The simulator's real hops on the server, and the Q-Day attack running in this tab. */
 const consoleFilter = (e: OpEvent) => e.source === "sim" || e.source === "browser";
@@ -299,6 +300,25 @@ export function QDayDemo() {
     [broken, sector],
   );
 
+  // The real recorded bytes the film folds: a classical record's ciphertext (the crumpled sheet the
+  // simulated attacker unfolds) and two QuantumLedger records' ciphertexts (bricks that jam).
+  const samples = useMemo(() => {
+    const dec = (b64?: string) => {
+      try {
+        return b64 ? base64ToBytes(b64) : undefined;
+      } catch {
+        return undefined;
+      }
+    };
+    const classical = dec(records.find((r) => r.classical)?.classical?.ciphertext);
+    const hybrid = records
+      .filter((r) => r.qsetu)
+      .slice(0, 2)
+      .map((r) => dec(r.qsetu!.message.ciphertext))
+      .filter((b): b is Uint8Array => !!b);
+    return { classical, hybrid };
+  }, [records]);
+
   const switchSector = (s: SectorId) => {
     reset();
     setHarvest({ classical: 0, qsetu: 0 });
@@ -344,6 +364,7 @@ export function QDayDemo() {
               qExposed={qsetuOutcomes ? qExposed : undefined}
               small={small}
               qDayYear={Q_DAY}
+              samples={samples}
             />
           )}
         </LazyView>

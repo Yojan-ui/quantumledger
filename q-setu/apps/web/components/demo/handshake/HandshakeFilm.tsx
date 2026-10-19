@@ -33,6 +33,10 @@ import { StageSet } from "@/components/fx/StageSet";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { springIn } from "@/lib/motion";
+import { Html } from "@react-three/drei";
+import { FoldSheet } from "@/components/fx/fold";
+import { CONDENSE_MS } from "@/components/fx/mass";
+import { registerLabel } from "@/lib/client/labels";
 
 export interface Film {
   shareHex?: string;
@@ -50,6 +54,11 @@ export interface Film {
   ctBytes?: number;
   signedAt?: number;
   verified?: boolean;
+  /** When the client's ML-DSA check of the signed ServerHello passed, and how long it took. */
+  verifiedAt?: number;
+  verifyMs?: number;
+  /** The first sealed message: its real plaintext, ciphertext and the server's decrypt. */
+  msg?: { plain: Uint8Array; cipher: Uint8Array; opened: Uint8Array; at: number };
   finishBytes?: number;
   mergeAt?: number;
   sessionId?: string;
@@ -65,8 +74,12 @@ export const CLIENT = new THREE.Vector3(-2.7, -0.35, 0);
 export const SERVER = new THREE.Vector3(2.7, -0.2, 0);
 const FLOOR = -1.1;
 /** Where each side's key shard forms (over its block), and where they collide. */
-const SHARD_C = new THREE.Vector3(-2.7, 1.05, 0);
-const SHARD_S = new THREE.Vector3(2.7, 1.05, 0);
+/** Where each shard rests once it has mass (on top of its block); its ghost hovers above. */
+const SHARD_C = new THREE.Vector3(-2.7, 0.76, 0);
+const SHARD_S = new THREE.Vector3(2.7, 1.11, 0);
+const GHOST_UP = 0.6;
+const GHOST_C = SHARD_C.clone().setY(SHARD_C.y + GHOST_UP);
+const GHOST_S = SHARD_S.clone().setY(SHARD_S.y + GHOST_UP);
 const CENTER = new THREE.Vector3(0, 1.0, 0);
 const ARC = new THREE.CatmullRomCurve3([
   new THREE.Vector3(-2.3, 0.6, 0),
@@ -196,20 +209,51 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
       c: makeParticles(n, {
         colorA: c.kem,
         colorB: c.text,
-        center: SHARD_C,
+        center: GHOST_C,
         radius: 0.75,
         seed: 3,
       }),
       s: makeParticles(n, {
         colorA: c.sig,
         colorB: c.text,
-        center: SHARD_S,
+        center: GHOST_S,
         radius: 0.75,
         seed: 7,
       }),
     };
   }, [budget.particles, c]);
-  useEffect(() => () => (clouds.c.dispose(), clouds.s.dispose()), [clouds]);
+  // The forged packet: a ghost that never gains mass (flickers --danger; the solid shard repels it).
+  const attackCloud = useMemo(() => {
+    const p = makeParticles(Math.round(Math.min(3000, budget.particles * 0.08)), {
+      colorA: c.danger,
+      colorB: c.warn,
+      radius: 0.22,
+      size: 0.03,
+      seed: 13,
+    });
+    p.u.uAmp.value = 0.7;
+    p.u.uOpacity.value = 0;
+    return p;
+  }, [budget.particles, c]);
+  useEffect(
+    () => () => {
+      clouds.c.dispose();
+      clouds.s.dispose();
+      attackCloud.dispose();
+    },
+    [clouds, attackCloud],
+  );
+  // The first sealed message's real bytes, folding into a brick and unfolding at the server.
+  const sheet = useMemo(
+    () =>
+      new FoldSheet({ plain: c.warn, cipher: c.kem, sig: c.sig, danger: c.danger }, { tile: 0.15 }),
+    [c],
+  );
+  useEffect(() => () => sheet.dispose(), [sheet]);
+  const msgG = useRef<THREE.Group>(null);
+  const msgLabel = useRef<HTMLDivElement>(null);
+  const msgPhase = useRef("");
+  const drop = useRef({ y: [GHOST_C.y, GHOST_S.y], v: [0, 0], landed: [0, 0] });
 
   const r = {
     clientG: useRef<THREE.Group>(null),
@@ -256,32 +300,70 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
       (m.uniforms.uColor!.value as THREE.Color).lerp(keyed ? c.ok : c.text3, Math.min(1, dt * 3));
     }
 
-    // ── The shards gather out of their clouds. ──────────────────────────────────────────────
+    // ── Trust gives mass. Each key half is a ghost (a loose, weightless, jittering cloud) from the
+    // moment it exists, and gains mass only when the signed handshake really verifies: its points
+    // condense, the solid shard thunks into being, drops onto its block and bounces. ─────────────
     const mergeMs = film.mergeAt ? now - film.mergeAt : -1;
     const m = film.mergeAt ? (reduce ? 1 : span(mergeMs, 0, MERGE_MS)) : 0;
-    const gC = film.shareAt ? (reduce ? 1 : span(now - film.shareAt, 0, 1100)) : 0;
-    const gS = film.signedAt ? (reduce ? 1 : span(now - film.signedAt, 0, 1100)) : 0;
-    clouds.c.u.uGather.value = gC * (m > HIT ? 0 : 1);
-    clouds.s.u.uGather.value = gS * (m > HIT ? 0 : 1);
-    clouds.c.u.uShapeAt.value.copy(SHARD_C);
-    clouds.s.u.uShapeAt.value.copy(SHARD_S);
-    clouds.c.u.uShapeSize.value.set(0.34, 0.8, 0.34);
-    clouds.s.u.uShapeSize.value.set(0.34, 0.8, 0.34);
-    // Each shard solidifies as its cloud lands (a reverse dissolve), then spins, waiting.
+    const vAt = film.verifiedAt ?? 0;
+    const sinceV = vAt ? now - vAt : -1;
+    const cond = reduce ? (vAt || film.sessionId ? 1 : 0) : vAt ? span(sinceV, 0, CONDENSE_MS) : 0;
+    const exists = [!!film.shareAt, !!film.signedAt];
+    const ghosts = [GHOST_C, GHOST_S];
+    const rests = [SHARD_C, SHARD_S];
+    [clouds.c, clouds.s].forEach((p, k) => {
+      p.u.uCenter.value.copy(ghosts[k]!);
+      p.u.uShapeAt.value.copy(ghosts[k]!);
+      p.u.uShapeSize.value.set(0.34, 0.8, 0.34);
+      p.u.uGather.value = cond;
+      p.u.uAmp.value = 0.55 * (1 - cond) + 0.1;
+      const fade = cond >= 1 ? Math.max(0, 1 - (sinceV - CONDENSE_MS) / 300) : 1;
+      p.u.uOpacity.value = exists[k] ? (cond > 0 ? 0.75 : 0.36) * fade : 0;
+      p.u.uBurst.value = -1;
+    });
+    // The drop: under gravity from where the ghost hovered onto the block, a bounce, then settle.
+    const D = drop.current;
+    for (let k = 0; k < 2; k++) {
+      if (!vAt || reduce) {
+        D.y[k] = vAt || film.sessionId ? rests[k]!.y : ghosts[k]!.y;
+        D.v[k] = 0;
+        if (!vAt) D.landed[k] = 0;
+        continue;
+      }
+      if (cond < 1) continue;
+      D.v[k]! += -9.8 * 0.55 * Math.min(dt, 1 / 30);
+      D.y[k]! += D.v[k]! * Math.min(dt, 1 / 30);
+      if (D.y[k]! < rests[k]!.y) {
+        D.y[k] = rests[k]!.y;
+        if (D.v[k]! < -0.3) {
+          if (!D.landed[k]) {
+            D.landed[k] = now;
+            if (k === 1) fx.hit(0.25);
+          }
+          D.v[k] = -D.v[k]! * 0.32;
+        } else D.v[k] = 0;
+      }
+    }
     const fire = reduce ? (film.mergeAt ? 1 : 0) : easeToken(span(m, FIRE_FROM, HIT));
     const shards: [THREE.Mesh | null, number, THREE.CatmullRomCurve3, THREE.ShaderMaterial][] = [
-      [r.shardC.current, gC, FIRE_C, mat.shardC],
-      [r.shardS.current, gS, FIRE_S, mat.shardS],
+      [r.shardC.current, 0, FIRE_C, mat.shardC],
+      [r.shardS.current, 1, FIRE_S, mat.shardS],
     ];
-    for (const [s, g, curve, sm] of shards) {
+    for (const [s, k, curve, sm] of shards) {
       if (!s) continue;
-      s.visible = g > 0.05 && m < HIT;
-      sm.uniforms.uDissolve!.value = 1 - easeToken(span(g, 0.35, 1));
+      s.visible = cond >= 0.75 && m < HIT;
+      sm.uniforms.uDissolve!.value = 1 - easeToken(span(cond, 0.5, 1));
       // A charge-up spin before firing, then the flight along its tube.
-      const spin = reduce ? 0 : t * 1.2 + 14 * easeToken(span(m, 0, FIRE_FROM));
-      curve.getPointAt(Math.min(1, fire), s.position);
+      const spin = reduce ? 0 : 14 * easeToken(span(m, 0, FIRE_FROM));
+      if (m > FIRE_FROM) curve.getPointAt(Math.min(1, fire), s.position);
+      else s.position.set(rests[k]!.x, D.y[k]!, 0);
       s.rotation.set(0, spin, fire * 1.4 * (curve === FIRE_C ? -1 : 1));
-      sm.uniforms.uGlow!.value = 1.05 + 1.6 * span(m, 0.05, HIT);
+      // The thunk: a squash as it takes its weight, and again on landing, sprung back.
+      const thunk = reduce || cond < 1 ? 0 : Math.exp(-Math.max(0, sinceV - CONDENSE_MS) / 120);
+      const land = D.landed[k] && !reduce ? Math.exp(-(now - D.landed[k]!) / 110) : 0;
+      const sq = 0.2 * thunk + 0.16 * land;
+      s.scale.set(1 + sq * 0.5, 1 - sq, 1 + sq * 0.5);
+      sm.uniforms.uGlow!.value = 1.05 + 1.2 * thunk + 1.6 * span(m, 0.05, HIT);
     }
     // The firing tubes carry each shard's comet tail.
     mat.fireC.uniforms.uHeads!.value[0] = m > FIRE_FROM && m < HIT + 0.05 ? fire : -1;
@@ -296,12 +378,16 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
       hitDone.current = film.mergeAt!;
       fx.hit(1);
     }
+    // At the collision both clouds burst from the centre (then they are spent).
     for (const p of [clouds.c, clouds.s]) {
       const burst = !reduce && since >= 0 && since < 4000;
-      p.u.uBurst.value = burst ? since / 1000 : -1;
-      if (burst) p.u.uCenter.value.copy(CENTER);
-      else if (!film.mergeAt) p.u.uCenter.value.copy(p === clouds.c ? SHARD_C : SHARD_S);
-      p.u.uOpacity.value = film.mergeAt && since >= 4000 ? 0 : 0.9;
+      if (burst) {
+        p.u.uBurst.value = since / 1000;
+        p.u.uCenter.value.copy(CENTER);
+        p.u.uGather.value = 0;
+        p.u.uAmp.value = 0.45;
+        p.u.uOpacity.value = 0.9;
+      } else if (since >= 4000) p.u.uOpacity.value = 0;
     }
     fx.punch = reduce
       ? 0
@@ -344,6 +430,7 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
         Math.max(0.0001, s) * (1 + 0.08 * pulse(react.current.verify, 600) + 0.2 * hit),
       );
       r.sigRing.current.rotation.set(0, reduce ? 0 : t * 0.5, 0);
+      r.sigRing.current.position.set(SHARD_S.x, D.y[1]!, 0);
       (mat.sigRing.uniforms.uColor!.value as THREE.Color).copy(hit > 0.05 ? c.danger : c.sig);
     }
 
@@ -371,16 +458,85 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
     }
     mat.link.uniforms.uBase!.value = film.sparks ? 0.6 : 0.3;
 
-    // Attack: a --danger comet along the arc into the ring, and a burst there.
+    // Attack: the forged packet never gains mass. It drifts in as a --danger ghost, and the
+    // server's solid shard repels it like a magnet of the same pole; it flickers and fades.
     const a = film.attackAt ? (now - film.attackAt) / ATTACK_MS : -1;
-    if (r.attack.current) {
-      r.attack.current.visible = !reduce && a >= 0 && a < 1;
-      ARC.getPointAt(Math.min(1, Math.max(0, easeToken(a))), v);
-      r.attack.current.position.copy(v).lerp(SHARD_S, span(a, 0.8, 1));
+    if (r.attack.current) r.attack.current.visible = false;
+    {
+      const u = attackCloud.u;
+      u.uTime.value = t;
+      u.uPR.value = gl.getPixelRatio();
+      if (a < 0) u.uOpacity.value = 0;
+      else if (reduce) {
+        u.uCenter.value.set(SHARD_S.x - 1.1, SHARD_S.y + 0.4, 0.3);
+        u.uOpacity.value = 0.6;
+      } else {
+        ARC.getPointAt(Math.min(1, Math.max(0, easeToken(Math.min(a, 0.92)))), v);
+        // After contact: pushed away, decelerating (repulsion), and it keeps flickering.
+        const away = a > 0.92 ? 1.4 * (1 - Math.exp(-(a - 0.92) * 2.2)) : 0;
+        u.uCenter.value.set(v.x - away, v.y + away * 0.4, v.z + away * 0.3);
+        const flick = Math.sin(now / 38) > -0.2 ? 1 : 0.3;
+        u.uOpacity.value = 0.6 * flick * (1 - span(a, 2.2, 3.2));
+      }
     }
     if (film.attackAt && a >= 1 && attackDone.current !== film.attackAt && !reduce) {
       attackDone.current = film.attackAt;
       fx.hit(0.7);
+    }
+
+    // ── Encryption is folding: the first real message, as a sheet of its bytes. ─────────────
+    if (msgG.current) {
+      const g = msgG.current;
+      const msg = film.msg;
+      g.visible = !!msg;
+      // drei's <Html> ignores its parent's visibility: hide the label until there is a message.
+      if (msgLabel.current) msgLabel.current.style.display = msg ? "" : "none";
+      if (msg) {
+        const since = reduce ? 1e9 : now - msg.at;
+        const FOLD_AT = 700;
+        const D2 = sheet.duration;
+        const TRAVEL = 1500;
+        const openAt = FOLD_AT + D2 + TRAVEL;
+        let phase = "plain";
+        if (since < FOLD_AT) {
+          if (sheet.kind !== "flat") sheet.setFlat();
+        } else if (since < FOLD_AT + D2) {
+          if (sheet.kind !== "seal") sheet.seal(msg.at + FOLD_AT);
+          phase = "sealing";
+        } else if (since < openAt) {
+          phase = "sealed";
+        } else {
+          if (sheet.kind !== "open") sheet.open(reduce ? now - 1e6 : msg.at + openAt);
+          phase = "opened";
+        }
+        if (msgPhase.current === "" && msg) sheet.setBytes(msg.plain, msg.cipher);
+        // Where it is: at the browser, along the link, at the server.
+        const tr = reduce ? 1 : easeToken(span(since, FOLD_AT + D2, openAt));
+        LINK.getPointAt(0.04 + 0.92 * tr, v);
+        g.position.set(v.x, v.y + 0.75, 0.6);
+        const appear = reduce ? 1 : springIn(since / 1000, 0.55, 1.8);
+        g.scale.setScalar(Math.max(0.0001, appear));
+        sheet.update(now, reduce);
+        if (phase !== msgPhase.current && msgLabel.current) {
+          msgPhase.current = phase;
+          const el = msgLabel.current;
+          const text = new TextDecoder().decode(msg.opened);
+          el.children[0]!.textContent =
+            phase === "plain"
+              ? `Plaintext · ${msg.plain.length} B · exposed`
+              : phase === "opened"
+                ? "Decrypted at the server"
+                : "AES-256-GCM · X25519MLKEM768 session";
+          el.children[1]!.textContent =
+            phase === "opened"
+              ? text
+              : phase === "plain"
+                ? "the first real message"
+                : "folded · ML-DSA-65 signed session";
+          el.children[0]!.className =
+            phase === "plain" ? "text-warn" : phase === "opened" ? "text-ok" : "text-kem";
+        }
+      } else msgPhase.current = "";
     }
 
     for (const tube of [mat.arc, mat.fireC, mat.fireS, mat.link]) tube.uniforms.uTime!.value = t;
@@ -444,6 +600,13 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
         />
       ))}
       <mesh ref={r.attack} geometry={geo.head} material={mat.danger} visible={false} />
+      <primitive object={attackCloud.points} />
+      <group ref={msgG} visible={false}>
+        <primitive object={sheet.group} />
+        <Html position={[0, 0.9, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
+          <MsgLabel into={msgLabel} />
+        </Html>
+      </group>
 
       {/* The shared key: a faceted --ok crystal in a glass shell, and the shockwave. */}
       <group ref={r.crystal} position={CENTER} visible={false}>
@@ -507,6 +670,16 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
         show={show && id === "server" && !!film.signedAt}
       />
       <Anchor
+        position={[SHARD_S.x, SHARD_S.y - 0.75, 0]}
+        side="down"
+        label="Mass gained · ML-DSA-65 verified"
+        role="sig"
+        value={
+          film.verifyMs !== undefined ? `signed handshake checked in ${fmtMs(film.verifyMs)}` : "…"
+        }
+        show={show && id === "merge" && !!film.verifiedAt}
+      />
+      <Anchor
         position={[CENTER.x, CENTER.y + 0.75, 0]}
         label="Shared key"
         role="ok"
@@ -537,5 +710,25 @@ function Scene({ state, onSettled, film, kemName, sigName, active }: Props) {
         show={show && id === "attack" && !!film.attackRejected}
       />
     </>
+  );
+}
+
+/** The travelling message's label (its text is set from the frame loop, by phase: no React state). */
+function MsgLabel({ into }: { into: { current: HTMLDivElement | null } }) {
+  const reg = useRef<ReturnType<typeof registerLabel>>(undefined);
+  return (
+    <div
+      aria-hidden
+      ref={(el) => {
+        into.current = el;
+        reg.current?.remove();
+        reg.current = el ? registerLabel(el, "up") : undefined;
+        reg.current?.show(true);
+      }}
+      className="whitespace-nowrap rounded-sm border border-line bg-base px-2 py-1 text-center font-mono text-label uppercase"
+    >
+      <span className="text-warn">Plaintext</span>
+      <span className="block normal-case text-fg">…</span>
+    </div>
   );
 }

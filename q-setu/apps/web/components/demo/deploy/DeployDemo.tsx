@@ -156,6 +156,8 @@ export function DeployDemo() {
   const [error, setError] = useState<string>();
   const [running, setRunning] = useState(false);
   const [tamper, setTamper] = useState<string>();
+  /** Each system's real deploy-and-check time (ms), shown as its adapter lands. */
+  const [checkMs, setCheckMs] = useState<Record<string, number>>({});
 
   const sectorSites = useMemo(() => SITES.filter((s) => s.sector === sector), [sector]);
   const metrics = useMetrics();
@@ -187,6 +189,7 @@ export function DeployDemo() {
       setResult(r);
       setReading(r.meter);
       setStates((s) => ({ ...s, [site.id]: "protected" }));
+      setCheckMs((m) => ({ ...m, [site.id]: performance.now() - t0 }));
       // The console line, the counter and the caption all change on this one real event.
       pushLocal({
         op: "SEAL",
@@ -572,7 +575,7 @@ export function DeployDemo() {
               role={states[site.id] === "protected" ? "ok" : "warn"}
               value={
                 states[site.id] === "protected"
-                  ? `${ADAPTERS[adapter].product} · ML-KEM sealed ✓`
+                  ? `${ADAPTERS[adapter].product} · ML-KEM sealed ✓${checkMs[site.id] ? ` · checked in ${Math.round(checkMs[site.id]!)} ms` : ""}`
                   : states[site.id] === "deploying"
                     ? `deploying ${ADAPTERS[adapter].product}…`
                     : "classical TLS · harvestable"
