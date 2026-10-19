@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ReadinessBars } from "@/components/index/ReadinessIndex";
 import { Container, Heading, Label, Text } from "@/components/ui";
 import { Footer } from "@/components/ui/Footer";
+import { Breadcrumb, NextStep, PagePurpose } from "@/components/ui/Wayfinding";
 import { Nav } from "@/components/ui/Nav";
 import { pageMeta } from "@/lib/meta";
 import { READINESS } from "@/lib/readiness";
@@ -24,11 +25,13 @@ export default function IndexPage() {
       <main id="main">
         <section className="pb-24 pt-16 md:pb-40 md:pt-24">
           <Container>
+            <Breadcrumb className="mb-6" />
             <Label>India Quantum Readiness Index</Label>
             <Heading as="h1" variant="h1" className="mt-4 max-w-text">
               <span data-copy="simple">How ready are India&apos;s public websites?</span>
               <span data-copy="technical">Post-quantum TLS across India&apos;s public sites.</span>
             </Heading>
+            <PagePurpose className="mt-3" />
             <Text className="mt-6 max-w-text">
               <span data-copy="simple">
                 We connected once to {all.targets} public websites of Indian banks, government
@@ -82,6 +85,7 @@ export default function IndexPage() {
           </Container>
         </section>
       </main>
+      <NextStep />
       <Footer />
     </>
   );

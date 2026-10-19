@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { mdxComponents } from "@/components/docs/mdx";
 import { Container, Label, PageShell } from "@/components/ui";
+import { Breadcrumb, PagePurpose } from "@/components/ui/Wayfinding";
 import { pageMeta } from "@/lib/meta";
 import { source } from "@/lib/source";
 
@@ -71,8 +72,13 @@ export default async function DocsPage({ params }: Props) {
           </div>
         </aside>
         <article className="col-span-12 min-w-0 md:col-span-9 lg:col-span-6">
+          <Breadcrumb
+            className="mb-6"
+            current={page.url === "/docs" ? undefined : page.data.title}
+          />
           <Label>Docs</Label>
           <h1 className="mt-4 text-h1-sm font-medium text-fg md:text-h1">{page.data.title}</h1>
+          <PagePurpose className="mt-3" />
           {page.data.description && (
             <p className="mt-4 text-body text-fg-2">{page.data.description}</p>
           )}

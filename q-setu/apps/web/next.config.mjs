@@ -43,6 +43,8 @@ const nextConfig = {
       // The audit log was "Q-Ledger"; it is now the Proof Chain.
       { source: "/q-ledger", destination: "/demo/ledger", permanent: true },
       { source: "/proof-chain", destination: "/demo/ledger", permanent: false },
+      // "Scan" in the nav is the scanner; /scan/<host> stays each host's result page.
+      { source: "/scan", destination: "/demo/scanner", permanent: false },
     ];
   },
   async rewrites() {

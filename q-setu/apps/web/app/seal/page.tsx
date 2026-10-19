@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ButtonLink, Container, SectionLabel } from "@/components/ui";
 import { Footer } from "@/components/ui/Footer";
+import { Breadcrumb, NextStep, PagePurpose } from "@/components/ui/Wayfinding";
 import { Nav } from "@/components/ui/Nav";
 import { parseSealShare, sealLine } from "@/lib/seal-share";
 
@@ -31,10 +32,12 @@ export default async function SealShare({ searchParams }: { searchParams: Search
       <Nav />
       <main id="main">
         <Container className="py-24 md:py-40">
+          <Breadcrumb className="mb-6" />
           <SectionLabel label="Post-quantum, on a real device" role="kem" />
           <h1 className="max-w-container text-h1-sm font-medium text-fg md:text-display">
             {ms ? sealLine(ms, on) : "Run a post-quantum handshake on your device."}
           </h1>
+          <PagePurpose className="mt-3" />
           <p className="mt-6 max-w-text text-body text-fg-2">
             ML-KEM-768 (FIPS 203): key generation, encapsulation and decapsulation, the median of
             five runs, measured in the sharer&apos;s browser. Try it on yours: it takes a moment and
@@ -45,6 +48,7 @@ export default async function SealShare({ searchParams }: { searchParams: Search
           </div>
         </Container>
       </main>
+      <NextStep />
       <Footer />
     </>
   );

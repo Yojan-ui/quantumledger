@@ -11,6 +11,7 @@ import { useJourney } from "@/lib/client/journey";
 import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
+import { scrollToY } from "@/lib/client/scroll";
 import { HERO } from "./chapters";
 import { HeroTrust } from "@/components/trust/HeroTrust";
 import { SealedText, sealedClass, sealedLine, useSealed } from "@/components/trust/Sealed";
@@ -34,6 +35,12 @@ const RoomQR = dynamic(
     loading: () => <div className="hidden h-32 md:block" aria-hidden />,
   },
 );
+
+/** The hero's third button: down to "Scan any site" (ScanSite), under the sticky nav. */
+function scrollToScan() {
+  const el = document.getElementById("scan");
+  if (el) scrollToY(el.getBoundingClientRect().top + window.scrollY - 56);
+}
 
 /**
  * The hero is the 3D, edge to edge: the real diagnostics stage runs the opening (a real key pair, the
@@ -77,7 +84,7 @@ export function Hero() {
         <div className="absolute right-5 top-6 md:right-8">
           <HeroStatus />
         </div>
-        <div data-hero className="absolute inset-x-5 bottom-24 md:inset-x-8 md:bottom-16">
+        <div data-hero className="absolute inset-x-5 bottom-8 md:inset-x-8 md:bottom-16">
           <h1 className="max-w-container text-hero font-medium text-fg">
             <span className="sr-only">{HERO.title.replace(/‑/g, "-")}</span>
             <span aria-hidden data-beat={beat} data-seal-text className="block">
@@ -97,6 +104,10 @@ export function Hero() {
           </Text>
           <div className="pointer-events-auto mt-8 flex flex-col items-start gap-4">
             <HeroInput />
+            <p className="max-w-text text-small text-fg md:text-body">
+              Scan your website, protect it with one DNS change, and get proof it&apos;s
+              quantum-safe.
+            </p>
             <div className="flex flex-wrap gap-3">
               <Button variant="primary" onClick={startTour} data-tour-start>
                 Take the 3-minute tour
@@ -104,6 +115,9 @@ export function Hero() {
               <ButtonLink href="/diagnostics" variant="secondary">
                 Open full diagnostics
               </ButtonLink>
+              <Button variant="secondary" onClick={scrollToScan}>
+                Scan your website
+              </Button>
             </div>
           </div>
         </div>

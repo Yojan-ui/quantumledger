@@ -34,6 +34,7 @@ import { Crystal } from "./pipeline/Crystal";
 import { KeyField } from "./pipeline/KeyField";
 import { Dust } from "./Dust";
 import { Studio } from "./Studio";
+import { termify } from "@/components/ui/Term";
 
 const heroExit = () => heroState.exit;
 
@@ -310,7 +311,7 @@ export default function PipelineStage({
               <Anchor
                 position={[ROOT.x - 1.6, ROOT.y + 0.1, 0]}
                 label={`Merkle root ${hex(s.proof.root)}`}
-                value="scan · CBOM · policy · transcript"
+                value={termify("scan · CBOM · policy · transcript", false)}
                 role="sig"
                 show={show(3)}
               />

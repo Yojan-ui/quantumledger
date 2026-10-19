@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Breadcrumb, NextStep, PagePurpose } from "@/components/ui/Wayfinding";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button, Container, Heading, Legend, Text } from "@/components/ui";
 import { resetAll } from "@/lib/client/present";
@@ -81,6 +82,7 @@ export function DemoShell({
     <div className="flex min-h-svh flex-col">
       <header className="sticky top-0 z-40 border-b border-line bg-base">
         <Container className="flex flex-wrap items-center gap-x-6 gap-y-3 py-4">
+          <Breadcrumb className="basis-full" />
           <Link
             href="/demos"
             className="text-small text-fg-3 transition-colors duration-150 hover:text-fg"
@@ -107,9 +109,12 @@ export function DemoShell({
             <ResetAll />
           </div>
           <div className="flex basis-full flex-wrap items-end justify-between gap-x-6 gap-y-3">
-            <Text size="small" className="max-w-text">
-              {caption}
-            </Text>
+            <div>
+              <Text size="small" className="max-w-text">
+                {caption}
+              </Text>
+              <PagePurpose className="mt-1" />
+            </div>
             <Legend align="right" />
           </div>
         </Container>
@@ -125,6 +130,7 @@ export function DemoShell({
           </div>
         </Container>
       </main>
+      <NextStep />
       {meter && (
         <div className="z-30 border-t border-line bg-base md:sticky md:bottom-0">{meter}</div>
       )}

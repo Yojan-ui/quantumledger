@@ -10,6 +10,7 @@ import { easeToken } from "@/lib/ease";
 import { setMosca, usePipeline } from "@/lib/client/pipeline";
 import { mosca, trustUntil } from "@/lib/mosca";
 import { HudPanel } from "./HudPanel";
+import { Term } from "@/components/ui/Term";
 
 const R = 52;
 const ARC = Math.PI * 1.5; // a 270° gauge
@@ -134,11 +135,14 @@ export function RiskGauge({ className = "" }: { className?: string }) {
           </text>
         </svg>
         <p className="min-w-0 text-small text-fg-3">
-          Harvest-now-decrypt-later risk: 100 minus the scanner&apos;s readiness score.
+          <Term id="hndl">Harvest-now-decrypt-later</Term> risk: 100 minus the scanner&apos;s
+          readiness score.
         </p>
       </div>
       <div className="space-y-2 border-t border-line px-3 py-2" aria-live="polite">
-        <p className="font-mono text-micro uppercase text-fg-3">Mosca · X + Y vs Z</p>
+        <p className="font-mono text-micro uppercase text-fg-3">
+          <Term id="mosca">Mosca</Term> · X + Y vs Z
+        </p>
         <Slider
           label="X"
           hint="secret for"

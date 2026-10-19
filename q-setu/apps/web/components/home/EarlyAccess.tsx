@@ -3,9 +3,9 @@ import { Grid, Section, Text } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 
 /** 10: what do I do next? Early access and pilot partners. */
-export function EarlyAccess() {
+export function EarlyAccess({ index = "10" }: { index?: string }) {
   return (
-    <Section id="early-access" index="10" label="Early access · pilot partners" role="ok">
+    <Section id="early-access" index={index} label="Early access · pilot partners" role="ok">
       <Grid className="gap-y-12">
         <div className="col-span-12 lg:col-span-5">
           <CopyHeading

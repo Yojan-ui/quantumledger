@@ -13,6 +13,7 @@ import { errText } from "@/lib/client/api";
 import { usePresent } from "@/lib/client/present";
 import { useReducedMotion } from "@/lib/client/motion";
 import type { Plan } from "@/lib/live/plan";
+import { Term, termify } from "@/components/ui/Term";
 
 const ScannerBars = dynamic(
   () =>
@@ -313,7 +314,10 @@ export function Scanner() {
             {busy ? "Scanning…" : "Scan"}
           </Button>
           <Button onClick={downloadCbom} disabled={!result}>
-            Download CBOM
+            Download{" "}
+            <Term id="cbom" focusable={false}>
+              CBOM
+            </Term>
           </Button>
         </div>
         {error && <Text size="small">{error}</Text>}
@@ -433,9 +437,9 @@ export function Scanner() {
             </div>
           </div>
           <Text size="small" className="max-w-text">
-            Priority uses Mosca’s inequality: if data lifetime plus migration time exceeds the years
-            left until {plan.assumptions.horizonYear} (a planning horizon, not a prediction), that
-            step is already late.
+            Priority uses <Term id="mosca">Mosca’s inequality</Term>: if data lifetime plus
+            migration time exceeds the years left until {plan.assumptions.horizonYear} (a planning
+            horizon, not a prediction), that step is already late.
           </Text>
           <ol className="border-b border-line">
             {plan.steps.map((st) => {
@@ -463,7 +467,7 @@ export function Scanner() {
                       <span
                         className={`block text-body ${checked ? "text-fg-3 line-through" : "text-fg"}`}
                       >
-                        {st.title}
+                        {termify(st.title, false)}
                       </span>
                       <span className="mt-1 block font-mono text-label uppercase text-fg-3">
                         <span className={st.priority === "P1" ? "text-warn" : ""}>
@@ -474,7 +478,9 @@ export function Scanner() {
                     </span>
                   </label>
                   <p className="col-span-12 text-small text-fg-2 md:col-span-4">{st.why}</p>
-                  <p className="col-span-12 text-small text-fg-2 md:col-span-3">{st.action}</p>
+                  <p className="col-span-12 text-small text-fg-2 md:col-span-3">
+                    {termify(st.action)}
+                  </p>
                 </li>
               );
             })}

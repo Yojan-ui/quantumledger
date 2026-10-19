@@ -1,3 +1,4 @@
+import { Term } from "@/components/ui/Term";
 /**
  * Architecture diagram: one core (registry → hybrid KEM, sessions, envelopes, signatures), five
  * adapters around it, and where each one sits in a real system. Pure SVG in token colours.
@@ -42,7 +43,14 @@ export function Architecture() {
                 key={c}
                 className="rounded-md border border-line bg-raised px-3 py-2 text-small text-fg"
               >
-                {c}
+                {c.startsWith("Hybrid KEM") ? (
+                  <>
+                    Hybrid <Term id="kem">KEM</Term>
+                    {c.slice("Hybrid KEM".length)}
+                  </>
+                ) : (
+                  c
+                )}
               </li>
             ))}
           </ul>

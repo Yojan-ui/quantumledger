@@ -13,6 +13,7 @@ import { world } from "@/components/world/store";
 import { SOLUTIONS } from "@/data/solutions";
 import { ADAPTERS } from "./chapters";
 import { useJourney } from "@/lib/client/journey";
+import { termify } from "@/components/ui/Term";
 
 const ShieldSlot = dynamic(
   () =>
@@ -45,7 +46,7 @@ const ONE_LINE: Record<string, string> = {
  * sideways while the 3D camera orbits a ring of five different objects (a proxy shield, a browser
  * window, a package, a chip, a vault door) to face the adapter whose card is in view.
  */
-export function Adapters() {
+export function Adapters({ index = "05" }: { index?: string }) {
   const ref = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const focus = useMemo(() => ({ v: 0 }), []);
@@ -98,7 +99,7 @@ export function Adapters() {
         <div className="hero-scrim pointer-events-none absolute inset-0" aria-hidden />
         <div className="pointer-events-none relative mx-auto flex h-full w-full max-w-container flex-col justify-between px-5 py-12 md:px-6 md:py-16">
           <div className="max-w-text">
-            <SectionLabel index="05" label="Deploy anywhere" role="kem" />
+            <SectionLabel index={index} label="Deploy anywhere" role="kem" />
             <CopyHeading
               simple="Five ways to add it. Each takes one line."
               technical="Five adapters. Each one line."
@@ -164,18 +165,18 @@ function SealWave() {
 }
 
 /** 06: one row per sector, linking to its solution page. */
-export function Solutions() {
+export function Solutions({ index = "06" }: { index?: string }) {
   return (
     <>
       <SealWave />
-      <SolutionsList />
+      <SolutionsList index={index} />
     </>
   );
 }
 
-function SolutionsList() {
+function SolutionsList({ index }: { index: string }) {
   return (
-    <Section id="solutions" index="06" label="Solutions by sector" role="sig">
+    <Section id="solutions" index={index} label="Solutions by sector" role="sig">
       <CopyHeading
         simple="Built for the services India relies on most."
         technical="Built for India’s most sensitive rails."
@@ -336,7 +337,7 @@ export function ComparisonTable() {
             >
               <th scope="row" className="py-5 pr-6 text-left font-normal">
                 <span className="block text-body text-fg">
-                  <Copy simple={ROWS_SIMPLE[r.k] ?? r.k} technical={r.k} />
+                  <Copy simple={termify(ROWS_SIMPLE[r.k] ?? r.k)} technical={termify(r.k)} />
                 </span>
                 {r.note && (
                   <span data-copy="technical" className="mt-1 block text-small text-fg-3">
@@ -358,9 +359,9 @@ export function ComparisonTable() {
 }
 
 /** 09: an honest comparison. Libraries are the foundation; QuantumLedger is built on them. */
-export function WhyQSetu() {
+export function WhyQSetu({ index = "09" }: { index?: string }) {
   return (
-    <Section id="why-quantumledger" index="09" label="Why QuantumLedger" role="kem">
+    <Section id="why-quantumledger" index={index} label="Why QuantumLedger" role="kem">
       <CopyHeading
         simple="The new locks exist. Fitting them is the hard part."
         technical="Algorithms are solved. Deployment isn’t."

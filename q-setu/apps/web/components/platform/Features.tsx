@@ -13,6 +13,7 @@ import {
   VaultProof,
   WebProof,
 } from "@/components/home/Proofs";
+import { termify } from "@/components/ui/Term";
 
 interface Feature {
   id: string;
@@ -190,7 +191,7 @@ export function Features() {
                   </div>
                   <Text className="mt-3 max-w-text">{f.problem}</Text>
                   <Heading as="h3" variant="h2" className="mt-6 max-w-text">
-                    {f.fix}
+                    {termify(f.fix)}
                   </Heading>
                   {f.code && (
                     <div className="mt-6">

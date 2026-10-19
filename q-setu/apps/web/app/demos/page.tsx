@@ -3,8 +3,10 @@ import Link from "next/link";
 import { DemoPanels } from "@/components/demos/DemoPanels";
 import { Heading, Section, Text } from "@/components/ui";
 import { Footer } from "@/components/ui/Footer";
+import { Breadcrumb, NextStep, PagePurpose } from "@/components/ui/Wayfinding";
 import { Nav } from "@/components/ui/Nav";
 import { pageMeta } from "@/lib/meta";
+import { Term } from "@/components/ui/Term";
 
 export const metadata: Metadata = pageMeta({
   title: "Demos",
@@ -32,9 +34,11 @@ export default function DemoHub() {
       <Nav />
       <main id="main">
         <Section label="Demos">
+          <Breadcrumb className="mb-6" />
           <Heading as="h1" className="max-w-text">
             Real crypto. No slides.
           </Heading>
+          <PagePurpose className="mt-3" />
           <Text className="mt-4 max-w-text">
             Every packet, key and number below is produced live, in your browser or on this server.
           </Text>
@@ -50,7 +54,16 @@ export default function DemoHub() {
                 >
                   <span>
                     <span className="block text-h3 font-medium text-fg">{t.title}</span>
-                    <span className="mt-1 block text-small text-fg-2">{t.body}</span>
+                    <span className="mt-1 block text-small text-fg-2">
+                      {t.body.endsWith("Export a CBOM.") ? (
+                        <>
+                          {t.body.slice(0, -"CBOM.".length)}
+                          <Term id="cbom">CBOM</Term>.
+                        </>
+                      ) : (
+                        t.body
+                      )}
+                    </span>
                   </span>
                   <span className="text-small text-fg-3 transition-colors duration-150 group-hover:text-fg">
                     Open →
@@ -61,6 +74,7 @@ export default function DemoHub() {
           </ul>
         </Section>
       </main>
+      <NextStep />
       <Footer />
     </>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analogy } from "@/components/home/Analogy";
+import { Chapter, ChapterHead, ChapterIndex } from "@/components/home/ChapterIndex";
 import { DeviceSeal } from "@/components/home/DeviceSeal";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero, JoinLive } from "@/components/home/Hero";
@@ -24,30 +25,42 @@ export const metadata: Metadata = pageMeta({
 });
 
 /**
- * Ten sections for a first-time visitor: hero, the analogy, the Readiness Index (with the scan box),
- * how it works, deploy anywhere, solutions, impact, what's new, why QuantumLedger, early access.
+ * The 13 sections for a first-time visitor, in four chapters (components/home/ChapterIndex): the problem
+ * (hero, analogy, impact), how it works (scan, story, adapters, device seal), proof (join live, the
+ * Readiness Index, what's new), and who it's for (solutions, why QuantumLedger, early access).
+ * Section labels are numbered within their chapter.
  */
 export default function Home() {
   return (
     <>
       <Nav />
       <main id="main">
-        <Hero />
-        <ZeroTrustStrip />
-        <JoinLive />
-        <Analogy index="02" />
-        <IndexSection index="03" />
-        <ScanSite />
-        <Story />
-        <Adapters />
-        <Solutions />
-        <Impact index="07" />
-        <DeviceSeal />
-        <WhatsNew index="08" />
-        <WhyQSetu />
-        <EarlyAccess />
+        <Chapter id="problem" overlay>
+          <Hero />
+          <ChapterHead id="problem" className="lg:hidden" />
+          <ZeroTrustStrip />
+          <Analogy index="1.2" />
+          <Impact index="1.3" />
+        </Chapter>
+        <Chapter id="how">
+          <ScanSite />
+          <Story index="2.2" />
+          <Adapters index="2.3" />
+          <DeviceSeal />
+        </Chapter>
+        <Chapter id="proof">
+          <JoinLive />
+          <IndexSection index="3.2" />
+          <WhatsNew index="3.3" />
+        </Chapter>
+        <Chapter id="start">
+          <Solutions index="4.1" />
+          <WhyQSetu index="4.2" />
+          <EarlyAccess index="4.3" />
+        </Chapter>
       </main>
       <Footer />
+      <ChapterIndex />
       <TrustRail />
     </>
   );

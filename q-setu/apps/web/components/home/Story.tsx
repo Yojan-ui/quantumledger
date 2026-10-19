@@ -42,7 +42,7 @@ const N = STEPS.length;
  * hijacking) maps progress to a step; the director turns the globe to that step's pose. Steps 1–2
  * share one scrubbed widget: a year counter runs 2026 → 2035, then the classical recordings decrypt.
  */
-export function Story() {
+export function Story({ index = "04" }: { index?: string }) {
   const root = useRef<HTMLElement>(null);
   const fill = useRef<HTMLSpanElement>(null);
   const [v, setV] = useState(0);
@@ -134,7 +134,7 @@ export function Story() {
             aria-hidden
           />
           <div className="col-span-12 pt-6 md:col-span-6 md:pt-24 lg:col-span-5">
-            <SectionLabel index="04" label="How it works" role={step.role} className="" />
+            <SectionLabel index={index} label="How it works" role={step.role} className="" />
             {/* Progress: three steps, the current one bright, a hairline that fills with scroll. */}
             <nav aria-label="Steps" className="mt-6 flex items-center gap-4">
               {STEPS.map((s, i) => (

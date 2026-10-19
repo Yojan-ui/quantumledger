@@ -10,6 +10,7 @@ import { onMetrics } from "@/lib/client/live";
 import { ms } from "@/lib/format";
 import { LEVELS, shorExposure, usePipeline, type PipelineState } from "@/lib/client/pipeline";
 import { HudPanel } from "./HudPanel";
+import { termify } from "@/components/ui/Term";
 
 type Tone = "danger" | "warn" | "ok" | "kem" | "sig" | "muted";
 const TONE: Record<Tone, string> = {
@@ -196,7 +197,7 @@ export function Diagnostics({ className = "" }: { className?: string }) {
               className="flex items-baseline justify-between gap-3 border-b border-line px-3 py-2 last:border-b-0"
               title={r.title}
             >
-              <dt className="shrink-0 text-fg-3">{r.k}</dt>
+              <dt className="shrink-0 text-fg-3">{termify(r.k)}</dt>
               <dd
                 className={`min-w-0 truncate text-right normal-case tabular transition-colors ${TONE[r.tone]}`}
                 style={{ transitionDuration: "600ms" }}
