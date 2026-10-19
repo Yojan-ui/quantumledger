@@ -4,8 +4,8 @@ type HeadingVariant = "display" | "h1" | "h2" | "h3";
 const HEADING: Record<HeadingVariant, string> = {
   display: "text-display-sm md:text-display",
   h1: "text-h1-sm md:text-h1",
-  h2: "text-h2",
-  h3: "text-h3",
+  h2: "text-h3 md:text-h2",
+  h3: "text-body md:text-h3",
 };
 
 /** Headings are always --text, weight 500. `as` controls the element; `variant` the size. */

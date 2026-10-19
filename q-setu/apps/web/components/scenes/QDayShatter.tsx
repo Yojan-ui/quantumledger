@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { palette } from "@/components/world/palette";
+import { Thicken } from "@/components/scenes/Thicken";
 
 const SHARDS = 40;
 const DURATION = 1150;
@@ -104,7 +105,7 @@ export default function QDayShatter({
   });
 
   return (
-    <>
+    <Thicken>
       <PerspectiveCamera makeDefault position={[0, 0, 4.6]} fov={35} />
       <ambientLight intensity={0.8} />
       <directionalLight position={[2, 3, 4]} intensity={1.2} />
@@ -153,6 +154,6 @@ export default function QDayShatter({
           />
         </lineSegments>
       </mesh>
-    </>
+    </Thicken>
   );
 }

@@ -9,6 +9,9 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import { params } from "./director";
 import { ARCS, arcPoints, toVec3 } from "./geo";
 import { palette } from "./palette";
@@ -164,6 +167,35 @@ export function Arcs() {
     return { g, m };
   }, [c]);
 
+  // The arcs drawn thick (screen-space, ~2 px) with a soft glow pass. The shader above stays the
+  // source of truth for the per-arc state; its colour and alpha are baked per vertex on the CPU
+  // each frame (premultiplied, additive), written in place into the line's colour buffer.
+  const view = useThree((st) => st.size);
+  const thick = useMemo(() => {
+    const pos = lines.g.attributes.position!.array as Float32Array;
+    const geo = new LineSegmentsGeometry();
+    geo.setPositions(pos);
+    geo.setColors(new Float32Array(pos.length));
+    const mat = (w: number, o: number) =>
+      new LineMaterial({
+        linewidth: w,
+        vertexColors: true,
+        transparent: true,
+        opacity: o,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        worldUnits: false,
+        toneMapped: false,
+      });
+    const core = new LineSegments2(geo, mat(2, 1));
+    const glow = new LineSegments2(geo, mat(7, 0.16));
+    core.frustumCulled = glow.frustumCulled = false;
+    const buf = (geo.attributes.instanceColorStart as THREE.InterleavedBufferAttribute)
+      .data as THREE.InstancedInterleavedBuffer;
+    return { geo, core, glow, buf };
+  }, [lines]);
+  const mix3 = useMemo(() => ({ acc: new THREE.Color(), c: new THREE.Color() }), []);
+
   const pulses = useMemo(() => {
     const n = 64;
     const g = new THREE.BufferGeometry();
@@ -198,7 +230,13 @@ export function Arcs() {
     const tint = lines.m.uniforms.uTint!.value as number[];
     const fl = lines.m.uniforms.uFlash!.value as number[];
     const snap = lines.m.uniforms.uSnap!.value as number[];
+    // The global Q-Day switch: every classical (untinted) arc cracks for its 6 s; sealed ones hold.
+    const qday = world.qdayAt ? performance.now() - world.qdayAt : -1;
     for (let i = 0; i < N; i++) {
+      if (qday >= 0 && qday < 6000 && tint[i]! < 0.5) {
+        flash.current[i] = Math.max(flash.current[i]!, 0.9);
+        snap[i] = 0.5;
+      }
       // Traffic lights an arc up (an arc "spawns" with its packet), then it settles back.
       activity.current[i] = Math.max(0, activity.current[i]! - dt * 0.35);
       flash.current[i] = Math.max(0, flash.current[i]! - dt * 1.1);
@@ -213,6 +251,46 @@ export function Arcs() {
         : Math.max(params.arcTint[i]!, activity.current[i]! > 0.05 ? 1 : 0);
       tint[i] = tint[i]! + (tintTarget - tint[i]!) * Math.min(1, dt * 3);
       fl[i] = flash.current[i]!;
+    }
+
+    // Bake the arcs' colour × alpha per vertex into the thick lines (see the shader for the maths).
+    {
+      const arr = thick.buf.array as Float32Array;
+      const accent = lines.m.uniforms.uAccent!.value as THREE.Color;
+      const g = lines.m.uniforms.uGrad!.value as number;
+      const sm = (e0: number, e1: number, x: number) => {
+        const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+        return t * t * (3 - 2 * t);
+      };
+      const { acc, c: col } = mix3;
+      for (let a = 0; a < N; a++) {
+        const lv = level[a]!;
+        const tn = tint[a]!;
+        const flv = fl[a]!;
+        const sn = snap[a]!;
+        for (let i = 0; i < SEG; i++) {
+          for (let e = 0; e < 2; e++) {
+            const t = (i + e) / SEG;
+            acc.copy(c.kem).lerp(c.sig, t);
+            acc.lerpColors(accent, acc, g);
+            col.copy(c.text).lerp(acc, tn).lerp(c.danger, flv);
+            const ends = sm(0, 0.05, t) * (1 - sm(0.95, 1, t));
+            const gap = flv > 0 ? sm(0, 0.01, Math.abs(t - sn) - (1 - flv) * 0.12) : 1;
+            const al = Math.max(lv * 0.55, flv * 0.9) * ends * gap;
+            const k = ((a * SEG + i) * 2 + e) * 3;
+            arr[k] = col.r * al;
+            arr[k + 1] = col.g * al;
+            arr[k + 2] = col.b * al;
+          }
+        }
+      }
+      thick.buf.needsUpdate = true;
+      const w = view.width * pr;
+      const h = view.height * pr;
+      (thick.core.material as LineMaterial).resolution.set(w, h);
+      (thick.glow.material as LineMaterial).resolution.set(w, h);
+      (thick.core.material as LineMaterial).linewidth = 2 * pr;
+      (thick.glow.material as LineMaterial).linewidth = 7 * pr;
     }
 
     // Live packets: at most one per arc in flight, so at most 12 on screen.
@@ -296,7 +374,8 @@ export function Arcs() {
 
   return (
     <group ref={group}>
-      <lineSegments geometry={lines.g} material={lines.m} />
+      <primitive object={thick.glow} />
+      <primitive object={thick.core} />
       <points geometry={pulses.g} material={pulses.m} frustumCulled={false} />
     </group>
   );

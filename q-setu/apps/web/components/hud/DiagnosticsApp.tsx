@@ -25,7 +25,7 @@ function Stage() {
   );
 }
 
-function waitForCanvas(ms = 5000): Promise<void> {
+export function waitForCanvas(ms = 5000): Promise<void> {
   return new Promise((resolve) => {
     const t0 = performance.now();
     const check = () => {

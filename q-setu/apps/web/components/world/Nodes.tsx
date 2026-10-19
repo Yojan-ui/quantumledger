@@ -102,6 +102,19 @@ export function Nodes() {
   const sockVis = useRef(0);
   const col = useMemo(() => new THREE.Color(), []);
   const model = useRef<THREE.Points>(null);
+  // The shield that drops onto the node's building when its deploy succeeds (Demo 2's hero moment):
+  // a wire dome (thickened by <Thicken>), falling from above along the surface normal.
+  const dome = useMemo(() => {
+    const g = new THREE.WireframeGeometry(
+      new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+    );
+    return new THREE.LineSegments(
+      g,
+      new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
+    );
+  }, []);
+  const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const nrm = useMemo(() => new THREE.Vector3(), []);
   const shards = useRef<THREE.Points>(null);
   const shardGeo = useMemo(() => {
     const g = new THREE.BufferGeometry();
@@ -128,6 +141,7 @@ export function Nodes() {
     const now = performance.now();
     focusVis.current += ((focus ? 1 : 0) - focusVis.current) * k;
     modelVis.current += ((focus && world.shot?.model ? 1 : 0) - modelVis.current) * k;
+    dome.visible = false; // shown below only for the node in focus
     NODES.forEach((n, i) => {
       const was = safe.current[i]! > 0.5;
       safe.current[i]! += (params.nodeSafe[i]! - safe.current[i]!) * k;
@@ -167,7 +181,7 @@ export function Nodes() {
       );
       if (isFocus && model.current) {
         model.current.position.copy(n.pos).multiplyScalar(1.02);
-        model.current.scale.setScalar(Math.max(0.0001, 0.032 * easeToken(modelVis.current)));
+        model.current.scale.setScalar(Math.max(0.0001, 0.05 * easeToken(modelVis.current)));
         // The lattice swap: from the moment this node's deploy succeeded (its ring drop).
         const sealed = safe.current[i]! > 0.5;
         const since = dropAt.current[i] ? now - dropAt.current[i]! : sealed ? Infinity : -1;
@@ -182,6 +196,19 @@ export function Nodes() {
           .copy(c.warn)
           .lerp(c.kem, m)
           .lerp(c.ok, Math.max(0, m * 2 - 1) * 0.6);
+        // The shield drops: from 0.12 above the building onto it, over 900 ms, then holds.
+        {
+          const dm = dome.material as THREE.LineBasicMaterial;
+          const fall = since < 0 ? 0 : world.breathe ? easeToken(Math.min(1, since / 900)) : 1;
+          const on = modelVis.current * (since >= 0 ? 1 : 0);
+          dome.visible = on > 0.01;
+          nrm.copy(n.pos).normalize();
+          dome.position.copy(n.pos).multiplyScalar(1.02 + 0.12 * (1 - fall));
+          dome.quaternion.setFromUnitVectors(up, nrm);
+          dome.scale.setScalar(0.05 * (0.6 + 0.4 * fall));
+          dm.color.copy(c.kem).lerp(c.ok, Math.max(0, m * 2 - 1) * 0.5);
+          dm.opacity = 0.9 * on;
+        }
         // The old link shatters: red shards fly off the node.
         if (shards.current) {
           const k2 = since >= 0 && since < SHATTER_MS && world.breathe ? since / SHATTER_MS : -1;
@@ -311,6 +338,7 @@ export function Nodes() {
           toneMapped={false}
         />
       </points>
+      <primitive object={dome} visible={false} />
       <points ref={model} geometry={modelGeo} visible={false} raycast={() => null}>
         <pointsMaterial size={0.006} sizeAttenuation transparent opacity={0.9} depthWrite={false} />
       </points>

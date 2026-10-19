@@ -3,7 +3,8 @@
 /**
  * Shared graphics state for the site's one WebGL canvas.
  *  - quality: the adaptive ladder. PerformanceMonitor steps it up when fps drops, in this order:
- *      0 full · 1 lower DPR (1.25) · 2 fewer particles · 3 no focus dimming or glow halos.
+ *      0 full · 1 lower DPR (1.25) · 2 no dust layer, half the particles · 3 no glass transmission,
+ *      no line glow, focus dimming or halos (DPR 1).
  *  - lost: the GL context was lost; 3D areas show their static poster until it is rebuilt.
  */
 import { useSyncExternalStore } from "react";

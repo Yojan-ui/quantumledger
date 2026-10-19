@@ -8,7 +8,7 @@ const px = (n: number) => `${n}px`;
 /** Type sizes scale with --type-scale (1 normally; 1.15 in presenter mode), layout doesn't. */
 const tpx = (n: number) => `calc(${n}px * var(--type-scale, 1))`;
 const space = Object.fromEntries(
-  [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 24, 32, 40].map((k) => [k, px(k * 4)]),
+  [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40].map((k) => [k, px(k * 4)]),
 );
 
 export default {
@@ -40,13 +40,21 @@ export default {
       mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
     },
     fontSize: {
-      display: [tpx(72), { lineHeight: tpx(76), letterSpacing: "-0.035em" }],
-      "display-sm": [tpx(44), { lineHeight: tpx(48), letterSpacing: "-0.035em" }],
-      h1: [tpx(48), { lineHeight: tpx(52), letterSpacing: "-0.03em" }],
-      "h1-sm": [tpx(34), { lineHeight: tpx(38), letterSpacing: "-0.03em" }],
-      h2: [tpx(28), { lineHeight: tpx(34), letterSpacing: "-0.02em" }],
-      h3: [tpx(18), { lineHeight: tpx(26), letterSpacing: "-0.01em" }],
-      body: [tpx(16), { lineHeight: tpx(26) }],
+      /** The homepage hero headline: 56 px on phones to 120 px on wide screens, tight. */
+      hero: [
+        "calc(clamp(56px, 8.4vw, 120px) * var(--type-scale, 1))",
+        { lineHeight: "0.94", letterSpacing: "-0.045em" },
+      ],
+      /** One key number per section, set huge (the sentence sits beside it). */
+      mega: [tpx(160), { lineHeight: "0.86", letterSpacing: "-0.055em" }],
+      "mega-sm": [tpx(96), { lineHeight: "0.9", letterSpacing: "-0.05em" }],
+      display: [tpx(96), { lineHeight: tpx(96), letterSpacing: "-0.04em" }],
+      "display-sm": [tpx(56), { lineHeight: tpx(58), letterSpacing: "-0.04em" }],
+      h1: [tpx(64), { lineHeight: tpx(66), letterSpacing: "-0.035em" }],
+      "h1-sm": [tpx(40), { lineHeight: tpx(44), letterSpacing: "-0.03em" }],
+      h2: [tpx(44), { lineHeight: tpx(48), letterSpacing: "-0.025em" }],
+      h3: [tpx(28), { lineHeight: tpx(34), letterSpacing: "-0.015em" }],
+      body: [tpx(17), { lineHeight: tpx(27) }],
       small: [tpx(14), { lineHeight: tpx(22) }],
       label: [tpx(12), { lineHeight: tpx(16), letterSpacing: "0.08em" }],
       /** HUD readouts: 11px mono, uppercase. */
@@ -65,6 +73,8 @@ export default {
       width: { dot: px(6), console: px(360), socket: px(120) },
       height: {
         stage: px(560),
+        /** A demo's full-width stage: 70% of the screen (at least the stage height). */
+        "stage-full": "70svh",
         /** The diagnostics stage on phones: the top 60% of the screen. */
         "hud-stage": "60svh",
         /** The compact HUD in the homepage hero. */
@@ -74,11 +84,19 @@ export default {
         nav: px(56),
         svh: "100svh",
         story: "calc(100svh - 56px)",
+        /** The homepage hero: the whole first screen under the nav. */
+        hero: "calc(100svh - 56px)",
         dot: px(6),
         console: px(560),
         socket: px(120),
       },
-      minHeight: { svh: "100svh", stage: px(560), panel: px(320), story: "calc(100svh - 56px)" },
+      minHeight: {
+        svh: "100svh",
+        stage: px(560),
+        panel: px(320),
+        story: "calc(100svh - 56px)",
+        hero: px(640),
+      },
       minWidth: { panel: px(640) },
       maxHeight: { "stage-sm": px(360) },
       gridTemplateColumns: {
@@ -91,6 +109,8 @@ export default {
         /** A key column and its value (the Proof Chain's entry panel). */
         entry: "96px minmax(0, 1fr)",
         keys: "128px minmax(0, 1fr)",
+        /** The HUD terminal: time · verb · subject · value. */
+        term: "56px 64px minmax(0, 1fr) auto",
       },
       keyframes: {
         reveal: {

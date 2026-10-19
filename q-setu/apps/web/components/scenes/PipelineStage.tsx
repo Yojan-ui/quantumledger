@@ -28,6 +28,13 @@ import { Mosca } from "./pipeline/Mosca";
 import { Radar } from "./pipeline/Radar";
 import { Swarm } from "./pipeline/Swarm";
 import { tap, Vault, type Taps } from "./pipeline/Vault";
+import { hero as heroState } from "@/lib/client/hero";
+import { Thicken } from "@/components/scenes/Thicken";
+import { Crystal } from "./pipeline/Crystal";
+import { Dust } from "./Dust";
+import { Studio } from "./Studio";
+
+const heroExit = () => heroState.exit;
 
 const SHOTS: Shot[] = [
   { id: "standby", camera: { position: [0, 1.6, 11], target: [0, 0.6, 0], fov: 42 }, caption: "" },
@@ -89,9 +96,15 @@ function Hit({
 export default function PipelineStage({
   state: s,
   active,
+  hero = false,
 }: {
   state: PipelineState;
   active: boolean;
+  /**
+   * The homepage hero: the opening's particle mark (lib/client/hero) and no anchored labels; the
+   * headline and the status pill over the stage say what's happening instead.
+   */
+  hero?: boolean;
 }) {
   const c = useMemo(palette, []);
   const director = useDirector(SHOTS);
@@ -179,13 +192,17 @@ export default function PipelineStage({
   );
 
   return (
-    <>
+    <Thicken>
       <DirectorCamera
         state={director.state}
         onSettled={director.onSettled}
         drift={0.02}
         range={[1.2, 1.6]}
         orbit={orbitEl}
+        zoom={!hero}
+        shiftX={hero && !mobile ? 0.2 : 0}
+        shiftY={hero && mobile ? 0.24 : 0}
+        pull={hero ? heroExit : undefined}
       />
       <fog attach="fog" args={[c.bg, 11, 34]} />
       <ambientLight intensity={0.35} />
@@ -194,9 +211,13 @@ export default function PipelineStage({
       <pointLight position={[0, 2, -5]} intensity={8} distance={14} color={role} />
 
       <Background look={look} progress={doneCount / 5} />
-      <Swarm look={look} count={count} />
+      <Swarm look={look} count={count} intro={hero} />
+      <Crystal look={look} />
+      <Dust color={c.text3} />
+      {/* Reflections for the glass blocks and the metal drum, and a soft shadow on the floor. */}
+      <Studio rim={c.kem} lights={false} floorY={-2.95} shadowScale={14} />
       <Link look={look} onCopy={() => tap(taps.current, performance.now())} />
-      <Vault look={look} taps={taps} labelled={!mobile} labelIn={[0, 2, 4]} />
+      <Vault look={look} taps={taps} labelled={!mobile && !hero} labelIn={[0, 2, 4]} />
       <Mosca look={look} x={s.mosca.x} y={s.mosca.y} count={mobile ? 500 : 900} compact={mobile} />
       <Merkle
         look={look}
@@ -213,7 +234,7 @@ export default function PipelineStage({
       {s.proof && <Hit id="block" at={ROOT} r={0.45} on={setHover} pick={pick} />}
 
       {/* On phones the drawer below shows these values: labels would escape the small stage. */}
-      {!mobile && (
+      {!mobile && !hero && (
         <>
           {/* 01 HARVESTING: the real scan values. */}
           <Anchor
@@ -311,7 +332,7 @@ export default function PipelineStage({
             : ""
         }
         role="ok"
-        show={verified && settled && stage === 4}
+        show={!hero && verified && settled && stage === 4}
       />
       {failed && (
         <Anchor
@@ -326,6 +347,6 @@ export default function PipelineStage({
           show={settled && stage === 4}
         />
       )}
-    </>
+    </Thicken>
   );
 }

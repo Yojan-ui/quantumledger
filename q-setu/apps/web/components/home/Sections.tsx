@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Code, Grid, Heading, Label, Section, SectionLabel, Text, TextLink } from "@/components/ui";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Code, Heading, Label, Section, SectionLabel, Text, TextLink } from "@/components/ui";
 import dynamic from "next/dynamic";
 import { LazyView } from "@/components/scenes/LazyView";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { SOLUTIONS } from "@/data/solutions";
 import { ADAPTERS } from "./chapters";
+import { useJourney } from "@/lib/client/journey";
 
-const SocketModel = dynamic(() => import("@/components/scenes/SocketModel"), { ssr: false });
+const AdapterOrbit = dynamic(() => import("@/components/scenes/AdapterOrbit"), { ssr: false });
 
 /** Simple-mode lines for each adapter (no acronyms). */
 const PLAIN: Record<string, string> = {
@@ -29,81 +32,140 @@ const ONE_LINE: Record<string, string> = {
   vault: "Databases and files. A key per record.",
 };
 
-/** 05: the five adapters as a list. Hovering a row lights its socket on the globe. */
+/**
+ * 05 Deploy anywhere, as a pinned horizontal scroller: scrolling slides the five adapter cards
+ * sideways while the 3D camera orbits a ring of five different objects (a proxy shield, a browser
+ * window, a package, a chip, a vault door) to face the adapter whose card is in view.
+ */
 export function Adapters() {
   const ref = useRef<HTMLElement>(null);
-  const [hot, setHot] = useState(-1);
+  const track = useRef<HTMLDivElement>(null);
+  const focus = useMemo(() => ({ v: 0 }), []);
+  const [hot, setHot] = useState(0);
   useEffect(() => {
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e?.isIntersecting) return;
-        world.chapter = 4.5; // the director's "sockets" pose
-        world.accent = "accent";
-        world.glow = "kem";
-      },
-      { threshold: 0.3 },
-    );
-    if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
-  }, []);
-  useEffect(() => void (world.socket = hot), [hot]);
+    const el = ref.current;
+    if (!el) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (st) => {
+          const n = ADAPTERS.length - 1;
+          focus.v = st.progress * n;
+          const t = track.current;
+          if (t) {
+            const room = t.scrollWidth - (t.parentElement?.clientWidth ?? 0);
+            t.style.transform = `translate3d(${-Math.max(0, room) * st.progress}px, 0, 0)`;
+          }
+          const i = Math.round(st.progress * n);
+          setHot((h) => (h === i ? h : i));
+        },
+        onToggle: (st) => {
+          if (!st.isActive) return;
+          world.accent = "accent";
+          world.glow = "kem";
+        },
+      });
+    }, el);
+    return () => ctx.revert();
+  }, [focus]);
   return (
-    <section ref={ref} id="adapters" className="relative scroll-mt-14 py-24 md:py-40">
-      <div className="mx-auto w-full max-w-container px-5 md:px-6">
-        <SectionLabel index="05" label="Deploy anywhere" role="kem" />
-        <Grid className="gap-y-12">
-          <div className="col-span-12 lg:col-span-7">
+    <section
+      ref={ref}
+      id="adapters"
+      className="relative scroll-mt-14"
+      style={{ height: `${ADAPTERS.length * 70 + 40}vh` }}
+    >
+      <div className="sticky top-14 h-story overflow-hidden">
+        <div className="absolute inset-0">
+          <LazyView
+            className="h-full w-full"
+            label={`The five QuantumLedger adapters as objects on a ring; in view: ${ADAPTERS[hot]?.name}`}
+          >
+            {(on) => <AdapterOrbit focus={focus} active={on} />}
+          </LazyView>
+        </div>
+        <div className="hero-scrim pointer-events-none absolute inset-0" aria-hidden />
+        <div className="pointer-events-none relative mx-auto flex h-full w-full max-w-container flex-col justify-between px-5 py-12 md:px-6 md:py-16">
+          <div className="max-w-text">
+            <SectionLabel index="05" label="Deploy anywhere" role="kem" />
             <CopyHeading
               simple="Five ways to add it. Each takes one line."
               technical="Five adapters. Each one line."
             />
-            <ul className="mt-12 border-b border-line">
+          </div>
+          <div className="pointer-events-auto overflow-hidden">
+            <div ref={track} className="flex gap-4 md:gap-6">
               {ADAPTERS.map((a, i) => (
-                <li
+                <article
                   key={a.id}
-                  onPointerEnter={() => setHot(i)}
-                  onPointerLeave={() => setHot(-1)}
-                  className="flex items-center gap-6 border-t border-line py-6"
+                  data-sealed
+                  aria-current={i === hot || undefined}
+                  className={`w-console shrink-0 border bg-base p-6 transition-colors duration-300 ${i === hot ? "border-kem" : "border-line"}`}
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                      <Heading as="h3" variant="h3">
-                        QuantumLedger{" "}
-                        <Copy simple={a.id === "sdk" ? "for apps" : a.name} technical={a.name} />
-                      </Heading>
-                      <Text size="small">
-                        <Copy simple={PLAIN[a.id]} technical={ONE_LINE[a.id]} />
-                      </Text>
-                    </div>
-                    <div className="mt-4" data-copy="technical">
-                      <Code code={a.code} />
-                    </div>
+                  <Label as="p" className={i === hot ? "text-kem" : ""}>
+                    {String(i + 1).padStart(2, "0")} / {String(ADAPTERS.length).padStart(2, "0")}
+                  </Label>
+                  <Heading as="h3" variant="h3" className="mt-3">
+                    QuantumLedger{" "}
+                    <Copy simple={a.id === "sdk" ? "for apps" : a.name} technical={a.name} />
+                  </Heading>
+                  <Text size="small" className="mt-2">
+                    <Copy simple={PLAIN[a.id]} technical={ONE_LINE[a.id]} />
+                  </Text>
+                  <div className="mt-4" data-copy="technical">
+                    <Code code={a.code} />
                   </div>
-                  {/* Hover: this adapter's socket model turns and lights KEM, as does its socket on the globe. */}
-                  <LazyView
-                    className="hidden h-socket w-socket shrink-0 md:block"
-                    label={`QuantumLedger ${a.name} socket`}
-                  >
-                    {(on) => <SocketModel id={a.id} hot={hot === i} active={on} />}
-                  </LazyView>
-                </li>
+                </article>
               ))}
-            </ul>
-            <div className="mt-8">
+            </div>
+            <div className="mt-6">
               <TextLink href="/platform">How the platform fits together →</TextLink>
             </div>
           </div>
-          <div className="col-span-12 hidden lg:col-span-5 lg:block">
-            <div data-world-focus className="sticky top-24 h-stage" aria-hidden />
-          </div>
-        </Grid>
+        </div>
       </div>
     </section>
   );
 }
 
+/**
+ * The wide pull-back before the sectors: the camera rises off India while its nodes and links turn
+ * sealed one after another (the director's chapter 5 wave, then chapter 7: everything sealed),
+ * scrubbed by scroll. A centred statement sits over it. An illustration of adoption, not data.
+ */
+function SealWave() {
+  const ref = useRef<HTMLDivElement>(null);
+  useJourney(ref, 8, 9, (p) => {
+    world.chapter = p < 0.8 ? 5 + Math.min(0.999, p / 0.8) : 7;
+    world.accent = "accent";
+    world.glow = "kem";
+  });
+  return (
+    <div ref={ref} className="relative h-svh min-h-hero overflow-hidden">
+      <div data-world-focus data-world-drag className="absolute inset-0" aria-hidden />
+      <div className="pointer-events-none relative flex h-full items-center justify-center px-5 text-center">
+        <p className="max-w-text text-h1-sm font-medium text-fg md:text-display">
+          One adapter at a time, every link sealed.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /** 06: one row per sector, linking to its solution page. */
 export function Solutions() {
+  return (
+    <>
+      <SealWave />
+      <SolutionsList />
+    </>
+  );
+}
+
+function SolutionsList() {
   return (
     <Section id="solutions" index="06" label="Solutions by sector" role="sig">
       <CopyHeading

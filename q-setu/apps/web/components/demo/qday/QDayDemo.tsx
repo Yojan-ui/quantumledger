@@ -269,7 +269,8 @@ export function QDayDemo() {
         for (let k = 0; k < 300 && !attacked.current && take.current === mine; k++) await wait(100);
       }
     },
-    hold: (id) => (id === "climax" ? 2600 : undefined),
+    // Long enough for the freeze, the slow-motion shatter and the plaintext rising out of it.
+    hold: (id) => (id === "climax" ? 4800 : undefined),
     // Dolly in, a 300 ms beat, then the shock wave.
     onArrive: (id) => id === "climax" && setBreakAt(performance.now() + 300),
     restart: () => reset(),
@@ -316,6 +317,7 @@ export function QDayDemo() {
       meter={<ComputeMeter reading={reading} />}
       console={
         <LiveConsole
+          drawer
           title="Live console · recording and attack"
           filter={consoleFilter}
           highlight={HIGHLIGHT[director.state.shot.id]}
@@ -323,9 +325,9 @@ export function QDayDemo() {
       }
       onAutoplay={() => void reel.play()}
     >
-      <div className="relative mb-12 overflow-hidden rounded-lg border border-line">
+      <div className="full-bleed relative mb-12 overflow-hidden border-y border-line">
         <LazyView
-          className="h-stage-sm md:h-stage"
+          className="h-stage-full min-h-stage"
           label={`Two corridors of recorded packets, classical and QuantumLedger, watched by an adversary. Year ${year}. ${qday ? "Q-Day: classical packets break open; QuantumLedger packets stay whole." : "Recording traffic."}`}
         >
           {(onScreen) => (

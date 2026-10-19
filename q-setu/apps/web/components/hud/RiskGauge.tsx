@@ -120,7 +120,7 @@ export function RiskGauge({ className = "" }: { className?: string }) {
             x="64"
             y="66"
             textAnchor="middle"
-            className={`fill-current font-mono text-h2 ${tone}`}
+            className={`fill-current font-mono text-h3 ${tone}`}
           >
             {risk === undefined ? "—" : Math.round(v)}
           </text>

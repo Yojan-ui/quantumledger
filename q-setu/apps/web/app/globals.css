@@ -14,6 +14,8 @@
   }
   body {
     @apply font-sans text-body text-fg-2;
+    /* Full-bleed stages are 100vw wide, which includes the scrollbar: never scroll sideways. */
+    overflow-x: clip;
   }
   ::selection {
     background: var(--line-strong);
@@ -162,6 +164,52 @@
   button[data-state="error"] {
     outline: 1px solid var(--danger);
     outline-offset: 2px;
+  }
+  /*
+   * The hero's legibility scrim: the page colour rising from the bottom-left corner under the
+   * headline, so the 3D stays bright everywhere else. (Token colours only; no gradient utilities.)
+   */
+  .hero-scrim {
+    background:
+      linear-gradient(
+        to top,
+        var(--bg) 0%,
+        color-mix(in srgb, var(--bg) 70%, transparent) 28%,
+        transparent 62%
+      ),
+      linear-gradient(to right, color-mix(in srgb, var(--bg) 55%, transparent) 0%, transparent 55%);
+  }
+  /* Hero headline beats: each line lands with its stage (data-beat on the headline). */
+  [data-beat] [data-line] {
+    transition:
+      opacity 700ms var(--ease),
+      transform 700ms var(--ease);
+  }
+  [data-beat="1"] [data-line="2"],
+  [data-beat="1"] [data-line="3"],
+  [data-beat="2"] [data-line="3"] {
+    opacity: 0;
+    transform: translateY(0.25em);
+  }
+  /* Break out of the page container to the full viewport width (demo stages). */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+  /* The global Q-Day switch: everything QuantumLedger protects stays sealed, with a --kem glint. */
+  html[data-qday] [data-sealed] {
+    outline: 1px solid var(--kem);
+    outline-offset: 3px;
+    animation: kem-glint 1.2s var(--ease) 4;
+  }
+  @keyframes kem-glint {
+    0%,
+    100% {
+      outline-color: transparent;
+    }
+    35% {
+      outline-color: var(--kem);
+    }
   }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;

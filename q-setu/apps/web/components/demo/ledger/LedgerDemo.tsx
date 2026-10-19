@@ -280,7 +280,9 @@ export function LedgerDemo() {
         await doVerify();
       }
     },
-    hold: (id) => (id === "broken" ? 2600 : id === "verify" ? 2200 : undefined),
+    // The pulse runs a block every 220 ms; the crack and sag take ~1.2 s: holds long enough to see them.
+    hold: (id) =>
+      id === "broken" ? 3200 : id === "verify" ? 3400 : id === "tamper" ? 2600 : undefined,
     restart: () => void reset(),
   });
   const isTamperedRef = useRef(isTampered);
@@ -330,6 +332,7 @@ export function LedgerDemo() {
       meter={<ComputeMeter reading={reading} />}
       console={
         <LiveConsole
+          drawer
           title="Live console · ledger and KMS"
           filter={consoleFilter}
           highlight={HIGHLIGHT[director.state.shot.id]}
@@ -348,9 +351,9 @@ export function LedgerDemo() {
       }}
     >
       <div className="space-y-12">
-        <div className="relative overflow-hidden rounded-lg border border-line">
+        <div className="full-bleed relative overflow-hidden border-y border-line">
           <LazyView
-            className="h-stage-sm md:h-stage"
+            className="h-stage-full min-h-stage"
             label={`The ledger as a chain of signed blocks: entries around #${TARGET} and the newest entries. ${broken ? `Broken at #${broken.id}.` : verify ? "Verified intact." : ""}`}
           >
             {(onScreen) => (

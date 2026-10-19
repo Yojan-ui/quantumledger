@@ -14,6 +14,7 @@ import { easeToken } from "@/lib/ease";
 import { MERKLE_Y, R } from "./geometry";
 import { set3 } from "@/components/scenes/geometry";
 import type { Look } from "./look";
+import { Body } from "@/components/scenes/Body";
 
 export const NODES = [
   // leaves
@@ -50,6 +51,7 @@ export function Merkle({
   failedAt?: boolean;
 }) {
   const node = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.26, 0.26, 0.26)), []);
+  const blockSolid = useMemo(() => new THREE.BoxGeometry(0.6, 0.4, 0.4), []);
   const block = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.62, 0.42, 0.42)), []);
   const mats = useMemo(
     () =>
@@ -196,10 +198,15 @@ export function Merkle({
       ))}
       <primitive object={edges} />
       <primitive object={links} />
+      {/* Proof Chain blocks: glass bodies inside their signed wireframes. */}
       {CHAIN.slice(3 - Math.min(3, previous)).map((x) => (
-        <lineSegments key={x} geometry={block} material={chainMat} position={[x, ROOT.y, 0]} />
+        <group key={x} position={[x, ROOT.y, 0]}>
+          <Body geometry={blockSolid} like={chainMat} kind="glass" />
+          <lineSegments geometry={block} material={chainMat} />
+        </group>
       ))}
       <group ref={blockRef} position={[0, 0, 0]} visible={false}>
+        <Body geometry={blockSolid} like={blockMat} kind="glass" tint={0.5} position={ROOT} />
         <lineSegments geometry={block} material={blockMat} position={ROOT} />
       </group>
       <mesh ref={ring} position={ROOT} material={ringMat} visible={false}>

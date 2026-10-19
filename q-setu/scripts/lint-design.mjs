@@ -46,11 +46,13 @@ const RULES = [
   },
   { name: "emoji", re: /\p{Extended_Pictographic}/gu, only: /\.(tsx|html)$/ },
   {
-    name: "gradient outside the allowed three",
+    name: "gradient outside the allowed set",
     re: /(?:linear|radial|conic)-gradient\(/g,
     allowIn: {
       file: /^app\/globals\.css$/,
-      selector: /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient)\s*\{/,
+      // spotlight, the two hairlines, the globe's glow, and the hero's legibility scrim.
+      selector:
+        /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim)\s*\{/,
     },
   },
 ];

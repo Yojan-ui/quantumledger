@@ -71,7 +71,7 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
   await expect(page.getByRole("link", { name: "Open full diagnostics" })).toBeVisible();
-  await expect(page.locator("#top [data-hud]")).toBeVisible();
+  await expect(page.locator("#top [data-hud-stage]")).toBeVisible();
 });
 
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {

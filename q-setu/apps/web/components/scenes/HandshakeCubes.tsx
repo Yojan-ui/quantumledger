@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { palette } from "@/components/world/palette";
 import { latticeCube, span } from "./geometry";
+import { Thicken } from "@/components/scenes/Thicken";
 
 export default function HandshakeCubes({
   progress,
@@ -91,7 +92,7 @@ export default function HandshakeCubes({
   });
 
   return (
-    <>
+    <Thicken>
       <PerspectiveCamera makeDefault position={[0, 0, 5.2]} fov={35} />
       <group ref={client}>
         <lineSegments geometry={geo} material={matA} />
@@ -111,6 +112,6 @@ export default function HandshakeCubes({
         <ringGeometry args={[0.48, 0.5, 64]} />
         <meshBasicMaterial color={c.ok} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
-    </>
+    </Thicken>
   );
 }

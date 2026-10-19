@@ -17,14 +17,19 @@ import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
 import { makeLook, type Look } from "@/components/scenes/pipeline/look";
 import { Radar } from "@/components/scenes/pipeline/Radar";
+import { Thicken } from "@/components/scenes/Thicken";
 
 export const N = 12;
 /** Index on the arc of the entry the insider edits. */
 export const TARGET_INDEX = 3;
 const R = 7;
 const SPAN = (120 * Math.PI) / 180;
-const STEP_MS = 110;
-const CASCADE_MS = 60;
+/** The verification pulse: one block every 220 ms (slow enough to follow), stopping at a break. */
+const STEP_MS = 220;
+const CASCADE_MS = 90;
+/** The edited block cracking open, and the chain after it sagging. */
+const CRACK_MS = 900;
+const SAG_MS = 900;
 
 /** Where block i sits on the arc (a gap between the two halves). */
 export function blockPos(i: number, out = new THREE.Vector3()) {
@@ -106,6 +111,29 @@ export default function LedgerFilm({
   }, []);
   const geo = useMemo(() => new THREE.BoxGeometry(0.62, 0.44, 0.44), []);
   const edges = useMemo(() => new THREE.EdgesGeometry(geo), [geo]);
+  // The edited block's two halves (it cracks open along its middle when the row is tampered with).
+  const half = useMemo(() => {
+    const g = new THREE.BoxGeometry(0.31, 0.44, 0.44);
+    return { g, e: new THREE.EdgesGeometry(g) };
+  }, []);
+  const whole = useRef<THREE.Group>(null);
+  const halves = useRef<(THREE.Group | null)[]>([]);
+  const pulse = useRef<THREE.Group>(null);
+  const pulseMat = useMemo(
+    () => new THREE.MeshBasicMaterial({ toneMapped: false, transparent: true }),
+    [],
+  );
+  const haloMat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        toneMapped: false,
+        transparent: true,
+        opacity: 0.25,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    [],
+  );
   const blocks = useRef<(THREE.Group | null)[]>([]);
   const mats = useMemo(
     () =>
@@ -201,17 +229,42 @@ export default function LedgerFilm({
       // back in reverse order (last block first).
       const after = i > TARGET_INDEX;
       const down = tamperedAt
-        ? easeToken(span(now - tamperedAt - (i - TARGET_INDEX) * CASCADE_MS, 0, 400))
+        ? easeToken(span(now - tamperedAt - 300 - (i - TARGET_INDEX) * CASCADE_MS, 0, SAG_MS))
         : restoredAt
-          ? 1 - easeToken(span(now - restoredAt - (N - 1 - i) * CASCADE_MS, 0, 400))
+          ? 1 - easeToken(span(now - restoredAt - (N - 1 - i) * CASCADE_MS, 0, 500))
           : 0;
       const d = after && !reduce ? down : after && tamperedAt ? 1 : 0;
-      p.y = -0.12 * d + (reduce ? 0 : 0.03 * Math.sin(t * 0.8 + i * 0.6));
+      // The chain sags after the broken link: deeper the further from it, like a hanging cable.
+      const j = i - TARGET_INDEX;
+      const sag = after ? 0.55 * (1 - Math.exp(-j / 2.2)) : 0;
+      p.y = -sag * d + (reduce ? 0 : 0.03 * Math.sin(t * 0.8 + i * 0.6));
       const fresh = i === N - 1 && headAt ? easeToken(span(now - headAt, 0, 500)) : 1;
       if (g) {
         g.position.copy(p);
         g.lookAt(0, p.y, R * 0.6);
+        // Hanging blocks tip towards the break.
+        if (after && d > 0) g.rotateZ(0.22 * d * Math.min(1, j / 3));
         g.scale.setScalar(Math.max(0.0001, fresh));
+      }
+      if (i === TARGET_INDEX) {
+        // Crack: the edited block splits in two and the halves swing apart (restore closes it).
+        const k = reduce
+          ? tamperedAt
+            ? 1
+            : 0
+          : tamperedAt
+            ? easeToken(span(now - tamperedAt - 150, 0, CRACK_MS))
+            : restoredAt
+              ? 1 - easeToken(span(now - restoredAt, 0, 600))
+              : 0;
+        if (whole.current) whole.current.visible = k <= 0.001;
+        halves.current.forEach((h, side) => {
+          if (!h) return;
+          const sgn = side === 0 ? -1 : 1;
+          h.visible = k > 0.001;
+          h.position.set(sgn * (0.155 + 0.12 * k), -0.05 * k, 0);
+          h.rotation.set(0, sgn * 0.2 * k, -sgn * 0.32 * k);
+        });
       }
       // Colour: SIG at rest; OK once the scan has passed; DANGER for the edited block.
       const isBad = i === TARGET_INDEX && !!tamperedAt;
@@ -240,6 +293,31 @@ export default function LedgerFilm({
       }
     }
     linkGeo.attributes.position!.needsUpdate = linkGeo.attributes.color!.needsUpdate = true;
+    // The verification pulse: a point of light gliding block to block along the links. It stops
+    // dead at the first break, flares red and fades; on an intact chain it runs to the newest block.
+    if (pulse.current) {
+      const g = pulse.current;
+      if (!verify || reduce) g.visible = false;
+      else {
+        const run = (now - verify.at) / STEP_MS;
+        const stop = broken >= 0 ? broken : N - 1;
+        const f = Math.min(stop, Math.max(0, run));
+        const i0 = Math.floor(f);
+        blockPos(i0, p);
+        blockPos(Math.min(N - 1, i0 + 1), q);
+        p.lerp(q, f - i0);
+        const since = (run - stop) * STEP_MS; // ms since it reached the stop
+        const fade = since > 0 ? Math.max(0, 1 - since / 1200) : 1;
+        g.visible = fade > 0.01;
+        g.position.set(p.x, p.y + 0.05, p.z);
+        const hit = broken >= 0 && since > 0;
+        pulseMat.color.copy(hit ? c.danger : c.ok);
+        haloMat.color.copy(pulseMat.color);
+        pulseMat.opacity = fade;
+        haloMat.opacity = 0.3 * fade * (hit ? 1.6 : 1);
+        g.scale.setScalar(hit ? 1 + 1.4 * easeToken(Math.min(1, since / 300)) : 1);
+      }
+    }
     if (beam.current) {
       const on =
         verify &&
@@ -260,7 +338,7 @@ export default function LedgerFilm({
   const show = state.settled;
   const broken = verify?.broken ?? -1;
   return (
-    <>
+    <Thicken>
       <DirectorCamera state={state} onSettled={onSettled} drift={0.02} />
       <fog attach="fog" args={[c.bg, 8, 20]} />
       {/* The radar disc: the arc's blocks sit on a circle round (0, 0, -7), from 210° to 330°. */}
@@ -314,10 +392,27 @@ export default function LedgerFilm({
           onPointerOver={() => onPick && (document.body.style.cursor = "pointer")}
           onPointerOut={() => (document.body.style.cursor = "")}
         >
-          <mesh geometry={geo} material={mats[i]!.fill} />
-          <lineSegments geometry={edges} material={mats[i]!.line} />
+          <group ref={i === TARGET_INDEX ? whole : undefined}>
+            <mesh geometry={geo} material={mats[i]!.fill} />
+            <lineSegments geometry={edges} material={mats[i]!.line} />
+          </group>
+          {i === TARGET_INDEX &&
+            [0, 1].map((side) => (
+              <group key={side} ref={(h) => void (halves.current[side] = h)} visible={false}>
+                <mesh geometry={half.g} material={mats[i]!.fill} />
+                <lineSegments geometry={half.e} material={mats[i]!.line} />
+              </group>
+            ))}
         </group>
       ))}
+      <group ref={pulse} visible={false}>
+        <mesh material={pulseMat}>
+          <sphereGeometry args={[0.07, 20, 14]} />
+        </mesh>
+        <mesh material={haloMat}>
+          <sphereGeometry args={[0.24, 20, 14]} />
+        </mesh>
+      </group>
       <mesh ref={beam} visible={false}>
         <planeGeometry args={[0.04, 1.3]} />
         <meshBasicMaterial
@@ -357,6 +452,6 @@ export default function LedgerFilm({
         value="nothing after it can be trusted"
         show={show && id === "broken" && broken === TARGET_INDEX}
       />
-    </>
+    </Thicken>
   );
 }

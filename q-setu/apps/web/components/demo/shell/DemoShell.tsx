@@ -109,15 +109,14 @@ export function DemoShell({
         </Container>
       </header>
       <main id="main" className="flex-1">
-        <Container className="py-12">
-          {side ? (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-split">
-              <div className="min-w-0">{children}</div>
-              <aside className="xl:sticky xl:top-24 xl:self-start">{side}</aside>
-            </div>
-          ) : (
-            children
-          )}
+        <Container className="pb-12">
+          {/* The 3D is the star: the stage spans the page; the console is a drawer over its edge. */}
+          <div className="relative">
+            {children}
+            {side && (
+              <aside className="mt-6 md:absolute md:right-0 md:top-4 md:z-10 md:mt-0">{side}</aside>
+            )}
+          </div>
         </Container>
       </main>
       {meter && (

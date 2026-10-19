@@ -8,6 +8,7 @@ import { Globe } from "./Globe";
 import { IndexBars } from "./IndexBars";
 import { Nodes } from "./Nodes";
 import { Rig } from "./Rig";
+import { Thicken } from "@/components/scenes/Thicken";
 import { RoomArcs } from "./RoomArcs";
 import { ScanArc } from "./ScanArc";
 import { LedgerCore } from "./LedgerCore";
@@ -43,13 +44,15 @@ export function World({ dots }: { dots: Dots }) {
       <RenderMain />
       <Rig globe={globe} />
       <group ref={globe}>
-        <Globe dots={dots} />
-        <Arcs />
-        <Nodes />
-        <ScanArc />
-        <RoomArcs />
-        <IndexBars />
-        <LedgerCore />
+        <Thicken width={1.6}>
+          <Globe dots={dots} />
+          <Arcs />
+          <Nodes />
+          <ScanArc />
+          <RoomArcs />
+          <IndexBars />
+          <LedgerCore />
+        </Thicken>
       </group>
     </>
   );

@@ -11,7 +11,7 @@
  * and within limits; a double-click (or the next shot) eases back to the director's framing.
  */
 import { PerspectiveCamera } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -28,6 +28,10 @@ export function DirectorCamera({
   range = [0.7, 1.0],
   orbit,
   zoom = true,
+  shiftX = 0,
+  shiftY = 0,
+  pull,
+  autoYaw,
 }: {
   state: DirectorState;
   onSettled: () => void;
@@ -40,6 +44,17 @@ export function DirectorCamera({
   orbit?: () => HTMLElement | null;
   /** Let the wheel zoom (off where the page itself must scroll). */
   zoom?: boolean;
+  /**
+   * Moves the framed subject right by this fraction of the view's width (a lens shift, not a camera
+   * move), leaving the left side free for text laid over the 3D.
+   */
+  shiftX?: number;
+  /** Moves the framed subject up by this fraction of the view's height (text below it). */
+  shiftY?: number;
+  /** A dolly-out factor (0 = none): the camera backs away from its subject by up to 3.5× its distance. */
+  pull?: () => number;
+  /** A directed orbit (radians of yaw, added to the viewer's), for hero moments. */
+  autoYaw?: () => number;
 }) {
   // The viewer's orbit offsets (yaw, pitch in radians; zoom as a distance factor) and their targets.
   // vy/vp: fling velocity (rad/s) after a release; at: the last drag or zoom (3 s idle springs back).
@@ -177,6 +192,21 @@ export function DirectorCamera({
     };
   }, [orbit, zoom, state.reduce]);
 
+  const size = useThree((st) => st.size);
+  useEffect(() => {
+    const c = cam.current;
+    if (!c) return;
+    if (shiftX || shiftY)
+      c.setViewOffset(
+        size.width,
+        size.height,
+        -shiftX * size.width,
+        shiftY * size.height,
+        size.width,
+        size.height,
+      );
+    else c.clearViewOffset();
+  }, [shiftX, shiftY, size.width, size.height]);
   const off = useRef(new THREE.Vector3());
   const swayV = useRef(new THREE.Vector3());
   const axis = useRef(new THREE.Vector3());
@@ -215,13 +245,20 @@ export function DirectorCamera({
     u.yaw += (u.ty - u.yaw) * k;
     u.pitch += (u.tp - u.pitch) * k;
     u.zoom += (u.tz - u.zoom) * k;
-    if (Math.abs(u.yaw) + Math.abs(u.pitch) + Math.abs(u.zoom - 1) > 1e-4) {
+    const ay = autoYaw?.() ?? 0;
+    if (Math.abs(u.yaw + ay) + Math.abs(u.pitch) + Math.abs(u.zoom - 1) > 1e-4) {
       const o = off.current.copy(c.position).sub(look.current);
-      o.applyAxisAngle(THREE.Object3D.DEFAULT_UP, u.yaw);
+      o.applyAxisAngle(THREE.Object3D.DEFAULT_UP, u.yaw + ay);
       axis.current.crossVectors(THREE.Object3D.DEFAULT_UP, o).normalize();
       o.applyAxisAngle(axis.current, u.pitch).multiplyScalar(u.zoom);
       c.position.copy(look.current).add(o);
     }
+    const out = pull?.() ?? 0;
+    if (out > 0)
+      c.position
+        .sub(look.current)
+        .multiplyScalar(1 + 3.5 * out)
+        .add(look.current);
     const subject = track?.();
     if (subject && settled.current) {
       look.current.lerp(subject, 0.12);

@@ -95,6 +95,7 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
   const [table, setTable] = useState(false);
   const next = nextStage(s);
   const busy = s.status.includes("running");
+  const locked = (i: number) => i > 0 && s.status[i - 1] !== "done" && s.status[i] !== "done";
   return (
     <div className={`border border-line bg-glass ${className}`} role="group" aria-label="Pipeline">
       <ol className="grid grid-cols-5">
@@ -125,17 +126,27 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
                 {status === "done" ? "✓" : st.n} <span className="hidden md:inline">{st.name}</span>
                 <span className="md:hidden">{st.name.slice(0, 3)}</span>
               </p>
-              <button
-                type="button"
-                onClick={() => runStage(i)}
-                disabled={
-                  busy || (i > 0 && s.status[i - 1] !== "done") || (status === "done" && i !== 4)
-                }
-                data-ripple={st.role}
-                className={`mt-1 hidden w-full truncate rounded-sm border px-2 py-1 text-left text-small transition-colors duration-150 disabled:opacity-40 md:block ${i === next ? "border-line-strong text-fg hover:bg-raised" : "border-line text-fg-2"}`}
-              >
-                {status === "running" ? "Running…" : st.cta}
-              </button>
+              {locked(i) ? (
+                // Not available yet: deliberately locked (a lock and the step it waits for), not
+                // a greyed-out button that looks broken.
+                <p
+                  className="mt-1 hidden w-full items-center gap-2 truncate rounded-sm border border-dashed border-line px-2 py-1 text-small text-fg-3 md:flex"
+                  title={`Unlocks after ${STAGES[i - 1]!.name.toLowerCase()}`}
+                >
+                  <LockGlyph />
+                  <span className="truncate">After {STAGES[i - 1]!.name.toLowerCase()}</span>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => runStage(i)}
+                  disabled={busy || (status === "done" && i !== 4)}
+                  data-ripple={st.role}
+                  className={`mt-1 hidden w-full truncate rounded-sm border px-2 py-1 text-left text-small transition-colors duration-150 disabled:opacity-40 md:block ${i === next ? "border-line-strong text-fg hover:bg-raised" : "border-line text-fg-2"}`}
+                >
+                  {status === "running" ? "Running…" : st.cta}
+                </button>
+              )}
             </li>
           );
         })}
@@ -165,12 +176,16 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
         >
           Replay · R
         </button>
+        {/* Only once there's an anchored block to tamper with. Its space is kept (invisible and
+            out of the tab order until then), so the row never reflows when it appears. */}
         <button
           type="button"
           onClick={() => void actions.tamper()}
-          disabled={!s.proof || busy}
+          disabled={busy || !s.proof}
+          aria-hidden={!s.proof || undefined}
+          tabIndex={s.proof ? 0 : -1}
           data-ripple="danger"
-          className="h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-danger disabled:opacity-40"
+          className={`h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-danger disabled:opacity-40 ${s.proof ? "" : "invisible"}`}
         >
           Try tamper
         </button>
@@ -190,5 +205,20 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
       )}
       {table && <LegacyVsPq />}
     </div>
+  );
+}
+
+function LockGlyph() {
+  return (
+    <svg
+      viewBox="0 0 12 14"
+      className="h-3 w-3 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden
+    >
+      <rect x="1.5" y="6" width="9" height="6.5" rx="1" />
+      <path d="M3.5 6V4a2.5 2.5 0 0 1 5 0v2" />
+    </svg>
   );
 }

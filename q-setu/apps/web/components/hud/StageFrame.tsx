@@ -94,7 +94,7 @@ export function StageFrame({ compact = false }: { compact?: boolean }) {
         <span className="text-ok">●</span> LIVE WEBGL · <span className="tabular">{fps}</span> fps
       </p>
       <p
-        className={`mt-2 font-mono text-small uppercase tracking-widest md:text-h3 ${TONE[t.role]}`}
+        className={`mt-2 font-mono text-small uppercase tracking-widest md:text-body ${TONE[t.role]}`}
         aria-hidden
         data-stage-title={t.title}
       >

@@ -19,6 +19,7 @@ import type { DirectorState } from "@/components/director/types";
 import { latticeCube, span, set3 } from "@/components/scenes/geometry";
 import { palette } from "@/components/world/palette";
 import { easeToken } from "@/lib/ease";
+import { Thicken } from "@/components/scenes/Thicken";
 
 export interface Film {
   shareHex?: string;
@@ -50,6 +51,7 @@ const TUBE = new THREE.CubicBezierCurve3(
 // Fixed points the per-frame code lerps between (allocated once, not every frame).
 const MERGE_A = new THREE.Vector3(-0.05, 0, 0);
 const MERGE_B = new THREE.Vector3(0.05, 0, 0);
+const MERGE_MS = 2600;
 const ATTACK_FROM = new THREE.Vector3(-1, 2.4, 1.2);
 const ATTACK_TO = new THREE.Vector3(2.6 - 0.6, 0.1, 0);
 const PACKET_MS = 1600;
@@ -265,7 +267,8 @@ export default function HandshakeFilm({
       (ring.current.material as THREE.MeshBasicMaterial).color.copy(hit > 0.05 ? c.danger : c.sig);
     }
     // Merge: classical (white) and post-quantum (KEM) halves fly into the HKDF lens and fuse.
-    const m = film.mergeAt ? (state.reduce ? 1 : span(now - film.mergeAt, 0, 1400)) : 0;
+    // The hero moment: slow (2.6 s), full-frame, the camera orbiting the lens as the halves fuse.
+    const m = film.mergeAt ? (state.reduce ? 1 : span(now - film.mergeAt, 0, MERGE_MS)) : 0;
     const me = easeToken(m);
     if (halfA.current && halfB.current && lens.current && key.current && flash.current) {
       const flying = m > 0 && m < 0.85;
@@ -277,7 +280,10 @@ export default function HandshakeFilm({
       );
       key.current.visible = m >= 0.85 || (film.mergeAt !== undefined && m === 1);
       key.current.rotation.y += dt * 0.5;
-      const f = film.mergeAt && !state.reduce ? span(now - film.mergeAt, 1200, 1900) : 0;
+      const f =
+        film.mergeAt && !state.reduce
+          ? span(now - film.mergeAt, MERGE_MS * 0.85, MERGE_MS * 0.85 + 900)
+          : 0;
       flash.current.visible = f > 0 && f < 1;
       flash.current.scale.setScalar(0.3 + 2.4 * easeToken(f));
       (flash.current.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - f);
@@ -331,9 +337,14 @@ export default function HandshakeFilm({
 
   const show = state.settled;
   const id = state.shot.id;
+  // During the merge the camera orbits ~34° around the lens (none under reduced motion).
+  const mergeOrbit = () =>
+    film.mergeAt && state.shot.id === "merge" && !state.reduce
+      ? 0.6 * easeToken(span(performance.now() - film.mergeAt, 0, MERGE_MS))
+      : 0;
   return (
-    <>
-      <DirectorCamera state={state} onSettled={onSettled} track={track} />
+    <Thicken>
+      <DirectorCamera state={state} onSettled={onSettled} track={track} autoYaw={mergeOrbit} />
       <fog attach="fog" args={[c.bg, 6, 16]} />
       <ambientLight intensity={0.5} />
       <directionalLight position={[3, 5, 4]} intensity={0.9} />
@@ -388,23 +399,29 @@ export default function HandshakeFilm({
         <meshBasicMaterial color={c.sig} toneMapped={false} />
       </mesh>
       <mesh ref={halfA} visible={false} rotation={[0, Math.PI / 2, 0]}>
-        <sphereGeometry args={[0.2, 24, 12, 0, Math.PI]} />
+        <sphereGeometry args={[0.3, 32, 16, 0, Math.PI]} />
         <meshBasicMaterial color={c.text} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={halfB} visible={false} rotation={[0, -Math.PI / 2, 0]}>
-        <sphereGeometry args={[0.2, 24, 12, 0, Math.PI]} />
+        <sphereGeometry args={[0.3, 32, 16, 0, Math.PI]} />
         <meshBasicMaterial color={c.kem} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={lens} rotation={[0, Math.PI / 2, 0]} scale={0.0001}>
-        <torusGeometry args={[0.34, 0.006, 8, 64]} />
-        <meshBasicMaterial color={c.text} transparent depthWrite={false} opacity={0.7} />
+        <torusGeometry args={[0.55, 0.018, 12, 96]} />
+        <meshBasicMaterial
+          color={c.text}
+          transparent
+          depthWrite={false}
+          opacity={0.85}
+          toneMapped={false}
+        />
       </mesh>
       <mesh ref={key} visible={false}>
-        <octahedronGeometry args={[0.22, 0]} />
+        <octahedronGeometry args={[0.32, 0]} />
         <meshBasicMaterial color={c.ok} wireframe toneMapped={false} />
       </mesh>
       <mesh ref={flash} visible={false} rotation={[0, Math.PI / 2, 0]}>
-        <ringGeometry args={[0.48, 0.5, 64]} />
+        <ringGeometry args={[0.7, 0.74, 96]} />
         <meshBasicMaterial color={c.ok} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
       <instancedMesh ref={sparks} args={[undefined, undefined, SPARKS]} visible={false}>
@@ -485,6 +502,6 @@ export default function HandshakeFilm({
         value="forged ML-KEM key, original signature"
         show={show && id === "attack" && !!film.attackRejected}
       />
-    </>
+    </Thicken>
   );
 }
