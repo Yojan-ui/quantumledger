@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
@@ -22,10 +23,17 @@ function HeroLine({ text, visible }: { text: string; visible: boolean }) {
 }
 
 // The QR encoder loads after first paint; the hero's text never waits for it.
-const RoomQR = dynamic(() => import("@/components/room/RoomQR").then((m) => m.RoomQR), {
-  ssr: false,
-  loading: () => <div className="hidden h-32 md:block" aria-hidden />,
-});
+const RoomQR = dynamic(
+  () =>
+    import("@/components/room/RoomQR")
+      .catch(() => import("@/components/room/RoomQR"))
+      .then((m) => m.RoomQR)
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => <div className="hidden h-32 md:block" aria-hidden />,
+  },
+);
 
 /**
  * The hero is the 3D, edge to edge: the real diagnostics stage runs the opening (a real key pair, the

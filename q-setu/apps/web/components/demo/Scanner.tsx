@@ -3,6 +3,7 @@
 import type { ScanResult, Severity } from "@qsetu/core";
 import { SCAN_SAMPLES } from "@qsetu/core/samples";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef, useState } from "react";
 import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { LazyView } from "@/components/scenes/LazyView";
@@ -13,10 +14,17 @@ import { usePresent } from "@/lib/client/present";
 import { useReducedMotion } from "@/lib/client/motion";
 import type { Plan } from "@/lib/live/plan";
 
-const ScannerBars = dynamic(() => import("./ScannerBars").catch(() => import("./ScannerBars")), {
-  ssr: false,
-  loading: () => null,
-});
+const ScannerBars = dynamic(
+  () =>
+    import("./ScannerBars")
+      .catch(() => import("./ScannerBars"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const LIFETIMES = [1, 5, 10, 25] as const;
 

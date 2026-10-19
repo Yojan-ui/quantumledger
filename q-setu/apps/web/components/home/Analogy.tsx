@@ -6,6 +6,7 @@
  * the same doors.
  */
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -17,9 +18,10 @@ import { footnote } from "@/data/facts";
 
 const AnalogyMorph = dynamic(
   () =>
-    import("@/components/scenes/AnalogyMorph").catch(
-      () => import("@/components/scenes/AnalogyMorph"),
-    ),
+    import("@/components/scenes/AnalogyMorph")
+      .catch(() => import("@/components/scenes/AnalogyMorph"))
+
+      .catch(chunkFailed),
   { ssr: false },
 );
 

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef, useState } from "react";
 import { Container, Label, Legend, ROLES, SectionLabel, Text, TextLink } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
@@ -14,15 +15,23 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // The Q-Day widget breaks real (tiny) RSA in the browser; its code loads only when the section is near.
-const HarvestQDay = dynamic(() => import("./HarvestQDay").catch(() => import("./HarvestQDay")), {
-  ssr: false,
-  loading: () => null,
-});
+const HarvestQDay = dynamic(
+  () =>
+    import("./HarvestQDay")
+      .catch(() => import("./HarvestQDay"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 const HandshakeCubes = dynamic(
   () =>
-    import("@/components/scenes/HandshakeCubes").catch(
-      () => import("@/components/scenes/HandshakeCubes"),
-    ),
+    import("@/components/scenes/HandshakeCubes")
+      .catch(() => import("@/components/scenes/HandshakeCubes"))
+
+      .catch(chunkFailed),
   { ssr: false },
 );
 

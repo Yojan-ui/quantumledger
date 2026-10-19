@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { Suspense, useEffect, useState } from "react";
 import { demoOnPage, resetAll, sendPresent } from "@/lib/client/present";
 import { scrollToY } from "@/lib/client/scroll";
@@ -9,9 +10,16 @@ import { scrollToY } from "@/lib/client/scroll";
 const KEY = "qsetu:present";
 
 /** Q in presenter mode: a large join code for the room, with the live counter under it. */
-const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
-  ssr: false,
-});
+const RoomPanel = dynamic(
+  () =>
+    import("@/components/room/RoomPanel")
+      .catch(() => import("@/components/room/RoomPanel"))
+      .then((m) => m.RoomPanel)
+      .catch(chunkFailed),
+  {
+    ssr: false,
+  },
+);
 /** 1–6 jump between the diagnostics HUD and the demos. */
 const DEMOS = [
   "/diagnostics",

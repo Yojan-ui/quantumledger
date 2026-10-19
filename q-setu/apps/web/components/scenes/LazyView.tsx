@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { SceneBoundary } from "@/components/world/SceneBoundary";
 import { invalidateAreas } from "@/lib/client/gfx";
@@ -11,7 +12,8 @@ const SceneView = dynamic(
   () =>
     import("@/components/world/SceneView")
       .catch(() => import("@/components/world/SceneView"))
-      .then((m) => m.SceneView),
+      .then((m) => m.SceneView)
+      .catch(chunkFailed),
   { ssr: false },
 );
 

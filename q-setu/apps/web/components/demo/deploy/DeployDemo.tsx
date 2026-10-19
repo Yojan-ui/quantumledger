@@ -2,6 +2,7 @@
 
 import type { SectorId } from "@qsetu/sim";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
@@ -28,10 +29,17 @@ import { pushLocal } from "@/lib/client/live";
 import { anticipate } from "@/lib/motion";
 
 // The certificate scenario (QR encode + scan) sits below the film: its code loads on demand.
-const CertificateFlow = dynamic(() => import("./CertificateFlow").then((m) => m.CertificateFlow), {
-  ssr: false,
-  loading: () => null,
-});
+const CertificateFlow = dynamic(
+  () =>
+    import("./CertificateFlow")
+      .catch(() => import("./CertificateFlow"))
+      .then((m) => m.CertificateFlow)
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 /** Adapter work on the server, deployed-node traffic, and anything this tab did. */
 const consoleFilter = (e: OpEvent) =>

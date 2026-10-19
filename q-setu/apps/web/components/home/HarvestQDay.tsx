@@ -7,14 +7,16 @@ import { useEffect, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
 import { Label, RoleDot, Stat } from "@/components/ui";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { LazyView } from "@/components/scenes/LazyView";
 import { Odometer } from "@/components/ui/Odometer";
 
 const QDayShatter = dynamic(
   () =>
-    import("@/components/scenes/QDayShatter").catch(
-      () => import("@/components/scenes/QDayShatter"),
-    ),
+    import("@/components/scenes/QDayShatter")
+      .catch(() => import("@/components/scenes/QDayShatter"))
+
+      .catch(chunkFailed),
   { ssr: false },
 );
 

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
@@ -19,10 +20,17 @@ import { onLive } from "@/lib/client/live";
 import type { LedgerEntry, VerifyResult } from "@/lib/live/ledger";
 import type { OpEvent } from "@/lib/live/types";
 
-const LedgerFilm = dynamic(() => import("./LedgerFilm").catch(() => import("./LedgerFilm")), {
-  ssr: false,
-  loading: () => null,
-});
+const LedgerFilm = dynamic(
+  () =>
+    import("./LedgerFilm")
+      .catch(() => import("./LedgerFilm"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const TARGET = 42;
 /** Arc positions: six entries around #42 (it sits at index 3), then the six newest. */

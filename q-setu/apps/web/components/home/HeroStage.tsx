@@ -11,6 +11,7 @@
  * burst; the stages run straight through to their end state (every value still real).
  */
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
@@ -30,9 +31,10 @@ import {
 
 const PipelineStage = dynamic(
   () =>
-    import("@/components/scenes/PipelineStage").catch(
-      () => import("@/components/scenes/PipelineStage"),
-    ),
+    import("@/components/scenes/PipelineStage")
+      .catch(() => import("@/components/scenes/PipelineStage"))
+
+      .catch(chunkFailed),
   { ssr: false },
 );
 

@@ -9,6 +9,7 @@
  * loopback; where that can't start, the recorded run, and the note says so.
  */
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
@@ -22,9 +23,16 @@ import { BEATS, type InstallMode, type View } from "./model";
 import { shotCamera } from "./ShieldPlugIn";
 import { useShieldStory } from "./useShieldStory";
 
-const ShieldPlugIn = dynamic(() => import("./ShieldPlugIn").catch(() => import("./ShieldPlugIn")), {
-  ssr: false,
-});
+const ShieldPlugIn = dynamic(
+  () =>
+    import("./ShieldPlugIn")
+      .catch(() => import("./ShieldPlugIn"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+  },
+);
 
 const MODES: { id: InstallMode; label: string }[] = [
   { id: "dns", label: "DNS" },

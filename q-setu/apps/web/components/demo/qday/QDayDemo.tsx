@@ -8,6 +8,7 @@ import {
   type SectorId,
 } from "@qsetu/sim";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
@@ -33,10 +34,17 @@ import { base64ToBytes } from "@qsetu/core";
 /** The simulator's real hops on the server, and the Q-Day attack running in this tab. */
 const consoleFilter = (e: OpEvent) => e.source === "sim" || e.source === "browser";
 
-const QDayFilm = dynamic(() => import("./QDayFilm").catch(() => import("./QDayFilm")), {
-  ssr: false,
-  loading: () => null,
-});
+const QDayFilm = dynamic(
+  () =>
+    import("./QDayFilm")
+      .catch(() => import("./QDayFilm"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const START = new Date().getFullYear();
 /**

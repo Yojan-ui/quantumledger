@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Code, Heading, Label, Section, SectionLabel, Text, TextLink } from "@/components/ui";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { LazyView } from "@/components/scenes/LazyView";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
@@ -15,9 +16,10 @@ import { useJourney } from "@/lib/client/journey";
 
 const ShieldSlot = dynamic(
   () =>
-    import("@/components/scenes/shield/ShieldSlot").catch(
-      () => import("@/components/scenes/shield/ShieldSlot"),
-    ),
+    import("@/components/scenes/shield/ShieldSlot")
+      .catch(() => import("@/components/scenes/shield/ShieldSlot"))
+
+      .catch(chunkFailed),
   { ssr: false },
 );
 

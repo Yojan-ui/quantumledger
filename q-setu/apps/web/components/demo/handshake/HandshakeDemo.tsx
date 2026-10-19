@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef, useState } from "react";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
@@ -21,7 +22,11 @@ import type { OpEvent, PolicyState } from "@/lib/live/types";
 import type { Film } from "./HandshakeFilm";
 
 const HandshakeFilm = dynamic(
-  () => import("./HandshakeFilm").catch(() => import("./HandshakeFilm")),
+  () =>
+    import("./HandshakeFilm")
+      .catch(() => import("./HandshakeFilm"))
+
+      .catch(chunkFailed),
   { ssr: false, loading: () => null },
 );
 
