@@ -1,4 +1,4 @@
-import { fail, parseParams } from "@/lib/server/api";
+import { fail, parseParams, safeMessage } from "@/lib/server/api";
 import { getBus } from "@/lib/server/runtime";
 import { IdParams } from "@/lib/server/schemas";
 import { getVault } from "@/lib/server/state";
@@ -32,6 +32,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       ok: false,
       detail: `record ${p.data.id}: ${reason ?? "rejected"}`,
     });
-    return fail("conflict", (e as Error).message, 409, { reason });
+    return fail("conflict", safeMessage(e, "The record failed verification."), 409, { reason });
   }
 }

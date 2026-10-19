@@ -211,6 +211,16 @@
       outline-color: var(--kem);
     }
   }
+  /* A sideways-scrolling row that fades out at its right edge (only while it can scroll). */
+  .fade-x {
+    mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+    scrollbar-width: none;
+  }
+  @media (min-width: 768px) {
+    .fade-x {
+      mask-image: none;
+    }
+  }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;
     transition-duration: var(--dur-hover);

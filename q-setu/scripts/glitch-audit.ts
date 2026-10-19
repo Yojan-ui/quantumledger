@@ -8,8 +8,8 @@
  *   - frame times while scrolling and during demo transitions (worst, p95, frames over 50 ms)
  *   - Cumulative Layout Shift, with the elements that shifted
  *   - failed network requests (errors and HTTP ≥ 400)
- *   - a 10-second video of the scroll and clicks (docs/smooth/videos-<label>/, not committed)
- * and writes docs/smooth/audit-<label>.md (ranked) and audit-<label>.json.
+ *   - a 10-second video of the scroll and clicks (<out>/videos-<label>/, not committed)
+ * and writes <out>/audit-<label>.md (ranked) and audit-<label>.json.
  */
 
 import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -18,7 +18,9 @@ import { chromium, devices, type BrowserContext, type Page } from "@playwright/t
 const label = process.argv[2] ?? "before";
 const BASE = process.env.BASE ?? "http://localhost:3000";
 const ONLY = process.env.ONLY?.split(",");
-const root = new URL("../docs/smooth/", import.meta.url).pathname;
+// AUDIT_OUT (relative to q-setu/) puts a pass's reports somewhere else, e.g. docs/real.
+const OUT = process.env.AUDIT_OUT ?? "docs/smooth";
+const root = new URL(`../${OUT}/`.replace(/\/+$/, "/"), import.meta.url).pathname;
 const videos = `${root}videos-${label}/`;
 mkdirSync(videos, { recursive: true });
 
@@ -294,7 +296,7 @@ const lines: string[] = [
   `\`pnpm audit:glitch ${label}\` against the production build at ${BASE}, ${new Date().toISOString().slice(0, 16)} UTC.`,
   "Every page at 1440×900, and at 390×844 with 4× CPU throttling. Each run: load, scroll to the end, the",
   "page's main action (Play, Verify, Tamper, Scan… or hover across it), 10 s in all. Videos are in",
-  `\`docs/smooth/videos-${label}/\` (not committed).`,
+  `\`${OUT}/videos-${label}/\` (not committed).`,
   "",
   "## Totals",
   "",
@@ -350,4 +352,4 @@ for (const r of ranked.filter((x) => x.score >= 1)) {
   lines.push("");
 }
 writeFileSync(`${root}audit-${label}.md`, lines.join("\n") + "\n");
-console.log(`wrote docs/smooth/audit-${label}.md`);
+console.log(`wrote ${OUT}/audit-${label}.md`);

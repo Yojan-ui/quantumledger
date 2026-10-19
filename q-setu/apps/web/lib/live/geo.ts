@@ -34,7 +34,17 @@ export async function locate(ip: string, offline = false): Promise<GeoPoint> {
       city?: string;
       country?: string;
     };
-    if (d.status !== "success" || !Number.isFinite(d.lat)) return INDIA;
+    // A third-party answer over plain HTTP: only well-formed coordinates and a short label pass.
+    if (
+      d.status !== "success" ||
+      !Number.isFinite(d.lat) ||
+      !Number.isFinite(d.lon) ||
+      Math.abs(d.lat) > 90 ||
+      Math.abs(d.lon) > 180
+    )
+      return INDIA;
+    if (typeof d.city === "string") d.city = d.city.slice(0, 60);
+    if (typeof d.country === "string") d.country = d.country.slice(0, 60);
     return {
       lat: d.lat,
       lon: d.lon,

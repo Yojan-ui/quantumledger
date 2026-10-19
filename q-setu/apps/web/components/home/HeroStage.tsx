@@ -33,6 +33,7 @@ const PipelineStage = dynamic(() => import("@/components/scenes/PipelineStage"),
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const PILL = {
+  idle: { text: "AWAITING TARGET", cls: "border-line text-fg-3" },
   critical: { text: "THREAT CRITICAL", cls: "border-danger text-danger" },
   mitigating: { text: "MITIGATING", cls: "border-warn text-warn" },
   secured: { text: "SECURED", cls: "border-ok text-ok" },

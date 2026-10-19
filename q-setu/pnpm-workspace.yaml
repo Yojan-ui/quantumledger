@@ -7,3 +7,12 @@ onlyBuiltDependencies:
   - ffmpeg-static
   - sharp
   - unrs-resolver
+# Security fixes for transitive dependencies (see docs/security/audit-exceptions.md).
+overrides:
+  tinypool: 2.2.0
+  "next>postcss": 8.5.30
+# Advisories with no fixed version, each checked and justified in docs/security/audit-exceptions.md.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-86w9-cpqp-85rv
+    - GHSA-vfj7-8cjw-p6xm

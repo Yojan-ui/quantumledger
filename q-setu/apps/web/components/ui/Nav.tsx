@@ -12,6 +12,7 @@ import { endQday, throwQday, useQday } from "@/lib/client/qday-switch";
 
 export const NAV_LINKS = [
   { href: "/platform", label: "Platform" },
+  { href: "/shield", label: "Shield" },
   { href: "/solutions", label: "Solutions" },
   { href: "/demos", label: "Demos" },
   { href: "/docs", label: "Docs" },
@@ -105,7 +106,7 @@ export function Nav() {
       <header data-chrome className="sticky top-0 z-40 h-14 border-b border-line bg-nav">
         <Container className="flex h-full items-center justify-between gap-6">
           <Logo />
-          <nav aria-label="Main" className="hidden md:block">
+          <nav aria-label="Main" className="hidden lg:block">
             <ul ref={list} className="relative flex items-center gap-8">
               {NAV_LINKS.map((l) => {
                 const on = path === l.href || path.startsWith(`${l.href}/`);
@@ -129,12 +130,13 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
-            <QDayToggle className="hidden md:flex" />
-            <CopyToggle />
+            <QDayToggle className="hidden xl:flex" />
+            {/* Below lg the toggle lives in the menu: the header row must fit a 360 px phone. */}
+            <CopyToggle className="hidden lg:flex" />
             <button
               type="button"
               onClick={openCommandMenu}
-              className="hidden h-8 items-center gap-2 rounded-sm border border-line px-2 font-mono text-label text-fg-3 transition-colors duration-150 hover:text-fg lg:flex"
+              className="hidden h-8 items-center gap-2 rounded-sm border border-line px-2 font-mono text-label text-fg-3 transition-colors duration-150 hover:text-fg xl:flex"
               aria-label="Open command menu"
             >
               ⌘K
@@ -144,7 +146,7 @@ export function Nav() {
               aria-hidden={heroVisible}
               inert={heroVisible || undefined}
             >
-              <ButtonLink href="/#early-access" className="hidden md:inline-flex">
+              <ButtonLink href="/#early-access" className="hidden lg:inline-flex">
                 Get early access
               </ButtonLink>
             </div>
@@ -153,7 +155,7 @@ export function Nav() {
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-controls="mobile-menu"
-              className="flex h-10 items-center px-2 text-small text-fg md:hidden"
+              className="flex h-10 shrink-0 items-center px-2 text-small text-fg lg:hidden"
             >
               {open ? "Close" : "Menu"}
             </button>
@@ -163,7 +165,7 @@ export function Nav() {
           <nav
             id="mobile-menu"
             aria-label="Main"
-            className="border-b border-line bg-base md:hidden"
+            className="border-b border-line bg-base lg:hidden"
           >
             <Container className="space-y-1 py-4">
               {NAV_LINKS.map((l) => (
@@ -171,6 +173,10 @@ export function Nav() {
                   {l.label}
                 </Link>
               ))}
+              <div className="flex flex-wrap items-center gap-3 pt-3">
+                <CopyToggle />
+                <QDayToggle className="flex" />
+              </div>
               <div className="pt-3">
                 <ButtonLink href="/#early-access">Get early access</ButtonLink>
               </div>

@@ -1,4 +1,5 @@
 import { createMDX } from "fumadocs-mdx/next";
+import { STATIC_SECURITY_HEADERS } from "./lib/server/security-headers.mjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -14,6 +15,7 @@ const nextConfig = {
     "@qsetu/web-shield",
     "@qsetu/shield-proxy",
     "@qsetu/legacy-bank",
+    "@qsetu/shield-edge",
   ],
   serverExternalPackages: [
     "fastify",
@@ -47,8 +49,10 @@ const nextConfig = {
     ];
   },
   async headers() {
-    // qsetu.js doubles as the Web shield's Service Worker; let it control the whole origin.
     return [
+      // Every response, static files included. The CSP itself is per request (middleware.ts).
+      { source: "/:path*", headers: STATIC_SECURITY_HEADERS },
+      // qsetu.js doubles as the Web shield's Service Worker; let it control the whole origin.
       {
         source: "/qsetu.js",
         headers: [

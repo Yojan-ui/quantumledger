@@ -42,6 +42,10 @@ export function GlPoster() {
   );
 }
 
+const stillPhone = () =>
+  matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  matchMedia("(max-width: 767px)").matches;
+
 /**
  * A 3D window in the site's single WebGL canvas (drei View) that mounts only when it first comes
  * near the viewport, and tells its scene whether it's on screen so animation can pause. The box keeps
@@ -60,6 +64,8 @@ export function LazyView({
   const [mounted, setMounted] = useState(false);
   const [onScreen, setOnScreen] = useState(false);
   useEffect(() => {
+    // Phones with reduced motion keep the static poster: no 3D at all, so no GPU or battery cost.
+    if (stillPhone()) return;
     const io = new IntersectionObserver(
       ([e]) => {
         const on = !!e?.isIntersecting;

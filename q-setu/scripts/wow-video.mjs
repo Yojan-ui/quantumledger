@@ -47,7 +47,11 @@ const FPS_PROBE = `(() => {
 const browser = await chromium.launch({
   channel: process.env.PW_CHANNEL === "" ? undefined : "chrome",
 });
-await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+await fetch(`${BASE}/api/reset-all`, {
+  method: "POST",
+  // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+  headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+}).catch(() => {});
 
 async function record(name, run) {
   const dir = `${out}.rec-${name}`;

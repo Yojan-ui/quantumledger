@@ -78,12 +78,14 @@ export function Scanner() {
         hybridPq: probe?.hybridPq,
       }),
     })
-      .then((r) => r.json())
-      .then((p: Plan & { markdown: string }) => {
-        if (!live) return;
+      // An error reply (a 429, a 400) has no plan in it: keep the last plan rather than render one.
+      .then((r) => (r.ok ? (r.json() as Promise<Plan & { markdown: string }>) : undefined))
+      .then((p) => {
+        if (!live || !p) return;
         setPlan(p);
         setDone(new Set());
-      });
+      })
+      .catch(() => {});
     return () => {
       live = false;
     };
@@ -97,7 +99,8 @@ export function Scanner() {
       href,
       download: `migration-plan-${filename.replace(/\W+/g, "-")}.md`,
     }).click();
-    URL.revokeObjectURL(href);
+    // Revoked a moment later: revoking at once can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
   }
 
   function choose(id: string) {
@@ -174,7 +177,8 @@ export function Scanner() {
       download: `cbom-${filename.replace(/\W+/g, "-")}.json`,
     });
     a.click();
-    URL.revokeObjectURL(url);
+    // Revoked a moment later: revoking at once can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const field =

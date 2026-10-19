@@ -109,24 +109,24 @@ function shotsFor(site: (typeof SITES)[number], sector: string): GlobeShot[] {
   ];
 }
 
-/** After deploy, each sealed node keeps doing real work (sign, seal, open, verify) about once a second. */
+/**
+ * After deploy, the sealed nodes keep doing real work (sign, seal, open, verify), one call every
+ * 2.5 s across them: 24 a minute, inside the route's own budget of 30 (lib/server/api-policy).
+ */
 function useNodeTraffic(sites: string[]) {
   const key = sites.join(",");
   useEffect(() => {
     if (!sites.length) return;
     let i = 0;
-    const t = setInterval(
-      () => {
-        if (document.hidden) return;
-        const site = sites[i++ % sites.length]!;
-        void fetch("/api/traffic", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ site }),
-        }).catch(() => {});
-      },
-      Math.max(350, 1100 / sites.length),
-    );
+    const t = setInterval(() => {
+      if (document.hidden) return;
+      const site = sites[i++ % sites.length]!;
+      void fetch("/api/traffic", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site }),
+      }).catch(() => {});
+    }, 2500);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);

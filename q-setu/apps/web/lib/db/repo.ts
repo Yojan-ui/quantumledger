@@ -3,7 +3,7 @@
  * or PGlite in tests): the two schemas have identical table and column names, and Drizzle's query
  * builder is the same for both. Everything that leaves this module is strongly typed.
  */
-import { asc, between, count, desc, eq } from "drizzle-orm";
+import { and, asc, between, count, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
 import * as pg from "./schema-pg";
 import * as lite from "./schema-sqlite";
 
@@ -64,6 +64,71 @@ export interface Repos {
     all(): Promise<{ id: string; record: string }[]>;
     upsert(id: string, record: string): Promise<void>;
   };
+  accounts: {
+    create(row: AccountRow): Promise<void>;
+    byEmail(email: string): Promise<AccountRow | undefined>;
+    get(id: string): Promise<AccountRow | undefined>;
+    setTotp(id: string, totpSealed: string, on: boolean): Promise<void>;
+  };
+  sites: {
+    create(row: SiteRow): Promise<void>;
+    forAccount(accountId: string): Promise<SiteRow[]>;
+    /** A site, only if it belongs to this account (every dashboard read goes through this). */
+    owned(accountId: string, id: string): Promise<SiteRow | undefined>;
+    byKeyHash(keyHash: string): Promise<SiteRow | undefined>;
+    /** The verified site for a domain, if any account has verified it. */
+    verifiedFor(domain: string): Promise<SiteRow | undefined>;
+    update(
+      accountId: string,
+      id: string,
+      set: Partial<Pick<SiteRow, "mode" | "settings" | "verifiedAt" | "keyHash">>,
+    ): Promise<void>;
+  };
+  shieldEvents: {
+    insert(rows: ShieldEventRow[]): Promise<void>;
+    recent(siteId: string, limit: number): Promise<(ShieldEventRow & { id: number })[]>;
+    since(siteId: string, at: number): Promise<(ShieldEventRow & { id: number })[]>;
+  };
+  shieldStats: {
+    add(siteId: string, day: string, d: Omit<ShieldStatsRow, "siteId" | "day">): Promise<void>;
+    range(siteId: string, fromDay: string, toDay: string): Promise<ShieldStatsRow[]>;
+  };
+}
+
+export interface AccountRow {
+  id: string;
+  email: string;
+  pwHash: string;
+  totpSealed: string;
+  totpOn: number;
+  createdAt: string;
+}
+export interface SiteRow {
+  id: string;
+  accountId: string;
+  domain: string;
+  verifyToken: string;
+  keyHash: string;
+  mode: string;
+  settings: string;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+export interface ShieldEventRow {
+  siteId: string;
+  at: number;
+  type: string;
+  score: number;
+  detail: string;
+}
+export interface ShieldStatsRow {
+  siteId: string;
+  day: string;
+  pq: number;
+  classical: number;
+  requests: number;
+  challenged: number;
+  blocked: number;
 }
 
 type Tables = typeof pg | typeof lite;
@@ -131,6 +196,92 @@ export function makeRepos(db: AnyDrizzle, t: Tables, dialect: Repos["dialect"]):
             .from(t.scans)
             .where(eq(t.scans.host, host))
         )[0],
+    },
+    accounts: {
+      create: async (row) => void (await db.insert(t.accounts).values(row)),
+      byEmail: async (email) =>
+        (await db.select().from(t.accounts).where(eq(t.accounts.email, email)))[0],
+      get: async (id) => (await db.select().from(t.accounts).where(eq(t.accounts.id, id)))[0],
+      setTotp: async (id, totpSealed, on) =>
+        void (await db
+          .update(t.accounts)
+          .set({ totpSealed, totpOn: on ? 1 : 0 })
+          .where(eq(t.accounts.id, id))),
+    },
+    sites: {
+      create: async (row) => void (await db.insert(t.sites).values(row)),
+      forAccount: async (accountId) =>
+        db
+          .select()
+          .from(t.sites)
+          .where(eq(t.sites.accountId, accountId))
+          .orderBy(asc(t.sites.createdAt)),
+      owned: async (accountId, id) =>
+        (
+          await db
+            .select()
+            .from(t.sites)
+            .where(and(eq(t.sites.accountId, accountId), eq(t.sites.id, id)))
+        )[0],
+      byKeyHash: async (keyHash) =>
+        (await db.select().from(t.sites).where(eq(t.sites.keyHash, keyHash)))[0],
+      verifiedFor: async (domain) =>
+        (
+          await db
+            .select()
+            .from(t.sites)
+            .where(and(eq(t.sites.domain, domain), isNotNull(t.sites.verifiedAt)))
+        )[0],
+      update: async (accountId, id, set) =>
+        void (await db
+          .update(t.sites)
+          .set(set)
+          .where(and(eq(t.sites.accountId, accountId), eq(t.sites.id, id)))),
+    },
+    shieldEvents: {
+      insert: async (r) => void (r.length && (await db.insert(t.shieldEvents).values(r))),
+      recent: async (siteId, limit) =>
+        (
+          await db
+            .select()
+            .from(t.shieldEvents)
+            .where(eq(t.shieldEvents.siteId, siteId))
+            .orderBy(desc(t.shieldEvents.id))
+            .limit(limit)
+        ).map((r: ShieldEventRow & { id: number }) => ({ ...r, at: Number(r.at) })),
+      since: async (siteId, at) =>
+        (
+          await db
+            .select()
+            .from(t.shieldEvents)
+            .where(and(eq(t.shieldEvents.siteId, siteId), gte(t.shieldEvents.at, at)))
+            .orderBy(asc(t.shieldEvents.id))
+            .limit(50_000)
+        ).map((r: ShieldEventRow & { id: number }) => ({ ...r, at: Number(r.at) })),
+    },
+    shieldStats: {
+      add: async (siteId, day, d) => {
+        const S = t.shieldStats;
+        await db
+          .insert(S)
+          .values({ siteId, day, ...d })
+          .onConflictDoUpdate({
+            target: [S.siteId, S.day],
+            set: {
+              pq: sql`${S.pq} + ${d.pq}`,
+              classical: sql`${S.classical} + ${d.classical}`,
+              requests: sql`${S.requests} + ${d.requests}`,
+              challenged: sql`${S.challenged} + ${d.challenged}`,
+              blocked: sql`${S.blocked} + ${d.blocked}`,
+            },
+          });
+      },
+      range: async (siteId, fromDay, toDay) =>
+        db
+          .select()
+          .from(t.shieldStats)
+          .where(and(eq(t.shieldStats.siteId, siteId), between(t.shieldStats.day, fromDay, toDay)))
+          .orderBy(asc(t.shieldStats.day)),
     },
     kms: {
       all: async () => db.select().from(t.kmsKeys),

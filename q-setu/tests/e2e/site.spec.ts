@@ -1,3 +1,5 @@
+import { createHmac } from "node:crypto";
+import { E2E_ADMIN_PASSWORD, E2E_ADMIN_TOTP } from "../../playwright.config";
 import { expect, test, type Page } from "@playwright/test";
 
 function trackErrors(page: Page) {
@@ -59,6 +61,7 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
     "adapters",
     "solutions",
     "impact",
+    "device",
     "whats-new",
     "why-quantumledger",
     "early-access",
@@ -93,7 +96,13 @@ test("scan: a site gets a score, plain findings and a share page", async ({ page
 });
 
 test("early access: validated, stored, thanked", async ({ page, request }) => {
-  const bad = await request.post("/api/early-access", { data: { email: "nope" } });
+  // As the site's own form sends it: same-origin, with the demo session a page visit sets (without
+  // either, the CSRF guard answers 403 before validation can answer 400).
+  await request.get("/");
+  const bad = await request.post("/api/early-access", {
+    data: { email: "nope" },
+    headers: { origin: "http://localhost:3000" },
+  });
   expect(bad.status()).toBe(400);
   await page.goto("/#early-access");
   const form = page.locator("#early-access");
@@ -130,6 +139,12 @@ test("⌘K jumps to any page", async ({ page }) => {
 });
 
 test("presenter mode: keyboard drives the demos, R resets everything", async ({ page }) => {
+  // Resetting every demo changes it for all visitors, so production needs the admin sign-in first.
+  await page.goto("/admin");
+  await page.locator("#pw").fill(E2E_ADMIN_PASSWORD);
+  await page.locator("#code").fill(totpNow(E2E_ADMIN_TOTP));
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByText("Sign in.")).toBeHidden();
   await page.goto("/demo/ledger?present=1");
   await expect(page.locator("html")).toHaveAttribute("data-present", "");
   await expect(page.getByText(/Presenting · ←\/→ step/)).toBeVisible();
@@ -158,3 +173,26 @@ test("pitch: seven slides with keyboard navigation", async ({ page }) => {
   await expect(page.getByText("7 / 7")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("design partners");
 });
+
+/** The current 6-digit TOTP code for a base32 secret (RFC 6238). */
+function totpNow(b32: string): string {
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let v = 0;
+  const bytes: number[] = [];
+  for (const c of b32) {
+    v = (v << 5) | A.indexOf(c);
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((v >>> (bits - 8)) & 0xff);
+      bits -= 8;
+    }
+  }
+  const msg = Buffer.alloc(8);
+  msg.writeUInt32BE(Math.floor(Date.now() / 30_000) >>> 0, 4);
+  const h = createHmac("sha1", Buffer.from(bytes)).update(msg).digest();
+  const o = h[h.length - 1]! & 0xf;
+  return String(
+    (((h[o]! & 0x7f) << 24) | (h[o + 1]! << 16) | (h[o + 2]! << 8) | h[o + 3]!) % 1_000_000,
+  ).padStart(6, "0");
+}

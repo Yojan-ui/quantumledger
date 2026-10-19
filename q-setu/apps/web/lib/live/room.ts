@@ -96,6 +96,7 @@ export class RoomError extends Error {
     message: string,
   ) {
     super(message);
+    this.name = "RoomError";
   }
 }
 

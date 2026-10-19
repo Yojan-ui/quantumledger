@@ -1,4 +1,4 @@
-import { fail, parseParams } from "@/lib/server/api";
+import { fail, parseParams, safeMessage } from "@/lib/server/api";
 import { sweep } from "@/lib/live/proof";
 import { live } from "@/lib/server/runtime";
 import { AnchorParams } from "@/lib/server/schemas";
@@ -28,6 +28,6 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     });
     return Response.json(r);
   } catch (e) {
-    return fail("not_found", (e as Error).message, 404);
+    return fail("not_found", safeMessage(e, "No proof with that id."), 404);
   }
 }

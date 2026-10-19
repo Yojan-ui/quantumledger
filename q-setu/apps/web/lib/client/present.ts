@@ -24,8 +24,16 @@ export function usePresent(handlers: Partial<Record<PresentCommand, () => void>>
 /** True if any demo on the page claimed presenter commands (otherwise →/← scroll sections). */
 export const demoOnPage = () => !!document.querySelector("[data-present-target]");
 
-/** Restores every demo's server state: recordings, ledger edits, crypto policy. */
-export async function resetAll(): Promise<void> {
-  await fetch("/api/reset-all", { method: "POST" }).catch(() => {});
-  sendPresent("reset");
+/**
+ * Restores every demo's server state: recordings, ledger edits, crypto policy. In production that
+ * changes the demo for every visitor, so it needs the admin sign-in: resolves false (and resets
+ * nothing) when the server refuses, so the UI never claims a reset that didn't happen.
+ */
+export async function resetAll(): Promise<boolean> {
+  const ok = await fetch("/api/reset-all", { method: "POST" }).then(
+    (r) => r.ok,
+    () => false,
+  );
+  if (ok) sendPresent("reset");
+  return ok;
 }

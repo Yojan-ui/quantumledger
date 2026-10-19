@@ -50,9 +50,9 @@ const RULES = [
     re: /(?:linear|radial|conic)-gradient\(/g,
     allowIn: {
       file: /^app\/globals\.css$/,
-      // spotlight, the two hairlines, the globe's glow, and the hero's legibility scrim.
+      // spotlight, the two hairlines, the globe's glow, the hero's scrim and the scroll-row edge fade.
       selector:
-        /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim)\s*\{/,
+        /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim|fade-x)\s*\{/,
     },
   },
 ];

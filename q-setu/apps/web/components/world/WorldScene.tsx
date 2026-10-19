@@ -4,7 +4,7 @@ import { PerformanceMonitor, Preload, View } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect } from "react";
-import { any3dOnScreen, DPR, gfx, setLost, setQuality, useGfx } from "@/lib/client/gfx";
+import { any3dOnScreen, dprCap, gfx, setLost, setQuality, useGfx } from "@/lib/client/gfx";
 import type { Dots } from "./shapes";
 import { World } from "./World";
 
@@ -39,7 +39,7 @@ export default function WorldScene({ dots, onRestored }: { dots: Dots; onRestore
       eventPrefix="client"
       flat
       frameloop="demand"
-      dpr={[1, DPR[quality]]}
+      dpr={[1, dprCap(quality)]}
       camera={{ position: [0, 0, 3], fov: 36, near: 0.05, far: 50 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
