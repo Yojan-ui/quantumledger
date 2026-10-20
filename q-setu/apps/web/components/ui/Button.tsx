@@ -19,7 +19,7 @@ const BASE =
   "relative inline-flex min-h-10 max-w-full overflow-hidden shrink-0 items-center justify-center gap-2 py-2 text-center sm:h-10 sm:py-0 sm:whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 aria-busy:cursor-progress";
 const STYLE: Record<Variant, string> = {
   primary: "bg-fg text-base hover:opacity-90",
-  secondary: "border border-line-strong text-fg hover:bg-raised",
+  secondary: "border border-line-strong text-fg hover:border-fg-3",
 };
 
 export const buttonClass = (variant: Variant = "primary") => `${BASE} ${STYLE[variant]}`;
@@ -126,7 +126,7 @@ export function ButtonLink({
   );
 }
 
-/** Text link with an optional arrow; colour shifts on hover only. */
+/** Text link with an optional arrow; an underline draws in on hover and focus. */
 export function TextLink({
   href,
   children,
@@ -137,10 +137,7 @@ export function TextLink({
   className?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={`text-small text-fg transition-opacity duration-150 hover:opacity-70 ${className}`}
-    >
+    <Link href={href} className={`link-u text-small text-fg ${className}`}>
       {children}
     </Link>
   );

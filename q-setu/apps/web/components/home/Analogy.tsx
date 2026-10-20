@@ -113,7 +113,7 @@ export function Analogy({ index }: { index: string }) {
       ref={ref}
       id="analogy"
       className="relative scroll-mt-14"
-      style={{ height: `${STEPS.length * 80}vh` }}
+      style={{ height: `${STEPS.length * 55}vh` }}
       data-tour="analogy"
     >
       <div className="sticky top-14 h-story overflow-hidden">

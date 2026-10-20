@@ -22,6 +22,7 @@ export function DeviceSeal() {
     run && typeof window !== "undefined"
       ? `${location.origin}/seal?ms=${run.handshakeMs.toFixed(2)}&on=${kind}`
       : "";
+  // Before a run the same table is drawn with empty readings, so the column is never a blank box.
   const rows: [string, number | undefined, number | undefined][] = run
     ? [
         ["ML-KEM-768 key pair", run.keygenMs, undefined],
@@ -31,9 +32,20 @@ export function DeviceSeal() {
         ["Seal (hybrid + AES-GCM)", run.sealMs, server("SEAL")],
         ["Open", run.openMs, server("OPEN")],
       ]
-    : [];
+    : [
+        ["ML-KEM-768 key pair", undefined, undefined],
+        ["Encapsulate", undefined, undefined],
+        ["Decapsulate", undefined, undefined],
+        ["Handshake (all three)", undefined, server("HANDSHAKE")],
+        ["Seal (hybrid + AES-GCM)", undefined, server("SEAL")],
+        ["Open", undefined, server("OPEN")],
+      ];
   return (
-    <section id="device" className="relative scroll-mt-14 py-16 md:py-20" aria-label="Your device">
+    <section
+      id="device"
+      className="crosshairs relative scroll-mt-14 py-10 md:py-15 lg:py-20"
+      aria-label="Your device"
+    >
       <Container className="grid grid-cols-12 gap-x-6 gap-y-10">
         <div className="col-span-12 md:col-span-5">
           <SectionLabel label="Your device" role="kem" />
@@ -120,11 +132,34 @@ export function DeviceSeal() {
               </figure>
             </div>
           ) : (
-            <p className="border border-dashed border-line p-6 text-small text-fg-3">
-              Results appear here: key generation, encapsulation, decapsulation, sealing and
-              opening, each measured in this browser, beside the same operations on the server right
-              now.
-            </p>
+            <figure className="border border-line p-6">
+              <table className="w-full font-mono text-label">
+                <caption className="sr-only">Timings in this browser and on the server</caption>
+                <thead>
+                  <tr className="text-left uppercase text-fg-3">
+                    <th className="pb-2 font-normal">Operation</th>
+                    <th className="pb-2 text-right font-normal">This browser</th>
+                    <th className="pb-2 text-right font-normal">Server, live</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(([k, , theirs]) => (
+                    <tr key={k} className="border-t border-line">
+                      <td className="py-3 text-fg-2">{k}</td>
+                      <td className="py-3 text-right text-fg-3">– ms</td>
+                      <td className="py-3 text-right text-fg-3">
+                        {theirs !== undefined ? ms(theirs) : "– ms"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <figcaption className="mt-4 text-small text-fg-3">
+                Results appear here: key generation, encapsulation, decapsulation, sealing and
+                opening, each measured in this browser, beside the same operations on the server
+                right now.
+              </figcaption>
+            </figure>
           )}
         </div>
       </Container>

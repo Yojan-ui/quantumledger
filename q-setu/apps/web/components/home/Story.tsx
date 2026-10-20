@@ -110,7 +110,7 @@ export function Story({ index = "04" }: { index?: string }) {
     <section
       id="how-it-works"
       ref={root}
-      style={{ height: `${N * 120}vh` }}
+      style={{ height: `${N * 80}vh` }}
       className="relative"
       aria-label="How it works, in three steps"
     >
@@ -133,7 +133,7 @@ export function Story({ index = "04" }: { index?: string }) {
             className="col-span-12 h-globe md:hidden"
             aria-hidden
           />
-          <div className="col-span-12 pt-6 md:col-span-6 md:pt-24 lg:col-span-5">
+          <div className="col-span-12 pt-6 md:col-span-6 md:pt-24">
             <SectionLabel index={index} label="How it works" role={step.role} className="" />
             {/* Progress: three steps, the current one bright, a hairline that fills with scroll. */}
             <nav aria-label="Steps" className="mt-6 flex items-center gap-4">

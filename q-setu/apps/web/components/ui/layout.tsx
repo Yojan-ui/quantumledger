@@ -20,7 +20,7 @@ export function Grid({ children, className = "" }: { children: ReactNode; classN
   return <div className={`grid grid-cols-12 gap-x-6 ${className}`}>{children}</div>;
 }
 
-/** A page section: 160px vertical padding (96px on mobile) and an optional mono index label. */
+/** A page section: the shared vertical rhythm, corner crosshairs and an optional mono index label. */
 export function Section({
   id,
   index,
@@ -38,8 +38,12 @@ export function Section({
   className?: string;
 }) {
   return (
-    // Text-only sections size to their content, 160 px apart (80 above and below each).
-    <section id={id} className={`relative scroll-mt-14 py-16 md:py-20 ${className}`}>
+    // Sections size to their content and sit 160 / 120 / 80 px apart by breakpoint (half of that
+    // above and below each), with a crosshair tick at each corner.
+    <section
+      id={id}
+      className={`crosshairs relative scroll-mt-14 py-10 md:py-15 lg:py-20 ${className}`}
+    >
       <Container>
         {label && <SectionLabel index={index} label={label} role={role} />}
         {children}

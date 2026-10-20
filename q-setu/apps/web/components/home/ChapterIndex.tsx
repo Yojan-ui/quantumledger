@@ -77,12 +77,23 @@ export function Chapter({
   );
 }
 
+/**
+ * A chapter's band across the page: hairlines above and below, crosshairs at the corners, the
+ * number and name on the left five columns and the chapter's sentence, at the subhead step, on the
+ * right six.
+ */
 export function ChapterHead({ id, className = "" }: { id: ChapterId; className?: string }) {
   const c = CHAPTERS.find((x) => x.id === id)!;
   return (
-    <header className={`border-t border-line ${className}`}>
-      <Container className="py-12 md:py-16">
-        <Head {...c} />
+    <header className={`crosshairs border-y border-line ${className}`}>
+      <Container className="grid grid-cols-12 items-end gap-x-6 gap-y-4 py-10 md:py-15">
+        <h2 className="col-span-12 flex items-baseline gap-4 md:col-span-5">
+          <span className="font-mono text-h2 text-fg">{c.num}</span>
+          <span className="font-mono text-label uppercase text-fg-3">{c.name}</span>
+        </h2>
+        <p className="col-span-12 max-w-prose text-lead text-fg md:col-span-6 md:col-start-7">
+          {c.line}
+        </p>
       </Container>
     </header>
   );
@@ -177,13 +188,13 @@ export function ChapterIndex() {
       </nav>
       <div
         ref={pill}
-        className={`fixed bottom-4 left-4 z-30 transition-opacity duration-300 lg:hidden ${pastHero ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`fixed bottom-4 right-4 z-30 transition-opacity duration-300 lg:hidden ${pastHero ? "opacity-100" : "pointer-events-none opacity-0"}`}
         inert={!pastHero || undefined}
       >
         {open && (
           <ol
             id="chapter-jump"
-            className="absolute bottom-full left-0 mb-2 w-max max-w-label border border-line-strong bg-raised py-2"
+            className="absolute bottom-full right-0 mb-2 w-max max-w-label border border-line-strong bg-raised py-2"
           >
             {CHAPTERS.map((c) => (
               <li key={c.id}>

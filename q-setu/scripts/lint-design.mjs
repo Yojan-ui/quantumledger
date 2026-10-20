@@ -50,9 +50,10 @@ const RULES = [
     re: /(?:linear|radial|conic)-gradient\(/g,
     allowIn: {
       file: /^app\/globals\.css$/,
-      // spotlight, the two hairlines, the globe's glow, the hero's scrim and the scroll-row edge fade.
+      // spotlight, the two hairlines, the globe's glow, the hero's scrim, the scroll-row edge fades,
+      // and three solid 1px drawings: the link underline and the section crosshairs.
       selector:
-        /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim|fade-x)\s*\{/,
+        /^\s*\.(?:spotlight(?:::before)?|hairline-accent|hairline-roles|ambient|hero-scrim|fade-x|fade-edges|link-u|crosshairs)\s*\{/,
     },
   },
 ];

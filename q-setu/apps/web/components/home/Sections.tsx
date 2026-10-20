@@ -85,7 +85,7 @@ export function Adapters({ index = "05" }: { index?: string }) {
       ref={ref}
       id="adapters"
       className="relative scroll-mt-14"
-      style={{ height: `${ADAPTERS.length * 70 + 40}vh` }}
+      style={{ height: `${ADAPTERS.length * 40 + 40}vh` }}
     >
       <div className="sticky top-14 h-story overflow-hidden">
         <div className="absolute inset-0">
@@ -97,7 +97,7 @@ export function Adapters({ index = "05" }: { index?: string }) {
           </LazyView>
         </div>
         <div className="hero-scrim pointer-events-none absolute inset-0" aria-hidden />
-        <div className="pointer-events-none relative mx-auto flex h-full w-full max-w-container flex-col justify-between px-5 py-12 md:px-6 md:py-16">
+        <div className="pointer-events-none relative mx-auto flex h-full w-full max-w-container flex-col justify-center gap-12 px-5 py-12 md:px-6 md:py-16">
           <div className="max-w-text">
             <SectionLabel index={index} label="Deploy anywhere" role="kem" />
             <CopyHeading
@@ -105,14 +105,14 @@ export function Adapters({ index = "05" }: { index?: string }) {
               technical="Five adapters. Each one line."
             />
           </div>
-          <div className="pointer-events-auto overflow-hidden">
+          <div className="fade-edges pointer-events-auto overflow-hidden">
             <div ref={track} className="flex gap-4 md:gap-6">
               {ADAPTERS.map((a, i) => (
                 <article
                   key={a.id}
                   data-sealed
                   aria-current={i === hot || undefined}
-                  className={`w-console shrink-0 border bg-base p-6 transition-colors duration-300 ${i === hot ? "border-kem" : "border-line"}`}
+                  className={`flex w-console shrink-0 flex-col border bg-base p-6 transition-colors duration-300 ${i === hot ? "border-kem" : "border-line hover:border-line-strong"}`}
                 >
                   <Label as="p" className={i === hot ? "text-kem" : ""}>
                     {String(i + 1).padStart(2, "0")} / {String(ADAPTERS.length).padStart(2, "0")}

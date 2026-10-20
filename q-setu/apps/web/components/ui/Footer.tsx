@@ -63,14 +63,14 @@ export function Footer() {
                     {href.startsWith("http") || href.startsWith("/api/") ? (
                       <a
                         href={href}
-                        className="text-small text-fg-3 transition-colors duration-150 hover:text-fg"
+                        className="link-u text-small text-fg-3 transition-colors duration-150 hover:text-fg"
                       >
                         {label}
                       </a>
                     ) : (
                       <Link
                         href={href}
-                        className="text-small text-fg-3 transition-colors duration-150 hover:text-fg"
+                        className="link-u text-small text-fg-3 transition-colors duration-150 hover:text-fg"
                       >
                         {label}
                       </Link>

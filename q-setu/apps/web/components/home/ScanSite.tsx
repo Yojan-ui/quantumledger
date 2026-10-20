@@ -143,11 +143,29 @@ export function ScanSite() {
               )}
               {!busy && !error && result && <ScanResult r={result} />}
               {!busy && !error && !result && (
-                <Text size="small" className="border-t border-line pt-6 text-fg-3">
-                  Results show a 0–100 readiness score, what was negotiated, and three findings in
-                  plain language. Nothing about you is stored; scanned results are kept by host so
-                  they can be shared.
-                </Text>
+                // Before a scan, the result's frame with empty readings: what a scan will fill in.
+                <div className="border-t border-line pt-6">
+                  <dl className="grid grid-cols-3 border-b border-line pb-6">
+                    {[
+                      ["Readiness", "– / 100"],
+                      ["Key exchange", "–"],
+                      ["Certificate key", "–"],
+                    ].map(([k, v]) => (
+                      <div
+                        key={k}
+                        className="border-l border-line pl-4 first:border-l-0 first:pl-0"
+                      >
+                        <dt className="font-mono text-label uppercase text-fg-3">{k}</dt>
+                        <dd className="mt-2 font-mono text-h3 text-fg-3">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <Text size="small" className="mt-6 text-fg-3">
+                    Results show a 0–100 readiness score, what was negotiated, and three findings in
+                    plain language. Nothing about you is stored; scanned results are kept by host so
+                    they can be shared.
+                  </Text>
+                </div>
               )}
             </div>
           </div>
