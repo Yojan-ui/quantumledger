@@ -46,6 +46,40 @@ importers:
         specifier: 3.2.7
         version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.5)(jiti@1.21.7)(tsx@4.23.15)(yaml@2.9.1)
 
+  apps/attack-lab-ui:
+    dependencies:
+      '@qsetu/attack-lab':
+        specifier: workspace:*
+        version: link:../../packages/attack-lab
+      geist:
+        specifier: 1.7.2
+        version: 1.7.2(next@15.5.27(@playwright/test@1.64.0)(@types/node@22.20.5)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+      next:
+        specifier: 15.5.27
+        version: 15.5.27(@playwright/test@1.64.0)(@types/node@22.20.5)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      concurrently:
+        specifier: 9.2.5
+        version: 9.2.5
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   apps/legacy-bank:
     dependencies:
       express:
@@ -209,6 +243,31 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+
+  packages/attack-lab:
+    dependencies:
+      '@qsetu/core':
+        specifier: workspace:*
+        version: link:../core
+      '@qsetu/legacy-bank':
+        specifier: workspace:*
+        version: link:../../apps/legacy-bank
+      '@qsetu/shield':
+        specifier: workspace:*
+        version: link:../shield
+      '@qsetu/shield-guard':
+        specifier: workspace:*
+        version: link:../shield-guard
+      '@qsetu/shield-proxy':
+        specifier: workspace:*
+        version: link:../shield-proxy
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.5
+        version: 22.20.5
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
 
   packages/core:
     dependencies:
