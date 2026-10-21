@@ -10,6 +10,7 @@
     "dev": "concurrently -k -n web,legacy,shield-srv,shield-cli -c cyan,gray,yellow,magenta \"pnpm --filter @qsetu/web dev\" \"pnpm --filter @qsetu/legacy-bank dev\" \"pnpm dev:shield-server\" \"pnpm dev:shield-client\"",
     "build": "pnpm -r build",
     "start": "pnpm --filter @qsetu/web start",
+    "demo": "pnpm --filter @qsetu/web demo",
     "test": "vitest run",
     "bench": "tsx scripts/bench.ts",
     "typecheck": "pnpm -r typecheck",
