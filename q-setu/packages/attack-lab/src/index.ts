@@ -20,7 +20,14 @@ export {
 export { startSandbox, TRAP_PATH, type Sandbox, type SandboxOptions } from "./sandbox";
 export { startLabServer } from "./server";
 export { createSigner, loadSigner, verifyRecord, type Signer } from "./sign";
-export { SCENARIOS, simulate } from "./simulate";
-export { EvidenceStore, type ChainReport, type IncidentCheck, type StoreOptions } from "./store";
+export { SCENARIOS, simulate, SITE_HEADER } from "./simulate";
+export { CustomerRegistry, DEMO_CUSTOMERS, type Customer, type CustomerPatch } from "./customers";
+export {
+  DEFAULT_SITE,
+  EvidenceStore,
+  type ChainReport,
+  type IncidentCheck,
+  type StoreOptions,
+} from "./store";
 export { buildTimeline, phaseOf, type Timeline } from "./timeline";
 export type * from "./types";

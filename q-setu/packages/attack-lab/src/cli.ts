@@ -16,7 +16,8 @@ import { fileURLToPath } from "node:url";
 import { startSandbox } from "./sandbox";
 import { startLabServer } from "./server";
 import { loadSigner } from "./sign";
-import { simulate } from "./simulate";
+import { CustomerRegistry } from "./customers";
+import { simulate, SITE_HEADER } from "./simulate";
 import { EvidenceStore } from "./store";
 
 const dir = process.env.ATTACK_LAB_DIR ?? fileURLToPath(new URL("../.data", import.meta.url));
@@ -34,16 +35,34 @@ function secretFile(name: string): string {
 const signer = loadSigner(process.env.ATTACK_LAB_IDENTITY ?? join(dir, "identity.json"));
 const store = new EvidenceStore({ signer, dir });
 const salt = secretFile("salt");
+const customers = new CustomerRegistry(join(dir, "customers.json"));
 // Fixed per lab so records that mention the canary stay replayable across restarts.
 const canaryKey = `sk_live_${secretFile("canary").slice(0, 24)}`;
 
 const sandbox = await startSandbox({
   barePort: Number(process.env.SANDBOX_BARE_PORT ?? 4101),
   protectedPort: Number(process.env.SANDBOX_PROTECTED_PORT ?? 4102),
-  record: { store, salt },
+  // One sandbox stands in for every customer's site: the lab's own test traffic names the site in a
+  // header, and anything else counts as the first customer's. Sandbox only: a real install records
+  // one fixed site.
+  record: {
+    store,
+    salt,
+    site: (req) => {
+      const h = req.headers[SITE_HEADER];
+      const sites = customers.sites();
+      return typeof h === "string" && sites.includes(h) ? h : (sites[0] ?? "default");
+    },
+  },
   canaryKey,
 });
-const lab = await startLabServer({ store, sandbox, port: Number(process.env.LAB_PORT ?? 4100) });
+const lab = await startLabServer({
+  store,
+  sandbox,
+  customers,
+  port: Number(process.env.LAB_PORT ?? 4100),
+  ...(process.env.ATTACK_LAB_TOKEN ? { token: process.env.ATTACK_LAB_TOKEN } : {}),
+});
 
 const check = store.verify();
 console.log(
@@ -55,7 +74,9 @@ console.log(`[attack-lab] api        ${lab.url}/api/overview`);
 
 if (process.env.ATTACK_LAB_SEED === "1" && store.size === 0) {
   console.log("[attack-lab] empty store: sending labelled test traffic to the protected sandbox");
-  void simulate(sandbox.protected, sandbox).then(() => store.sealDirty());
+  void simulate(sandbox.protected, sandbox, undefined, customers.sites()).then(() =>
+    store.sealDirty(),
+  );
 }
 
 const stop = async () => {

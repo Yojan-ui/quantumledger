@@ -25,6 +25,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/shield", label: "Shield" },
       { href: "/demo/scanner", label: "Scan" },
       { href: "/seal", label: "Seal" },
+      { href: "/lab", label: "Lab" },
     ],
   },
   {
