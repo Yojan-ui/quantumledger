@@ -2,11 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { chunkFailed } from "@/lib/client/chunk";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
 import { Button, ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
-import { HeroInput, HeroStage, HeroStatus, useHeadlineBeat } from "./HeroStage";
+import { HeroInput, HeroStatus, useHeadlineBeat } from "./HeroStage";
 import { useJourney } from "@/lib/client/journey";
 import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
@@ -21,6 +21,33 @@ import { HERO_LINES } from "@/lib/trust/headlines";
 function HeroLine({ text, visible }: { text: string; visible: boolean }) {
   const v = useSealed(text, visible);
   return <span className={sealedClass(v)}>{sealedLine(text, 0, text.length, v)}</span>;
+}
+
+// The hero 3D stage (and three.js with it) mounts after the first paint, so the headline, copy and
+// buttons never wait for it; until then the page's own dark background shows in its place.
+const HeroStage = dynamic(
+  () =>
+    import("./HeroStage")
+      .catch(() => import("./HeroStage"))
+      .then((m) => m.HeroStage)
+      .catch(chunkFailed),
+  { ssr: false },
+);
+
+/** Renders its children only after the browser has painted the page once. */
+function AfterPaint({ children }: { children: ReactNode }) {
+  const [painted, setPainted] = useState(false);
+  useEffect(() => {
+    let b = 0;
+    const a = requestAnimationFrame(() => {
+      b = requestAnimationFrame(() => setPainted(true));
+    });
+    return () => {
+      cancelAnimationFrame(a);
+      cancelAnimationFrame(b);
+    };
+  }, []);
+  return painted ? children : null;
 }
 
 // The QR encoder loads after first paint; the hero's text never waits for it.
@@ -75,7 +102,9 @@ export function Hero() {
       className="relative h-hero min-h-hero overflow-hidden"
       aria-label="QuantumLedger"
     >
-      <HeroStage />
+      <AfterPaint>
+        <HeroStage />
+      </AfterPaint>
       <div className="hero-scrim pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative">
         <LiveStrip />

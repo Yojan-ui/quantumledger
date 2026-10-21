@@ -245,17 +245,11 @@
       ),
       linear-gradient(to right, color-mix(in srgb, var(--bg) 55%, transparent) 0%, transparent 55%);
   }
-  /* Hero headline beats: each line lands with its stage (data-beat on the headline). */
+  /* Hero headline beats: every line shows from the first paint; each resolves with its stage. */
   [data-beat] [data-line] {
     transition:
       opacity 700ms var(--ease),
       transform 700ms var(--ease);
-  }
-  [data-beat="1"] [data-line="2"],
-  [data-beat="1"] [data-line="3"],
-  [data-beat="2"] [data-line="3"] {
-    opacity: 0;
-    transform: translateY(0.25em);
   }
   /* Break out of the page container to the full viewport width (demo stages). */
   .full-bleed {
@@ -276,10 +270,6 @@
     35% {
       outline-color: var(--kem);
     }
-  }
-  /* Zero trust: a sealed headline is blank until its ciphertext arrives (lib/client/trust). */
-  html[data-seal^="pending"] [data-seal-text] {
-    color: transparent;
   }
   /* Ciphertext stands in for a headline's letters: Geist Mono, a size down, dim. */
   .seal-hex {
