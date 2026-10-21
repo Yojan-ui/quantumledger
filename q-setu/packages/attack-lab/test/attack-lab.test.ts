@@ -20,6 +20,7 @@ import {
 const signer = createSigner(createIdentity("standard"));
 
 const ev = (o: Partial<AttackEvent> = {}): AttackEvent => ({
+  site: "s1",
   at: 1_000,
   source: { ipHash: "aaaa", netHash: "nnnn" },
   client: "script",

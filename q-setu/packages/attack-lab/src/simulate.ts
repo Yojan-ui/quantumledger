@@ -109,15 +109,23 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const docIp = () =>
   `${Math.random() < 0.5 ? "203.0.113" : "192.0.2"}.${1 + Math.floor(Math.random() * 254)}`;
 
-/** Runs the scenarios (all by default) in parallel against the protected sandbox. */
+/** Which demo site a request is for, when one sandbox stands in for several customers. */
+export const SITE_HEADER = "x-attack-lab-site";
+
+/**
+ * Runs the scenarios (all by default) in parallel against the protected sandbox. With `sites`, the
+ * scenarios are dealt round-robin across them, so each demo customer gets some.
+ */
 export async function simulate(
   target: string,
   ctx: { canaryKey: string; trapPath: string },
   ids?: string[],
-): Promise<{ scenario: string; sent: number; statuses: Record<number, number> }[]> {
+  sites: string[] = [],
+): Promise<{ scenario: string; site?: string; sent: number; statuses: Record<number, number> }[]> {
   const chosen = SCENARIOS.filter((s) => !ids?.length || ids.includes(s.id));
   return Promise.all(
-    chosen.map(async (s) => {
+    chosen.map(async (s, n) => {
+      const site = sites.length ? sites[n % sites.length] : undefined;
       const ip = docIp();
       const statuses: Record<number, number> = {};
       let sent = 0;
@@ -132,6 +140,7 @@ export async function simulate(
             headers: {
               "x-forwarded-for": ip,
               [SYNTHETIC_HEADER]: "1",
+              ...(site ? { [SITE_HEADER]: site } : {}),
               accept: "*/*",
               ...(s.ua ? { "user-agent": s.ua } : {}),
               ...r.headers,
@@ -145,7 +154,7 @@ export async function simulate(
         }
         sent++;
       }
-      return { scenario: s.id, sent, statuses };
+      return { scenario: s.id, ...(site ? { site } : {}), sent, statuses };
     }),
   );
 }
