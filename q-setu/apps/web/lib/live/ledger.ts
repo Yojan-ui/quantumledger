@@ -165,11 +165,13 @@ export class Ledger {
   }
 
   /**
-   * Checks every existing signature once in the background (result discarded), so later verifies
-   * only re-hash. A verify that starts meanwhile waits for it rather than repeating its work.
+   * Walks the chain once in the background (result discarded), so later verifies only re-hash. It
+   * re-hashes and link-checks every entry, and checks the signatures no valid signed checkpoint
+   * covers (as `verify()` does): re-checking every signature from genesis on each start costs
+   * minutes of CPU on a long chain. A verify that starts meanwhile waits for it.
    */
   warm(): Promise<VerifyResult | undefined> {
-    const run = this.walk(1, false).catch(() => undefined);
+    const run = this.walk(1, true).catch(() => undefined);
     this.warming = run;
     return run;
   }
@@ -303,6 +305,9 @@ export class Ledger {
       broken,
     });
     for (let after = from - 1; ;) {
+      // A macrotask between pages: re-hashing a long chain must not hold the server's event loop
+      // (an awaited database read alone resolves as a microtask, and requests would wait).
+      if (after >= from) await new Promise((res) => setImmediate(res));
       const page = await this.repo.page(after, PAGE);
       if (!page.length) break;
       for (const r of page) {

@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Panel } from "@/components/ui";
+import { Copy } from "@/components/ui/Copy";
 import type { ReplayJob } from "@/lib/lab/types";
 import { Chip, PhaseChip } from "./ui";
 
@@ -68,7 +69,7 @@ export function ReplayRunner({
               onChange={(e) => setIncident(e.target.value)}
               className="h-10 max-w-full rounded-sm border border-line-strong bg-raised px-3 text-small text-fg"
             >
-              {!options.length && <option value="">No incidents yet</option>}
+              {!options.length && <option value="">No attacks yet: send test traffic first</option>}
               {options.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.label}
@@ -112,9 +113,14 @@ export function ReplayRunner({
         <>
           <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
             <Panel className="border-warn">
-              <p className="font-mono text-label uppercase text-fg-3">Bare legacy bank</p>
+              <p className="font-mono text-label uppercase text-fg-3">
+                <Copy simple="Without Shield" technical="Bare legacy bank" />
+              </p>
               <p className="mt-2 text-h3 font-medium text-warn">
-                Answered {steps.length - n((s) => s.bare.outcome === "error")} of {steps.length}
+                <Copy
+                  simple={`${steps.length - n((s) => s.bare.outcome === "error")} of ${steps.length} got through`}
+                  technical={`Answered ${steps.length - n((s) => s.bare.outcome === "error")} of ${steps.length}`}
+                />
               </p>
               <p className="mt-2 text-small text-fg-2">
                 {n((s) => s.bare.outcome === "served")} served,{" "}
@@ -124,10 +130,13 @@ export function ReplayRunner({
             </Panel>
             <Panel className="border-ok">
               <p className="font-mono text-label uppercase text-fg-3">
-                Behind Shield (protect mode)
+                <Copy simple="With Shield" technical="Behind Shield (protect mode)" />
               </p>
               <p className="mt-2 text-h3 font-medium text-ok">
-                Refused {refused} of {steps.length}
+                <Copy
+                  simple={`${n((s) => s.protected.outcome === "passed")} of ${steps.length} got through`}
+                  technical={`Refused ${refused} of ${steps.length}`}
+                />
               </p>
               <p className="mt-2 text-small text-fg-2">
                 {n((s) => s.protected.outcome === "passed")} let through

@@ -4,6 +4,7 @@
  */
 export type {
   AttackEvent,
+  ClientFamily,
   ChainReport,
   Customer,
   Incident,

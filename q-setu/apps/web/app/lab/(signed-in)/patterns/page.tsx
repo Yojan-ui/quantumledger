@@ -3,6 +3,8 @@ import { Container, Panel } from "@/components/ui";
 import { ago, EngineOffline, LabFrame } from "@/components/lab/ui";
 import { patternsFor } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
+import { Copy } from "@/components/ui/Copy";
+import { agoWords, patternStory } from "@/lib/lab/words";
 
 export const dynamic = "force-dynamic";
 
@@ -29,11 +31,23 @@ export default async function LabPatterns({
       customers={user.role === "team" ? customers : []}
       scopeName={ctx.scopeName}
       title="Patterns"
-      lead="Incidents that look alike, grouped by named rules that each say what evidence they key on. Anything that fits none of them lands in “Other automated abuse”."
+      lead={
+        <Copy
+          simple="What this page shows: the kinds of attack Shield has seen, how often, and what it did about each."
+          technical="Incidents that look alike, grouped by named rules that each say what evidence they key on. Anything that fits none of them lands in “Other automated abuse”."
+        />
+      }
     >
       {patterns.length === 0 ? (
         <p className="rounded-lg border border-line bg-raised p-8 text-body text-fg-2">
-          No incidents yet.
+          <Copy
+            simple={
+              user.role === "team"
+                ? "No attacks yet, so no patterns. Go to Overview and press Send test traffic to watch Shield stop one."
+                : "No attacks recorded on your site yet, so no patterns."
+            }
+            technical="No incidents yet."
+          />
         </p>
       ) : (
         <div className="flex flex-col gap-4">
@@ -42,14 +56,34 @@ export default async function LabPatterns({
               <div className="flex flex-wrap items-baseline justify-between gap-4">
                 <div>
                   <h2 className="text-h3 font-medium text-fg">{p.name}</h2>
-                  <p className="mt-1 text-body text-fg-2">{p.description}</p>
+                  <p className="mt-1 max-w-prose text-body text-fg-2">
+                    <Copy
+                      simple={
+                        <>
+                          {patternStory(p.id).tried}{" "}
+                          <span className="text-ok">{patternStory(p.id).shield}</span>
+                        </>
+                      }
+                      technical={p.description}
+                    />
+                  </p>
                 </div>
                 <div className="flex items-baseline gap-6">
                   <span className="tabular text-h3 font-medium text-fg">
                     {p.count}{" "}
-                    <span className="text-small text-fg-3">incident{p.count === 1 ? "" : "s"}</span>
+                    <span className="text-small text-fg-3">
+                      <Copy
+                        simple={p.count === 1 ? "time" : "times"}
+                        technical={`incident${p.count === 1 ? "" : "s"}`}
+                      />
+                    </span>
                   </span>
-                  <span className="text-small text-fg-2">last seen {ago(p.lastSeen)}</span>
+                  <span className="text-small text-fg-2">
+                    <Copy
+                      simple={`last seen ${agoWords(p.lastSeen)}`}
+                      technical={`last seen ${ago(p.lastSeen)}`}
+                    />
+                  </span>
                 </div>
               </div>
               <span className="mt-4 block h-1 overflow-hidden rounded-full bg-line">

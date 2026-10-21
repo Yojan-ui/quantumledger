@@ -3,6 +3,7 @@ import { ReplayRunner } from "@/components/lab/ReplayRunner";
 import { EngineOffline, LabFrame } from "@/components/lab/ui";
 import { overviewFor } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
+import { Copy } from "@/components/ui/Copy";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,12 @@ export default async function LabReplay({
       customers={customers}
       scopeName={ctx.scopeName}
       title="Replay"
-      lead="Sends a saved incident’s steps, in order and with its pacing, to two fresh copies of the legacy bank on this machine: one bare, one behind Shield. The results show what each one did."
+      lead={
+        <Copy
+          simple="What this page shows: pick a recorded attack and run it again, safely, against two practice copies of a bank site on this computer. One has no protection, one has Shield. Compare what got through."
+          technical="Sends a saved incident’s steps, in order and with its pacing, to two fresh copies of the legacy bank on this machine: one bare, one behind Shield. The results show what each one did."
+        />
+      }
     >
       <ReplayRunner
         options={o.incidents.map((i) => ({
