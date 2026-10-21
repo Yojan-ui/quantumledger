@@ -1,0 +1,28 @@
+{
+  "name": "@qsetu/attack-lab",
+  "version": "0.1.0",
+  "description": "Defensive analysis: records attacks Shield flags, signs the evidence with ML-DSA, maps and groups them, and replays them against a local sandbox.",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@qsetu/core": "workspace:*",
+    "@qsetu/legacy-bank": "workspace:*",
+    "@qsetu/shield": "workspace:*",
+    "@qsetu/shield-guard": "workspace:*",
+    "@qsetu/shield-proxy": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "tsx": "4.23.15"
+  }
+}

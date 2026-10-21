@@ -1,0 +1,231 @@
+/**
+ * The lab's local API, for the dashboard (apps/attack-lab-ui). Read-only over the evidence: there is
+ * no route that changes or deletes a record. Listens on 127.0.0.1 only.
+ *
+ *   GET  /api/overview          incidents (newest first) with pattern and step counts, totals, key
+ *   GET  /api/incidents/:id     one incident: timeline, events, seal, signature check
+ *   GET  /api/patterns          patterns with counts and last-seen
+ *   GET  /api/verify            the whole chain: every hash, signature and link
+ *   GET  /api/records/:seq      one signed record, as stored
+ *   POST /api/replay            { incidentId } → { id }: replays in a fresh sandbox pair
+ *   GET  /api/replays[/:id]     replay jobs and their results so far
+ *   POST /api/simulate          sends labelled test traffic to the live protected sandbox
+ */
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { classify, groupPatterns } from "./patterns";
+import { replay, stepsFromTimeline, type ReplayReport, type ReplayStepResult } from "./replay";
+import { startSandbox, type Sandbox } from "./sandbox";
+import { SCENARIOS, simulate } from "./simulate";
+import type { EvidenceStore } from "./store";
+import { buildTimeline } from "./timeline";
+
+interface ReplayJob {
+  id: string;
+  incidentId: string;
+  pattern: string;
+  startedAt: number;
+  finishedAt?: number;
+  status: "running" | "done" | "failed";
+  total: number;
+  steps: ReplayStepResult[];
+  report?: ReplayReport;
+  error?: string;
+}
+
+export interface LabServerOptions {
+  store: EvidenceStore;
+  /** The live sandbox the recorder watches. */
+  sandbox: Sandbox;
+  port: number;
+}
+
+const MAX_JOBS = 20;
+
+export function startLabServer(o: LabServerOptions) {
+  const { store, sandbox } = o;
+  const jobs = new Map<string, ReplayJob>();
+  let simulating = false;
+
+  const timelineOf = (id: string) =>
+    buildTimeline(id, store.eventsOf(id), { trapPath: sandbox.trapPath });
+
+  function overview() {
+    const incidents = store.listIncidents().map((inc) => {
+      const t = timelineOf(inc.id);
+      const rule = classify(inc, store.eventsOf(inc.id));
+      return {
+        ...inc,
+        eventHashes: undefined,
+        pattern: { id: rule.id, name: rule.name },
+        steps: t.steps.length,
+        durationMs: t.durationMs,
+        actions: t.actions,
+        sealed: !!store.seal(inc.id),
+      };
+    });
+    const events = incidents.reduce((n, i) => n + i.steps, 0);
+    return {
+      incidents,
+      totals: {
+        incidents: incidents.length,
+        events,
+        flagged: incidents.reduce((n, i) => n + i.flagged, 0),
+        records: store.size,
+        patterns: new Set(incidents.map((i) => i.pattern.id)).size,
+      },
+      key: { alg: "ML-DSA-65", keyId: store.signer.keyId, publicKey: store.publicKey },
+      sandbox: { bare: sandbox.bare, protected: sandbox.protected },
+      simulating,
+      scenarios: SCENARIOS.map((s) => ({ id: s.id, label: s.label })),
+    };
+  }
+
+  function incident(id: string) {
+    const inc = store.incident(id);
+    if (!inc) return undefined;
+    const events = store.eventsOf(id);
+    const seal = store.seal(id);
+    const rule = classify(inc, events);
+    return {
+      incident: inc,
+      pattern: { id: rule.id, name: rule.name, description: rule.description },
+      timeline: timelineOf(id),
+      events: events.map((r) => ({ seq: r.seq, hash: r.hash, sig: r.sig.slice(0, 24), ...r.body })),
+      seal: seal && { seq: seal.seq, hash: seal.hash, covers: seal.body.eventHashes.length },
+      check: store.verifyIncident(id),
+      key: { alg: "ML-DSA-65", keyId: store.signer.keyId },
+    };
+  }
+
+  async function runReplay(job: ReplayJob) {
+    const box = await startSandbox();
+    try {
+      job.report = await replay(
+        stepsFromTimeline(timelineOf(job.incidentId)),
+        {
+          bare: box.bare,
+          protected: box.protected,
+          canaryKey: box.canaryKey,
+          eventsFor: box.eventsFor,
+        },
+        { onStep: (r) => job.steps.push(r) },
+      );
+      job.status = "done";
+    } catch (e) {
+      job.status = "failed";
+      job.error = e instanceof Error ? e.message : String(e);
+    } finally {
+      job.finishedAt = Date.now();
+      await box.close();
+    }
+  }
+
+  function startReplay(incidentId: string): ReplayJob | undefined {
+    const inc = store.incident(incidentId);
+    if (!inc) return undefined;
+    const t = timelineOf(incidentId);
+    const job: ReplayJob = {
+      id: `rp_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+      incidentId,
+      pattern: classify(inc, store.eventsOf(incidentId)).name,
+      startedAt: Date.now(),
+      status: "running",
+      total: Math.min(t.steps.length, 200),
+      steps: [],
+    };
+    jobs.set(job.id, job);
+    while (jobs.size > MAX_JOBS) jobs.delete(jobs.keys().next().value!);
+    void runReplay(job);
+    return job;
+  }
+
+  const send = (res: ServerResponse, status: number, body: unknown) => {
+    res.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" });
+    res.end(JSON.stringify(body));
+  };
+
+  const readJson = (req: IncomingMessage) =>
+    new Promise<Record<string, unknown>>((resolve) => {
+      let s = "";
+      req.on("data", (c: Buffer) => {
+        s += c;
+        if (s.length > 4096) req.destroy();
+      });
+      req.on("end", () => {
+        try {
+          resolve(JSON.parse(s || "{}"));
+        } catch {
+          resolve({});
+        }
+      });
+    });
+
+  const server = createServer(async (req, res) => {
+    const url = new URL(req.url ?? "/", "http://lab");
+    const p = url.pathname;
+    try {
+      if (req.method === "GET" && p === "/api/overview") return send(res, 200, overview());
+      if (req.method === "GET" && p === "/api/patterns")
+        return send(res, 200, {
+          patterns: groupPatterns(store.listIncidents(), (id) => store.eventsOf(id)),
+        });
+      if (req.method === "GET" && p === "/api/verify") return send(res, 200, store.verify());
+      let m = p.match(/^\/api\/incidents\/(inc_\d+)$/);
+      if (req.method === "GET" && m) {
+        const r = incident(m[1]!);
+        return r ? send(res, 200, r) : send(res, 404, { error: "No such incident" });
+      }
+      m = p.match(/^\/api\/records\/(\d+)$/);
+      if (req.method === "GET" && m) {
+        const r = store.record(Number(m[1]));
+        return r ? send(res, 200, r) : send(res, 404, { error: "No such record" });
+      }
+      if (req.method === "POST" && p === "/api/replay") {
+        const { incidentId } = await readJson(req);
+        const job = typeof incidentId === "string" ? startReplay(incidentId) : undefined;
+        return job ? send(res, 202, { id: job.id }) : send(res, 404, { error: "No such incident" });
+      }
+      if (req.method === "GET" && p === "/api/replays")
+        return send(res, 200, {
+          replays: [...jobs.values()].reverse().map(({ steps, report, ...j }) => ({
+            ...j,
+            done: steps.length,
+            summary: report?.summary,
+          })),
+        });
+      m = p.match(/^\/api\/replays\/(rp_[a-z0-9]+)$/);
+      if (req.method === "GET" && m) {
+        const j = jobs.get(m[1]!);
+        return j ? send(res, 200, j) : send(res, 404, { error: "No such replay" });
+      }
+      if (req.method === "POST" && p === "/api/simulate") {
+        if (simulating) return send(res, 409, { error: "Test traffic is already running" });
+        const { scenarios } = await readJson(req);
+        simulating = true;
+        void simulate(
+          sandbox.protected,
+          sandbox,
+          Array.isArray(scenarios) ? scenarios.map(String) : undefined,
+        ).finally(() => {
+          simulating = false;
+          store.sealDirty();
+        });
+        return send(res, 202, { started: true });
+      }
+      return send(res, 404, { error: "Not found" });
+    } catch (e) {
+      return send(res, 500, { error: e instanceof Error ? e.message : "error" });
+    }
+  });
+
+  return new Promise<{ url: string; close(): Promise<void> }>((resolve, reject) => {
+    server.on("error", reject);
+    server.listen(o.port, "127.0.0.1", () => {
+      const a = server.address();
+      resolve({
+        url: `http://127.0.0.1:${typeof a === "object" && a ? a.port : o.port}`,
+        close: () => new Promise((r) => server.close(() => r())),
+      });
+    });
+  });
+}
