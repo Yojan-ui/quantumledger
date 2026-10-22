@@ -4,7 +4,7 @@ import type { LabUser } from "@/lib/lab/auth";
 import type { Phase } from "@/lib/lab/types";
 import { Copy } from "@/components/ui/Copy";
 import { ACTION_WORDS, danger, PHASE_WORDS } from "@/lib/lab/words";
-import { AutoRefresh, LabTabs, ScopeSelect, SignOut } from "./client";
+import { AutoRefresh, LabTabs, LabWorkflow, ScopeSelect, SignOut } from "./client";
 
 /** The Lab's page frame, inside the site's own nav and footer. */
 export function LabFrame({
@@ -38,6 +38,7 @@ export function LabFrame({
           <SignOut />
         </div>
       </div>
+      <LabWorkflow />
       <div className="mt-10 flex flex-wrap items-end justify-between gap-6">
         <div>
           <Label>Lab · {scopeName}</Label>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
+import { Workflow } from "@/components/ui/Workflow";
 
 const TABS = [
   { href: "/lab", label: "Overview", team: false },
@@ -111,4 +112,24 @@ export function SendTestTraffic() {
       {note && <span className="text-small text-fg-3">{note}</span>}
     </div>
   );
+}
+
+const LAB_STEPS = [
+  { simple: "Shield records an attack", technical: "Recorder: signed event records" },
+  { simple: "The model scores it", technical: "Threat model verdict + reasons" },
+  { simple: "You see the story", technical: "Incident timeline" },
+  { simple: "Replay it safely", technical: "Sandbox replay (loopback only)" },
+];
+
+/** The Lab's "How it works" strip: the step follows the page you're on. */
+export function LabWorkflow() {
+  const path = usePathname();
+  const current = path.startsWith("/lab/replay")
+    ? 3
+    : /^\/lab\/incidents\/./.test(path)
+      ? 2
+      : path.startsWith("/lab/model") || path.startsWith("/lab/how-it-works")
+        ? 1
+        : 0;
+  return <Workflow steps={LAB_STEPS} current={current} className="mt-8" />;
 }

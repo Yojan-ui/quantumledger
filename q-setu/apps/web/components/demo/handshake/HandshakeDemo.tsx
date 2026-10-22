@@ -169,6 +169,14 @@ const consoleFilter = (e: OpEvent) =>
 const head = (b: Uint8Array, n: number, total: number) =>
   hexPreview(b.subarray(0, n), n) + (total > n ? "…" : "");
 
+/** The page's "How it works" strip (Simple / Technical). */
+const WORKFLOW = [
+  { simple: "Your device says hello", technical: "Hello: random + X25519 share" },
+  { simple: "The server proves who it is", technical: "Signed ML-KEM-768 key (ML-DSA-65)" },
+  { simple: "Both sides make one secret key", technical: "Hybrid secret via HKDF" },
+  { simple: "Messages travel locked", technical: "AES-256-GCM messages" },
+];
+
 export function HandshakeDemo() {
   // The crypto runs in a worker (lib/client/handshake-crypto); this page only stages it.
   const ready = useRef<Promise<unknown>>(Promise.resolve());
@@ -475,6 +483,7 @@ export function HandshakeDemo() {
   return (
     <DemoShell
       title="Demo 1 · How it works"
+      workflow={{ steps: WORKFLOW, current: director.state.shot.step ?? 0 }}
       caption="The real QuantumLedger handshake, running in your browser: one signed hybrid key exchange, then fast symmetric messages. Hover a packet for its bytes."
       controls={
         <Button onClick={() => attackShot()} disabled={reel.busy}>

@@ -146,7 +146,10 @@ export default function AnalogyMorph({
     u.uPR!.value = gl.getPixelRatio() * 12;
     const i = Math.min(2, Math.floor(u.uT!.value));
     (u.uColor!.value as THREE.Color).copy(stops[i]!).lerp(stops[i + 1]!, u.uT!.value - i);
-    if (group.current && !reduce) group.current.rotation.y += dt * 0.15;
+    // Turns with the story (a quarter turn per shape, eased), not on its own: still while reading.
+    if (group.current && !reduce)
+      group.current.rotation.y +=
+        (u.uT!.value * 0.5 - group.current.rotation.y) * Math.min(1, dt * 2);
   });
   return (
     <>

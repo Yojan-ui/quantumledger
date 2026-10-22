@@ -5,7 +5,7 @@
  * it. Every recorded incident is a stream of particles flying in from the edge, one burst per step
  * Shield saw, coloured by its pattern. Steps Shield refused hit the ring and break apart; steps it
  * let through pass inside, dimmer. All of it from the real incident data, replayed from the start
- * whenever a new incident arrives.
+ * whenever a new incident arrives. It plays once and then rests: nothing loops while you read.
  *
  * One point cloud, animated on the GPU (no per-frame allocation). The quality ladder
  * (lib/client/gfx) sheds particles per step as fps falls. Reduced motion: one still frame.
@@ -241,12 +241,14 @@ export default function AttackMap({
   useFrame(({ gl }, dt) => {
     if (!active) return;
     const pr = gl.getPixelRatio() * 14;
-    if (!reduce) time.current += Math.min(dt, 0.1);
+    // Plays the streams once, then rests on the settled frame (ring and core, still); a new
+    // incident replays it.
+    if (!reduce && time.current < period * 0.999)
+      time.current = Math.min(period * 0.999, time.current + Math.min(dt, 0.1));
     for (const m of [mats.stream, mats.ring, mats.core]) {
       m.uniforms.uPR!.value = pr;
       m.uniforms.uTime!.value = time.current;
     }
-    if (group.current && !reduce) group.current.rotation.z += dt * 0.012;
   });
 
   return (

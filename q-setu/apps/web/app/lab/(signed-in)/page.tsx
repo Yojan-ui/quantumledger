@@ -74,7 +74,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       <AutoRefresh seconds={10} />
 
       {user.role === "customer" && scope.kind === "customer" && (
-        <Panel className="mb-10 border-sig">
+        <Panel className="mb-15 border-sig">
           <p className="font-mono text-label uppercase text-sig">From the QuantumLedger team</p>
           <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-split">
             <p className="whitespace-pre-line text-body text-fg-2">
@@ -96,7 +96,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
 
       <section
         aria-label="Summary"
-        className="mb-10 rounded-lg border border-line bg-raised p-6 md:p-8"
+        className="mb-15 rounded-lg border border-line bg-raised p-6 md:p-8"
       >
         <p className="text-lead text-fg">
           <Copy
@@ -132,7 +132,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       <ScanBox suggested={SUGGESTED.slice(0, 3)} />
 
       {scans.length > 0 && (
-        <section aria-labelledby="lab-your-scans" className="mb-10">
+        <section aria-labelledby="lab-your-scans" className="mb-15">
           <h2 id="lab-your-scans" className="text-h3 font-medium text-fg">
             <Copy
               simple={team && scope.kind === "all" ? "Recent scans" : "Your scans"}
@@ -168,7 +168,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       )}
 
       {mapIncidents.length > 0 && (
-        <div className="mb-10">
+        <div className="mb-15">
           <AttackMapView
             incidents={mapIncidents}
             patterns={patterns.map((p) => ({ id: p.id, name: p.name }))}
@@ -221,7 +221,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
         />
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mt-15 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel>
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="text-h3 font-medium text-fg">Top patterns</h2>

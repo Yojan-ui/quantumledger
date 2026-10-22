@@ -1,5 +1,6 @@
 "use client";
 
+import { Workflow, type WorkflowStep } from "@/components/ui/Workflow";
 import Link from "next/link";
 import { Breadcrumb, NextStep, PagePurpose } from "@/components/ui/Wayfinding";
 import { useEffect, useState, type ReactNode } from "react";
@@ -50,6 +51,8 @@ interface Props {
    * demo's real sequence. `hint` says what it will do (the button's tooltip and description).
    */
   tryIt?: { run: () => unknown; hint: string; disabled?: boolean };
+  /** The demo's "How it works" strip: 3–4 plain steps and which one the visitor is on. */
+  workflow?: { steps: WorkflowStep[]; current?: number };
 }
 
 /** Full-screen demo frame: header with caption and controls, the stage, a live console and a docked Compute Meter. */
@@ -62,6 +65,7 @@ export function DemoShell({
   children,
   onAutoplay,
   tryIt,
+  workflow,
 }: Props) {
   // ?embed=1 hides the chrome; used to record the looping previews on the home page.
   const [embed, setEmbed] = useState(false);
@@ -121,6 +125,13 @@ export function DemoShell({
       </header>
       <main id="main" className="flex-1">
         <Container className="pb-12">
+          {workflow && (
+            <Workflow
+              steps={workflow.steps}
+              {...(workflow.current !== undefined ? { current: workflow.current } : {})}
+              className="pb-8 pt-6"
+            />
+          )}
           {/* The 3D is the star: the stage spans the page; the console is a drawer over its edge. */}
           <div className="relative">
             {children}
