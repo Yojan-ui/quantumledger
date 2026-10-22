@@ -31,3 +31,30 @@ export {
 } from "./store";
 export { buildTimeline, phaseOf, type Timeline } from "./timeline";
 export type * from "./types";
+export {
+  FEATURE_DOCS,
+  FEATURES,
+  FeatureTracker,
+  type FeatureName,
+  type Features,
+} from "./model/features";
+export {
+  dataset,
+  LiveModel,
+  loadWeights,
+  MAX_SAMPLES,
+  train,
+  type ModelUpdate,
+} from "./model/learn";
+export {
+  forward,
+  label,
+  response,
+  verdict,
+  type Label,
+  type Metrics,
+  type Response,
+  type Verdict,
+  type Weights,
+} from "./model/net";
+export { THREATS, threatForPattern, type Threat } from "./threats";

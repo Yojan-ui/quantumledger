@@ -15,6 +15,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { shield, type ShieldOptions } from "@qsetu/shield";
 import { PASS_COOKIE, type Action, type GuardEvent } from "@qsetu/shield-guard";
 import { clientFamily, hashOf, ipHash, netHash, safeRoute } from "./privacy";
+import type { LiveModel } from "./model/learn";
 import { DEFAULT_SITE, type EvidenceStore } from "./store";
 import type { AttackEvent } from "./types";
 
@@ -47,6 +48,8 @@ export interface RecorderOptions {
    * request reaches the app through Shield Edge (it strips a client-supplied copy).
    */
   trustEdgeHeaders?: boolean;
+  /** The threat model: scores every finished request; its verdict is signed into the record. */
+  model?: LiveModel;
   /** Requests kept from before a source's first flag. Default 20, from the last 5 minutes. */
   contextMax?: number;
   contextWindowMs?: number;
@@ -141,9 +144,15 @@ export function createRecorder(o: RecorderOptions) {
     },
 
     /** Stores the event if it belongs on record, with any context from before the first flag. */
-    keep(e: AttackEvent) {
+    keep(event: AttackEvent) {
+      const m = o.model?.observe(event);
+      const e = m?.verdict ? { ...event, model: m.verdict } : event;
       if (o.store.openIncidentFor(e)) return void o.store.append(e);
-      if (!e.flagged) return remember(e);
+      if (!e.flagged) {
+        // Let through and not part of an incident: a safe example for the model.
+        if (m) o.model!.addNormal(m.x);
+        return remember(e);
+      }
       for (const x of context.get(srcKey(e)) ?? []) o.store.append(x);
       context.delete(srcKey(e));
       o.store.append(e);

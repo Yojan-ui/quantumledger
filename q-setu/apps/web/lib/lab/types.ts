@@ -15,9 +15,17 @@ export type {
   ReplayStepResult,
   Timeline,
   TimelineStep,
+  Verdict,
+  Metrics,
+  Threat,
+  ModelUpdate,
 } from "../../../../packages/attack-lab/src";
 import type {
   AttackEvent,
+  Metrics,
+  ModelUpdate,
+  Threat,
+  Verdict,
   Incident,
   IncidentCheck,
   ReplayReport,
@@ -31,12 +39,34 @@ export type IncidentSummary = Omit<Incident, "eventHashes"> & {
   durationMs: number;
   actions: Record<string, number>;
   sealed: boolean;
+  threat?: ThreatRef;
 };
+
+export interface ThreatRef {
+  id: string;
+  title: string;
+  date: string;
+}
+
+export interface ModelSummary {
+  version?: string;
+  metrics?: Metrics;
+  trainedAt?: number;
+  lastSigned?: { seq: number; hash: string; at: number };
+  updates: number;
+}
+
+export interface ModelDetail extends ModelSummary {
+  features: { id: string; simple: string; technical: string }[];
+  history: (ModelUpdate & { seq: number; hash: string })[];
+  threats: Threat[];
+}
 
 export interface EngineOverview {
   incidents: IncidentSummary[];
   totals: { incidents: number; events: number; flagged: number; records: number; patterns: number };
   key: { alg: string; keyId: string; publicKey: string };
+  model?: ModelSummary;
   simulating: boolean;
 }
 
@@ -48,6 +78,8 @@ export interface IncidentDetail {
   seal?: { seq: number; hash: string; covers: number };
   check: IncidentCheck;
   key: { alg: string; keyId: string };
+  verdict?: { verdict: Verdict; signed: boolean; eventId: string };
+  threat?: ThreatRef;
 }
 
 export interface ReplayJob {

@@ -17,6 +17,7 @@ import { startSandbox } from "./sandbox";
 import { startLabServer } from "./server";
 import { loadSigner } from "./sign";
 import { CustomerRegistry } from "./customers";
+import { LiveModel } from "./model/learn";
 import { simulate, SITE_HEADER } from "./simulate";
 import { EvidenceStore } from "./store";
 
@@ -36,6 +37,8 @@ const signer = loadSigner(process.env.ATTACK_LAB_IDENTITY ?? join(dir, "identity
 const store = new EvidenceStore({ signer, dir });
 const salt = secretFile("salt");
 const customers = new CustomerRegistry(join(dir, "customers.json"));
+// The threat model: shipped weights until the first retrain on this lab's own evidence.
+const model = new LiveModel(store, { dir });
 // Fixed per lab so records that mention the canary stay replayable across restarts.
 const canaryKey = `sk_live_${secretFile("canary").slice(0, 24)}`;
 
@@ -48,6 +51,7 @@ const sandbox = await startSandbox({
   record: {
     store,
     salt,
+    model,
     site: (req) => {
       const h = req.headers[SITE_HEADER];
       const sites = customers.sites();
@@ -60,6 +64,7 @@ const lab = await startLabServer({
   store,
   sandbox,
   customers,
+  model,
   port: Number(process.env.LAB_PORT ?? 4100),
   ...(process.env.ATTACK_LAB_TOKEN ? { token: process.env.ATTACK_LAB_TOKEN } : {}),
 });
@@ -70,6 +75,14 @@ console.log(
 );
 console.log(`[attack-lab] signing    ML-DSA-65, key ${signer.keyId}`);
 console.log(`[attack-lab] sandbox    bare ${sandbox.bare}  ·  protected ${sandbox.protected}`);
+model.onUpdate(() => {
+  const m = model.weights?.metrics;
+  if (m)
+    console.log(
+      `[attack-lab] model      ${model.weights!.version} · learned from ${m.attacks} attacks · ${Math.round(m.accuracy * 100)}% on held-back · ${m.samples} samples in ${m.ms} ms`,
+    );
+});
+model.schedule(500);
 console.log(`[attack-lab] api        ${lab.url}/api/overview`);
 
 if (process.env.ATTACK_LAB_SEED === "1" && store.size === 0) {

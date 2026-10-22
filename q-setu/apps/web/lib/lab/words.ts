@@ -185,3 +185,22 @@ function duration(a: TimelineStep, b: TimelineStep) {
   if (ms < 60_000) return ` in ${(ms / 1000).toFixed(1)} seconds`;
   return ` over ${Math.round(ms / 60_000)} minutes`;
 }
+
+/** The threat model's labels and the response each maps to, in plain words. */
+export const LABEL_WORDS: Record<string, string> = {
+  safe: "Looks safe",
+  suspicious: "Looks suspicious",
+  attack: "Looks like an attack",
+};
+export const RESPONSE_WORDS: Record<string, string> = {
+  allow: "let it through",
+  slow: "slow it down",
+  challenge: "ask it to prove it's a person",
+  block: "block it",
+};
+
+/** "Model updated 3 min ago · learned from 9 attacks". */
+export function modelNote(m: { attacks: number } | undefined, trainedAt: number | undefined) {
+  if (!m || !trainedAt) return "The threat model is getting ready.";
+  return `Model updated ${agoWords(trainedAt)} · learned from ${m.attacks} attack${m.attacks === 1 ? "" : "s"}`;
+}

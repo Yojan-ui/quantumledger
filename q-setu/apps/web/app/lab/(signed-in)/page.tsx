@@ -5,8 +5,9 @@ import { CustomerEditor } from "@/components/lab/CustomerEditor";
 import { AttackMapView } from "@/components/lab/AttackMapView";
 import { ago, EngineOffline, LabFrame, Score } from "@/components/lab/ui";
 import { Copy } from "@/components/ui/Copy";
-import { agoWords, patternStory, shieldSentence, stopped } from "@/lib/lab/words";
-import { overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
+import { agoWords, modelNote, patternStory, shieldSentence, stopped } from "@/lib/lab/words";
+import { ThreatNews } from "@/components/lab/ThreatNews";
+import { modelDetail, overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
 
 export const dynamic = "force-dynamic";
@@ -24,10 +25,11 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
   const { user, scope, customers } = ctx;
   const team = user.role === "team";
   const inScope = scope.kind === "customer" ? [scope.customer] : customers;
-  const [o, patterns, qs] = await Promise.all([
+  const [o, patterns, qs, model] = await Promise.all([
     overviewFor(scope),
     patternsFor(scope),
     quantumSafe(inScope),
+    modelDetail().catch(() => undefined),
   ]);
   const qsParam = ctx.customerParam ? `?customer=${ctx.customerParam}` : "";
   const top = patterns.slice(0, 5);
@@ -111,6 +113,12 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
             />
           </p>
         )}
+        <p className="mt-4 text-small text-fg-2">
+          <Copy
+            simple={`${modelNote(model?.metrics, model?.trainedAt)}. The threat model's verdict feeds Shield's response (allow, slow, challenge or block), and every verdict is saved in the tamper-proof record.`}
+            technical={`Threat model ${model?.version ?? "(loading)"}: verdict → allow / slow / challenge / block, advisory to Shield's rules; each verdict signed inside its event record (${o.key.alg}).`}
+          />
+        </p>
         <p className="mt-4 max-w-prose text-small text-fg-3" data-copy="simple">
           Why it matters to your company: attackers try sites like yours every day. Seeing what they
           tried, with proof that Shield stopped it, is what your board, auditors and customers will
@@ -270,6 +278,8 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
           technical={`Evidence signed with ${o.key.alg} · key ${o.key.keyId}`}
         />
       </p>
+
+      {model && <ThreatNews threats={model.threats} />}
 
       {team && (
         <section className="mt-15" aria-labelledby="lab-customers">

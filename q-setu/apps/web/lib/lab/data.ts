@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { isDenied, scopeFor, siteOf, inScope, type Denied, type Scope } from "./access";
 import { LAB_COOKIE, readSession, sessionFromCookieHeader, type LabUser } from "./auth";
 import { engine, EngineMissing } from "./engine";
-import type { Customer, EngineOverview, IncidentDetail, Pattern } from "./types";
+import type { Customer, EngineOverview, IncidentDetail, ModelDetail, Pattern } from "./types";
 
 /**
  * What the Lab pages and API routes read, always through a scope from lib/lab/access. Pages and
@@ -100,4 +100,9 @@ export async function quantumSafe(
   } catch {
     return { share: null, connections: 0, linked: ids.length };
   }
+}
+
+/** The threat model: one model for the whole lab (no customer's data is in this answer). */
+export async function modelDetail(): Promise<ModelDetail> {
+  return engine<ModelDetail>("/api/model");
 }

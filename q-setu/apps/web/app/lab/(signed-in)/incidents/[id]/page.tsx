@@ -14,6 +14,7 @@ import { isDenied } from "@/lib/lab/access";
 import { incidentFor } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
 import { IncidentStory } from "@/components/lab/IncidentStory";
+import { ModelVerdict } from "@/components/lab/ModelVerdict";
 import { Copy } from "@/components/ui/Copy";
 import { incidentWords, patternStory, story } from "@/lib/lab/words";
 
@@ -84,6 +85,17 @@ export default async function LabIncident({
         />
       </p>
 
+      {d.threat && inc.synthetic && (
+        <p className="mb-6 text-small text-fg-2">
+          <Copy
+            simple={`Practice version of a real attack: ${d.threat.title}.`}
+            technical={`Practice traffic modelled on reference incident ${d.threat.id} (${d.threat.date}).`}
+          />{" "}
+          <Link href="/lab/model" className="link-u">
+            <Copy simple="How the model spots it" technical="Threat model" />
+          </Link>
+        </p>
+      )}
       <Panel className="mb-6" as="section">
         <div data-copy="simple">
           <h2 className="text-h3 font-medium text-fg">What happened</h2>
@@ -173,6 +185,7 @@ export default async function LabIncident({
         </Panel>
 
         <div className="flex flex-col gap-6">
+          {d.verdict && <ModelVerdict v={d.verdict.verdict} signed={d.verdict.signed} />}
           <Panel className={verified ? "border-sig" : "border-danger"}>
             <p
               className={`font-mono text-label uppercase ${verified ? "text-sig" : "text-danger"}`}
