@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import { Container, Label } from "@/components/ui";
 import type { LabUser } from "@/lib/lab/auth";
 import type { Phase } from "@/lib/lab/types";
-import { LabTabs, ScopeSelect, SignOut } from "./client";
+import { Copy } from "@/components/ui/Copy";
+import { ACTION_WORDS, danger, PHASE_WORDS } from "@/lib/lab/words";
+import { AutoRefresh, LabTabs, ScopeSelect, SignOut } from "./client";
 
 /** The Lab's page frame, inside the site's own nav and footer. */
 export function LabFrame({
@@ -59,7 +61,11 @@ export function ActionChip({ action }: { action: string }) {
         : action === "challenge"
           ? "challenged"
           : "blocked";
-  return <Chip tone={action === "allow" ? "fg-2" : "ok"}>{label}</Chip>;
+  return (
+    <Chip tone={action === "allow" ? "fg-2" : "ok"}>
+      <Copy simple={ACTION_WORDS[action] ?? label} technical={label} />
+    </Chip>
+  );
 }
 
 export const PHASE: Record<Phase, { label: string; tone: Tone }> = {
@@ -101,7 +107,11 @@ export function Chip({ tone, children }: { tone: Tone; children: ReactNode }) {
 }
 
 export function PhaseChip({ phase }: { phase: Phase }) {
-  return <Chip tone={PHASE[phase].tone}>{PHASE[phase].label}</Chip>;
+  return (
+    <Chip tone={PHASE[phase].tone}>
+      <Copy simple={PHASE_WORDS[phase]} technical={PHASE[phase].label} />
+    </Chip>
+  );
 }
 
 /** A 0–100 risk score as a thin bar in the matching role colour. */
@@ -115,17 +125,26 @@ export function Score({ n }: { n: number }) {
           style={{ width: `${Math.max(0, Math.min(100, n))}%` }}
         />
       </span>
-      <span className="tabular font-mono text-small">{n}</span>
+      <span className="tabular font-mono text-small">
+        <Copy simple={`Danger: ${danger(n)}`} technical={n} />
+      </span>
     </span>
   );
 }
 
+/** The engine isn't answering yet (it starts with `pnpm demo`): a friendly card that retries itself. */
 export function EngineOffline() {
   return (
-    <div className="rounded-lg border border-line bg-raised p-6 text-body text-fg-2 md:p-8">
-      The Attack Lab engine isn’t answering. Start it with{" "}
-      <code className="font-mono text-small text-fg">pnpm --filter @qsetu/attack-lab dev</code>,
-      then reload this page.
+    <div
+      role="status"
+      className="rounded-lg border border-line bg-raised p-6 text-body text-fg-2 md:p-8"
+    >
+      <p className="font-mono text-label uppercase text-kem">Starting the Lab…</p>
+      <p className="mt-3 max-w-prose">
+        The attack recorder is warming up. This page checks again every few seconds and fills in by
+        itself.
+      </p>
+      <AutoRefresh seconds={3} />
     </div>
   );
 }

@@ -12,6 +12,7 @@
  *   POST /api/simulate          sends labelled test traffic to the live protected sandbox
  *   GET  /api/customers         customers (site, members, the team's note and readiness)
  *   PUT  /api/customers/:id     { note?, readiness?, shieldSiteId?, by }: the team's edit
+ *   GET  /api/model             the threat model: accuracy, what it learned from, signed updates
  *
  * `?site=` on overview and patterns limits them to one customer's site. This API has no users:
  * whoever calls it (the dashboard, the website's /lab) decides who may see what, and must pass
@@ -21,6 +22,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { CustomerPatch, CustomerRegistry } from "./customers";
+import { FEATURE_DOCS, FEATURES } from "./model/features";
+import type { LiveModel } from "./model/learn";
+import type { Verdict } from "./model/net";
+import { threatForPattern, THREATS } from "./threats";
 import { classify, groupPatterns } from "./patterns";
 import { replay, stepsFromTimeline, type ReplayReport, type ReplayStepResult } from "./replay";
 import { startSandbox, type Sandbox } from "./sandbox";
@@ -48,6 +53,7 @@ export interface LabServerOptions {
   sandbox: Sandbox;
   port: number;
   customers?: CustomerRegistry;
+  model?: LiveModel;
   /** Require this bearer token on every call. */
   token?: string;
 }
@@ -62,6 +68,34 @@ export function startLabServer(o: LabServerOptions) {
   const timelineOf = (id: string) =>
     buildTimeline(id, store.eventsOf(id), { trapPath: sandbox.trapPath });
 
+  const threatOf = (pattern: string) => {
+    const t = threatForPattern(pattern);
+    return t && { id: t.id, title: t.title, date: t.date };
+  };
+
+  /** The model's verdict on an incident: its riskiest request (signed if recorded with one). */
+  function incidentVerdict(id: string) {
+    let best: { verdict: Verdict; signed: boolean; eventId: string } | undefined;
+    for (const r of store.eventsOf(id)) {
+      const v = r.body.model ?? o.model?.scoreEvent(r.body.id);
+      if (v && (!best || v.score > best.verdict.score))
+        best = { verdict: v, signed: !!r.body.model, eventId: r.body.id };
+    }
+    return best;
+  }
+
+  function modelSummary() {
+    const records = store.modelRecords();
+    const last = records.at(-1);
+    return {
+      version: o.model?.weights?.version,
+      metrics: o.model?.weights?.metrics,
+      trainedAt: o.model?.weights?.trainedAt,
+      lastSigned: last && { seq: last.seq, hash: last.hash, at: last.body.trainedAt },
+      updates: records.length,
+    };
+  }
+
   function overview(site?: string) {
     const incidents = store.listIncidents(site).map((inc) => {
       const t = timelineOf(inc.id);
@@ -74,6 +108,7 @@ export function startLabServer(o: LabServerOptions) {
         durationMs: t.durationMs,
         actions: t.actions,
         sealed: !!store.seal(inc.id),
+        threat: threatOf(rule.id),
       };
     });
     const events = incidents.reduce((n, i) => n + i.steps, 0);
@@ -87,6 +122,7 @@ export function startLabServer(o: LabServerOptions) {
         patterns: new Set(incidents.map((i) => i.pattern.id)).size,
       },
       key: { alg: "ML-DSA-65", keyId: store.signer.keyId, publicKey: store.publicKey },
+      model: modelSummary(),
       sandbox: { bare: sandbox.bare, protected: sandbox.protected },
       simulating,
       scenarios: SCENARIOS.map((s) => ({ id: s.id, label: s.label })),
@@ -107,6 +143,8 @@ export function startLabServer(o: LabServerOptions) {
       seal: seal && { seq: seal.seq, hash: seal.hash, covers: seal.body.eventHashes.length },
       check: store.verifyIncident(id),
       key: { alg: "ML-DSA-65", keyId: store.signer.keyId },
+      verdict: incidentVerdict(id),
+      threat: threatOf(rule.id),
     };
   }
 
@@ -189,6 +227,17 @@ export function startLabServer(o: LabServerOptions) {
       if (req.method === "GET" && p === "/api/patterns")
         return send(res, 200, {
           patterns: groupPatterns(store.listIncidents(site), (id) => store.eventsOf(id)),
+        });
+      if (req.method === "GET" && p === "/api/model")
+        return send(res, 200, {
+          ...modelSummary(),
+          features: FEATURES.map((f) => ({ id: f, ...FEATURE_DOCS[f] })),
+          history: store
+            .modelRecords()
+            .slice(-20)
+            .reverse()
+            .map((r) => ({ seq: r.seq, hash: r.hash, ...r.body })),
+          threats: THREATS,
         });
       if (req.method === "GET" && p === "/api/customers")
         return send(res, 200, { customers: o.customers?.list() ?? [] });

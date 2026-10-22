@@ -30,9 +30,41 @@ const devSecret = shared.devSecret;
 function secret(): string | undefined {
   const s = process.env.LAB_AUTH_SECRET;
   if (s && s.length >= 32) return s;
-  return process.env.NODE_ENV === "production" ? undefined : devSecret;
+  // Demo mode is an explicit opt-in, so it may run on a per-process secret even in production.
+  return process.env.NODE_ENV === "production" && !demoMode() ? undefined : devSecret;
 }
 export const labEnabled = () => secret() !== undefined;
+
+/**
+ * Demo accounts: sign in by typing the address, no email sent. For demos run offline, where no mail
+ * service is set up. From LAB_DEMO_ACCOUNTS, comma-separated `email=team` or `email=customer:<id>`:
+ *
+ *   LAB_DEMO_ACCOUNTS=team@quantumledger.dev=team,ciso@ledgerwood.example=customer:ledgerwood
+ *
+ * Unset in development: the three accounts below (the engine's demo customers). Set it empty to
+ * switch demo mode off. Production has no default: demo mode there only when the variable is set.
+ * A demo account gets exactly the role checks a magic-link session gets.
+ */
+const DEV_DEMO =
+  "team@quantumledger.dev=team,ciso@ledgerwood.example=customer:ledgerwood,it@sahyadri.example=customer:sahyadri";
+
+export type DemoAccount = { email: string; role: LabRole; customerId?: string };
+
+export function demoAccounts(): DemoAccount[] {
+  const raw =
+    process.env.LAB_DEMO_ACCOUNTS ?? (process.env.NODE_ENV === "production" ? "" : DEV_DEMO);
+  const out: DemoAccount[] = [];
+  for (const item of raw.split(",")) {
+    const [e, r] = item.split("=").map((x) => x.trim());
+    const email = normaliseEmail(e);
+    if (!email || !r) continue;
+    if (r === "team") out.push({ email, role: "team" });
+    else if (/^customer:[a-z0-9-]{1,40}$/.test(r))
+      out.push({ email, role: "customer", customerId: r.slice("customer:".length) });
+  }
+  return out;
+}
+export const demoMode = () => demoAccounts().length > 0;
 
 /** Team admins: LAB_TEAM_EMAILS (comma-separated). In development, team@quantumledger.dev too. */
 export function teamEmails(): string[] {

@@ -92,10 +92,17 @@ export const SCENARIOS: Scenario[] = [
     id: "ordinary-visitor",
     label: "Ordinary visitor (should not be recorded)",
     ua: CHROME,
+    // A person: a handful of pages with uneven pauses.
     requests: () =>
-      ["/", "/", "/api/health"].map((path) => ({
-        path,
-        gapMs: 400,
+      [
+        ["/", 0],
+        ["/api/health", 1700],
+        ["/", 650],
+        ["/", 2300],
+        ["/api/health", 900],
+      ].map(([path, gapMs]) => ({
+        path: path as string,
+        gapMs: gapMs as number,
         headers: {
           accept: "text/html,application/xhtml+xml",
           "accept-language": "en-IN,en;q=0.9",

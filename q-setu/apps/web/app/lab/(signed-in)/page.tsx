@@ -2,8 +2,12 @@ import Link from "next/link";
 import { Container, Panel, Stat } from "@/components/ui";
 import { AutoRefresh, SendTestTraffic } from "@/components/lab/client";
 import { CustomerEditor } from "@/components/lab/CustomerEditor";
+import { AttackMapView } from "@/components/lab/AttackMapView";
 import { ago, EngineOffline, LabFrame, Score } from "@/components/lab/ui";
-import { overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
+import { Copy } from "@/components/ui/Copy";
+import { agoWords, modelNote, patternStory, shieldSentence, stopped } from "@/lib/lab/words";
+import { ThreatNews } from "@/components/lab/ThreatNews";
+import { modelDetail, overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
 
 export const dynamic = "force-dynamic";
@@ -21,14 +25,34 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
   const { user, scope, customers } = ctx;
   const team = user.role === "team";
   const inScope = scope.kind === "customer" ? [scope.customer] : customers;
-  const [o, patterns, qs] = await Promise.all([
+  const [o, patterns, qs, model] = await Promise.all([
     overviewFor(scope),
     patternsFor(scope),
     quantumSafe(inScope),
+    modelDetail().catch(() => undefined),
   ]);
   const qsParam = ctx.customerParam ? `?customer=${ctx.customerParam}` : "";
   const top = patterns.slice(0, 5);
   const maxCount = Math.max(1, ...top.map((p) => p.count));
+  const startOfDay = new Date().setHours(0, 0, 0, 0);
+  const today = o.incidents.filter((i) => i.lastSeen >= startOfDay);
+  const stoppedToday = today.filter((i) => stopped(i.actions).refused > 0);
+  const sites = new Set(today.map((i) => i.site)).size;
+  const allSealed = o.incidents.every((i) => i.sealed);
+  const where = (n: number) =>
+    scope.kind === "customer" ? "on your site" : `on ${n} site${n === 1 ? "" : "s"}`;
+  const summary =
+    o.incidents.length === 0
+      ? team
+        ? "No attacks yet. Press Send test traffic to watch Shield stop one."
+        : "No attacks recorded on your site yet. When Shield stops one, it shows up here."
+      : today.length
+        ? `Today Shield stopped ${stoppedToday.length} attack${stoppedToday.length === 1 ? "" : "s"} ${where(sites)}.`
+        : `No attacks today. Shield has stopped ${o.incidents.filter((i) => stopped(i.actions).refused > 0).length} so far, most recently ${agoWords(o.incidents[0]!.lastSeen)}.`;
+  const mapIncidents = o.incidents.slice(0, 24).map((i) => {
+    const { refused, total } = stopped(i.actions);
+    return { id: i.id, pattern: i.pattern.id, refused, allowed: total - refused };
+  });
 
   return (
     <LabFrame
@@ -36,7 +60,12 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       customers={team ? customers : []}
       scopeName={ctx.scopeName}
       title="Overview"
-      lead="Attacks Shield flagged on the protected sites, recorded as signed evidence. Shield raises the cost of abuse and makes it noisy; nothing here makes a site impossible to attack."
+      lead={
+        <Copy
+          simple={`What this page shows: every attack Shield caught on ${team && scope.kind === "all" ? "your customers' sites" : "your site"}, and how it stopped them.`}
+          technical="Attacks Shield flagged on the protected sites, recorded as signed evidence. Shield raises the cost of abuse and makes it noisy; nothing here makes a site impossible to attack."
+        />
+      }
       actions={team ? <SendTestTraffic /> : undefined}
     >
       <AutoRefresh seconds={10} />
@@ -49,26 +78,104 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
               {scope.customer.note || "No note from the team yet."}
             </p>
             <Stat
-              value={scope.customer.readiness === null ? "—" : `${scope.customer.readiness}/100`}
+              value={
+                scope.customer.readiness === null ? (
+                  <Copy simple="Not scored yet" technical="—" />
+                ) : (
+                  `${scope.customer.readiness}/100`
+                )
+              }
               label="Readiness score"
             />
           </div>
         </Panel>
       )}
 
+      <section
+        aria-label="Summary"
+        className="mb-10 rounded-lg border border-line bg-raised p-6 md:p-8"
+      >
+        <p className="text-lead text-fg">
+          <Copy
+            simple={summary}
+            technical={`${o.totals.incidents} incidents · ${o.totals.flagged} flagged requests · ${o.totals.patterns} patterns · ${o.totals.records} signed records`}
+          />
+        </p>
+        {o.incidents.length > 0 && (
+          <p className="mt-2 text-body text-fg-2">
+            <Copy
+              simple={
+                allSealed
+                  ? "All records are tamper-proof: each one is signed, so nobody can change it without it showing."
+                  : "New records are being signed now; each one becomes tamper-proof within seconds."
+              }
+              technical={`Every record is signed with ${o.key.alg} and hash-chained to the one before it.`}
+            />
+          </p>
+        )}
+        <p className="mt-4 text-small text-fg-2">
+          <Copy
+            simple={`${modelNote(model?.metrics, model?.trainedAt)}. The threat model's verdict feeds Shield's response (allow, slow, challenge or block), and every verdict is saved in the tamper-proof record.`}
+            technical={`Threat model ${model?.version ?? "(loading)"}: verdict → allow / slow / challenge / block, advisory to Shield's rules; each verdict signed inside its event record (${o.key.alg}).`}
+          />
+        </p>
+        <p className="mt-4 max-w-prose text-small text-fg-3" data-copy="simple">
+          Why it matters to your company: attackers try sites like yours every day. Seeing what they
+          tried, with proof that Shield stopped it, is what your board, auditors and customers will
+          ask for.
+        </p>
+      </section>
+
+      {mapIncidents.length > 0 && (
+        <div className="mb-10">
+          <AttackMapView
+            incidents={mapIncidents}
+            patterns={patterns.map((p) => ({ id: p.id, name: p.name }))}
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-6 border-y border-line py-8 md:grid-cols-4">
-        <Stat value={o.totals.incidents} label="Incidents" />
-        <Stat value={o.totals.flagged} label="Flagged requests" />
-        <Stat value={o.totals.patterns} label="Patterns" />
         <Stat
-          value={qs.share === null ? "—" : `${Math.round(qs.share * 100)}%`}
+          value={<Copy simple={o.totals.incidents || "None yet"} technical={o.totals.incidents} />}
+          label="Incidents"
+          footnote={<Copy simple="(attacks)" technical="" />}
+        />
+        <Stat
+          value={<Copy simple={o.totals.flagged || "None yet"} technical={o.totals.flagged} />}
+          label="Flagged requests"
+          footnote={<Copy simple="(suspicious requests)" technical="" />}
+        />
+        <Stat
+          value={<Copy simple={o.totals.patterns || "None yet"} technical={o.totals.patterns} />}
+          label="Patterns"
+          footnote={<Copy simple="(kinds of attack)" technical="" />}
+        />
+        <Stat
+          value={
+            qs.share === null ? (
+              <Copy simple="Not measured" technical="—" />
+            ) : (
+              `${Math.round(qs.share * 100)}%`
+            )
+          }
           label="Traffic quantum-safe"
           footnote={
-            qs.share === null
-              ? qs.linked
-                ? "(no Shield Edge data yet)"
-                : "(no Shield site linked)"
-              : `(${qs.connections.toLocaleString("en-GB")} TLS connections, 30 days)`
+            qs.share === null ? (
+              qs.linked ? (
+                <Copy
+                  simple="(appears once Shield's front door is in place)"
+                  technical="(no Shield Edge data yet)"
+                />
+              ) : (
+                <Copy
+                  simple="(the team links your site to measure this)"
+                  technical="(no Shield site linked)"
+                />
+              )
+            ) : (
+              `(${qs.connections.toLocaleString("en-GB")} TLS connections, 30 days)`
+            )
           }
         />
       </div>
@@ -82,7 +189,12 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
             </Link>
           </div>
           {top.length === 0 ? (
-            <p className="mt-6 text-body text-fg-2">Nothing recorded yet.</p>
+            <p className="mt-6 text-body text-fg-2">
+              <Copy
+                simple="No attacks yet, so no patterns. Each kind of attack Shield stops gets a name here."
+                technical="Nothing recorded yet."
+              />
+            </p>
           ) : (
             <ul className="mt-6">
               {top.map((p) => (
@@ -90,9 +202,15 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="text-body text-fg">{p.name}</span>
                     <span className="tabular font-mono text-small text-fg-2">
-                      {p.count} · {ago(p.lastSeen)}
+                      <Copy
+                        simple={`${p.count} time${p.count === 1 ? "" : "s"} · ${agoWords(p.lastSeen)}`}
+                        technical={`${p.count} · ${ago(p.lastSeen)}`}
+                      />
                     </span>
                   </div>
+                  <p className="mt-1 text-small text-fg-3" data-copy="simple">
+                    {patternStory(p.id).tried}
+                  </p>
                   <span className="mt-2 block h-1 overflow-hidden rounded-full bg-line">
                     <span
                       className="block h-full bg-danger"
@@ -113,7 +231,16 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
             </Link>
           </div>
           {o.incidents.length === 0 ? (
-            <p className="mt-6 text-body text-fg-2">Nothing recorded yet.</p>
+            <p className="mt-6 text-body text-fg-2">
+              <Copy
+                simple={
+                  team
+                    ? "No attacks yet. Press Send test traffic to watch Shield stop one."
+                    : "No attacks recorded on your site yet."
+                }
+                technical="Nothing recorded yet."
+              />
+            </p>
           ) : (
             <ul className="mt-6">
               {o.incidents.slice(0, 5).map((i) => (
@@ -122,10 +249,20 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
                     href={`/lab/incidents/${i.id}${qsParam}`}
                     className="flex flex-wrap items-center justify-between gap-3 transition-colors duration-150 hover:text-fg"
                   >
-                    <span className="text-body text-fg">{i.pattern.name}</span>
+                    <span>
+                      <span className="block text-body text-fg">{i.pattern.name}</span>
+                      <span className="block text-small text-fg-3" data-copy="simple">
+                        {shieldSentence(i.actions)}
+                      </span>
+                    </span>
                     <span className="flex items-center gap-4">
                       <Score n={i.maxScore} />
-                      <span className="text-small text-fg-3">{ago(i.lastSeen)}</span>
+                      <span className="text-small text-fg-3">
+                        <Copy
+                          simple={`${i.synthetic ? "Practice attack" : "Attack"} · ${agoWords(i.lastSeen)}`}
+                          technical={ago(i.lastSeen)}
+                        />
+                      </span>
                     </span>
                   </Link>
                 </li>
@@ -136,8 +273,13 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       </div>
 
       <p className="mt-6 font-mono text-label uppercase text-fg-3">
-        Evidence signed with {o.key.alg} · key {o.key.keyId}
+        <Copy
+          simple="Tamper-proof records: signed with a quantum-safe signature"
+          technical={`Evidence signed with ${o.key.alg} · key ${o.key.keyId}`}
+        />
       </p>
+
+      {model && <ThreatNews threats={model.threats} />}
 
       {team && (
         <section className="mt-15" aria-labelledby="lab-customers">

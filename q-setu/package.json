@@ -10,6 +10,7 @@
     "dev": "concurrently -k -n web,legacy,shield-srv,shield-cli -c cyan,gray,yellow,magenta \"pnpm --filter @qsetu/web dev\" \"pnpm --filter @qsetu/legacy-bank dev\" \"pnpm dev:shield-server\" \"pnpm dev:shield-client\"",
     "build": "pnpm -r build",
     "start": "pnpm --filter @qsetu/web start",
+    "demo": "pnpm --filter @qsetu/web build && concurrently -k -n web,lab -c cyan,magenta \"LAB_DEMO_ACCOUNTS=team@quantumledger.dev=team,ciso@ledgerwood.example=customer:ledgerwood,it@sahyadri.example=customer:sahyadri pnpm --filter @qsetu/web start\" \"ATTACK_LAB_SEED=1 pnpm --filter @qsetu/attack-lab dev\"",
     "test": "vitest run",
     "bench": "tsx scripts/bench.ts",
     "typecheck": "pnpm -r typecheck",

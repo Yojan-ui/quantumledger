@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Container, Label, PageShell } from "@/components/ui";
+import { DemoSignIn } from "@/components/lab/DemoSignIn";
 import { SignInForm } from "@/components/lab/SignInForm";
-import { labEnabled } from "@/lib/lab/auth";
+import { demoAccounts, labEnabled } from "@/lib/lab/auth";
 import { pageUser } from "@/lib/lab/data";
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default async function LabSignIn({
 }) {
   if (await pageUser()) redirect("/lab");
   const { error } = await searchParams;
+  const demo = demoAccounts();
   return (
     <PageShell>
       <Container className="py-16 md:py-24">
@@ -27,7 +29,9 @@ export default async function LabSignIn({
           The Lab shows the attacks Shield recorded on your sites: signed evidence, step-by-step
           timelines and patterns. It’s for the QuantumLedger team and the customers we’ve invited.
         </p>
-        {labEnabled() ? (
+        {demo.length ? (
+          <DemoSignIn accounts={demo} {...(error ? { error } : {})} />
+        ) : labEnabled() ? (
           <SignInForm {...(error ? { error } : {})} />
         ) : (
           <p className="mt-8 text-body text-fg-2">The Lab is switched off on this server.</p>

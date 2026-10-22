@@ -8,7 +8,15 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { verifyRecord, type RecordCheck, type Signer } from "./sign";
-import type { AttackEvent, EventRecord, Incident, IncidentRecord, SignedRecord } from "./types";
+import type {
+  AttackEvent,
+  EventRecord,
+  Incident,
+  IncidentRecord,
+  ModelRecord,
+  SignedRecord,
+} from "./types";
+import type { ModelUpdate } from "./model/learn";
 
 export interface StoreOptions {
   signer: Signer;
@@ -53,6 +61,7 @@ export class EvidenceStore {
   private readonly events = new Map<string, EventRecord>();
   private readonly incidents = new Map<string, Incident>();
   private readonly seals = new Map<string, IncidentRecord>();
+  private readonly models: ModelRecord[] = [];
   private readonly byIp = new Map<string, string>();
   private readonly bySession = new Map<string, string>();
   private readonly dirty = new Set<string>();
@@ -85,6 +94,7 @@ export class EvidenceStore {
   private load(r: SignedRecord) {
     this.records.push(freeze(r));
     if (r.kind === "event") this.index(r as EventRecord);
+    else if (r.kind === "model") this.models.push(r as ModelRecord);
     else this.seals.set((r as IncidentRecord).body.id, r as IncidentRecord);
   }
 
@@ -203,6 +213,24 @@ export class EvidenceStore {
   /** The incident's event records, oldest first (frozen). */
   eventsOf(id: string): EventRecord[] {
     return (this.incidents.get(id)?.eventIds ?? []).map((e) => this.events.get(e)!);
+  }
+
+  /** Every event record, in the order written (frozen). */
+  allEvents(): EventRecord[] {
+    return [...this.events.values()];
+  }
+
+  /** Signs a threat-model update into the chain. */
+  appendModel(update: ModelUpdate): ModelRecord {
+    const rec = this.write("model", update) as ModelRecord;
+    this.models.push(rec);
+    for (const l of this.listeners) l();
+    return rec;
+  }
+
+  /** Signed model updates, oldest first. */
+  modelRecords(): ModelRecord[] {
+    return [...this.models];
   }
 
   /** One record exactly as stored and signed. */

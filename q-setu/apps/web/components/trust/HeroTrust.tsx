@@ -7,7 +7,7 @@
  */
 import { useSyncExternalStore } from "react";
 import { Container } from "@/components/ui";
-import { keyHover } from "@/components/scenes/pipeline/KeyField";
+import { keyHover } from "@/components/scenes/pipeline/keyHover";
 import { useTrust } from "@/lib/client/trust";
 
 function Tag() {

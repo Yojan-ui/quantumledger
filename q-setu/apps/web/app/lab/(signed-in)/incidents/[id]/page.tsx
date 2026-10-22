@@ -13,6 +13,10 @@ import {
 import { isDenied } from "@/lib/lab/access";
 import { incidentFor } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
+import { IncidentStory } from "@/components/lab/IncidentStory";
+import { ModelVerdict } from "@/components/lab/ModelVerdict";
+import { Copy } from "@/components/ui/Copy";
+import { incidentWords, patternStory, story } from "@/lib/lab/words";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +58,12 @@ export default async function LabIncident({
       customers={team ? customers : []}
       scopeName={ctx.scopeName}
       title={d.pattern.name}
-      lead={`${d.pattern.description} ${t.steps.length} steps over ${dur(t.durationMs)}${t.firstStop !== undefined ? `; Shield first refused at step ${t.firstStop + 1}.` : "; Shield refused nothing."}`}
+      lead={
+        <Copy
+          simple={`What this page shows: one attack, step by step. ${patternStory(d.pattern.id).tried} ${patternStory(d.pattern.id).shield}`}
+          technical={`${d.pattern.description} ${t.steps.length} steps over ${dur(t.durationMs)}${t.firstStop !== undefined ? `; Shield first refused at step ${t.firstStop + 1}.` : "; Shield refused nothing."}`}
+        />
+      }
       actions={
         team ? (
           <ButtonLink
@@ -69,9 +78,47 @@ export default async function LabIncident({
         <Link href={`/lab/incidents${qs}`} className="link-u">
           Incidents
         </Link>{" "}
-        / {inc.id}
-        {inc.synthetic ? " · test traffic" : ""}
+        /{" "}
+        <Copy
+          simple={incidentWords(inc.synthetic, inc.lastSeen)}
+          technical={`${inc.id}${inc.synthetic ? " · test traffic" : ""}`}
+        />
       </p>
+
+      {d.threat && inc.synthetic && (
+        <p className="mb-6 text-small text-fg-2">
+          <Copy
+            simple={`Practice version of a real attack: ${d.threat.title}.`}
+            technical={`Practice traffic modelled on reference incident ${d.threat.id} (${d.threat.date}).`}
+          />{" "}
+          <Link href="/lab/model" className="link-u">
+            <Copy simple="How the model spots it" technical="Threat model" />
+          </Link>
+        </p>
+      )}
+      <Panel className="mb-6" as="section">
+        <div data-copy="simple">
+          <h2 className="text-h3 font-medium text-fg">What happened</h2>
+          <p className="mb-6 mt-1 text-small text-fg-3">
+            Green dots are steps Shield stopped; grey ones it let through.
+          </p>
+          <IncidentStory steps={story(t.steps, inc.clients[0])} />
+        </div>
+        <div data-copy="technical">
+          <h2 className="text-h3 font-medium text-fg">Summary</h2>
+          <p className="mt-2 text-body text-fg-2">
+            {t.steps.length} steps over {dur(t.durationMs)}
+            {t.firstStop !== undefined
+              ? `; first refusal at step ${t.firstStop + 1}.`
+              : "; nothing refused."}{" "}
+            Actions:{" "}
+            {Object.entries(t.actions)
+              .map(([k, v]) => `${k} ${v}`)
+              .join(", ")}
+            .
+          </p>
+        </div>
+      </Panel>
 
       <Panel className="mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -138,20 +185,28 @@ export default async function LabIncident({
         </Panel>
 
         <div className="flex flex-col gap-6">
+          {d.verdict && <ModelVerdict v={d.verdict.verdict} signed={d.verdict.signed} />}
           <Panel className={verified ? "border-sig" : "border-danger"}>
             <p
               className={`font-mono text-label uppercase ${verified ? "text-sig" : "text-danger"}`}
             >
-              {verified
-                ? "Signature verified"
-                : check.seal.ok
-                  ? "An event fails its signature"
-                  : "Not sealed yet"}
+              {verified ? (
+                <Copy simple="Tamper-proof record: verified" technical="Signature verified" />
+              ) : check.seal.ok ? (
+                "An event fails its signature"
+              ) : (
+                "Not sealed yet"
+              )}
             </p>
             <p className="mt-3 text-body text-fg-2">
-              {verified
-                ? `All ${check.events} events and the incident seal check out against the lab's ${d.key.alg} key.`
-                : "The engine couldn't verify every record of this incident."}
+              {verified ? (
+                <Copy
+                  simple={`Each of the ${check.events} steps was signed when it happened. We just checked every signature: nothing has been changed since.`}
+                  technical={`All ${check.events} events and the incident seal check out against the lab's ${d.key.alg} key.`}
+                />
+              ) : (
+                "The engine couldn't verify every record of this incident."
+              )}
             </p>
             <dl className="mt-4 grid grid-cols-keys gap-x-4 gap-y-2 font-mono text-small">
               <dt className="text-fg-3">algorithm</dt>

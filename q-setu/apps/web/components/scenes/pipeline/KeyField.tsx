@@ -23,6 +23,7 @@ import * as THREE from "three";
 import { glass } from "@/components/fx/materials";
 import { world } from "@/components/world/store";
 import { getTrust } from "@/lib/client/trust";
+import { keyHover, setKeyHover } from "./keyHover";
 import type { Look } from "./look";
 
 export const KEY_BYTES = 1184;
@@ -45,22 +46,9 @@ const FLY_MS = 1100;
 const STAGGER_MS = 700;
 const CONDENSED_MS = FLY_MS + STAGGER_MS;
 
-/** The dot under the pointer, for the hero's tooltip (components/trust/HeroTrust). */
-type Hover = { i: number; byte: number; x: number; y: number } | null;
-let hovered: Hover = null;
-const hoverListeners = new Set<() => void>();
-export const keyHover = {
-  get: () => hovered,
-  subscribe(fn: () => void) {
-    hoverListeners.add(fn);
-    return () => void hoverListeners.delete(fn);
-  },
-};
-function setHovered(h: Hover) {
-  if (h?.i === hovered?.i && h?.x === hovered?.x && h?.y === hovered?.y) return;
-  hovered = h;
-  hoverListeners.forEach((fn) => fn());
-}
+/** The dot under the pointer, for the hero's tooltip (components/trust/HeroTrust): see ./keyHover. */
+export { keyHover };
+const setHovered = setKeyHover;
 
 const vertex = /* glsl */ `
   uniform float uPR; uniform float uHover; uniform float uMass;

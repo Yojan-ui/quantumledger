@@ -105,6 +105,16 @@ export const SCAN_LIMITS: Limit[] = [
 
 /** At most this many open event streams per client (each holds a socket and a subscription). */
 export const MAX_STREAMS_PER_CLIENT = 6;
+/**
+ * A server opened on this machine (`next dev`, or `npm run demo` for a demo) sees every tab, from
+ * every browser here, as one loopback client, and each tab holds two streams, so the cap of 6
+ * refused a third tab. A loopback client asking for a local host name gets more room. Anything
+ * else keeps the cap, including a proxy on the same host (its requests carry the public host name).
+ */
+const LOOPBACK = new Set(["127.0.0.1", "::1", "::ffff:127.0.0.1"]);
+const LOCAL_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+const streamCap = (key: string, host: string | null) =>
+  LOOPBACK.has(key) && LOCAL_HOST.test(host ?? "") ? 64 : MAX_STREAMS_PER_CLIENT;
 const gs = globalThis as unknown as { __qlStreams?: Map<string, number> };
 const streams = (gs.__qlStreams ??= new Map());
 
@@ -115,7 +125,7 @@ const streams = (gs.__qlStreams ??= new Map());
 export function openStreamSlot(req: Request): (() => void) | undefined {
   const key = clientIp(req);
   const n = streams.get(key) ?? 0;
-  if (n >= MAX_STREAMS_PER_CLIENT) return undefined;
+  if (n >= streamCap(key, req.headers.get("host"))) return undefined;
   streams.set(key, n + 1);
   let released = false;
   return () => {
