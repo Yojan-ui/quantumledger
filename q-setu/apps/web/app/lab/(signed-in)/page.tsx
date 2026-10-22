@@ -6,7 +6,9 @@ import { AttackMapView } from "@/components/lab/AttackMapView";
 import { ago, EngineOffline, LabFrame, Score } from "@/components/lab/ui";
 import { Copy } from "@/components/ui/Copy";
 import { agoWords, modelNote, patternStory, shieldSentence, stopped } from "@/lib/lab/words";
+import { ScanBox } from "@/components/lab/ScanBox";
 import { ThreatNews } from "@/components/lab/ThreatNews";
+import { SUGGESTED } from "@/lib/server/scan-service";
 import { modelDetail, overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
 
@@ -125,6 +127,8 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
           ask for.
         </p>
       </section>
+
+      <ScanBox suggested={SUGGESTED.slice(0, 3)} />
 
       {mapIncidents.length > 0 && (
         <div className="mb-10">

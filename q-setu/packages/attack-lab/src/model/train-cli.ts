@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSigner } from "../sign";
 import { EvidenceStore } from "../store";
+import { FEATURES } from "./features";
 import { saveWeights, SHIPPED_WEIGHTS, train } from "./learn";
 
 const dir = process.env.ATTACK_LAB_DIR ?? fileURLToPath(new URL("../../.data", import.meta.url));
@@ -23,9 +24,9 @@ const store = new EvidenceStore({
   dir,
 });
 const normalPath = join(dir, "model", "normal.json");
-const normal = existsSync(normalPath)
-  ? (JSON.parse(readFileSync(normalPath, "utf8")) as number[][])
-  : [];
+const normal = (
+  existsSync(normalPath) ? (JSON.parse(readFileSync(normalPath, "utf8")) as number[][]) : []
+).filter((x) => x.length === FEATURES.length);
 const { weights } = train(store.allEvents(), normal);
 mkdirSync(join(dir, "model"), { recursive: true });
 saveWeights(join(dir, "model", "weights.json"), weights);

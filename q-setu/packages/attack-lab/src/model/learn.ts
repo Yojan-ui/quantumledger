@@ -12,8 +12,17 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { join } from "node:path";
 import { canonical } from "@qsetu/shield/manifest-format";
 import type { EvidenceStore } from "../store";
+import { PROFILES } from "./profiles";
 import type { AttackEvent, EventRecord } from "../types";
-import { FEATURES, FeatureTracker, toVector, type Facts, type Features } from "./features";
+import {
+  datasetFeatures,
+  FEATURES,
+  FeatureTracker,
+  toVector,
+  type DatasetRow,
+  type Facts,
+  type Features,
+} from "./features";
 import {
   fit,
   forward,
@@ -29,6 +38,55 @@ export const MAX_SAMPLES = 2000;
 const MAX_NORMAL = 2000;
 
 export const SHIPPED_WEIGHTS = new URL("./weights.json", import.meta.url);
+/** Dataset requests per class used when the full CSIC copy is present (keeps training fast). */
+export const MAX_DATASET = 3000;
+const DATA_DIR = new URL("../../data/", import.meta.url);
+
+function parseCsic(text: string, label: 0 | 1): DatasetRow[] {
+  const t = text.replace(/\r\n/g, "\n");
+  const starts = [...t.matchAll(/^(GET|POST|PUT) http/gm)].map((m) => m.index);
+  return starts.map((s, i) => {
+    const chunk = t.slice(s, starts[i + 1] ?? t.length);
+    const cut = chunk.indexOf("\n\n");
+    const head = cut < 0 ? chunk : chunk.slice(0, cut);
+    const rest = cut < 0 ? "" : chunk.slice(cut + 2);
+    const [method = "GET", url = ""] = head.split("\n")[0]!.split(" ");
+    const u = new URL(url, "http://localhost");
+    return {
+      method,
+      path: u.pathname,
+      query: u.search.slice(1),
+      body: method === "POST" || method === "PUT" ? (rest.trim().split("\n")[0] ?? "") : "",
+      label,
+    };
+  });
+}
+
+const evenly = <T>(a: T[], n: number) => {
+  const step = Math.max(1, Math.floor(a.length / n));
+  return a.filter((_, i) => i % step === 0).slice(0, n);
+};
+
+/**
+ * The public labelled dataset: the full CSIC 2010 files if they are in data/csic2010/, else the
+ * bundled sample. Read from disk; never fetched.
+ */
+export function loadDataset(): { rows: DatasetRow[]; name: string } {
+  try {
+    const n = readFileSync(new URL("csic2010/normalTrafficTraining.txt", DATA_DIR), "latin1");
+    const a = readFileSync(new URL("csic2010/anomalousTrafficTest.txt", DATA_DIR), "latin1");
+    return {
+      rows: [...evenly(parseCsic(n, 0), MAX_DATASET), ...evenly(parseCsic(a, 1), MAX_DATASET)],
+      name: "CSIC 2010 (full copy, evenly trimmed)",
+    };
+  } catch {
+    const rows = readFileSync(new URL("csic2010-sample.jsonl", DATA_DIR), "utf8")
+      .split("\n")
+      .filter(Boolean)
+      .map((l) => JSON.parse(l) as DatasetRow);
+    return { rows, name: "CSIC 2010 (bundled sample)" };
+  }
+}
 
 const hashOf = (s: string) => createHash("sha256").update(s).digest("hex");
 const heldBack = (group: string) => parseInt(hashOf(group).slice(0, 8), 16) % 5 === 0;
@@ -60,33 +118,61 @@ export function dataset(events: EventRecord[]) {
   return { samples, byEvent };
 }
 
-/** Trains and evaluates. `normal` adds safe examples from unrecorded traffic. */
-export function train(events: EventRecord[], normal: number[][] = []) {
+/**
+ * Trains and evaluates on the public dataset plus this Lab's evidence. `normal` adds safe examples
+ * from unrecorded traffic.
+ */
+export function train(
+  events: EventRecord[],
+  normal: number[][] = [],
+  data: { rows: DatasetRow[]; name: string } = loadDataset(),
+) {
   const t0 = performance.now();
   const { samples, byEvent } = dataset(events);
-  let all = [...samples, ...normal.map((x, i) => ({ x, y: 0 as const, group: `normal:${i}` }))];
-  const capped = all.length > MAX_SAMPLES;
-  if (capped) all = all.slice(-MAX_SAMPLES);
-  const groups = [...new Set(all.filter((s) => s.y === 1).map((s) => s.group))];
-  // Hold back about one attack in five; with few attacks, at least the newest one.
+  let lab: Sample[] = [
+    ...samples,
+    ...normal.map((x, i) => ({ x, y: 0 as const, group: `normal:${i}` })),
+  ];
+  const capped = lab.length > MAX_SAMPLES;
+  if (capped) lab = lab.slice(-MAX_SAMPLES);
+  const ds: Sample[] = data.rows.map((r, i) => ({
+    x: toVector(datasetFeatures(r).x),
+    y: r.label,
+    group: `csic:${i}`,
+  }));
+  const all = [...lab, ...ds];
+  const groups = [...new Set(lab.filter((s) => s.y === 1).map((s) => s.group))];
+  // Hold back about one recorded attack in five (whole incidents); with few, at least the newest.
   let test = new Set(groups.filter(heldBack));
   if (!test.size && groups.length > 1) test = new Set([groups.at(-1)!]);
   const isTest = (s: Sample) =>
-    test.has(s.group) || (s.group.startsWith("normal:") && heldBack(s.group));
+    test.has(s.group) ||
+    ((s.group.startsWith("normal:") || s.group.startsWith("csic:")) && heldBack(s.group));
   const trainSet = all.filter((s) => !isTest(s));
   const testSet = all.filter(isTest);
   let accuracy = 0;
+  let labAccuracy: number | null = null;
+  let datasetAccuracy: number | null = null;
   if (testSet.length && trainSet.length) {
     const probe = { ...fit(trainSet), v: 1 as const } as unknown as Weights;
-    const right = testSet.filter((s) => (forward(probe, s.x) >= 0.5 ? 1 : 0) === s.y).length;
-    accuracy = right / testSet.length;
+    const ok = (s: Sample) => (forward(probe, s.x) >= 0.5 ? 1 : 0) === s.y;
+    const share = (set: Sample[]) => (set.length ? set.filter(ok).length / set.length : null);
+    accuracy = share(testSet) ?? 0;
+    labAccuracy = share(testSet.filter((s) => !s.group.startsWith("csic:")));
+    datasetAccuracy = share(testSet.filter((s) => s.group.startsWith("csic:")));
   }
+  const r3 = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 1000);
   const p = fit(all);
   const metrics: Metrics = {
-    accuracy: Math.round(accuracy * 1000) / 1000,
+    accuracy: r3(accuracy)!,
     heldOut: testSet.length,
     samples: all.length,
     attacks: groups.length,
+    datasetAttacks: data.rows.filter((r) => r.label === 1).length,
+    datasetNormal: data.rows.filter((r) => r.label === 0).length,
+    labAccuracy: r3(labAccuracy),
+    datasetAccuracy: r3(datasetAccuracy),
+    dataset: data.name,
     capped,
     ms: 0,
   };
@@ -117,6 +203,7 @@ export class LiveModel {
   private trainedOn = -1;
   private readonly dir: string | undefined;
   private readonly listeners = new Set<() => void>();
+  private readonly data = loadDataset();
 
   constructor(
     private readonly store: EvidenceStore,
@@ -128,7 +215,10 @@ export class LiveModel {
       const n = join(this.dir, "normal.json");
       if (existsSync(n)) {
         try {
-          this.normal = (JSON.parse(readFileSync(n, "utf8")) as number[][]).slice(-MAX_NORMAL);
+          // Vectors saved by an older feature set don't fit this model: drop them.
+          this.normal = (JSON.parse(readFileSync(n, "utf8")) as number[][])
+            .filter((x) => x.length === FEATURES.length)
+            .slice(-MAX_NORMAL);
         } catch {
           this.normal = [];
         }
@@ -155,6 +245,15 @@ export class LiveModel {
     if (this.normal.length > MAX_NORMAL) this.normal = this.normal.slice(-MAX_NORMAL);
   }
 
+  /** The current model's verdict on each reference threat's typical traffic. */
+  scoreProfiles(): { threatId: string; verdict: Verdict }[] {
+    if (!this.weights) return [];
+    return Object.entries(PROFILES).map(([threatId, p]) => ({
+      threatId,
+      verdict: verdict(this.weights!, p.x, p.facts),
+    }));
+  }
+
   /** The current model's verdict for a recorded event (for records written before it existed). */
   scoreEvent(id: string): Verdict | undefined {
     const f = this.byEvent.get(id);
@@ -179,9 +278,9 @@ export class LiveModel {
   /** Trains on everything recorded so far, if anything new arrived. Returns the update, if any. */
   retrain(force = false): ModelUpdate | undefined {
     const events = this.store.allEvents();
-    if (!events.length || (!force && events.length === this.trainedOn)) return undefined;
+    if (!force && events.length === this.trainedOn) return undefined;
     this.trainedOn = events.length;
-    const { weights, byEvent } = train(events, this.normal);
+    const { weights, byEvent } = train(events, this.normal, this.data);
     this.byEvent = byEvent;
     this.weights = weights;
     if (this.dir) {

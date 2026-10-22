@@ -228,6 +228,8 @@ export function startLabServer(o: LabServerOptions) {
         return send(res, 200, {
           patterns: groupPatterns(store.listIncidents(site), (id) => store.eventsOf(id)),
         });
+      if (req.method === "GET" && p === "/api/model/profiles")
+        return send(res, 200, { profiles: o.model?.scoreProfiles() ?? [], threats: THREATS });
       if (req.method === "GET" && p === "/api/model")
         return send(res, 200, {
           ...modelSummary(),
