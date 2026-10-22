@@ -9,7 +9,7 @@ import { agoWords, modelNote, patternStory, shieldSentence, stopped } from "@/li
 import { ScanBox } from "@/components/lab/ScanBox";
 import { ThreatNews } from "@/components/lab/ThreatNews";
 import { SUGGESTED } from "@/lib/server/scan-service";
-import { modelDetail, overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
+import { modelDetail, overviewFor, patternsFor, quantumSafe, scansFor } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
 
 export const dynamic = "force-dynamic";
@@ -27,11 +27,12 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
   const { user, scope, customers } = ctx;
   const team = user.role === "team";
   const inScope = scope.kind === "customer" ? [scope.customer] : customers;
-  const [o, patterns, qs, model] = await Promise.all([
+  const [o, patterns, qs, model, scans] = await Promise.all([
     overviewFor(scope),
     patternsFor(scope),
     quantumSafe(inScope),
     modelDetail().catch(() => undefined),
+    scansFor(scope, user).catch(() => []),
   ]);
   const qsParam = ctx.customerParam ? `?customer=${ctx.customerParam}` : "";
   const top = patterns.slice(0, 5);
@@ -129,6 +130,42 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       </section>
 
       <ScanBox suggested={SUGGESTED.slice(0, 3)} />
+
+      {scans.length > 0 && (
+        <section aria-labelledby="lab-your-scans" className="mb-10">
+          <h2 id="lab-your-scans" className="text-h3 font-medium text-fg">
+            <Copy
+              simple={team && scope.kind === "all" ? "Recent scans" : "Your scans"}
+              technical={`Saved scans (${scope.kind === "customer" ? scope.customer.id : "all workspaces"})`}
+            />
+          </h2>
+          <ul className="mt-4">
+            {scans.slice(0, 6).map((sc) => (
+              <li
+                key={sc.id}
+                className="flex flex-wrap items-baseline justify-between gap-3 border-t border-line py-3 text-small"
+              >
+                <span className="min-w-0 break-all text-fg">{sc.input}</span>
+                <span className="text-fg-2">
+                  {sc.kind === "error"
+                    ? (sc.result?.message ?? "Couldn't be checked")
+                    : sc.kind === "website"
+                      ? `Readiness ${sc.result?.readiness ?? "?"}/100`
+                      : sc.result?.spoofable === "protected"
+                        ? "Protected against spoofing"
+                        : sc.result?.spoofable === "partly"
+                          ? "Partly protected against spoofing"
+                          : "Not protected against spoofing"}
+                </span>
+                <span className="text-fg-3">
+                  {agoWords(sc.at)}
+                  {team ? ` · ${sc.by}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {mapIncidents.length > 0 && (
         <div className="mb-10">

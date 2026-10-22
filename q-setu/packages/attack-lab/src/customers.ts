@@ -20,7 +20,20 @@ export interface Customer {
   shieldSiteId?: string;
   updatedAt?: number;
   updatedBy?: string;
+  /** A seeded demo customer (receives the Lab's practice traffic). Self-made workspaces don't. */
+  demo?: boolean;
+  /** A workspace created by signing in with an address from this domain. */
+  selfServe?: boolean;
 }
+
+const DOMAIN = /^(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+/** The workspace id for an email domain: "gmail.com" → "ws-gmail-com" (never a seeded id). */
+export const workspaceId = (domain: string) =>
+  `ws-${domain
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .slice(0, 36)}`;
 
 export type CustomerPatch = Partial<Pick<Customer, "note" | "readiness" | "shieldSiteId">>;
 
@@ -33,6 +46,7 @@ export const DEMO_CUSTOMERS: Customer[] = [
     emails: ["ciso@ledgerwood.example"],
     note: "",
     readiness: null,
+    demo: true,
   },
   {
     id: "sahyadri",
@@ -41,6 +55,7 @@ export const DEMO_CUSTOMERS: Customer[] = [
     emails: ["it@sahyadri.example"],
     note: "",
     readiness: null,
+    demo: true,
   },
 ];
 
@@ -75,6 +90,33 @@ export class CustomerRegistry {
 
   sites(): string[] {
     return this.customers.map((c) => c.site);
+  }
+
+  /** Sites of the seeded demo customers (where practice traffic goes). */
+  demoSites(): string[] {
+    return this.customers.filter((c) => c.demo !== false && !c.selfServe).map((c) => c.site);
+  }
+
+  /**
+   * The customer an email address belongs to: an existing member, or the workspace for its domain,
+   * created empty on first use. Returns an error message for an invalid address.
+   */
+  ensure(email: string): Customer | string {
+    const e = email.trim().toLowerCase();
+    const member = this.customers.find((c) => c.emails.includes(e));
+    if (member) return structuredClone(member);
+    const domain = e.split("@")[1] ?? "";
+    if (!/^[^\s@]{1,64}@/.test(e) || !DOMAIN.test(domain)) return "Not a valid email address";
+    const id = workspaceId(domain);
+    let c = this.customers.find((x) => x.id === id);
+    if (!c) {
+      if (this.customers.length >= 5000) return "Too many workspaces on this lab";
+      c = { id, name: domain, site: id, emails: [], note: "", readiness: null, selfServe: true };
+      this.customers.push(c);
+    }
+    if (c.emails.length < 500) c.emails.push(e);
+    this.save();
+    return structuredClone(c);
   }
 
   /** Validates and applies the team's edit. Returns the customer, or an error message. */

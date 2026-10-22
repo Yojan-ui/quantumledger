@@ -13,6 +13,9 @@
  *   GET  /api/customers         customers (site, members, the team's note and readiness)
  *   PUT  /api/customers/:id     { note?, readiness?, shieldSiteId?, by }: the team's edit
  *   GET  /api/model             the threat model: accuracy, what it learned from, signed updates
+ *   POST /api/customers/ensure  { email }: the customer for an address (a new empty workspace for a
+ *                               new domain)
+ *   GET  /api/scans[?customer=] saved scans, newest first; POST /api/scans saves one
  *
  * `?site=` on overview and patterns limits them to one customer's site. This API has no users:
  * whoever calls it (the dashboard, the website's /lab) decides who may see what, and must pass
@@ -22,6 +25,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { CustomerPatch, CustomerRegistry } from "./customers";
+import type { ScanStore } from "./scans";
 import { FEATURE_DOCS, FEATURES } from "./model/features";
 import type { LiveModel } from "./model/learn";
 import type { Verdict } from "./model/net";
@@ -53,6 +57,7 @@ export interface LabServerOptions {
   sandbox: Sandbox;
   port: number;
   customers?: CustomerRegistry;
+  scans?: ScanStore;
   model?: LiveModel;
   /** Require this bearer token on every call. */
   token?: string;
@@ -196,12 +201,12 @@ export function startLabServer(o: LabServerOptions) {
     res.end(JSON.stringify(body));
   };
 
-  const readJson = (req: IncomingMessage) =>
+  const readJson = (req: IncomingMessage, max = 4096) =>
     new Promise<Record<string, unknown>>((resolve) => {
       let s = "";
       req.on("data", (c: Buffer) => {
         s += c;
-        if (s.length > 4096) req.destroy();
+        if (s.length > max) req.destroy();
       });
       req.on("end", () => {
         try {
@@ -241,6 +246,32 @@ export function startLabServer(o: LabServerOptions) {
             .map((r) => ({ seq: r.seq, hash: r.hash, ...r.body })),
           threats: THREATS,
         });
+      if (req.method === "POST" && p === "/api/customers/ensure" && o.customers) {
+        const { email } = await readJson(req);
+        const r = o.customers.ensure(String(email ?? ""));
+        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, r);
+      }
+      if (req.method === "GET" && p === "/api/scans")
+        return send(res, 200, {
+          scans: o.scans?.list(url.searchParams.get("customer") ?? undefined) ?? [],
+        });
+      if (req.method === "POST" && p === "/api/scans" && o.scans) {
+        const b = await readJson(req, 200_000);
+        if (typeof b.customerId !== "string" || typeof b.input !== "string")
+          return send(res, 400, { error: "customerId and input are required" });
+        const kind = b.kind === "website" || b.kind === "email" ? b.kind : "error";
+        return send(
+          res,
+          201,
+          o.scans.add({
+            customerId: b.customerId.slice(0, 60),
+            by: String(b.by ?? "").slice(0, 200),
+            input: b.input.slice(0, 300),
+            kind,
+            result: b.result ?? null,
+          }),
+        );
+      }
       if (req.method === "GET" && p === "/api/customers")
         return send(res, 200, { customers: o.customers?.list() ?? [] });
       const c = p.match(/^\/api\/customers\/([a-z0-9-]{1,40})$/);
@@ -287,7 +318,9 @@ export function startLabServer(o: LabServerOptions) {
           sandbox.protected,
           sandbox,
           Array.isArray(scenarios) ? scenarios.map(String) : undefined,
-          typeof one === "string" && sites.includes(one) ? [one] : sites,
+          typeof one === "string" && sites.includes(one)
+            ? [one]
+            : (o.customers?.demoSites() ?? sites),
         ).finally(() => {
           simulating = false;
           store.sealDirty();

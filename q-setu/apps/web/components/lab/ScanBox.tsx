@@ -1,12 +1,40 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Panel } from "@/components/ui";
 import { Copy } from "@/components/ui/Copy";
-import type { EmailScan, WebScan } from "@/lib/lab/scan";
+import type { EmailScan, Step, WebScan } from "@/lib/lab/scan";
 import type { Threat, Verdict } from "@/lib/lab/types";
 
 type Result = { result: WebScan | EmailScan; probes: { threat: Threat; verdict?: Verdict }[] };
+type Failure = { failure: { message: string; target: string; steps: Step[] } };
+
+/** Every step the scan tried, with what happened. */
+function Steps({ steps }: { steps: Step[] }) {
+  return (
+    <details className="mt-4 text-small text-fg-2">
+      <summary className="cursor-pointer text-fg-3">
+        <Copy simple="What we tried" technical={`Steps (${steps.length})`} />
+      </summary>
+      <ol className="mt-2">
+        {steps.map((s, i) => (
+          <li key={i} className="flex gap-3 border-t border-line py-2">
+            <span
+              aria-hidden
+              className={`mt-2 block h-dot w-dot shrink-0 rounded-full ${s.ok ? "bg-ok" : "bg-danger"}`}
+            />
+            <span>
+              <span className="sr-only">{s.ok ? "Done: " : "Failed: "}</span>
+              <span className="text-fg">{s.step}</span>
+              <span className="text-fg-3"> · {s.detail}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </details>
+  );
+}
 
 const LABEL = {
   safe: "Looks safe",
@@ -57,10 +85,26 @@ function WebResult({ r }: { r: WebScan }) {
         <p className="mt-1 text-small text-fg-2">
           <Copy
             simple="How ready this site's public connection is for quantum-safe security, from what anyone can see."
-            technical={`TLS findings ${r.tls.score}/100 (grade ${r.tls.grade})${r.http ? " × 0.7 + security headers × 30" : ""}${r.tls.cached ? " · cached scan" : ""}`}
+            technical={`TLS findings ${r.tls.score}/100 (grade ${r.tls.grade})${r.http ? " × 0.65 + security headers × 25" : ""} + https redirect × 10`}
           />
         </p>
         <ul className="mt-4">
+          <Row
+            ok={r.tls.protocol === "TLSv1.3" ? true : "warn"}
+            simple={`Connects securely with ${r.tls.protocol ?? "an unknown TLS version"} (${r.tls.cipher}).`}
+            technical={`Protocol ${r.tls.protocol ?? "?"} · cipher ${r.tls.cipher}`}
+          />
+          <Row
+            ok={r.httpsRedirect === null ? "warn" : r.httpsRedirect}
+            simple={
+              r.httpsRedirect === null
+                ? "Couldn't tell whether plain http:// visitors are sent to the secure site."
+                : r.httpsRedirect
+                  ? "Sends visitors who type http:// to the secure https:// site."
+                  : "Doesn't send http:// visitors to the secure site."
+            }
+            technical={`http:// → https:// redirect: ${r.httpsRedirect === null ? "unknown" : r.httpsRedirect ? "yes" : "no"}`}
+          />
           <Row
             ok={r.tls.hybridPq}
             simple={
@@ -113,12 +157,15 @@ function WebResult({ r }: { r: WebScan }) {
                     ? `Visible API addresses: ${r.http.api.join(", ")}.`
                     : "No API addresses linked from the home page."
                 }
-                technical={`API surface: ${r.http.api.join(", ") || "none linked"} · HTTP ${r.http.status}${r.http.redirect ? ` → ${r.http.redirect}` : ""}`}
+                technical={`API surface: ${r.http.api.join(", ") || "none linked"} · HTTP ${r.http.status}`}
               />
             </p>
           </>
         ) : (
-          <p className="mt-3 text-small text-fg-2">{r.httpNote}</p>
+          <p className="mt-3 text-small text-fg-2">
+            The home page didn&apos;t answer, so its headers and links weren&apos;t checked (see
+            what we tried below).
+          </p>
         )}
       </Panel>
     </div>
@@ -144,10 +191,10 @@ function EmailResult({ r }: { r: EmailScan }) {
         <Copy
           simple={
             r.spoofable === "protected"
-              ? "Hard to fake"
+              ? "Protected against spoofing"
               : r.spoofable === "partly"
                 ? "Partly protected"
-                : "Easy to fake"
+                : "Not protected against spoofing"
           }
           technical={`DMARC ${r.dmarc ? `p=${r.dmarc.policy}` : "missing"}`}
         />
@@ -201,24 +248,29 @@ function EmailResult({ r }: { r: EmailScan }) {
 export function ScanBox({ suggested }: { suggested: string[] }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
   const [data, setData] = useState<Result>();
+  const [failed, setFailed] = useState<Failure["failure"]>();
   const [error, setError] = useState<string>();
   const run = async (value: string) => {
     setBusy(true);
     setError(undefined);
+    setFailed(undefined);
+    setData(undefined);
     try {
       const r = await fetch("/api/lab/scan", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ input: value }),
       });
-      const j = (await r.json()) as Result & { error?: { message: string } };
-      if (!r.ok) {
-        setData(undefined);
-        setError(j.error?.message ?? "Couldn't run the check.");
-      } else setData(j);
+      const j = (await r.json()) as Partial<Result & Failure> & { error?: { message: string } };
+      if (!r.ok) setError(j.error?.message ?? "Couldn't run the check.");
+      else if (j.failure) setFailed(j.failure);
+      else if (j.result) setData(j as Result);
+      // The scan was saved to this workspace: refresh "Your scans".
+      router.refresh();
     } catch {
-      setError("Couldn't run the check.");
+      setError("Couldn't run the check: this page lost contact with the server.");
     } finally {
       setBusy(false);
     }
@@ -234,7 +286,7 @@ export function ScanBox({ suggested }: { suggested: string[] }) {
       <p className="mt-2 max-w-prose text-body text-fg-2">
         <Copy
           simple="Enter a website or an email address. We read only what's public (its secure connection, the headers its home page sends, its email records) and never attack it."
-          technical="Website: TLS handshake (DNS-pinned, public IPs only) + one GET / (no redirects, 5 s, 300 KB). Email: MX, SPF, DKIM (common selectors), DMARC via DNS. No probe traffic is sent to third parties."
+          technical="Website: DNS (public IPs only), TLS handshake (DNS-pinned), one GET / over HTTPS and one over HTTP (pinned, no redirects followed, 300 KB). Email: MX, SPF, DKIM (common selectors), DMARC via DNS. 10 s per scan. No probe traffic is sent to third parties."
         />
       </p>
       <form
@@ -260,7 +312,7 @@ export function ScanBox({ suggested }: { suggested: string[] }) {
         </Button>
       </form>
       <p className="mt-3 flex flex-wrap items-center gap-2 text-small text-fg-3">
-        <Copy simple="Works offline:" technical="Cached (offline) examples:" />
+        <Copy simple="Try:" technical="Examples:" />
         {suggested.map((s) => (
           <button
             key={s}
@@ -280,6 +332,12 @@ export function ScanBox({ suggested }: { suggested: string[] }) {
           {error}
         </p>
       )}
+      {failed && (
+        <div className="mt-6 rounded-lg border border-danger p-5" role="status">
+          <p className="text-body text-fg">{failed.message}</p>
+          <Steps steps={failed.steps} />
+        </div>
+      )}
       {data && (
         <div className="mt-6" role="status">
           <p className="mb-4 text-small text-fg-3">
@@ -293,6 +351,7 @@ export function ScanBox({ suggested }: { suggested: string[] }) {
           ) : (
             <EmailResult r={data.result} />
           )}
+          <Steps steps={data.result.steps} />
           {data.probes.length > 0 && (
             <div className="mt-6">
               <h3 className="text-body font-medium text-fg">
