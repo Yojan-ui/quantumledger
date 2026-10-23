@@ -34,6 +34,7 @@ const DOT = {
   sig: "bg-sig",
   "fg-2": "bg-fg-2",
   "fg-3": "bg-fg-3",
+  kem: "bg-kem",
 };
 
 export default async function LabIncident({

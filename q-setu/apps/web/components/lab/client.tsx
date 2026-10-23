@@ -12,6 +12,7 @@ const TABS = [
   { href: "/lab/model", label: "Threat model", team: false },
   { href: "/lab/how-it-works", label: "How the model works", team: false },
   { href: "/lab/replay", label: "Replay", team: true },
+  { href: "/lab/benchmark", label: "Benchmark", team: true },
 ];
 
 /** The Lab's section tabs; they keep the team's customer filter. */

@@ -16,6 +16,8 @@
  *   POST /api/customers/ensure  { email }: the customer for an address (a new empty workspace for a
  *                               new domain)
  *   GET  /api/scans[?customer=] saved scans, newest first; POST /api/scans saves one
+ *   POST /api/benchmark         runs the resilience benchmark (agents vs the sandbox, Shield on/off)
+ *   GET  /api/benchmark[/:id]   the benchmark job (progress) or the last signed report
  *
  * `?site=` on overview and patterns limits them to one customer's site. This API has no users:
  * whoever calls it (the dashboard, the website's /lab) decides who may see what, and must pass
@@ -34,6 +36,10 @@ import { classify, groupPatterns } from "./patterns";
 import { replay, stepsFromTimeline, type ReplayReport, type ReplayStepResult } from "./replay";
 import { startSandbox, type Sandbox } from "./sandbox";
 import { SCENARIOS, simulate } from "./simulate";
+import { AGENT_SCENARIOS, DEFAULT_CAP, runBenchmark } from "./benchmark/run";
+import { AGENTS } from "./benchmark/agents";
+import { verifyRecord } from "./sign";
+import type { BenchmarkRecord } from "./types";
 import type { EvidenceStore } from "./store";
 import { buildTimeline } from "./timeline";
 
@@ -70,6 +76,49 @@ export function startLabServer(o: LabServerOptions) {
   const jobs = new Map<string, ReplayJob>();
   let simulating = false;
 
+  interface BenchJob {
+    id: string;
+    startedAt: number;
+    finishedAt?: number;
+    status: "running" | "done" | "failed";
+    done: number;
+    total: number;
+    agents: string[];
+    record?: BenchmarkRecord;
+    verified?: boolean;
+    error?: string;
+  }
+  let benchJob: BenchJob | undefined;
+
+  async function runBench(job: BenchJob) {
+    try {
+      const report = await runBenchmark({
+        cap: DEFAULT_CAP,
+        onProgress: (d, t) => {
+          job.done = d;
+          job.total = t;
+        },
+      });
+      // Signed into the evidence chain, so the report is tamper-proof.
+      const rec = store.appendBenchmark(report);
+      job.record = rec;
+      job.verified = verifyRecord(rec, store.publicKey).ok && store.verify().ok;
+      job.status = "done";
+      // Feed the live Lab: the same agent behaviours train the model and fill the attack map.
+      void simulate(
+        sandbox.protected,
+        sandbox,
+        AGENT_SCENARIOS,
+        o.customers?.demoSites() ?? [],
+      ).finally(() => store.sealDirty());
+    } catch (e) {
+      job.status = "failed";
+      job.error = e instanceof Error ? e.message : String(e);
+    } finally {
+      job.finishedAt = Date.now();
+    }
+  }
+
   const timelineOf = (id: string) =>
     buildTimeline(id, store.eventsOf(id), { trapPath: sandbox.trapPath });
 
@@ -98,6 +147,17 @@ export function startLabServer(o: LabServerOptions) {
       trainedAt: o.model?.weights?.trainedAt,
       lastSigned: last && { seq: last.seq, hash: last.hash, at: last.body.trainedAt },
       updates: records.length,
+    };
+  }
+
+  function reportView(rec: BenchmarkRecord) {
+    const r = rec.body;
+    return {
+      seq: rec.seq,
+      hash: rec.hash,
+      signed: true,
+      verified: verifyRecord(rec, store.publicKey).ok,
+      ...r,
     };
   }
 
@@ -308,6 +368,37 @@ export function startLabServer(o: LabServerOptions) {
       if (req.method === "GET" && m) {
         const j = jobs.get(m[1]!);
         return j ? send(res, 200, j) : send(res, 404, { error: "No such replay" });
+      }
+      if (req.method === "POST" && p === "/api/benchmark") {
+        if (benchJob?.status === "running")
+          return send(res, 409, { error: "A benchmark is already running" });
+        benchJob = {
+          id: `bm_${Date.now().toString(36)}`,
+          startedAt: Date.now(),
+          status: "running",
+          done: 0,
+          total: AGENTS.length * 2,
+          agents: AGENTS.map((a) => a.label),
+        };
+        void runBench(benchJob);
+        return send(res, 202, { id: benchJob.id });
+      }
+      if (req.method === "GET" && p === "/api/benchmark") {
+        const last = store.benchmarkRecords().at(-1);
+        return send(res, 200, {
+          running: benchJob?.status === "running",
+          job: benchJob
+            ? {
+                id: benchJob.id,
+                status: benchJob.status,
+                done: benchJob.done,
+                total: benchJob.total,
+                agents: benchJob.agents,
+              }
+            : undefined,
+          report: (benchJob?.record ?? last) ? reportView(benchJob?.record ?? last!) : undefined,
+          key: { alg: "ML-DSA-65", keyId: store.signer.keyId },
+        });
       }
       if (req.method === "POST" && p === "/api/simulate") {
         if (simulating) return send(res, 409, { error: "Test traffic is already running" });

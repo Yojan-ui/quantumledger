@@ -78,12 +78,13 @@ export const PHASE: Record<Phase, { label: string; tone: Tone }> = {
   blocked: { label: "refused", tone: "ok" },
 };
 
-type Tone = "ok" | "warn" | "danger" | "sig" | "fg-2" | "fg-3";
+type Tone = "ok" | "warn" | "danger" | "sig" | "kem" | "fg-2" | "fg-3";
 const TEXT: Record<Tone, string> = {
   ok: "text-ok",
   warn: "text-warn",
   danger: "text-danger",
   sig: "text-sig",
+  kem: "text-kem",
   "fg-2": "text-fg-2",
   "fg-3": "text-fg-3",
 };
@@ -92,6 +93,7 @@ const BG: Record<Tone, string> = {
   warn: "bg-warn",
   danger: "bg-danger",
   sig: "bg-sig",
+  kem: "bg-kem",
   "fg-2": "bg-fg-2",
   "fg-3": "bg-fg-3",
 };
