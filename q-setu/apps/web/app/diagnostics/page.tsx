@@ -9,10 +9,13 @@ export const metadata: Metadata = pageMeta({
   path: "/diagnostics",
 });
 
-/** The full-screen diagnostics HUD: the showpiece, and where presenter mode opens. */
+/**
+ * The full-screen diagnostics HUD: the showpiece, and where presenter mode opens. md+: exactly one
+ * screen. Phones: the page grows with the stacked panels and scrolls.
+ */
 export default function DiagnosticsPage() {
   return (
-    <main id="main" className="h-svh p-2 md:p-3">
+    <main id="main" className="min-h-svh p-2 md:h-svh md:p-3">
       <h1 className="sr-only">QuantumLedger PQC diagnostics</h1>
       <DiagnosticsApp />
     </main>

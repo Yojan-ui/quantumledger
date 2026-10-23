@@ -6,12 +6,21 @@
  * site) plays in autoplay. Autoplay starts once the stage is on screen, once per page view.
  */
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef } from "react";
 import { LazyView } from "@/components/scenes/LazyView";
 import { actions, autoplay, EXAMPLE_DOMAIN, getPipeline, usePipeline } from "@/lib/client/pipeline";
 import { HudShell } from "./HudShell";
+import { waitForCanvas } from "./waitForCanvas";
 
-const PipelineStage = dynamic(() => import("@/components/scenes/PipelineStage"), { ssr: false });
+const PipelineStage = dynamic(
+  () =>
+    import("@/components/scenes/PipelineStage")
+      .catch(() => import("@/components/scenes/PipelineStage"))
+
+      .catch(chunkFailed),
+  { ssr: false },
+);
 
 function Stage() {
   const s = usePipeline((x) => x);
@@ -25,17 +34,7 @@ function Stage() {
   );
 }
 
-function waitForCanvas(ms = 5000): Promise<void> {
-  return new Promise((resolve) => {
-    const t0 = performance.now();
-    const check = () => {
-      if (document.querySelector("canvas:not([aria-hidden])") || performance.now() - t0 > ms)
-        resolve();
-      else setTimeout(check, 100);
-    };
-    check();
-  });
-}
+export { waitForCanvas };
 
 export function DiagnosticsApp({
   compact = false,

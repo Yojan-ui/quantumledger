@@ -37,6 +37,9 @@ export const hs = {
       per: number;
       opened: number;
       plainBytes: number;
+      plain: Uint8Array;
+      cipher: Uint8Array;
+      openedPlain: Uint8Array;
       sealed: { seq: number; ctBytes: number; head: Uint8Array }[];
     }>("messages", { n }),
   attack: (profile: ProfileId) =>

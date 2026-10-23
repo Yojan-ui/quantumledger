@@ -13,6 +13,8 @@ export interface ShieldServerOptions {
   listen: number;
   host?: string;
   identity: Identity;
+  /** Publish the identity key at /qsetu/identity for demo clients (trust on first use). Off by default. */
+  demoIdentity?: boolean;
   log?: (line: string) => void;
 }
 
@@ -24,11 +26,17 @@ export async function startShieldServer(opts: ShieldServerOptions) {
   const app = Fastify({ bodyLimit: 10 * 1024 * 1024 });
 
   app.get("/healthz", async () => ({ ok: true, role: "shield-server", upstream }));
-  // Bootstrap for the demo: in production the client pins this key from config instead.
-  app.get("/qsetu/identity", async () => ({
-    profile: opts.identity.profile,
-    publicKey: bytesToBase64(opts.identity.publicKey),
-  }));
+  // Bootstrap for demos only: real clients pin this key from configuration (SHIELD_PEER_KEY).
+  if (opts.demoIdentity) {
+    log(
+      "[shield-server] WARNING: demo mode serves the identity key at /qsetu/identity. Clients that fetch it there trust whoever answers first. Pin SHIELD_PEER_KEY in production.",
+    );
+    app.get("/qsetu/identity", async () => ({
+      profile: opts.identity.profile,
+      publicKey: bytesToBase64(opts.identity.publicKey),
+      demo: true,
+    }));
+  }
   app.get("/qsetu/wire", async () => ({ frames: wire.list() }));
 
   app.post("/qsetu/hello", async (req) => {

@@ -1,10 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef, useState } from "react";
 import { Container, Label, Legend, ROLES, SectionLabel, Text, TextLink } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { LazyView } from "@/components/scenes/LazyView";
+import { SceneBoundary } from "@/components/world/SceneBoundary";
 import { world } from "@/components/world/store";
 import { STEPS } from "./chapters";
 import { SealedCost } from "./SealedCost";
@@ -13,8 +15,25 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // The Q-Day widget breaks real (tiny) RSA in the browser; its code loads only when the section is near.
-const HarvestQDay = dynamic(() => import("./HarvestQDay"), { ssr: false, loading: () => null });
-const HandshakeCubes = dynamic(() => import("@/components/scenes/HandshakeCubes"), { ssr: false });
+const HarvestQDay = dynamic(
+  () =>
+    import("./HarvestQDay")
+      .catch(() => import("./HarvestQDay"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
+const HandshakeCubes = dynamic(
+  () =>
+    import("@/components/scenes/HandshakeCubes")
+      .catch(() => import("@/components/scenes/HandshakeCubes"))
+
+      .catch(chunkFailed),
+  { ssr: false },
+);
 
 const N = STEPS.length;
 
@@ -23,7 +42,7 @@ const N = STEPS.length;
  * hijacking) maps progress to a step; the director turns the globe to that step's pose. Steps 1–2
  * share one scrubbed widget: a year counter runs 2026 → 2035, then the classical recordings decrypt.
  */
-export function Story() {
+export function Story({ index = "04" }: { index?: string }) {
   const root = useRef<HTMLElement>(null);
   const fill = useRef<HTMLSpanElement>(null);
   const [v, setV] = useState(0);
@@ -42,6 +61,7 @@ export function Story() {
     if (!el) return;
     // Scrubbed by ScrollTrigger, on the same GSAP clock as Lenis (lib/client/scroll).
     gsap.registerPlugin(ScrollTrigger);
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const update = (p: number) => {
       if (fill.current) fill.current.style.transform = `scaleX(${p})`;
       // Only while the section is on screen does it own the globe's chapter.
@@ -50,6 +70,8 @@ export function Story() {
       const x = Math.min(N - 0.001, p * N);
       const step = STEPS[Math.floor(x)]!;
       world.chapter = step.chapter;
+      // The homepage flight: side-on along the arc, travelling with the packets.
+      world.journey = reduce ? 6 : 6 + p;
       world.accent = step.accent;
       world.glow = step.role;
       // Quantised to 1/50 of a step: React bails out on unchanged values, so the pinned section
@@ -88,20 +110,31 @@ export function Story() {
     <section
       id="how-it-works"
       ref={root}
-      style={{ height: `${N * 120}vh` }}
+      style={{ height: `${N * 80}vh` }}
       className="relative"
       aria-label="How it works, in three steps"
     >
       <div className="sticky top-14 h-story overflow-hidden">
-        <Container className="grid h-full grid-cols-12 content-start gap-x-6 md:content-stretch">
+        {/* Desktop: the globe fills the pinned frame (side-on along the arc); the text sits over it. */}
+        <div
+          data-world-focus
+          data-world-drag
+          className="absolute inset-0 hidden md:block"
+          aria-hidden
+        />
+        <div
+          className="hero-scrim pointer-events-none absolute inset-0 hidden md:block"
+          aria-hidden
+        />
+        <Container className="relative grid h-full grid-cols-12 content-start gap-x-6 md:content-stretch">
           <div
             data-world-focus
             data-world-drag
-            className="col-span-12 h-globe md:order-2 md:col-span-5 md:col-start-8 md:h-full"
+            className="col-span-12 h-globe md:hidden"
             aria-hidden
           />
-          <div className="col-span-12 pt-6 md:order-1 md:col-span-6 md:pt-24 lg:col-span-6">
-            <SectionLabel index="04" label="How it works" role={step.role} className="" />
+          <div className="col-span-12 pt-6 md:col-span-6 md:pt-24">
+            <SectionLabel index={index} label="How it works" role={step.role} className="" />
             {/* Progress: three steps, the current one bright, a hairline that fills with scroll. */}
             <nav aria-label="Steps" className="mt-6 flex items-center gap-4">
               {STEPS.map((s, i) => (
@@ -169,7 +202,9 @@ export function Story() {
             </div>
             {active < 2 && near && (
               <div className="mt-8">
-                <HarvestQDay progress={v / 2} />
+                <SceneBoundary>
+                  <HarvestQDay progress={v / 2} />
+                </SceneBoundary>
               </div>
             )}
           </div>

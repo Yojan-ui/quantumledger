@@ -8,9 +8,11 @@
  */
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { registerLabel } from "@/lib/client/labels";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
+import { Body } from "@/components/scenes/Body";
 import { LINK_MID, VAULT } from "./geometry";
 import type { Look } from "./look";
 
@@ -48,11 +50,19 @@ export function Vault({
   labelIn?: number[];
 }) {
   const labelBox = useRef<HTMLDivElement>(null);
+  // Laid out with the stage's other labels: kept inside the stage, clear of the rest.
+  const labelReg = useRef<ReturnType<typeof registerLabel>>(undefined);
+  useEffect(() => {
+    if (!labelled || !labelBox.current) return;
+    labelReg.current = registerLabel(labelBox.current, "down");
+    return () => labelReg.current?.remove();
+  }, [labelled]);
   const endV = useMemo(() => new THREE.Vector3(), []);
   const cyl = useMemo(
     () => new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16, 3, true)),
     [],
   );
+  const cylSolid = useMemo(() => new THREE.CylinderGeometry(0.54, 0.54, 1.18, 40, 1, false), []);
   const cylMat = useMemo(
     () => new THREE.LineBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }),
     [],
@@ -113,8 +123,11 @@ export function Vault({
     });
     copyMat.opacity = 0.9 * L.dim("vault");
     // The counter rolls only while recording; it freezes once the wiretap is dissolved.
-    if (labelBox.current)
-      labelBox.current.style.opacity = !labelIn || labelIn.includes(L.stage) ? "1" : "0";
+    if (labelBox.current) {
+      const on = !labelIn || labelIn.includes(L.stage);
+      labelBox.current.style.opacity = on ? "1" : "0";
+      labelReg.current?.show(on);
+    }
     if (counter.current && shown.current !== T.count) {
       shown.current = T.count;
       counter.current.textContent = T.count.toLocaleString("en-IN");
@@ -123,6 +136,15 @@ export function Vault({
 
   return (
     <group>
+      {/* The storage as a dark metal drum inside its wireframe (it takes the role colour as a tint). */}
+      <Body
+        geometry={cylSolid}
+        like={cylMat}
+        kind="metal"
+        tint={0.25}
+        opacity={0.95}
+        position={at}
+      />
       <lineSegments geometry={cyl} material={cylMat} position={at} />
       <primitive object={beam} />
       {Array.from({ length: POOL }, (_, i) => (

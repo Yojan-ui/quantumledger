@@ -27,33 +27,23 @@
       "shifts": [
         {
           "value": 0.1935,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.1484,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.1214,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.1091,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.1089,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -88,33 +78,23 @@
       "shifts": [
         {
           "value": 0.0669,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0467,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0427,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0349,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0185,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -149,33 +129,23 @@
       "shifts": [
         {
           "value": 0.012,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0111,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0057,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0047,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0044,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -210,27 +180,19 @@
       "shifts": [
         {
           "value": 0.0204,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0111,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0077,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0069,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -265,27 +227,19 @@
       "shifts": [
         {
           "value": 0.0204,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0111,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0077,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0069,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -320,33 +274,23 @@
       "shifts": [
         {
           "value": 0.0194,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0112,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0074,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0066,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0059,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -381,27 +325,19 @@
       "shifts": [
         {
           "value": 0.0204,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0111,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0077,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0069,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -527,33 +463,23 @@
       "shifts": [
         {
           "value": 0.0202,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0202,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0186,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0127,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0101,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -618,27 +544,19 @@
       "shifts": [
         {
           "value": 0.0338,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0171,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0168,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0095,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -855,33 +773,23 @@
       "shifts": [
         {
           "value": 0.0122,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0115,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0055,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0047,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0045,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -1426,10 +1334,7 @@
       "shifts": [
         {
           "value": 0.0131,
-          "nodes": [
-            "fieldset.mt-8",
-            "::after."
-          ]
+          "nodes": ["fieldset.mt-8", "::after."]
         }
       ],
       "failed": []
@@ -1545,13 +1450,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        125,
-        69,
-        73,
-        105,
-        70
-      ],
+      "longTasks": [125, 69, 73, 105, 70],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -1570,34 +1469,23 @@
       "shifts": [
         {
           "value": 0.5593,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.5485,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0709,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0285,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0012,
-          "nodes": [
-            "div.ml-auto.flex.flex-wrap",
-            "(text)"
-          ]
+          "nodes": ["div.ml-auto.flex.flex-wrap", "(text)"]
         }
       ],
       "failed": []
@@ -1613,12 +1501,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        69,
-        87,
-        99,
-        106
-      ],
+      "longTasks": [69, 87, 99, 106],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -1648,12 +1531,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        71,
-        87,
-        95,
-        76
-      ],
+      "longTasks": [71, 87, 95, 76],
       "scroll": {
         "frames": 252,
         "worst": 150,
@@ -1672,21 +1550,15 @@
       "shifts": [
         {
           "value": 0.0188,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0164,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0142,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -1702,12 +1574,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        87,
-        94,
-        77
-      ],
+      "longTasks": [68, 87, 94, 77],
       "scroll": {
         "frames": 251,
         "worst": 150,
@@ -1726,9 +1593,7 @@
       "shifts": [
         {
           "value": 0.0291,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -1744,12 +1609,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        87,
-        96,
-        72
-      ],
+      "longTasks": [68, 87, 96, 72],
       "scroll": {
         "frames": 251,
         "worst": 150,
@@ -1768,15 +1628,11 @@
       "shifts": [
         {
           "value": 0.0309,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.0244,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -1792,12 +1648,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        71,
-        85,
-        98,
-        76
-      ],
+      "longTasks": [71, 85, 98, 76],
       "scroll": {
         "frames": 251,
         "worst": 150,
@@ -1816,9 +1667,7 @@
       "shifts": [
         {
           "value": 0.0271,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -1834,12 +1683,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        70,
-        87,
-        96,
-        77
-      ],
+      "longTasks": [70, 87, 96, 77],
       "scroll": {
         "frames": 251,
         "worst": 150,
@@ -1858,9 +1702,7 @@
       "shifts": [
         {
           "value": 0.0286,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -1876,12 +1718,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        74,
-        74,
-        117,
-        57
-      ],
+      "longTasks": [74, 74, 117, 57],
       "scroll": {
         "frames": 260,
         "worst": 17,
@@ -1910,25 +1747,15 @@
         },
         {
           "value": 0.0077,
-          "nodes": [
-            "div.absolute.bottom-3.left-3",
-            "dd.min-w-0.truncate.text-right"
-          ]
+          "nodes": ["div.absolute.bottom-3.left-3", "dd.min-w-0.truncate.text-right"]
         },
         {
           "value": 0.0073,
-          "nodes": [
-            "div.flex.snap-x.snap-mandatory",
-            "div.absolute.bottom-3.left-3"
-          ]
+          "nodes": ["div.flex.snap-x.snap-mandatory", "div.absolute.bottom-3.left-3"]
         },
         {
           "value": 0.0069,
-          "nodes": [
-            "button.h-8.rounded-sm.border",
-            "(text)",
-            "dd.min-w-0.truncate.text-right"
-          ]
+          "nodes": ["button.h-8.rounded-sm.border", "(text)", "dd.min-w-0.truncate.text-right"]
         },
         {
           "value": 0.0053,
@@ -1954,11 +1781,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        67,
-        86,
-        98
-      ],
+      "longTasks": [67, 86, 98],
       "scroll": {
         "frames": 246,
         "worst": 300,
@@ -1988,12 +1811,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        72,
-        87,
-        98,
-        51
-      ],
+      "longTasks": [72, 87, 98, 51],
       "scroll": {
         "frames": 251,
         "worst": 133,
@@ -2012,9 +1830,7 @@
       "shifts": [
         {
           "value": 0.0235,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -2030,11 +1846,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        69,
-        71,
-        103
-      ],
+      "longTasks": [69, 71, 103],
       "scroll": {
         "frames": 251,
         "worst": 117,
@@ -2064,11 +1876,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        56,
-        86,
-        96
-      ],
+      "longTasks": [56, 86, 96],
       "scroll": {
         "frames": 257,
         "worst": 100,
@@ -2087,33 +1895,23 @@
       "shifts": [
         {
           "value": 0.043,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.043,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.043,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.043,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.043,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -2129,11 +1927,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        70,
-        72,
-        105
-      ],
+      "longTasks": [70, 72, 105],
       "scroll": {
         "frames": 250,
         "worst": 117,
@@ -2173,11 +1967,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        71,
-        72,
-        107
-      ],
+      "longTasks": [71, 72, 107],
       "scroll": {
         "frames": 251,
         "worst": 117,
@@ -2207,11 +1997,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        69,
-        86,
-        95
-      ],
+      "longTasks": [69, 86, 95],
       "scroll": {
         "frames": 253,
         "worst": 100,
@@ -2250,11 +2036,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        67,
-        85,
-        95
-      ],
+      "longTasks": [67, 85, 95],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -2284,11 +2066,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        86,
-        98
-      ],
+      "longTasks": [68, 86, 98],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -2318,12 +2096,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        70,
-        86,
-        100,
-        78
-      ],
+      "longTasks": [70, 86, 100, 78],
       "scroll": {
         "frames": 251,
         "worst": 150,
@@ -2342,15 +2115,11 @@
       "shifts": [
         {
           "value": 0.0221,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         },
         {
           "value": 0.018,
-          "nodes": [
-            "div.ambient.opacity-0.transition-opacity"
-          ]
+          "nodes": ["div.ambient.opacity-0.transition-opacity"]
         }
       ],
       "failed": []
@@ -2366,11 +2135,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        74,
-        94,
-        96
-      ],
+      "longTasks": [74, 94, 96],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -2400,11 +2165,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        70,
-        84,
-        96
-      ],
+      "longTasks": [70, 84, 96],
       "scroll": {
         "frames": 252,
         "worst": 100,
@@ -2434,11 +2195,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        85,
-        96
-      ],
+      "longTasks": [68, 85, 96],
       "scroll": {
         "frames": 258,
         "worst": 100,
@@ -2468,11 +2225,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        75,
-        96,
-        105
-      ],
+      "longTasks": [75, 96, 105],
       "scroll": {
         "frames": 252,
         "worst": 100,
@@ -2502,11 +2255,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        87,
-        98
-      ],
+      "longTasks": [68, 87, 98],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2536,11 +2285,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        87,
-        98
-      ],
+      "longTasks": [68, 87, 98],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2570,11 +2315,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        56,
-        88,
-        97
-      ],
+      "longTasks": [56, 88, 97],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -2604,11 +2345,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        75,
-        90,
-        98
-      ],
+      "longTasks": [75, 90, 98],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2638,11 +2375,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        69,
-        84,
-        95
-      ],
+      "longTasks": [69, 84, 95],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2672,11 +2405,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        85,
-        97
-      ],
+      "longTasks": [68, 85, 97],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2706,11 +2435,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        86,
-        96
-      ],
+      "longTasks": [68, 86, 96],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2740,11 +2465,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        67,
-        86,
-        97
-      ],
+      "longTasks": [67, 86, 97],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2774,11 +2495,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        84,
-        97
-      ],
+      "longTasks": [68, 84, 97],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2808,11 +2525,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        67,
-        85,
-        96
-      ],
+      "longTasks": [67, 85, 96],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -2842,11 +2555,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        84,
-        103
-      ],
+      "longTasks": [68, 84, 103],
       "scroll": {
         "frames": 255,
         "worst": 83,
@@ -2876,11 +2585,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        62,
-        85,
-        96
-      ],
+      "longTasks": [62, 85, 96],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -2910,11 +2615,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        69,
-        84,
-        95
-      ],
+      "longTasks": [69, 84, 95],
       "scroll": {
         "frames": 254,
         "worst": 83,
@@ -2944,10 +2645,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        69,
-        85
-      ],
+      "longTasks": [69, 85],
       "scroll": {
         "frames": 231,
         "worst": 17,
@@ -2977,11 +2675,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        56,
-        84,
-        98
-      ],
+      "longTasks": [56, 84, 98],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -3000,9 +2694,7 @@
       "shifts": [
         {
           "value": 0.005,
-          "nodes": [
-            "div.col-span-12.animate-reveal.space-y-10"
-          ]
+          "nodes": ["div.col-span-12.animate-reveal.space-y-10"]
         }
       ],
       "failed": []
@@ -3018,11 +2710,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        57,
-        83,
-        96
-      ],
+      "longTasks": [57, 83, 96],
       "scroll": {
         "frames": 253,
         "worst": 83,
@@ -3057,11 +2745,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [
-        68,
-        84,
-        94
-      ],
+      "longTasks": [68, 84, 94],
       "scroll": {
         "frames": 252,
         "worst": 83,

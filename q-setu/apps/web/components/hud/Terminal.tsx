@@ -61,17 +61,20 @@ export function Terminal({ className = "" }: { className?: string }) {
       >
         {lines.map((e) => {
           const mine = e.site === `pipeline-${stage}`;
+          const full = `${clock(e.at)} ${e.op} ${e.detail ?? ""}${e.ms > 0 ? ` · ${ms(e.ms)}` : ""}`;
+          // Fixed columns, one line per event: time · verb · subject (truncated; full text in the
+          // tooltip) · value. Nothing wraps, so nothing breaks mid-word.
           return (
             <p
               key={`${e.source}-${e.seq}`}
-              className={`whitespace-pre-wrap break-all ${mine ? "bg-raised text-fg" : "text-fg-2"}`}
+              title={full}
+              className={`grid grid-cols-term items-baseline gap-x-2 ${mine ? "bg-raised text-fg" : "text-fg-2"}`}
               data-term-stage={e.site?.replace("pipeline-", "")}
             >
-              <span className="text-ok">➜ </span>
-              <span className="text-fg-3">{clock(e.at)} </span>
-              <span className={OP_TONE[e.op] ?? "text-fg-2"}>{e.op.padEnd(9)}</span>
-              {e.detail}
-              {e.ms > 0 && <span className="text-fg-3"> · {ms(e.ms)}</span>}
+              <span className="text-fg-3">{clock(e.at)}</span>
+              <span className={`truncate ${OP_TONE[e.op] ?? "text-fg-2"}`}>{e.op}</span>
+              <span className="truncate">{e.detail}</span>
+              <span className="text-right text-fg-3">{e.ms > 0 ? ms(e.ms) : ""}</span>
             </p>
           );
         })}

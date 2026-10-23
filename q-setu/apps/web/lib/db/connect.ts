@@ -3,6 +3,7 @@
  * SQLite file under QSETU_DATA_DIR (local). Tables are created if missing (see the DDL in the schemas;
  * `drizzle.config.ts` generates equivalent migrations for teams that prefer them).
  */
+import "server-only";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { makeRepos, type Repos } from "./repo";

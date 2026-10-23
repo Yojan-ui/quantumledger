@@ -14,14 +14,82 @@
   }
   body {
     @apply font-sans text-body text-fg-2;
+    /* Full-bleed stages are 100vw wide, which includes the scrollbar: never scroll sideways. */
+    overflow-x: clip;
+    /* Every number lines up: tabular figures everywhere, not only in tables. */
+    font-variant-numeric: tabular-nums;
   }
   ::selection {
     background: var(--line-strong);
     color: var(--text);
   }
   :focus-visible {
-    outline: 1px solid var(--text);
-    outline-offset: 2px;
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  /* Text links: a 1px underline that draws in from the left (180 ms ease-out). */
+  .link-u {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition: background-size 180ms var(--ease);
+    padding-bottom: 1px;
+  }
+  .link-u:hover,
+  .link-u:focus-visible {
+    background-size: 100% 1px;
+  }
+  /*
+   * Crosshairs: a 9px tick at each corner of a section, in the hairline tone. Drawn as eight 1px
+   * bars (no pseudo-elements, so a section's own ::before/::after stay free).
+   */
+  .crosshairs {
+    --x: var(--line-strong);
+    /* At the content column's edges: the 1200px container's padding, or 20px on narrow screens. */
+    --cx: max(20px, calc(50% - 600px + 24px));
+    background-image:
+      linear-gradient(var(--x), var(--x)), linear-gradient(var(--x), var(--x)),
+      linear-gradient(var(--x), var(--x)), linear-gradient(var(--x), var(--x)),
+      linear-gradient(var(--x), var(--x)), linear-gradient(var(--x), var(--x)),
+      linear-gradient(var(--x), var(--x)), linear-gradient(var(--x), var(--x));
+    background-repeat: no-repeat;
+    background-size:
+      9px 1px,
+      1px 9px,
+      9px 1px,
+      1px 9px,
+      9px 1px,
+      1px 9px,
+      9px 1px,
+      1px 9px;
+    background-position:
+      var(--cx, 20px) 0,
+      calc(var(--cx, 20px) + 4px) -4px,
+      calc(100% - var(--cx, 20px)) 0,
+      calc(100% - var(--cx, 20px) - 4px) -4px,
+      var(--cx, 20px) 100%,
+      calc(var(--cx, 20px) + 4px) calc(100% + 4px),
+      calc(100% - var(--cx, 20px)) 100%,
+      calc(100% - var(--cx, 20px) - 4px) calc(100% + 4px);
+  }
+  /* A horizontal strip that fades out at both edges instead of being cut. */
+  .fade-edges {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      black 48px,
+      black calc(100% - 48px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      black 48px,
+      black calc(100% - 48px),
+      transparent
+    );
   }
   .tabular {
     font-variant-numeric: tabular-nums;
@@ -162,6 +230,80 @@
   button[data-state="error"] {
     outline: 1px solid var(--danger);
     outline-offset: 2px;
+  }
+  /*
+   * The hero's legibility scrim: the page colour rising from the bottom-left corner under the
+   * headline, so the 3D stays bright everywhere else. (Token colours only; no gradient utilities.)
+   */
+  .hero-scrim {
+    background:
+      linear-gradient(
+        to top,
+        var(--bg) 0%,
+        color-mix(in srgb, var(--bg) 70%, transparent) 28%,
+        transparent 62%
+      ),
+      linear-gradient(to right, color-mix(in srgb, var(--bg) 55%, transparent) 0%, transparent 55%);
+  }
+  /* Hero headline beats: every line shows from the first paint; each resolves with its stage. */
+  [data-beat] [data-line] {
+    transition:
+      opacity 700ms var(--ease),
+      transform 700ms var(--ease);
+  }
+  /* Break out of the page container to the full viewport width (demo stages). */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+  /* The global Q-Day switch: everything QuantumLedger protects stays sealed, with a --kem glint. */
+  html[data-qday] [data-sealed] {
+    outline: 1px solid var(--kem);
+    outline-offset: 3px;
+    animation: kem-glint 1.2s var(--ease) 4;
+  }
+  @keyframes kem-glint {
+    0%,
+    100% {
+      outline-color: transparent;
+    }
+    35% {
+      outline-color: var(--kem);
+    }
+  }
+  /* Ciphertext stands in for a headline's letters: Geist Mono, a size down, dim. */
+  .seal-hex {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.8em;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-3);
+  }
+  .seal-bad .seal-hex {
+    color: var(--danger);
+  }
+  /* The faint --kem flash as a verified headline resolves into words. */
+  .seal-flash {
+    animation: seal-flash 700ms var(--ease) both;
+  }
+  @keyframes seal-flash {
+    from {
+      text-shadow: 0 0 14px color-mix(in srgb, var(--kem) 45%, transparent);
+      color: color-mix(in srgb, var(--kem) 55%, var(--text));
+    }
+    to {
+      text-shadow: 0 0 14px transparent;
+    }
+  }
+  /* A sideways-scrolling row that fades out at its right edge (only while it can scroll). */
+  .fade-x {
+    mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+    scrollbar-width: none;
+  }
+  @media (min-width: 768px) {
+    .fade-x {
+      mask-image: none;
+    }
   }
   [data-magnetic] {
     transition-property: transform, opacity, background-color, border-color;

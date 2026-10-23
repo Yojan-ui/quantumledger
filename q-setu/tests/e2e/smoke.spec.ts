@@ -22,7 +22,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
     /SEAL|VERIFY|LEDGER|HANDSHAKE|KEYGEN|REJECT|ROTATE/,
   );
   // The Readiness Index headline is computed from the measured totals.
-  await expect(page.locator("#index")).toContainText(/\d+% of the Indian sites we checked/);
+  await expect(page.locator("#index")).toContainText(/\d+%\s*of the Indian sites we checked/);
   await expect(page.locator("#analogy")).toContainText("Everything has a lock");
   expect(errors).toEqual([]);
 });
@@ -85,10 +85,13 @@ test("Demo 3: Q-Day exposes classical records, none with QuantumLedger", async (
   await expect(
     page.getByRole("region", { name: "Classical system" }).locator("li").first(),
   ).toBeVisible();
-  await page.getByRole("button", { name: /Go to Q-Day/ }).click();
-  await expect(page.getByText("Exposed · QuantumLedger")).toBeVisible();
-  await expect(page.getByText(/Factored n in \d+ steps/)).toBeVisible();
-  await expect(page.getByText(/AES-256-GCM tag check failed/)).toBeVisible();
+  // Since the wow pass the demo is a film: Play runs it forward to Q-Day.
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await expect(page.getByText("Exposed · QuantumLedger").first()).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/Factored n in \d+ steps/).first()).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/AES-256-GCM tag check failed/).first()).toBeVisible({
+    timeout: 60_000,
+  });
   const stats = page.locator("p.tabular");
   await expect(stats.nth(1)).toHaveText("0");
   expect(Number(await stats.nth(0).innerText())).toBeGreaterThan(0);
@@ -116,12 +119,35 @@ test("API: OpenAPI docs, consistent errors, SSRF guard", async ({ request }) => 
   expect(Object.keys(docs.paths)).toEqual(
     expect.arrayContaining(["/api/ledger/verify", "/api/scan/url", "/api/policy"]),
   );
-  const bad = await request.post("/api/simulate", { data: { count: 99 } });
+  // Writes must be same-origin and carry the demo session (security phase 3).
+  const origin = new URL((await request.get("/api/health")).url()).origin;
+  const crossSite = await request.post("/api/simulate", {
+    data: { count: 1 },
+    headers: { origin: "https://evil.example" },
+  });
+  expect(crossSite.status()).toBe(403);
+  const noSession = await request.post("/api/simulate", {
+    data: { count: 1 },
+    headers: { origin },
+  });
+  expect(noSession.status()).toBe(403);
+  // Loading a page issues the session cookie (the request context keeps it).
+  await request.get("/");
+  const bad = await request.post("/api/simulate", { data: { count: 99 }, headers: { origin } });
   expect(bad.status()).toBe(400);
   expect((await bad.json()).error).toMatchObject({ code: "invalid_input" });
-  const ssrf = await request.post("/api/scan/url", { data: { url: "http://169.254.169.254/" } });
-  expect(ssrf.status()).toBeGreaterThanOrEqual(400);
-  expect((await ssrf.json()).error.message).toMatch(/private|public/);
+  const unknown = await request.post("/api/simulate", {
+    data: { count: 1, extra: true },
+    headers: { origin },
+  });
+  expect(unknown.status()).toBe(400);
+  const ssrf = await request.post("/api/scan/url", {
+    data: { url: "http://169.254.169.254/" },
+    headers: { origin },
+  });
+  expect(ssrf.status()).toBe(403);
+  expect((await ssrf.json()).error).toMatchObject({ code: "blocked_target" });
+  expect((await ssrf.json()).error.message).toMatch(/public internet hosts/);
 });
 
 test("Scanner: Java TLS sample scores Critical and yields a CBOM", async ({ page }) => {

@@ -22,3 +22,14 @@ dist/
 
 # Glitch-audit videos (large; regenerate with pnpm audit:glitch)
 docs/smooth/videos-*/
+
+# Real-pass audit videos (regenerate with AUDIT_OUT=docs/real pnpm audit:glitch)
+docs/real/videos-*/
+
+# Motion pass: regenerable from shield-real (scripts/motion-shots.mjs), and diff overlays
+docs/motion2/baseline/noise/
+docs/motion2/*/nocanvas/diff/
+docs/motion2/*/diff/
+docs/motion2/videos-*/
+docs/motion2/*/*.webm
+docs/rehearsal/*.webm

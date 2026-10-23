@@ -108,6 +108,10 @@ function handle(m: HandshakeIn): unknown {
         per,
         opened: opened.length,
         plainBytes: msgs[0]!.length,
+        // The first message's real bytes (a public demo payload), for the folding sheet.
+        plain: msgs[0]!,
+        cipher: sealed[0]!.ciphertext.slice(0, 64),
+        openedPlain: opened[0]!,
         sealed: sealed.map((x) => ({
           seq: x.seq,
           ctBytes: x.ciphertext.length,

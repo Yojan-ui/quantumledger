@@ -40,6 +40,23 @@ export function IndexBars() {
           opacity: 0.85,
           toneMapped: false,
         }),
+        // Glass: the column's own edges, bright in its colour, over a lighter body.
+        edge: new THREE.LineBasicMaterial({
+          transparent: true,
+          depthWrite: false,
+          toneMapped: false,
+        }),
+        // The light the column casts on the land around its base (additive, soft falloff).
+        pool: new THREE.ShaderMaterial({
+          uniforms: { uColor: { value: new THREE.Color() }, uOpacity: { value: 0 } },
+          vertexShader:
+            "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+          fragmentShader:
+            "uniform vec3 uColor; uniform float uOpacity; varying vec2 vUv; void main(){ float d = length(vUv - 0.5) * 2.0; gl_FragColor = vec4(uColor, uOpacity * pow(max(0.0, 1.0 - d), 2.2)); }",
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }),
         ghost: new THREE.LineBasicMaterial({
           color: c.text3,
           transparent: true,
@@ -108,7 +125,12 @@ export function IndexBars() {
       gh.scale.set(1, 1, MAX_H * shown.current);
       const ready = ix.good ? v : 1 - v;
       mats[i]!.fill.color.copy(warnS).lerp(okS, ready).convertSRGBToLinear();
-      mats[i]!.fill.opacity = 0.85 * shown.current;
+      mats[i]!.fill.opacity = 0.42 * shown.current;
+      mats[i]!.edge.color.copy(mats[i]!.fill.color);
+      mats[i]!.edge.opacity = 0.95 * shown.current;
+      const pool = mats[i]!.pool.uniforms;
+      (pool.uColor!.value as THREE.Color).copy(mats[i]!.fill.color);
+      pool.uOpacity!.value = 0.55 * shown.current * rise;
       mats[i]!.ghost.opacity = 0.25 * shown.current;
       // Where the bar's tip is on screen, for its DOM label (only inside the globe's area).
       v3.set(0, 0, Math.max(0.002, v * MAX_H * rise) + 0.03)
@@ -133,7 +155,12 @@ export function IndexBars() {
     <>
       {SECTORS.map((s, i) => (
         <group key={s.id} ref={(g) => void (groups.current[i] = g)} visible={false}>
-          <mesh ref={(m) => void (bars.current[i] = m)} geometry={geo} material={mats[i]!.fill} />
+          <mesh ref={(m) => void (bars.current[i] = m)} geometry={geo} material={mats[i]!.fill}>
+            <lineSegments geometry={edges} material={mats[i]!.edge} />
+          </mesh>
+          <mesh material={mats[i]!.pool} position={[0, 0, 0.002]} renderOrder={1}>
+            <planeGeometry args={[W * 7, W * 7]} />
+          </mesh>
           <lineSegments
             ref={(l) => void (ghosts.current[i] = l)}
             geometry={edges}

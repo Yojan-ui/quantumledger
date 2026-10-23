@@ -12,6 +12,9 @@ export interface Pose {
   lon: number;
   dist: number;
   spin: number;
+  /** Camera pitch over the surface and heading, degrees (see director.ts). */
+  tilt?: number;
+  yaw?: number;
 }
 export type NodeState = "vulnerable" | "deploying" | "protected";
 
@@ -59,6 +62,13 @@ export const world = {
   mode: "story" as WorldMode,
   /** Story progress: 0..8, one unit per chapter. */
   chapter: 0,
+  /**
+   * The homepage camera flight: a position along the shot list in director.ts (KEYS), scrubbed by
+   * each section's ScrollTrigger. -1 = no flight (other pages, or no section has claimed it).
+   */
+  journey: -1,
+  /** The global Q-Day switch (lib/client/qday-switch): when it was thrown, or 0. Lasts 6 s. */
+  qdayAt: 0,
   /** Where the globe should sit, as a fraction of the viewport (from the DOM element marked data-world-focus). */
   focus: { cx: 0.5, cy: 0.5, size: 1 },
   /** Visitor's ML-KEM-768 public key, generated in the browser by the preloader. */
@@ -82,8 +92,8 @@ export const world = {
   /** Highlighted adapter socket on the globe (0..4), or -1. */
   socket: -1,
   showPulseKinds: { saffron: true, cyan: true },
-  /** City ripples (sealed packets arriving), drained by the scene. */
-  ripples: [] as { city: string; at: number }[],
+  /** City ripples (packets landing), drained by the scene: sealed ones in the accent, classical in warn. */
+  ripples: [] as { city: string; at: number; tone?: "accent" | "warn" }[],
   /** Screen position (CSS px) of the highlighted socket, written by the scene each frame. */
   socketScreen: null as { x: number; y: number } | null,
   /** Seconds-scale breathing for the atmosphere; false under reduced motion. */
@@ -100,6 +110,15 @@ export const world = {
   shot: null as null | { pose: Pose; extrude: number; focus: string | null; model: boolean },
   /** Screen position (CSS px) of the focused node, written by the scene each frame (null = off stage). */
   focusScreen: null as { x: number; y: number } | null,
+  /** Demo 2: a node clicked on the globe, to dive into (the demo clears it). */
+  dive: null as string | null,
+  /**
+   * Demo 2: an adapter seating into a node's socket. `at` when it appeared (performance.now()),
+   * `done` when the real deploy finished (0 while it runs: the adapter lowers, then clicks home).
+   */
+  seat: null as null | { site: string; adapter: string; at: number; done: number },
+  /** Demo 2's last impact on the globe's post-processing (chromatic aberration): when and how hard. */
+  fxHit: { at: 0, s: 0 },
   /** Demo 2's "all sealed" wave: when it started (performance.now()), 0 = none. */
   waveAt: 0,
   /** Live sealed-operation counts per route city (from /api/metrics), for the city light pillars. */

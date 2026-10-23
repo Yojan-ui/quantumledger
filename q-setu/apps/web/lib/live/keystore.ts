@@ -6,6 +6,7 @@
  * The file store keeps its KEK in QSETU_KMS_KEK (64 hex chars) or, for local demos, in a 0600 file
  * beside the store. An HSM-backed store implements the same interface and does the wrapping itself.
  */
+import "server-only";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

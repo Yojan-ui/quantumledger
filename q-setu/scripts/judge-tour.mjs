@@ -189,7 +189,11 @@ const renderer = await (async () => {
   return r;
 })();
 console.log("renderer:", renderer);
-await fetch(`${BASE}/api/reset-all`, { method: "POST" }).catch(() => {});
+await fetch(`${BASE}/api/reset-all`, {
+  method: "POST",
+  // The API refuses unauthenticated writes; scripts use the bearer token (API_TOKEN).
+  headers: process.env.API_TOKEN ? { authorization: `Bearer ${process.env.API_TOKEN}` } : {},
+}).catch(() => {});
 
 const metrics = { measuredAt: new Date().toISOString(), base: BASE, renderer, runs: {} };
 for (const key of Object.keys(VIEWPORTS)) {

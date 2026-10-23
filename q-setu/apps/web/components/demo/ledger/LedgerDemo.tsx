@@ -1,9 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
 import { useDirector } from "@/components/director/useDirector";
@@ -18,7 +20,17 @@ import { onLive } from "@/lib/client/live";
 import type { LedgerEntry, VerifyResult } from "@/lib/live/ledger";
 import type { OpEvent } from "@/lib/live/types";
 
-const LedgerFilm = dynamic(() => import("./LedgerFilm"), { ssr: false, loading: () => null });
+const LedgerFilm = dynamic(
+  () =>
+    import("./LedgerFilm")
+      .catch(() => import("./LedgerFilm"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const TARGET = 42;
 /** Arc positions: six entries around #42 (it sits at index 3), then the six newest. */
@@ -49,7 +61,7 @@ const SHOTS: Shot[] = [
   },
   {
     id: "tamper",
-    camera: { position: [-2.5, 1.1, 2.6], target: [-3.45, 0, -0.9], fov: 40 },
+    camera: { position: [-2.1, 1.5, 3.6], target: [-3.3, 0, -0.9], fov: 40 },
     focus: "target",
     step: 2,
     caption: `An insider edits entry #${TARGET} directly in the database.`,
@@ -280,7 +292,9 @@ export function LedgerDemo() {
         await doVerify();
       }
     },
-    hold: (id) => (id === "broken" ? 2600 : id === "verify" ? 2200 : undefined),
+    // The pulse runs a block every 220 ms; the crack and sag take ~1.2 s: holds long enough to see them.
+    hold: (id) =>
+      id === "broken" ? 3200 : id === "verify" ? 3400 : id === "tamper" ? 2600 : undefined,
     restart: () => void reset(),
   });
   const isTamperedRef = useRef(isTampered);
@@ -330,6 +344,7 @@ export function LedgerDemo() {
       meter={<ComputeMeter reading={reading} />}
       console={
         <LiveConsole
+          drawer
           title="Live console · ledger and KMS"
           filter={consoleFilter}
           highlight={HIGHLIGHT[director.state.shot.id]}
@@ -348,9 +363,9 @@ export function LedgerDemo() {
       }}
     >
       <div className="space-y-12">
-        <div className="relative overflow-hidden rounded-lg border border-line">
+        <div className="full-bleed relative overflow-hidden border-y border-line">
           <LazyView
-            className="h-stage-sm md:h-stage"
+            className="h-stage-full min-h-stage"
             label={`The ledger as a chain of signed blocks: entries around #${TARGET} and the newest entries. ${broken ? `Broken at #${broken.id}.` : verify ? "Verified intact." : ""}`}
           >
             {(onScreen) => (
@@ -372,9 +387,14 @@ export function LedgerDemo() {
               />
             )}
           </LazyView>
+          <StagePurpose>
+            editing one past entry breaks every signature check after it, and verification finds
+            where.
+          </StagePurpose>
           <DirectorHUD
             director={director}
             steps={STEP_BAR}
+            beat={reel.beat}
             playing={reel.playing}
             busy={reel.busy}
             onToggle={() => void reel.play()}

@@ -3,13 +3,21 @@
 /**
  * Shared graphics state for the site's one WebGL canvas.
  *  - quality: the adaptive ladder. PerformanceMonitor steps it up when fps drops, in this order:
- *      0 full · 1 lower DPR (1.25) · 2 fewer particles · 3 no focus dimming or glow halos.
+ *      0 full · 1 lower DPR (1.25) · 2 no dust layer, half the particles · 3 no glass transmission,
+ *      no line glow, focus dimming or halos (DPR 1).
  *  - lost: the GL context was lost; 3D areas show their static poster until it is rebuilt.
  */
 import { useSyncExternalStore } from "react";
 
 export type Quality = 0 | 1 | 2 | 3;
-export const DPR: Record<Quality, number> = { 0: 1.75, 1: 1.25, 2: 1.25, 3: 1 };
+export const DPR: Record<Quality, number> = { 0: 1.5, 1: 1.25, 2: 1.25, 3: 1 };
+/** Phones (< 768 px wide) never render above 1.5× however dense the screen: a 3× buffer costs
+ * four times the fill rate of 1.5× for detail nobody sees at arm's length. */
+export const PHONE_DPR_CAP = 1.5;
+export const dprCap = (q: Quality) =>
+  typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+    ? Math.min(PHONE_DPR_CAP, DPR[q])
+    : DPR[q];
 
 const state = { quality: 0 as Quality, lost: false };
 const listeners = new Set<() => void>();

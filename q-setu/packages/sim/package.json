@@ -13,8 +13,8 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@noble/ciphers": "^2.4.0",
-    "@noble/curves": "^2.4.0",
+    "@noble/ciphers": "2.4.0",
+    "@noble/curves": "2.4.0",
     "@qsetu/core": "workspace:*"
   },
   "sideEffects": false

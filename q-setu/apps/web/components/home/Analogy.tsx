@@ -1,19 +1,29 @@
 "use client";
 
 /**
- * Right after the hero: QuantumLedger as an everyday story in four steps, each with a small 3D object.
- * Locks → a future master key → thieves copying boxes now → new locks on the same doors. Cards are
- * transparent: the 3D layer sits under the page, so an opaque card would hide its object.
+ * Right after Join live: QuantumLedger as an everyday story in four steps, told by one 3D object
+ * that morphs as you scroll. Locks → a future master key → thieves copying boxes now → new locks on
+ * the same doors.
  */
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { chunkFailed } from "@/lib/client/chunk";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Container, SectionLabel } from "@/components/ui";
 import { Copy, CopyHeading } from "@/components/ui/Copy";
 import { Term } from "@/components/ui/Term";
 import { LazyView } from "@/components/scenes/LazyView";
 import { footnote } from "@/data/facts";
 
-const AnalogyModel = dynamic(() => import("@/components/scenes/AnalogyModel"), { ssr: false });
+const AnalogyMorph = dynamic(
+  () =>
+    import("@/components/scenes/AnalogyMorph")
+      .catch(() => import("@/components/scenes/AnalogyMorph"))
+
+      .catch(chunkFailed),
+  { ssr: false },
+);
 
 const STEPS = [
   {
@@ -70,50 +80,102 @@ const STEPS = [
   },
 ] as const;
 
+/**
+ * A pinned sequence: one large object on the left morphs lock → master key → copied boxes → lattice
+ * lock as you scroll, and the four cards slide sideways on the right, one per shape.
+ */
 export function Analogy({ index }: { index: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const progress = useMemo(() => ({ v: 0 }), []);
+  const [step, setStep] = useState(0);
   const [reduce, setReduce] = useState(false);
   useEffect(() => setReduce(window.matchMedia("(prefers-reduced-motion: reduce)").matches), []);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (st) => {
+          progress.v = st.progress * 3;
+          const i = Math.min(3, Math.round(st.progress * 3));
+          setStep((s) => (s === i ? s : i));
+        },
+      });
+    }, el);
+    return () => ctx.revert();
+  }, [progress]);
   return (
-    <section id="analogy" className="relative scroll-mt-14 py-24 md:py-32" data-tour="analogy">
-      <Container>
-        <SectionLabel index={index} label="In four steps" role="kem" />
-        <CopyHeading
-          simple="Why your data needs new locks."
-          technical="The quantum threat, and the fix, in four steps."
-          className="max-w-text"
-        />
-        <ol className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s, i) => (
-            <li
-              key={i}
-              data-tilt
-              className="spotlight flex flex-col rounded-lg border border-line p-6 transition-colors duration-150 hover:border-line-strong"
-            >
-              <LazyView className="h-40 w-full" label={s.label}>
-                {(on) => <AnalogyModel step={i as 0 | 1 | 2 | 3} active={on} reduce={reduce} />}
-              </LazyView>
-              <p className="mt-4 font-mono text-label uppercase text-fg-3">0{i + 1}</p>
-              <h3 className="mt-2 text-h3 font-medium text-fg">
-                <Copy simple={s.title.simple} technical={s.title.technical} />
-              </h3>
-              <p className="mt-2 text-small text-fg-2">
-                <Copy simple={s.simple} technical={s.technical} />
-                {"cite" in s && footnote(s.cite) > 0 && (
-                  <>
-                    {" "}
-                    <a
-                      href={`#fact-${footnote(s.cite)}`}
-                      className="font-mono text-label text-fg-3 underline decoration-line-strong underline-offset-4"
-                    >
-                      [{footnote(s.cite)}]
-                    </a>
-                  </>
-                )}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </Container>
+    <section
+      ref={ref}
+      id="analogy"
+      className="relative scroll-mt-14"
+      style={{ height: `${STEPS.length * 55}vh` }}
+      data-tour="analogy"
+    >
+      <div className="sticky top-14 h-story overflow-hidden">
+        <Container className="grid h-full grid-cols-12 content-center gap-x-6 gap-y-6">
+          <div className="col-span-12 md:col-span-6">
+            <LazyView className="h-globe w-full md:h-stage" label={STEPS[step]!.label}>
+              {(on) => <AnalogyMorph progress={progress} active={on} reduce={reduce} />}
+            </LazyView>
+          </div>
+          <div className="col-span-12 md:col-span-5 md:col-start-8">
+            <SectionLabel index={index} label="In four steps" role="kem" />
+            <CopyHeading
+              simple="Why your data needs new locks."
+              technical="The quantum threat, and the fix, in four steps."
+              className="max-w-text"
+            />
+            <div className="mt-10 overflow-hidden">
+              <ol
+                className="flex transition-transform duration-700 ease-ease"
+                style={{ transform: `translate3d(${-step * 100}%, 0, 0)` }}
+              >
+                {STEPS.map((s, i) => (
+                  <li
+                    key={i}
+                    aria-current={i === step || undefined}
+                    className={`w-full shrink-0 pr-6 transition-opacity duration-700 ${i === step ? "opacity-100" : "opacity-0"}`}
+                  >
+                    <p className="font-mono text-label uppercase text-fg-3">
+                      0{i + 1} / 0{STEPS.length}
+                    </p>
+                    <h3 className="mt-2 text-h3 font-medium text-fg">
+                      <Copy simple={s.title.simple} technical={s.title.technical} />
+                    </h3>
+                    <p className="mt-3 text-body text-fg-2">
+                      <Copy simple={s.simple} technical={s.technical} />
+                      {"cite" in s && footnote(s.cite) > 0 && (
+                        <>
+                          {" "}
+                          <a
+                            href={`#fact-${footnote(s.cite)}`}
+                            className="font-mono text-label text-fg-3 underline decoration-line-strong underline-offset-4"
+                          >
+                            [{footnote(s.cite)}]
+                          </a>
+                        </>
+                      )}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="mt-8 flex gap-2" aria-hidden>
+              {STEPS.map((_, i) => (
+                <span
+                  key={i}
+                  className={`block h-1 rounded-full transition duration-300 ${i === step ? "w-8 bg-kem" : "w-3 bg-line-strong"}`}
+                />
+              ))}
+            </div>
+          </div>
+        </Container>
+      </div>
     </section>
   );
 }

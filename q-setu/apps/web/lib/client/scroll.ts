@@ -65,9 +65,13 @@ export function startScroll(): () => void {
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
+    // No browser scroll anchoring under Lenis: when a live console grows, the browser shifts the
+    // scroll to compensate and Lenis, mid-glide, writes its own position back (a jump).
+    document.documentElement.style.overflowAnchor = "none";
   }
   return () => {
     if (--refs > 0) return;
+    document.documentElement.style.overflowAnchor = "";
     gsap.ticker.remove(tick);
     lenis?.destroy();
     lenis = undefined;
