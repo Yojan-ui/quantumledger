@@ -42,6 +42,8 @@ export function cachedScan(host: string): ScanRecord | undefined {
   if (!hit) return undefined;
   return {
     ...hit,
+    // Cached records predate pqOffered: if the site negotiated the hybrid group, PQ was offered.
+    probe: { ...hit.probe, pqOffered: hit.probe.pqOffered ?? hit.probe.hybridPq },
     plan: {
       ...hit.plan,
       markdown: planToMarkdown(hit.plan, `Migration plan for ${hit.probe.host}`),

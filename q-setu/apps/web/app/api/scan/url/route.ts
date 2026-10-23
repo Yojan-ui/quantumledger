@@ -1,7 +1,7 @@
 import { fail, parseBody } from "@/lib/server/api";
 import { live } from "@/lib/server/runtime";
 import { cachedScan, scanHost } from "@/lib/server/scan-service";
-import { hostFromInput, ScanError } from "@/lib/live/tls";
+import { hostFromInput, ScanError, serverCrypto } from "@/lib/live/tls";
 import { SCAN_LIMITS, take, tooMany } from "@/lib/server/limits";
 import { log } from "@/lib/server/log";
 import { ScanUrlBody } from "@/lib/server/schemas";
@@ -22,7 +22,7 @@ function cachedOnlyScan(url: string) {
  *  - https only (http accepted only as a way of naming a host; nothing is fetched over HTTP), ports
  *    443/80 only; no request is sent, no body read, no redirect followed;
  *  - DNS resolved here, every address must be public, and the checked IP is the one connected to;
- *  - 5 s for the whole probe, 1 MB read at most;
+ *  - 8 s for the whole probe, 1 MB read at most;
  *  - 10 scans a minute and 100 a day per client (cached answers are free: no network);
  *  - errors are a fixed code and message; the detail goes to the server log only.
  */
@@ -53,3 +53,54 @@ export const POST = signed(async function POST(req: Request) {
     return fail(se.code, se.message, se.code === "blocked_target" ? 403 : 422);
   }
 });
+
+/**
+ * GET /api/scan/url?target=<host or url>: the same read-only TLS readiness check as POST, for quick
+ * verification (`curl .../api/scan/url?target=https://cloudflare.com`). On failure it returns the
+ * reason in plain words and the ScanError code — never a blank. `health` reports what this server's
+ * Node/OpenSSL can do, so you can see whether the hybrid post-quantum group is even possible here.
+ */
+export async function GET(req: Request) {
+  const health = serverCrypto();
+  const target = new URL(req.url).searchParams.get("target") ?? "";
+  if (!target)
+    return Response.json(
+      { error: { code: "invalid_input", message: "Add ?target=<site>." }, health },
+      { status: 400 },
+    );
+  const v = await take(req, SCAN_LIMITS);
+  if (!v.ok) return tooMany(v, "scans");
+  const t = performance.now();
+  try {
+    const r = await scanHost(target);
+    log(req, "scan", 200, performance.now() - t, { method: "GET" });
+    return Response.json({
+      host: r.probe.host,
+      tls: {
+        protocol: r.probe.protocol,
+        cipher: r.probe.cipher,
+        group: r.probe.group,
+        hybridPq: r.probe.hybridPq,
+        pqOffered: r.probe.pqOffered,
+        certKey: r.probe.certKey,
+        certSignature: r.probe.certSigAlg,
+      },
+      postQuantum: r.probe.hybridPq
+        ? "offered and negotiated"
+        : r.probe.pqOffered
+          ? "not offered by the server"
+          : "not offered by this scanner (its OpenSSL is older than 3.5)",
+      score: r.score,
+      grade: r.grade,
+      ...(r.cached ? { cached: true } : {}),
+      health,
+    });
+  } catch (e) {
+    const se = e instanceof ScanError ? e : new ScanError("unreachable", String(e));
+    log(req, "scan", 422, performance.now() - t, { code: se.code, method: "GET" });
+    return Response.json(
+      { error: { code: se.code, message: se.message }, health },
+      { status: se.code === "blocked_target" ? 403 : se.code === "invalid_input" ? 400 : 422 },
+    );
+  }
+}

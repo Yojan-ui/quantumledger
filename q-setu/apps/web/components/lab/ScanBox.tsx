@@ -110,9 +110,11 @@ function WebResult({ r }: { r: WebScan }) {
             simple={
               r.tls.hybridPq
                 ? "Uses quantum-safe encryption for connections."
-                : "Doesn't use quantum-safe encryption yet: traffic recorded today could be read later."
+                : r.tls.pqOffered
+                  ? "Doesn't use quantum-safe encryption yet: traffic recorded today could be read later."
+                  : "Quantum-safe encryption couldn't be tested from this server (its OpenSSL is older than 3.5), so this shows the classical result."
             }
-            technical={`Key exchange: ${r.tls.group || "unknown"} (${r.tls.hybridPq ? "hybrid ML-KEM" : "classical"}) · ${r.tls.protocol ?? "?"}`}
+            technical={`Key exchange: ${r.tls.group || "unknown"} (${r.tls.hybridPq ? "hybrid ML-KEM" : "classical"}) · ${r.tls.protocol ?? "?"} · PQ ${r.tls.hybridPq ? "negotiated" : r.tls.pqOffered ? "not offered by server" : "not offered by scanner"}`}
           />
           <Row
             ok={/RSA|ECDSA|P-256|P-384/.test(r.tls.certKey) ? "warn" : true}
@@ -123,6 +125,12 @@ function WebResult({ r }: { r: WebScan }) {
             <Row key={p} ok="warn" simple={p} technical={p} />
           ))}
         </ul>
+        <p className="mt-3 font-mono text-label uppercase text-fg-3">
+          <Copy
+            simple={`Scanned by Node ${r.health.node}, OpenSSL ${r.health.openssl}${r.health.pqCapable ? " — can test quantum-safe" : " — too old to test quantum-safe"}`}
+            technical={`server: node ${r.health.node} · openssl ${r.health.openssl} · pqCapable ${r.health.pqCapable}`}
+          />
+        </p>
       </Panel>
       <Panel>
         <p className="font-mono text-label uppercase text-fg-3">

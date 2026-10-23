@@ -4,7 +4,14 @@ import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { scan } from "@qsetu/core";
 import { explain } from "@/lib/live/explain";
-import { hostFromInput, isPrivateAddress, probeTls, ScanError } from "@/lib/live/tls";
+import {
+  hostFromInput,
+  isPrivateAddress,
+  probeTls,
+  ScanError,
+  serverCrypto,
+  type ServerCrypto,
+} from "@/lib/live/tls";
 
 /**
  * The Lab's "Scan a site": a live, passive, read-only readiness check of public information. Always
@@ -60,8 +67,11 @@ export interface WebScan {
     cipher: string;
     group: string;
     hybridPq: boolean;
+    pqOffered: boolean;
     certKey: string;
   };
+  /** What this server's Node/OpenSSL can do (so the UI can say whether PQ is possible here). */
+  health: ServerCrypto;
   /** Absent when the home page couldn't be read (the step says why). */
   http?: {
     status: number;
@@ -283,8 +293,10 @@ export async function scanWebsite(target: string, steps: Step[] = []): Promise<W
       cipher: probe.cipher,
       group: probe.group,
       hybridPq: probe.hybridPq,
+      pqOffered: probe.pqOffered,
       certKey: probe.certKey,
     },
+    health: serverCrypto(),
     ...(http ? { http } : {}),
     httpsRedirect,
     readiness,
