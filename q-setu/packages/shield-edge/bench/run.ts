@@ -4,7 +4,8 @@
  *   1. Added latency on warm connections: p50 ≤ 2 ms, p95 ≤ 10 ms (edge vs the bare origin).
  *   2. Added latency with TLS session resumption (a new connection each request, resumed): reported.
  *   3. Extra server CPU for a full post-quantum handshake vs X25519 alone: ≤ 1.5 ms.
- *   4. The edge's own CPU at a steady 1,000 req/s (autocannon): ≤ 10% of one core.
+ *   4. The edge's own CPU at a steady 1,000 req/s (autocannon): ≤ 10% of one core (reported only
+ *      in the quick run on CI, where shared runners make it unreliable).
  *   5. Memory per idle TLS connection: reported.
  *
  * Origin: the legacy bank app (apps/legacy-bank), in its own process. Edge: Shield Edge, in its own
@@ -244,8 +245,12 @@ async function main() {
       note: "autocannon reports latency in whole milliseconds; the warm-connection test above has the sub-millisecond view.",
       edgeCpuShareOfOneCore: r3(share),
     };
-    if (share > 0.1)
-      failures.push(`edge CPU at 1,000 req/s ${Math.round(share * 100)}% of a core > 10%`);
+    // Shared CI runners can't measure a core's share reliably: there the quick run reports it only.
+    if (share > 0.1) {
+      const msg = `edge CPU at 1,000 req/s ${Math.round(share * 100)}% of a core > 10%`;
+      if (quick && process.env.CI) console.warn(`(reported, not enforced on CI) ${msg}`);
+      else failures.push(msg);
+    }
     if (r.errors + r.non2xx > 0) failures.push(`${r.errors + r.non2xx} errors under load`);
   }
 

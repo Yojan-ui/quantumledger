@@ -92,3 +92,26 @@ jobs:
           source-root: q-setu
           queries: security-extended
       - uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+
+  # The image Render builds (render.yaml): build it, start it, and check the site and the Lab respond.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build the Render image
+        run: docker build -t q-setu .
+      - name: Start it as Render does
+        run: |
+          docker run -d --name q-setu -p 3000:3000 \
+            -e QSETU_KMS_KEK="$(openssl rand -hex 32)" \
+            -e LAB_DEMO_ACCOUNTS=team@quantumledger.dev=team \
+            q-setu
+      - name: Health, home page and Lab sign-in respond
+        run: |
+          for i in $(seq 1 90); do curl -sf http://localhost:3000/api/health && break; sleep 2; done
+          curl -sf http://localhost:3000/api/health
+          curl -sf -o /dev/null -w "home %{http_code}\n" http://localhost:3000/
+          curl -sf -o /dev/null -w "lab sign-in %{http_code}\n" http://localhost:3000/lab/sign-in
+      - name: Container logs
+        if: always()
+        run: docker logs q-setu 2>&1 | tail -100
