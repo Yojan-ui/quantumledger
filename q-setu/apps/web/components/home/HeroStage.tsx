@@ -16,7 +16,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 import { generateVisitorKeys } from "@/components/home/visitor";
-import { waitForCanvas } from "@/components/hud/DiagnosticsApp";
+import { waitForCanvas } from "@/components/hud/waitForCanvas";
 import { LazyView } from "@/components/scenes/LazyView";
 import { ASSEMBLE_MS, BURST_MS, hero, setHero, useHero } from "@/lib/client/hero";
 import {
@@ -189,16 +189,14 @@ export function HeroStatus() {
   );
 }
 
-/** The big input that takes over once the loop has played: it runs the pipeline for real. */
+/** The big input under the headline: once the opening has played, it runs the pipeline for real. */
 export function HeroInput() {
-  const phase = useHero((h) => h.phase);
   const busy = usePipeline((s) => s.status.includes("running") || s.autoplay);
   const [v, setV] = useState("");
-  const ready = phase === "idle";
+  // Shown from the first paint; while the opening plays it reads "Running…" and waits.
   return (
     <form
-      className={`flex w-full max-w-text items-stretch border border-line-strong bg-base transition-opacity duration-700 ${ready ? "opacity-100" : "pointer-events-none opacity-0"}`}
-      aria-hidden={!ready}
+      className="flex w-full max-w-text items-stretch border border-line-strong bg-base"
       onSubmit={(e) => {
         e.preventDefault();
         const d = v.trim();
@@ -221,13 +219,11 @@ export function HeroInput() {
         placeholder="Enter any website"
         autoComplete="off"
         inputMode="url"
-        tabIndex={ready ? 0 : -1}
         className="h-14 min-w-0 flex-1 bg-transparent px-4 text-h3 text-fg placeholder:text-fg-3 focus:outline-none"
       />
       <button
         type="submit"
         disabled={busy || !v.trim()}
-        tabIndex={ready ? 0 : -1}
         className="shrink-0 border-l border-line-strong px-5 font-mono text-label uppercase text-fg transition-colors duration-150 hover:bg-raised disabled:opacity-40"
       >
         {busy ? "Running…" : "Diagnose"}

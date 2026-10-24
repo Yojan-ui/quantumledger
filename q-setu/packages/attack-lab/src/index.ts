@@ -58,3 +58,12 @@ export {
   type Weights,
 } from "./model/net";
 export { THREATS, threatForPattern, type Threat } from "./threats";
+export {
+  runBenchmark,
+  AGENT_SCENARIOS,
+  DEFAULT_CAP,
+  type BenchmarkReport,
+  type AgentResult,
+  type SideResult,
+} from "./benchmark/run";
+export { AGENTS } from "./benchmark/agents";

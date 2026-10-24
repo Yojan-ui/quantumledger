@@ -34,13 +34,30 @@ export class ScanError extends Error {
 }
 
 /** The scanner's hard limits. */
-export const SCAN_DEADLINE_MS = 5_000;
+export const SCAN_DEADLINE_MS = 8_000;
 export const SCAN_MAX_BYTES = 1_000_000;
 export const SCAN_PORTS = new Set(["", "443", "80"]);
 
 export const HYBRID_GROUP = "X25519MLKEM768";
 /** Offered in this order; OpenSSL ≥ 3.5 understands the hybrid group. */
 export const OFFERED_GROUPS = `${HYBRID_GROUP}:X25519:P-256:P-384`;
+/** Classical groups only: the fallback when this server's OpenSSL can't offer the hybrid group. */
+export const CLASSICAL_GROUPS = "X25519:P-256:P-384";
+
+export interface ServerCrypto {
+  node: string;
+  openssl: string;
+  /** True when the server's OpenSSL is ≥ 3.5, so it can offer the hybrid post-quantum group. */
+  pqCapable: boolean;
+}
+
+/** What this server's Node/OpenSSL can do — so a scan can say whether PQ is even possible here. */
+export function serverCrypto(): ServerCrypto {
+  const openssl = process.versions.openssl ?? "unknown";
+  const m = /^(\d+)\.(\d+)/.exec(openssl);
+  const pqCapable = !!m && (Number(m[1]) > 3 || (Number(m[1]) === 3 && Number(m[2]) >= 5));
+  return { node: process.versions.node, openssl, pqCapable };
+}
 
 export interface RawTls {
   protocol: string | null;
@@ -67,6 +84,8 @@ export interface TlsProbe {
   certSigAlg: string;
   issuer: string;
   validTo: string;
+  /** Did this scanner manage to offer the hybrid post-quantum group (OpenSSL ≥ 3.5)? */
+  pqOffered: boolean;
   /** Plain-text description, fed to the readiness scanner. */
   report: string;
 }
@@ -158,7 +177,12 @@ export function describeCertKey(c: RawTls["cert"]): string {
   return c.keyType;
 }
 
-export function describeTls(host: string, address: string, raw: RawTls): TlsProbe {
+export function describeTls(
+  host: string,
+  address: string,
+  raw: RawTls,
+  pqOffered = true,
+): TlsProbe {
   const cipher = raw.cipher.standardName ?? raw.cipher.name;
   const group =
     raw.ephemeral?.name ??
@@ -185,6 +209,7 @@ export function describeTls(host: string, address: string, raw: RawTls): TlsProb
     cipher,
     group,
     hybridPq,
+    pqOffered,
     certKey,
     certSigAlg,
     issuer:
@@ -201,7 +226,13 @@ export function describeTls(host: string, address: string, raw: RawTls): TlsProb
 
 export interface ProbeDeps {
   lookup?: (host: string) => Promise<{ address: string }[]>;
-  connect?: (address: string, servername: string, deadline: number) => Promise<RawTls>;
+  connect?: (
+    address: string,
+    servername: string,
+    deadline: number,
+    port?: number,
+    groups?: string,
+  ) => Promise<RawTls>;
 }
 
 const defaultLookup = async (host: string) => dnsLookup(host, { all: true, verbatim: true });
@@ -216,6 +247,7 @@ function defaultConnect(
   servername: string,
   deadline: number,
   port = 443,
+  groups: string = OFFERED_GROUPS,
 ): Promise<RawTls> {
   return new Promise((resolve, reject) => {
     const left = Math.max(1, deadline - Date.now());
@@ -238,7 +270,7 @@ function defaultConnect(
       {
         socket: raw,
         servername: isIP(servername) ? undefined : servername,
-        ecdhCurve: OFFERED_GROUPS,
+        ecdhCurve: groups,
         // We are describing the server, not trusting it.
         rejectUnauthorized: false,
       },
@@ -305,10 +337,36 @@ export async function probeTls(input: string, deps: ProbeDeps = {}): Promise<Tls
   const bad = addresses.find((a) => isPrivateAddress(a.address));
   if (bad) throw new ScanError("blocked_target", `${host} → ${bad.address}`);
   const address = addresses[0]!.address;
-  const raw = await (deps.connect ?? defaultConnect)(address, host, deadline).catch(
-    (e: unknown) => {
-      throw e instanceof ScanError ? e : new ScanError("unreachable", String(e));
-    },
-  );
-  return describeTls(host, address, raw);
+
+  // The scanner only offers the hybrid post-quantum group if its own OpenSSL is ≥ 3.5; on an older
+  // runtime it would throw, so we go straight to classical and report "post-quantum: not offered".
+  const canOfferPq = deps.connect ? true : serverCrypto().pqCapable;
+  const attempt = (groups: string) =>
+    (deps.connect ?? defaultConnect)(address, host, deadline, 443, groups);
+  const asScanError = (e: unknown) =>
+    e instanceof ScanError ? e : new ScanError("unreachable", String(e));
+
+  let pqOffered = canOfferPq;
+  let raw: RawTls;
+  try {
+    raw = await attempt(canOfferPq ? OFFERED_GROUPS : CLASSICAL_GROUPS);
+  } catch (first) {
+    const se = asScanError(first);
+    // A hard failure (timeout, too big, blocked) won't improve by retrying — report it as-is.
+    // Otherwise the handshake may have failed on the hybrid group, so retry with classical only.
+    if (
+      !canOfferPq ||
+      se.code === "timeout" ||
+      se.code === "too_large" ||
+      se.code === "blocked_target"
+    )
+      throw se;
+    try {
+      raw = await attempt(CLASSICAL_GROUPS);
+      pqOffered = false;
+    } catch (second) {
+      throw asScanError(second);
+    }
+  }
+  return describeTls(host, address, raw, pqOffered);
 }

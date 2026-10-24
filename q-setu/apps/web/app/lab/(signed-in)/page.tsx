@@ -6,8 +6,10 @@ import { AttackMapView } from "@/components/lab/AttackMapView";
 import { ago, EngineOffline, LabFrame, Score } from "@/components/lab/ui";
 import { Copy } from "@/components/ui/Copy";
 import { agoWords, modelNote, patternStory, shieldSentence, stopped } from "@/lib/lab/words";
+import { ScanBox } from "@/components/lab/ScanBox";
 import { ThreatNews } from "@/components/lab/ThreatNews";
-import { modelDetail, overviewFor, patternsFor, quantumSafe } from "@/lib/lab/data";
+import { SUGGESTED } from "@/lib/server/scan-service";
+import { modelDetail, overviewFor, patternsFor, quantumSafe, scansFor } from "@/lib/lab/data";
 import { labPage } from "@/lib/lab/page";
 
 export const dynamic = "force-dynamic";
@@ -25,11 +27,12 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
   const { user, scope, customers } = ctx;
   const team = user.role === "team";
   const inScope = scope.kind === "customer" ? [scope.customer] : customers;
-  const [o, patterns, qs, model] = await Promise.all([
+  const [o, patterns, qs, model, scans] = await Promise.all([
     overviewFor(scope),
     patternsFor(scope),
     quantumSafe(inScope),
     modelDetail().catch(() => undefined),
+    scansFor(scope, user).catch(() => []),
   ]);
   const qsParam = ctx.customerParam ? `?customer=${ctx.customerParam}` : "";
   const top = patterns.slice(0, 5);
@@ -71,7 +74,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
       <AutoRefresh seconds={10} />
 
       {user.role === "customer" && scope.kind === "customer" && (
-        <Panel className="mb-10 border-sig">
+        <Panel className="mb-15 border-sig">
           <p className="font-mono text-label uppercase text-sig">From the QuantumLedger team</p>
           <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-split">
             <p className="whitespace-pre-line text-body text-fg-2">
@@ -93,7 +96,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
 
       <section
         aria-label="Summary"
-        className="mb-10 rounded-lg border border-line bg-raised p-6 md:p-8"
+        className="mb-15 rounded-lg border border-line bg-raised p-6 md:p-8"
       >
         <p className="text-lead text-fg">
           <Copy
@@ -126,8 +129,46 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
         </p>
       </section>
 
+      <ScanBox suggested={SUGGESTED.slice(0, 3)} />
+
+      {scans.length > 0 && (
+        <section aria-labelledby="lab-your-scans" className="mb-15">
+          <h2 id="lab-your-scans" className="text-h3 font-medium text-fg">
+            <Copy
+              simple={team && scope.kind === "all" ? "Recent scans" : "Your scans"}
+              technical={`Saved scans (${scope.kind === "customer" ? scope.customer.id : "all workspaces"})`}
+            />
+          </h2>
+          <ul className="mt-4">
+            {scans.slice(0, 6).map((sc) => (
+              <li
+                key={sc.id}
+                className="flex flex-wrap items-baseline justify-between gap-3 border-t border-line py-3 text-small"
+              >
+                <span className="min-w-0 break-all text-fg">{sc.input}</span>
+                <span className="text-fg-2">
+                  {sc.kind === "error"
+                    ? (sc.result?.message ?? "Couldn't be checked")
+                    : sc.kind === "website"
+                      ? `Readiness ${sc.result?.readiness ?? "?"}/100`
+                      : sc.result?.spoofable === "protected"
+                        ? "Protected against spoofing"
+                        : sc.result?.spoofable === "partly"
+                          ? "Partly protected against spoofing"
+                          : "Not protected against spoofing"}
+                </span>
+                <span className="text-fg-3">
+                  {agoWords(sc.at)}
+                  {team ? ` · ${sc.by}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {mapIncidents.length > 0 && (
-        <div className="mb-10">
+        <div className="mb-15">
           <AttackMapView
             incidents={mapIncidents}
             patterns={patterns.map((p) => ({ id: p.id, name: p.name }))}
@@ -180,7 +221,7 @@ export default async function LabOverview({ searchParams }: { searchParams: SP }
         />
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mt-15 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel>
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="text-h3 font-medium text-fg">Top patterns</h2>

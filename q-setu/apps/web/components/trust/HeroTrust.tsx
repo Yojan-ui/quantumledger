@@ -49,7 +49,10 @@ function ByteTip() {
 export function HeroTrust() {
   return (
     <>
-      <p className="pointer-events-none absolute bottom-16 right-5 hidden max-w-[300px] text-right font-mono text-micro uppercase text-fg-3 md:right-8 lg:block">
+      <p
+        style={{ maxWidth: 300 }}
+        className="pointer-events-none absolute bottom-16 right-5 hidden text-right font-mono text-micro uppercase text-fg-3 md:right-8 lg:block"
+      >
         This pattern is your browser’s ML-KEM-768 public key, made just now. Nobody else sees this
         one.
       </p>

@@ -23,7 +23,7 @@ export function DemoSignIn({
             required
             autoComplete="email"
             className="h-10 rounded-sm border border-line-strong bg-raised px-3 text-body text-fg"
-            placeholder={accounts[0]?.email}
+            placeholder="you@yourcompany.com"
           />
         </label>
         <div>
@@ -31,16 +31,25 @@ export function DemoSignIn({
             Sign in
           </button>
         </div>
-        {error === "demo" && (
+        {(error === "email" || error === "demo") && (
           <p role="status" className="text-small text-danger">
-            That isn’t one of the demo accounts. Use an address below.
+            That doesn’t look like an email address. Check it and try again.
           </p>
         )}
+        {error === "engine" && (
+          <p role="status" className="text-small text-danger">
+            The Lab is still starting. Wait a few seconds and sign in again.
+          </p>
+        )}
+        <p className="text-small text-fg-3">
+          Any email address works. A new address gets its own empty workspace for its domain; no
+          email is sent.
+        </p>
       </form>
       <div className="mt-8 rounded-lg border border-line bg-raised p-6">
-        <p className="font-mono text-label uppercase text-kem">Demo mode</p>
+        <p className="font-mono text-label uppercase text-kem">Quick demo logins</p>
         <p className="mt-2 text-small text-fg-2">
-          No email is sent. Type one of these addresses, or pick one:
+          Seeded accounts with data already in them. Pick one:
         </p>
         <ul className="mt-4 flex flex-col gap-2">
           {accounts.map((a) => (

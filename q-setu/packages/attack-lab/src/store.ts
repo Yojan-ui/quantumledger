@@ -13,10 +13,12 @@ import type {
   EventRecord,
   Incident,
   IncidentRecord,
+  BenchmarkRecord,
   ModelRecord,
   SignedRecord,
 } from "./types";
 import type { ModelUpdate } from "./model/learn";
+import type { BenchmarkReport } from "./benchmark/run";
 
 export interface StoreOptions {
   signer: Signer;
@@ -62,6 +64,7 @@ export class EvidenceStore {
   private readonly incidents = new Map<string, Incident>();
   private readonly seals = new Map<string, IncidentRecord>();
   private readonly models: ModelRecord[] = [];
+  private readonly benchmarks: BenchmarkRecord[] = [];
   private readonly byIp = new Map<string, string>();
   private readonly bySession = new Map<string, string>();
   private readonly dirty = new Set<string>();
@@ -95,6 +98,7 @@ export class EvidenceStore {
     this.records.push(freeze(r));
     if (r.kind === "event") this.index(r as EventRecord);
     else if (r.kind === "model") this.models.push(r as ModelRecord);
+    else if (r.kind === "benchmark") this.benchmarks.push(r as BenchmarkRecord);
     else this.seals.set((r as IncidentRecord).body.id, r as IncidentRecord);
   }
 
@@ -231,6 +235,19 @@ export class EvidenceStore {
   /** Signed model updates, oldest first. */
   modelRecords(): ModelRecord[] {
     return [...this.models];
+  }
+
+  /** Signs a resilience benchmark report into the chain. */
+  appendBenchmark(report: BenchmarkReport): BenchmarkRecord {
+    const rec = this.write("benchmark", report) as BenchmarkRecord;
+    this.benchmarks.push(rec);
+    for (const l of this.listeners) l();
+    return rec;
+  }
+
+  /** Signed benchmark reports, oldest first. */
+  benchmarkRecords(): BenchmarkRecord[] {
+    return [...this.benchmarks];
   }
 
   /** One record exactly as stored and signed. */

@@ -61,6 +61,7 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
   });
   const ptr = useRef({ x: 0, y: 0, down: false, lastX: 0, lastT: 0, upAt: 0, reframeAt: 0 });
   /** Scroll velocity (px/s), smoothed; the globe spins faster while the page scrolls. */
+  const wake = useRef<{ at: number; pose: string }>({ at: 0, pose: "" });
   const scroll = useRef({ y: 0, t: 0, v: 0, boost: 0 });
   const reduce = useRef(false);
   const springs = useRef({
@@ -197,7 +198,20 @@ export function Rig({ globe }: { globe: React.RefObject<THREE.Group | null> }) {
       sc.v > 0 ? 6 : 1.5,
       dt,
     );
-    if (!reduce.current && p.spin > 0.005) s.spin = wrap(s.spin + (p.spin + sc.boost) * dt);
+    // The slow auto-spin settles while the reader is reading: it runs for a few seconds after the
+    // page's shot changes, the page scrolls or the globe is touched, then eases to a stop.
+    const nowMs = performance.now();
+    const w = wake.current;
+    // The shot, as a key (the pose object is reused every frame; its held-shot drift is ignored).
+    const poseKey = `${p.dist.toFixed(2)}|${Math.round(p.lat)}|${Math.round(p.spin * 100)}`;
+    if (w.pose !== poseKey || sc.v > 0 || ptr.current.down) {
+      w.pose = poseKey;
+      w.at = nowMs;
+    }
+    const idle = (nowMs - w.at) / 1000;
+    const awake = idle < 6 ? 1 : idle > 9 ? 0 : 1 - (idle - 6) / 3;
+    const ease = awake * awake * (3 - 2 * awake);
+    if (!reduce.current && p.spin > 0.005) s.spin = wrap(s.spin + (p.spin * ease + sc.boost) * dt);
     else s.spin = damp(s.spin, 0, 1.6, dt);
     if (!ptr.current.down) {
       const now = performance.now();

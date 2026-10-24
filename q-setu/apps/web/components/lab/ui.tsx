@@ -4,7 +4,7 @@ import type { LabUser } from "@/lib/lab/auth";
 import type { Phase } from "@/lib/lab/types";
 import { Copy } from "@/components/ui/Copy";
 import { ACTION_WORDS, danger, PHASE_WORDS } from "@/lib/lab/words";
-import { AutoRefresh, LabTabs, ScopeSelect, SignOut } from "./client";
+import { AutoRefresh, LabTabs, LabWorkflow, ScopeSelect, SignOut } from "./client";
 
 /** The Lab's page frame, inside the site's own nav and footer. */
 export function LabFrame({
@@ -38,6 +38,7 @@ export function LabFrame({
           <SignOut />
         </div>
       </div>
+      <LabWorkflow />
       <div className="mt-10 flex flex-wrap items-end justify-between gap-6">
         <div>
           <Label>Lab · {scopeName}</Label>
@@ -77,12 +78,13 @@ export const PHASE: Record<Phase, { label: string; tone: Tone }> = {
   blocked: { label: "refused", tone: "ok" },
 };
 
-type Tone = "ok" | "warn" | "danger" | "sig" | "fg-2" | "fg-3";
+type Tone = "ok" | "warn" | "danger" | "sig" | "kem" | "fg-2" | "fg-3";
 const TEXT: Record<Tone, string> = {
   ok: "text-ok",
   warn: "text-warn",
   danger: "text-danger",
   sig: "text-sig",
+  kem: "text-kem",
   "fg-2": "text-fg-2",
   "fg-3": "text-fg-3",
 };
@@ -91,6 +93,7 @@ const BG: Record<Tone, string> = {
   warn: "bg-warn",
   danger: "bg-danger",
   sig: "bg-sig",
+  kem: "bg-kem",
   "fg-2": "bg-fg-2",
   "fg-3": "bg-fg-3",
 };

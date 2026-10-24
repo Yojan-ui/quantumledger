@@ -106,3 +106,30 @@ export async function quantumSafe(
 export async function modelDetail(): Promise<ModelDetail> {
   return engine<ModelDetail>("/api/model");
 }
+
+export interface SavedScanRow {
+  id: string;
+  customerId: string;
+  at: number;
+  by: string;
+  input: string;
+  kind: "website" | "email" | "error";
+  result: {
+    readiness?: number;
+    host?: string;
+    domain?: string;
+    spoofable?: string;
+    plain?: string;
+    message?: string;
+  } | null;
+}
+
+/** Saved scans in the scope: a customer's own workspace, or (team) every workspace. */
+export async function scansFor(s: Scope, user: LabUser): Promise<SavedScanRow[]> {
+  const id = s.kind === "customer" ? s.customer.id : user.role === "team" ? undefined : "none";
+  return (
+    await engine<{ scans: SavedScanRow[] }>(
+      `/api/scans${id ? `?customer=${encodeURIComponent(id)}` : ""}`,
+    )
+  ).scans;
+}

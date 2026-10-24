@@ -4,6 +4,7 @@ import { Chapter, ChapterHead, ChapterIndex } from "@/components/home/ChapterInd
 import { DeviceSeal } from "@/components/home/DeviceSeal";
 import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero, JoinLive } from "@/components/home/Hero";
+import { HomeWorkflow } from "@/components/home/HomeWorkflow";
 import { Impact } from "@/components/home/Impact";
 import { IndexSection } from "@/components/home/IndexSection";
 import { ScanSite } from "@/components/home/ScanSite";
@@ -37,6 +38,7 @@ export default function Home() {
       <main id="main">
         <Chapter id="problem" overlay>
           <Hero />
+          <HomeWorkflow />
           <ChapterHead id="problem" className="lg:hidden" />
           <ZeroTrustStrip />
           <Analogy index="1.2" />

@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 import { LazyView } from "@/components/scenes/LazyView";
 import { actions, autoplay, EXAMPLE_DOMAIN, getPipeline, usePipeline } from "@/lib/client/pipeline";
 import { HudShell } from "./HudShell";
+import { waitForCanvas } from "./waitForCanvas";
 
 const PipelineStage = dynamic(
   () =>
@@ -33,17 +34,7 @@ function Stage() {
   );
 }
 
-export function waitForCanvas(ms = 5000): Promise<void> {
-  return new Promise((resolve) => {
-    const t0 = performance.now();
-    const check = () => {
-      if (document.querySelector("canvas:not([aria-hidden])") || performance.now() - t0 > ms)
-        resolve();
-      else setTimeout(check, 100);
-    };
-    check();
-  });
-}
+export { waitForCanvas };
 
 export function DiagnosticsApp({
   compact = false,

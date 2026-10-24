@@ -5,7 +5,7 @@
  * it. Every recorded incident is a stream of particles flying in from the edge, one burst per step
  * Shield saw, coloured by its pattern. Steps Shield refused hit the ring and break apart; steps it
  * let through pass inside, dimmer. All of it from the real incident data, replayed from the start
- * whenever a new incident arrives.
+ * whenever a new incident arrives. It plays once and then rests: nothing loops while you read.
  *
  * One point cloud, animated on the GPU (no per-frame allocation). The quality ladder
  * (lib/client/gfx) sheds particles per step as fps falls. Reduced motion: one still frame.
@@ -22,8 +22,8 @@ import { toneOf, type MapIncident, type Tone } from "./map-data";
 const EDGE = 3.6;
 const RING = 1.35;
 const CORE = 0.42;
-const TRAVEL = 1.5;
-const BREAK = 0.9;
+const TRAVEL = 2.4;
+const BREAK = 1.3;
 /** Particles per step at each quality step (the ladder sheds these first). */
 const PER_STEP = [7, 5, 3, 2];
 const MAX_POINTS = 2600;
@@ -76,7 +76,7 @@ const staticVertex = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
     gl_PointSize = uPR * (1.2 + aSeed) / -mv.z;
-    vA = (0.35 + 0.35 * aSeed) * (1.0 + uPulse * 0.6 * sin(uTime * 1.6 + aSeed * 6.283));
+    vA = (0.35 + 0.35 * aSeed) * (1.0 + uPulse * 0.6 * sin(uTime * 0.8 + aSeed * 6.283));
   }
 `;
 const staticFragment = /* glsl */ `
@@ -211,7 +211,6 @@ export default function AttackMap({
       uniforms: { uTime: { value: 0 }, uPeriod: { value: 10 }, uPR: { value: 1 } },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
     });
     const glow = (color: THREE.Color, pulse: number) =>
       new THREE.ShaderMaterial({
@@ -226,7 +225,7 @@ export default function AttackMap({
         transparent: true,
         depthWrite: false,
       });
-    return { stream, ring: glow(c.ok, 0.4), core: glow(c.kem, 1) };
+    return { stream, ring: glow(c.ok, 0.25), core: glow(c.kem, 0.35) };
   }, [c]);
 
   // A new incident (or new data): replay every stream from the edge.
@@ -242,12 +241,14 @@ export default function AttackMap({
   useFrame(({ gl }, dt) => {
     if (!active) return;
     const pr = gl.getPixelRatio() * 14;
-    if (!reduce) time.current += Math.min(dt, 0.1);
+    // Plays the streams once, then rests on the settled frame (ring and core, still); a new
+    // incident replays it.
+    if (!reduce && time.current < period * 0.999)
+      time.current = Math.min(period * 0.999, time.current + Math.min(dt, 0.1));
     for (const m of [mats.stream, mats.ring, mats.core]) {
       m.uniforms.uPR!.value = pr;
       m.uniforms.uTime!.value = time.current;
     }
-    if (group.current && !reduce) group.current.rotation.z += dt * 0.03;
   });
 
   return (

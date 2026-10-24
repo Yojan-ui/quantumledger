@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@10.34.6",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "concurrently -k -n web,legacy,shield-srv,shield-cli -c cyan,gray,yellow,magenta \"pnpm --filter @qsetu/web dev\" \"pnpm --filter @qsetu/legacy-bank dev\" \"pnpm dev:shield-server\" \"pnpm dev:shield-client\"",

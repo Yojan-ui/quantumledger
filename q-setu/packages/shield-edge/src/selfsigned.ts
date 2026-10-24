@@ -47,7 +47,8 @@ export function selfSignedCert(names: string[], days = 30): { key: string; cert:
   const { privateKey, publicKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
   const spki = publicKey.export({ type: "spki", format: "der" });
   const serial = randomBytes(16);
-  serial[0]! &= 0x7f; // positive INTEGER
+  // Positive and minimal: DER rejects a leading 0x00 (OpenSSL: "illegal padding"), so the top byte is 0x40–0x7f.
+  serial[0] = (serial[0]! & 0x3f) | 0x40;
   const name = seq(set(seq(oid("2.5.4.3"), utf8(names[0]!))));
   const now = Date.now();
   const san = seq(

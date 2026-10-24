@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * A sealed headline's visible layer. Until the browser holds its ciphertext the text is blank; then
+ * A sealed headline's visible layer. Until the browser holds its ciphertext it shows the plain words; then
  * it shows the real AES-256-GCM ciphertext (hex, Geist Mono); once it scrolls in, the keys worker
  * verifies the site's ML-DSA-65 signature and decrypts it, and the hex resolves into the decrypted
  * words over ~400 ms with a faint --kem flash. A failed check leaves it sealed, in --danger.
@@ -58,7 +58,8 @@ export function useSealed(text: string, visible: boolean): SealView {
   }, [seal, hex, visible, text, reduce]);
 
   if (seal === "off" || seal === "plain") return { mode: "plain" };
-  if (seal === "pending" || !hex) return { mode: "hidden" };
+  // In flight: the plain words show at once; the ciphertext and its resolve play over them after.
+  if (seal === "pending" || !hex) return { mode: "plain" };
   return view ?? { mode: "cipher", hex };
 }
 
@@ -75,7 +76,7 @@ const jitter = (i: number) => {
 export function sealedLine(line: string, offset: number, total: number, v: SealView): ReactNode {
   if (v.mode === "plain") return line;
   if (v.mode === "open") return v.text.slice(offset, offset + line.length) || line;
-  if (v.mode === "hidden") return <span className="text-transparent">{line}</span>;
+  if (v.mode === "hidden") return <span style={{ color: "transparent" }}>{line}</span>;
   const hex = v.hex;
   const runs: { hex: boolean; s: string }[] = [];
   for (let j = 0; j < line.length; j++) {
