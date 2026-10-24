@@ -1,7 +1,8 @@
 /**
- * The threat model: a small neural network in plain TypeScript. 13 inputs (./features), one hidden
+ * The threat model: a small neural network in plain TypeScript. 16 inputs (./features), one hidden
  * layer of 8 tanh units, one sigmoid output: the risk that a request is part of an attack. Trained
- * with full-batch gradient descent on standardised features, class-balanced, with L2 weight decay.
+ * with mini-batch gradient descent (momentum) on standardised features, class-balanced, with L2
+ * weight decay.
  * Tiny on purpose: training on the Lab's data takes milliseconds and scoring is a few hundred
  * multiplications.
  *
@@ -38,8 +39,15 @@ export interface Metrics {
   accuracy: number;
   heldOut: number;
   samples: number;
-  /** Incidents (attacks) the training data came from. */
+  /** Incidents (attacks) recorded by this Lab that the training data came from. */
   attacks: number;
+  /** Labelled attack requests from the public dataset (CSIC 2010) in the training data. */
+  datasetAttacks: number;
+  datasetNormal: number;
+  /** Held-back accuracy on each source separately. */
+  labAccuracy: number | null;
+  datasetAccuracy: number | null;
+  dataset: string;
   /** True when the data was trimmed to the most recent MAX_SAMPLES. */
   capped: boolean;
   ms: number;
@@ -119,38 +127,61 @@ export function fit(
   const b1 = new Array(HIDDEN).fill(0);
   const w2 = Array.from({ length: HIDDEN }, () => (r() - 0.5) * 0.6);
   let b2 = 0;
-  const lr = opts.lr ?? 0.3;
-  const l2 = opts.l2 ?? 1e-3;
+  const lr = opts.lr ?? 0.05;
+  const l2 = opts.l2 ?? 1e-4;
+  const batch = 64;
+  const mom = 0.9;
+  const v1 = w1.map((row) => row.map(() => 0));
+  const vb1 = new Array(HIDDEN).fill(0);
+  const v2 = new Array(HIDDEN).fill(0);
+  let vb2 = 0;
   const a = new Array(HIDDEN).fill(0);
-  for (let ep = 0; ep < (opts.epochs ?? 300); ep++) {
-    const g1 = w1.map((row) => row.map(() => 0));
-    const gb1 = new Array(HIDDEN).fill(0);
-    const g2 = new Array(HIDDEN).fill(0);
-    let gb2 = 0;
-    for (let k = 0; k < n; k++) {
-      const x = X[k]!;
-      let z = b2;
-      for (let h = 0; h < HIDDEN; h++) {
-        let s = b1[h];
-        for (let i = 0; i < D; i++) s += w1[h]![i]! * x[i]!;
-        a[h] = Math.tanh(s);
-        z += w2[h]! * a[h];
-      }
-      const d = (sigmoid(z) - Y[k]!) * cw[k]!;
-      gb2 += d;
-      for (let h = 0; h < HIDDEN; h++) {
-        g2[h] += d * a[h];
-        const dh = d * w2[h]! * (1 - a[h] * a[h]);
-        gb1[h] += dh;
-        for (let i = 0; i < D; i++) g1[h]![i]! += dh * x[i]!;
-      }
+  const order = Array.from({ length: n }, (_, i) => i);
+  // Mini-batch gradient descent with momentum: a few dozen passes over the data are enough.
+  for (let ep = 0; ep < (opts.epochs ?? 80); ep++) {
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [order[i], order[j]] = [order[j]!, order[i]!];
     }
-    for (let h = 0; h < HIDDEN; h++) {
-      w2[h] = w2[h]! - lr * (g2[h] / n + l2 * w2[h]!);
-      b1[h] -= (lr * gb1[h]) / n;
-      for (let i = 0; i < D; i++) w1[h]![i]! -= lr * (g1[h]![i]! / n + l2 * w1[h]![i]!);
+    for (let start = 0; start < n; start += batch) {
+      const end = Math.min(n, start + batch);
+      const m = end - start;
+      const g1 = w1.map((row) => row.map(() => 0));
+      const gb1 = new Array(HIDDEN).fill(0);
+      const g2 = new Array(HIDDEN).fill(0);
+      let gb2 = 0;
+      for (let q = start; q < end; q++) {
+        const k = order[q]!;
+        const x = X[k]!;
+        let z = b2;
+        for (let h = 0; h < HIDDEN; h++) {
+          let sum = b1[h];
+          for (let i = 0; i < D; i++) sum += w1[h]![i]! * x[i]!;
+          a[h] = Math.tanh(sum);
+          z += w2[h]! * a[h];
+        }
+        const d = (sigmoid(z) - Y[k]!) * cw[k]!;
+        gb2 += d;
+        for (let h = 0; h < HIDDEN; h++) {
+          g2[h] += d * a[h];
+          const dh = d * w2[h]! * (1 - a[h] * a[h]);
+          gb1[h] += dh;
+          for (let i = 0; i < D; i++) g1[h]![i]! += dh * x[i]!;
+        }
+      }
+      for (let h = 0; h < HIDDEN; h++) {
+        v2[h] = mom * v2[h] - lr * (g2[h] / m + l2 * w2[h]!);
+        w2[h] = w2[h]! + v2[h];
+        vb1[h] = mom * vb1[h] - (lr * gb1[h]) / m;
+        b1[h] += vb1[h];
+        for (let i = 0; i < D; i++) {
+          v1[h]![i] = mom * v1[h]![i]! - lr * (g1[h]![i]! / m + l2 * w1[h]![i]!);
+          w1[h]![i] = w1[h]![i]! + v1[h]![i]!;
+        }
+      }
+      vb2 = mom * vb2 - (lr * gb2) / m;
+      b2 += vb2;
     }
-    b2 -= (lr * gb2) / n;
   }
   return { mean, std, w1, b1, w2, b2 };
 }
@@ -207,6 +238,16 @@ export function reasonText(f: FeatureName, x: Features, facts: Facts, up: boolea
       return up ? "used a bait API key we planted" : "no bait key used";
     case "apiWrites":
       return up ? "sent data to the API" : "only read pages";
+    case "pathEntropy":
+      return up ? "an unusually random-looking web address" : "an ordinary-looking web address";
+    case "payloadLength":
+      return up
+        ? `an unusually long request (${facts.length} characters)`
+        : "a short, ordinary request";
+    case "injectionChars":
+      return up
+        ? "code-like characters in the request (quotes, <script>, database commands)"
+        : "no code-like characters";
   }
 }
 

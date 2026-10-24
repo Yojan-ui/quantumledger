@@ -155,6 +155,14 @@ function useNodeTraffic(sites: string[]) {
   }, [key]);
 }
 
+/** The page's "How it works" strip (Simple / Technical). */
+const WORKFLOW = [
+  { simple: "Find what's exposed", technical: "Survey harvestable nodes" },
+  { simple: "Pick a system", technical: "Target a system" },
+  { simple: "Add the adapter", technical: "Integrate the adapter" },
+  { simple: "It's quantum-safe", technical: "Quantum-safe (sealed)" },
+];
+
 export function DeployDemo() {
   const [sector, setSector] = useState<SectorId>("fintech");
   const [adapter, setAdapter] = useState<AdapterId>("web");
@@ -453,6 +461,7 @@ export function DeployDemo() {
   return (
     <DemoShell
       title="Demo 2 · Deploy anywhere"
+      workflow={{ steps: WORKFLOW, current: director.state.shot.step ?? 0 }}
       caption="Pick a system and deploy its QuantumLedger adapter for real. Grey nodes are harvestable today; sealed nodes turn cyan."
       controls={
         <Button onClick={() => film.to(shots.length - 1)} disabled={running || reel.busy}>

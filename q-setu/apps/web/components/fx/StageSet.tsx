@@ -74,7 +74,7 @@ export function StageSet({
           far={4}
           opacity={0.6}
           resolution={256}
-          color="#000000"
+          color="black"
         />
       )}
       {cone && (

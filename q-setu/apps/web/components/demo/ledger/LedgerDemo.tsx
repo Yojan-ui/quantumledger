@@ -126,6 +126,14 @@ async function call<T>(url: string, body?: unknown): Promise<T> {
  * Demo 4: the Proof Chain. Verify the whole chain, then edit entry #42 directly in SQLite (the way an
  * insider with database access would) and verify again: the chain breaks exactly there, and says why.
  */
+/** The page's "How it works" strip (Simple / Technical). */
+const WORKFLOW = [
+  { simple: "Each event is signed into a chain", technical: "Append (SHA3-256 + ML-DSA-65)" },
+  { simple: "Anyone can check the chain", technical: "Verify" },
+  { simple: "Someone edits a record and it's caught", technical: "Tamper → detect" },
+  { simple: "The chain is restored", technical: "Restore" },
+];
+
 export function LedgerDemo() {
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [count, setCount] = useState(0);
@@ -327,6 +335,10 @@ export function LedgerDemo() {
   return (
     <DemoShell
       title="Demo 4 · Proof Chain"
+      workflow={{
+        steps: WORKFLOW,
+        current: ([0, 1, 2, 2, 3] as number[])[director.state.shot.step ?? 0] ?? 0,
+      }}
       caption="An append-only audit log: each entry is hash-chained with SHA3-256 and signed with ML-DSA-65. Edit one row in the database and see verification pinpoint it."
       controls={
         <>

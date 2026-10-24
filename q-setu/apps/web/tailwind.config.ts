@@ -155,7 +155,8 @@ export default {
         "mask-up": "mask-up var(--dur-reveal) var(--ease) both",
         "tick-in": "tick-in var(--dur-ui) var(--ease) both",
         uncover: "uncover var(--dur-reveal) var(--ease) both",
-        live: "live 2s var(--ease) infinite",
+        // A few pulses when it appears, then still (nothing loops while the reader reads).
+        live: "live 2s var(--ease) 3",
         blink: "blink 1s steps(1) infinite",
         ring: "ring var(--dur-reveal) var(--ease) both",
         skeleton: "skeleton 1.4s var(--ease) infinite",

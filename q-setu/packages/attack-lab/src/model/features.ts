@@ -21,6 +21,9 @@ export const FEATURES = [
   "sensitiveRoutes",
   "canaryTouched",
   "apiWrites",
+  "pathEntropy",
+  "payloadLength",
+  "injectionChars",
 ] as const;
 export type FeatureName = (typeof FEATURES)[number];
 export type Features = Record<FeatureName, number>;
@@ -34,6 +37,50 @@ export interface Facts {
   evenness: number;
   client: AttackEvent["client"];
   route: string;
+  /** Characters in the request line (path + query) and body. */
+  length: number;
+}
+
+/**
+ * The request's shape, from its address and body: numbers only (the text itself is not kept).
+ * Live requests give path, query and the declared body length; the dataset gives the body too.
+ */
+export interface Shape {
+  /** Shannon entropy of the decoded path, query and body, in bits per character. */
+  entropy: number;
+  length: number;
+  /** Share of characters typical of injected code: quotes, angle brackets, semicolons, comments. */
+  odd: number;
+}
+
+const decode = (s: string) => {
+  let out = s.replace(/\+/g, " ");
+  // Twice: attack strings are often double-encoded.
+  for (let i = 0; i < 2; i++)
+    try {
+      out = decodeURIComponent(out);
+    } catch {
+      break;
+    }
+  return out;
+};
+
+export function requestShape(pathAndQuery: string, body = "", bodyLength = body.length): Shape {
+  const text = decode(pathAndQuery) + (body ? decode(body) : "");
+  const counts = new Map<string, number>();
+  for (const ch of text) counts.set(ch, (counts.get(ch) ?? 0) + 1);
+  let entropy = 0;
+  for (const n of counts.values()) {
+    const p = n / Math.max(1, text.length);
+    entropy -= p * Math.log2(p);
+  }
+  const odd = (text.match(/['"<>;`()]|--|\/\*|\b(select|union|script|drop|insert|exec)\b/gi) ?? [])
+    .length;
+  return {
+    entropy,
+    length: pathAndQuery.length + bodyLength,
+    odd: odd / Math.max(1, text.length / 10),
+  };
 }
 
 /** Plain and technical descriptions, for the Threat model page. */
@@ -92,6 +139,19 @@ export const FEATURE_DOCS: Record<FeatureName, { simple: string; technical: stri
     simple: "Whether it's sending data to the API (like payments)",
     technical: "Non-GET request to /api/",
   },
+  pathEntropy: {
+    simple: "How random the web address looks",
+    technical: "Shannon entropy of decoded path + query + body, bits/char (÷ 6)",
+  },
+  payloadLength: {
+    simple: "Whether the request is unusually long",
+    technical: "Request line + body length, log-scaled (log(1+n) / log(2001))",
+  },
+  injectionChars: {
+    simple: "Whether it carries code-like characters (quotes, <script>, database commands)",
+    technical:
+      "Injection markers per 10 characters: quotes, < > ; ( ) `, --, /*, SQL/script keywords",
+  },
 };
 
 const AUTOMATION = new Set(["script", "headless", "ai-agent", "none", "other"]);
@@ -144,6 +204,7 @@ export class FeatureTracker {
       sensitiveRoutes: rc === "secrets" || rc === "admin" ? 1 : 0,
       canaryTouched: e.types.includes("canary") || e.route.includes("[canary]") ? 1 : 0,
       apiWrites: e.method !== "GET" && e.method !== "HEAD" && e.route.startsWith("/api/") ? 1 : 0,
+      ...shapeFeatures(e.shape ?? requestShape(e.route)),
     };
     all.push({ at: e.at, route: e.route, status: e.status });
     this.hist.set(key, all.slice(-60));
@@ -161,9 +222,68 @@ export class FeatureTracker {
         evenness,
         client: e.client,
         route: e.route,
+        length: (e.shape ?? requestShape(e.route)).length,
       },
     };
   }
 }
 
 export const toVector = (x: Features) => FEATURES.map((f) => x[f]);
+
+function shapeFeatures(sh: Shape) {
+  return {
+    pathEntropy: Math.min(1, sh.entropy / 6),
+    payloadLength: Math.log1p(sh.length) / Math.log(2001),
+    injectionChars: Math.min(1, sh.odd),
+  };
+}
+
+/** One labelled dataset request (CSIC 2010) as features. */
+export interface DatasetRow {
+  method: string;
+  path: string;
+  query: string;
+  body: string;
+  label: 0 | 1;
+}
+
+/**
+ * Features for a dataset request. The dataset has no timing or source history, so the behaviour
+ * features take the values of one ordinary browser request; what it teaches is the content side
+ * (address randomness, length, code-like characters).
+ */
+export function datasetFeatures(r: DatasetRow): { x: Features; facts: Facts } {
+  const pq = r.query ? `${r.path}?${r.query}` : r.path;
+  const sh = requestShape(pq, r.body);
+  const rc = routeClass(r.path);
+  const x: Features = {
+    requestRate: Math.log1p(1) / Math.log(151),
+    distinctRoutes: Math.log1p(1) / Math.log(121),
+    errorRatio: 0,
+    timingEvenness: 0,
+    fastBurst: 0,
+    headerMismatch: 0,
+    automationClient: 0,
+    browserCheck: 0,
+    tlsFingerprintAge: 0,
+    honeypotTouched: 0,
+    sensitiveRoutes: rc === "secrets" || rc === "admin" ? 1 : 0,
+    canaryTouched: 0,
+    apiWrites: 0,
+    ...shapeFeatures(sh),
+  };
+  return {
+    x,
+    facts: {
+      requests10s: 1,
+      routes60s: 1,
+      errors60s: 0,
+      seen60s: 0,
+      minGapMs: 60_000,
+      evenness: 0,
+      client: "browser",
+      route: r.path,
+      length: sh.length,
+    },
+  };
+}

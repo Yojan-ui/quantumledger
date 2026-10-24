@@ -28,7 +28,7 @@ import { Mosca } from "./pipeline/Mosca";
 import { Radar } from "./pipeline/Radar";
 import { Swarm } from "./pipeline/Swarm";
 import { tap, Vault, type Taps } from "./pipeline/Vault";
-import { hero as heroState } from "@/lib/client/hero";
+import { hero as heroState, useHero } from "@/lib/client/hero";
 import { Thicken } from "@/components/scenes/Thicken";
 import { Crystal } from "./pipeline/Crystal";
 import { KeyField } from "./pipeline/KeyField";
@@ -121,7 +121,10 @@ export default function PipelineStage({
   const pick = (id: string) => setPinnedId((p) => (p === id ? null : id));
   const lit = (id: string) => hover === id || pinned === id;
   const mobile = useMemo(() => typeof window !== "undefined" && window.innerWidth < 768, []);
-  const count = mobile ? 1500 : 3000;
+  // Fewer, calmer particles: the shape reads better than the quantity.
+  const count = mobile ? 1000 : 2000;
+  // Once the hero's opening has played, the camera stops swaying: a settled end.
+  const heroPhase = useHero((h) => h.phase);
 
   // The camera follows the pipeline's stage (shot 0 is standby).
   useEffect(() => {
@@ -198,7 +201,7 @@ export default function PipelineStage({
       <DirectorCamera
         state={director.state}
         onSettled={director.onSettled}
-        drift={0.02}
+        drift={hero && heroPhase === "idle" ? 0 : 0.02}
         range={[1.2, 1.6]}
         orbit={orbitEl}
         zoom={!hero}
@@ -217,7 +220,7 @@ export default function PipelineStage({
       <Background look={look} progress={doneCount / 5} />
       <Swarm look={look} count={count} intro={hero} />
       <Crystal look={look} />
-      <Dust color={c.text3} />
+      <Dust color={c.text3} count={600} />
       {/* Reflections for the glass blocks and the metal drum, and a soft shadow on the floor. */}
       <Studio rim={c.kem} lights={false} floorY={-2.95} shadowScale={14} />
       <Link look={look} onCopy={() => tap(taps.current, performance.now())} />

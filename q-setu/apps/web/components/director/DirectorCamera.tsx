@@ -22,6 +22,8 @@ import type { DirectorState } from "./types";
 
 const v = (a: [number, number, number]) => new THREE.Vector3(...a);
 
+const fdtDrift = (dt: number) => Math.min(dt, 0.1);
+
 export function DirectorCamera({
   state,
   onSettled,
@@ -193,6 +195,7 @@ export function DirectorCamera({
     else c.clearViewOffset();
   }, [shiftX, shiftY, size.width, size.height]);
   const off = useRef(new THREE.Vector3());
+  const driftNow = useRef(drift);
   const swayV = useRef(new THREE.Vector3());
   const axis = useRef(new THREE.Vector3());
   useFrame(({ clock }, dt) => {
@@ -217,10 +220,13 @@ export function DirectorCamera({
     const d = base.current.length();
     // The hold drift (no allocation per frame: one reused vector).
     const sway = swayV.current;
-    if (settled.current && !state.reduce)
+    // `drift` may change (0 once a scene has settled for good): ease the amplitude, never jump.
+    driftNow.current += (drift - driftNow.current) * (1 - Math.exp(-fdtDrift(dt) * 0.6));
+    const amp = driftNow.current;
+    if (settled.current && !state.reduce && amp > 1e-4)
       sway.set(
-        Math.sin((clock.elapsedTime * 2 * Math.PI) / 8) * drift * d,
-        Math.sin((clock.elapsedTime * 2 * Math.PI) / 11) * drift * d * 0.5,
+        Math.sin((clock.elapsedTime * 2 * Math.PI) / 8) * amp * d,
+        Math.sin((clock.elapsedTime * 2 * Math.PI) / 11) * amp * d * 0.5,
         0,
       );
     else sway.set(0, 0, 0);

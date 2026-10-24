@@ -76,13 +76,17 @@ export function Dust({
     [color],
   );
   const pts = useRef<THREE.Points>(null);
+  const born = useRef(typeof performance !== "undefined" ? performance.now() : 0);
   const reduce = useMemo(
     () => typeof window !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches,
     [],
   );
   useFrame(({ gl }, dt) => {
     if (pts.current) pts.current.visible = gfx.quality < 2;
-    if (!reduce) mat.uniforms.uTime!.value += dt;
+    // Drifts for a few seconds after it appears, then settles (nothing loops behind the reading).
+    const age = (performance.now() - born.current) / 1000;
+    const drift = age < 8 ? 1 : Math.max(0, 1 - (age - 8) / 4);
+    if (!reduce && drift > 0) mat.uniforms.uTime!.value += dt * drift;
     mat.uniforms.uPR!.value = gl.getPixelRatio() * 10;
   });
   return <points ref={pts} geometry={geo} material={mat} frustumCulled={false} renderOrder={-3} />;

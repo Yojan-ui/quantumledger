@@ -112,6 +112,14 @@ interface Row {
   qsetu?: HarvestRecord;
 }
 
+/** The page's "How it works" strip (Simple / Technical). */
+const WORKFLOW = [
+  { simple: "An attacker records traffic today", technical: "Record (harvest now)" },
+  { simple: "Years pass", technical: "Wait" },
+  { simple: "A quantum computer arrives", technical: "Q-Day: classical keys break" },
+  { simple: "See what stayed sealed", technical: "Aftermath: ML-KEM records sealed" },
+];
+
 export function QDayDemo() {
   const [sector, setSector] = useState<SectorId>("fintech");
   const [year, setYear] = useState(START);
@@ -340,6 +348,7 @@ export function QDayDemo() {
   return (
     <DemoShell
       title="Demo 3 · Q-Day Time Machine"
+      workflow={{ steps: WORKFLOW, current: director.state.shot.step ?? 0 }}
       caption="An adversary records both systems' traffic today. Move the timeline to Q-Day: classical records open, QuantumLedger records stay sealed."
       tryIt={{
         hint: "Go to Q-Day: run the clock forward and see which recorded data opens",

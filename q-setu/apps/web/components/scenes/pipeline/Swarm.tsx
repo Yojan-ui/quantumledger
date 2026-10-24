@@ -14,7 +14,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { latticePoints, logoPoints, R, rng } from "./geometry";
-import { heroIntro } from "@/lib/client/hero";
+import { hero, heroIntro } from "@/lib/client/hero";
 import { set3 } from "@/components/scenes/geometry";
 import type { Look } from "./look";
 import { CURL3, SPRING } from "@/components/scenes/glsl";
@@ -160,13 +160,18 @@ export function Swarm({
   const group = useRef<THREE.Group>(null);
   const ringRef = useRef<THREE.Points>(null);
   const t = useRef(0);
+  /** 1 while the opening plays; eases to 0 once the hero has settled, so the flock comes to rest. */
+  const settle = useRef(1);
 
   useFrame(({ gl }, dt) => {
     const L = look.current;
     if (!L || !L.active) return;
     const u = mat.uniforms;
-    // Faster streaming while the risk is on screen; frozen under reduced motion.
-    const speed = L.reduce ? 0 : L.stage === 1 ? 2.2 : L.morph > 0.5 ? 0.25 : 1;
+    // Calm by default, faster only while the risk is on screen; frozen under reduced motion. On the
+    // hero, the flock eases to a stop once the opening has played (one motion, then still).
+    const resting = intro && hero.phase === "idle";
+    settle.current += ((resting ? 0 : 1) - settle.current) * (1 - Math.exp(-dt * 0.8));
+    const speed = (L.reduce ? 0 : L.stage === 1 ? 1.4 : L.morph > 0.5 ? 0.2 : 0.6) * settle.current;
     t.current += Math.min(dt, 0.1) * speed;
     u.uTime!.value = t.current;
     u.uMorphT!.value = L.morphT;
@@ -190,7 +195,7 @@ export function Swarm({
     ringMat.color.copy(L.swarmA).lerp(L.swarmB, L.morph);
     ringMat.opacity = 0.55 * L.dim("swarm") * cage;
     if (ringRef.current && !L.reduce)
-      ringRef.current.rotation.y += dt * (L.stage === 1 ? 0.6 : 0.2);
+      ringRef.current.rotation.y += dt * (L.stage === 1 ? 0.4 : 0.12) * settle.current;
     void easeToken;
   });
 

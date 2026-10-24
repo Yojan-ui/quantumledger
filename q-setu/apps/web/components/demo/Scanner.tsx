@@ -5,6 +5,7 @@ import { SCAN_SAMPLES } from "@qsetu/core/samples";
 import dynamic from "next/dynamic";
 import { chunkFailed } from "@/lib/client/chunk";
 import { useEffect, useRef, useState } from "react";
+import { setWorkflowStep } from "@/lib/client/workflow";
 import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { LazyView } from "@/components/scenes/LazyView";
 import type { ScanPillar } from "./ScannerBars";
@@ -62,6 +63,31 @@ export function Scanner() {
   const [done, setDone] = useState<Set<string>>(new Set());
   // This session's scans, as pillars (the scan itself is the beat): kind and score only.
   const [pillars, setPillars] = useState<ScanPillar[]>([]);
+  // The page's "How it works" strip follows the visitor: enter → reading → score → fix. The
+  // example result shown on load doesn't count; "fix" lights up when the plan scrolls into view.
+  const scanning = busy || !!probing;
+  const [touched, setTouched] = useState(false);
+  const [planSeen, setPlanSeen] = useState(false);
+  useEffect(() => {
+    // Only a scan the visitor started (after a real click or key press) moves the strip on.
+    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } })
+      .userActivation;
+    if (scanning && (ua ? ua.hasBeenActive : true)) setTouched(true);
+  }, [scanning]);
+  useEffect(() => {
+    const el = document.getElementById("plan-title");
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setPlanSeen(!!e?.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [plan]);
+  const scored = !!result || !!probe;
+  useEffect(() => {
+    setWorkflowStep(
+      scanning && touched ? 1 : touched && planSeen ? 3 : touched && scored ? 2 : planSeen ? 3 : 0,
+    );
+  }, [scanning, scored, touched, planSeen]);
+  useEffect(() => () => setWorkflowStep(0), []);
   // When the scan in flight started: its result's pillar shows the real scan time.
   const scanFrom = useRef(0);
   useEffect(() => {

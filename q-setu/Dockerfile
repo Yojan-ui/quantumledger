@@ -1,19 +1,38 @@
-# QuantumLedger web + API as one long-running Node service (the SSE event bus, the live mesh and the
-# in-process Shield demo nodes need a real server, not serverless functions).
+# QuantumLedger web + API + Attack Lab engine as one long-running Node service. A real server (not
+# serverless) is required: raw TLS scans, the SSE event bus, the live mesh, the in-process Shield
+# demo nodes, and the always-on Attack Lab engine all need a persistent process.
+#
+# Node 24 (OpenSSL 3.5+) so the scanner can always offer the hybrid X25519MLKEM768 key exchange.
+#
 # Build:  docker build -t q-setu .
-# Run:    docker run -p 3000:3000 -e QSETU_KMS_KEK=$(openssl rand -hex 32) -v qsetu-data:/data q-setu
-FROM node:22-bookworm-slim AS build
+# Run:    docker run -p 3000:3000 -v qsetu-data:/data \
+#           -e LAB_DEMO_ACCOUNTS=team@quantumledger.dev=team q-setu
+FROM node:24-bookworm-slim AS build
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+# better-sqlite3 compiles from source when no prebuilt binary matches: it needs Python, make and g++.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile && pnpm build
 
-FROM node:22-bookworm-slim
+FROM node:24-bookworm-slim
 RUN corepack enable && useradd --create-home qsetu && mkdir /data && chown qsetu /data
 WORKDIR /app
 COPY --from=build --chown=qsetu /app /app
 USER qsetu
-ENV NODE_ENV=production QSETU_DATA_DIR=/data PORT=3000
+# Fetch the pinned pnpm now, as this user, so the container starts without a download or a prompt.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN pnpm --version
+# The web app on PORT; the Attack Lab engine on LAB_PORT (loopback), reached via ATTACK_LAB_API.
+ENV NODE_ENV=production \
+    PORT=3000 \
+    QSETU_DATA_DIR=/data \
+    ATTACK_LAB_DIR=/data/attack-lab \
+    ATTACK_LAB_API=http://127.0.0.1:4100 \
+    LAB_PORT=4100
 VOLUME /data
 EXPOSE 3000
-CMD ["pnpm", "--filter", "@qsetu/web", "start"]
+# Both processes; if either exits, the container exits so the platform restarts it.
+CMD ["node", "scripts/docker-start.mjs"]

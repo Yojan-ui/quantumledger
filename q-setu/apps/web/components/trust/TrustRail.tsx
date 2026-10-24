@@ -70,11 +70,14 @@ export function TrustRail() {
           onClick={() => setOpen(true)}
           aria-expanded={false}
           aria-label={`Zero-trust rail: ${summary}. Open the list.`}
-          className="fixed right-0 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-[3px] border border-r-0 border-line bg-base/70 px-[5px] py-2 backdrop-blur-sm transition-colors duration-150 hover:border-line-strong"
+          className="fixed right-0 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center border border-r-0 border-line bg-base/70 py-2 transition-colors duration-150 hover:border-line-strong"
+          style={{ gap: 3, paddingInline: 5 }}
           onMouseLeave={() => setTip(null)}
         >
           {entries.length > DOTS && (
-            <span className="mb-1 text-[9px] leading-none text-fg-3">+{entries.length - DOTS}</span>
+            <span className="mb-1 leading-none text-fg-3" style={{ fontSize: 9 }}>
+              +{entries.length - DOTS}
+            </span>
           )}
           {shown.map((e) => (
             <span
@@ -88,15 +91,16 @@ export function TrustRail() {
       )}
       {!open && tip && (
         <div
-          className={`pointer-events-none fixed right-6 z-30 max-w-[min(420px,calc(100vw-48px))] truncate border border-line bg-base px-2 py-1 normal-case ${textClass[tip.e.status]}`}
-          style={{ top: tip.y - 10 }}
+          className={`pointer-events-none fixed right-6 z-30 truncate border border-line bg-base px-2 py-1 normal-case ${textClass[tip.e.status]}`}
+          style={{ top: tip.y - 10, maxWidth: "min(420px, calc(100vw - 48px))" }}
         >
           {line(tip.e)}
         </div>
       )}
       {open && (
         <div
-          className="fixed bottom-4 right-0 top-16 z-30 flex w-[400px] max-w-[calc(100vw-16px)] flex-col border border-r-0 border-line bg-glass backdrop-blur-md"
+          className="fixed bottom-4 right-0 top-16 z-30 flex flex-col border border-r-0 border-line bg-glass"
+          style={{ width: 400, maxWidth: "calc(100vw - 16px)" }}
           data-lenis-prevent
         >
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">

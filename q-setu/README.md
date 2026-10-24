@@ -88,11 +88,11 @@ classical stand-in in `packages/sim/src/classical/`.
 
 ## Run it
 
-Requires Node ≥ 20.19 and pnpm 10 (`corepack enable` picks up the pinned version).
+Requires Node ≥ 24 (OpenSSL 3.5, for X25519MLKEM768) and pnpm 10 (`corepack enable` picks up the pinned version).
 
 ```bash
 pnpm install && pnpm dev   # site + legacy app (:4000) + Shield server (:8443) + Shield client (:8080)
-pnpm test                  # 105 unit tests (the ledger suite runs on SQLite and Postgres via PGlite)
+pnpm test                  # 249 unit tests (the ledger suite runs on SQLite and Postgres via PGlite)
 pnpm build && pnpm start   # production build on :3000
 pnpm test:e2e              # Playwright: every page and demo (after `pnpm build`)
 pnpm test:e2e:offline      # the same site with no outbound network: scans fall back to cached results
@@ -204,9 +204,11 @@ docker run -p 3000:3000 \
   at the function's maximum duration (the browser reconnects), and the Shield demo can't bind ports.
   If you use it anyway, use Postgres (SQLite isn't persistent there) and treat the live strip as
   best-effort.
-- **CI.** `.github/workflows/ci.yml` runs lint, `lint:design`, typecheck, unit tests, the build, the
-  initial-JS budget (`pnpm check:budget`), the Playwright suite and Lighthouse CI (`lighthouserc.json`).
-  GitHub only reads workflows at the repository root, so if q-setu is a subfolder, move the file.
+- **Render.** `render.yaml` at the repository root deploys this Dockerfile as one web service, with a
+  disk at `/data` and the Attack Lab engine running beside the site.
+- **CI.** `.github/workflows/q-setu-ci.yml` (at the repository root) runs lint, `lint:design`,
+  typecheck, unit tests, the build, the initial-JS budget (`pnpm check:budget`), the Shield Edge
+  budget, the Playwright suite, Lighthouse CI, a dependency audit, gitleaks, an SBOM and CodeQL.
 
 ## What's real and what's simulated
 
@@ -232,8 +234,6 @@ docker run -p 3000:3000 \
 
 - **Let's Encrypt issuance:** the flow is the maintained `acme-client`'s own, but it needs a public DNS
   name and port 80 reachable from the internet.
-- **The container image:** the Dockerfile and compose file are written, but Docker wasn't available
-  where they were written, so the image hasn't been built here.
 - **The OWASP CRS WAF service:** it's in the compose file, in detection-only mode.
 - **The ZAP baseline:** it runs per PR once `PREVIEW_URL` is set.
 

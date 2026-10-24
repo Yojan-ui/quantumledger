@@ -1,4 +1,5 @@
 import results from "@qsetu/shield-edge/bench-results";
+import { Workflow } from "@/components/ui/Workflow";
 import { Block, ButtonLink, Code, Container, Lines, PageHero, PageShell } from "@/components/ui";
 import { pageMeta } from "@/lib/meta";
 
@@ -41,6 +42,29 @@ export default function ShieldPage() {
         </div>
       </PageHero>
 
+      <Container className="pt-10 md:pt-15">
+        <Workflow
+          follow="scroll"
+          steps={[
+            {
+              simple: "A visitor arrives",
+              technical: "Request reaches Shield (Edge or middleware)",
+            },
+            {
+              simple: "Shield checks them",
+              technical: "Risk score: behaviour, headers, TLS, traps",
+            },
+            {
+              simple: "Safe traffic passes, attacks are blocked",
+              technical: "allow → limit → challenge → block",
+            },
+            {
+              simple: "Every decision is a signed record",
+              technical: "Attack Lab: ML-DSA-65-signed evidence",
+            },
+          ]}
+        />
+      </Container>
       <Block label="Install" title="Three ways in. Pick one.">
         <p>
           1 · DNS: Shield Edge terminates TLS for you. Post-quantum TLS and defence, nothing to

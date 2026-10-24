@@ -15,6 +15,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { shield, type ShieldOptions } from "@qsetu/shield";
 import { PASS_COOKIE, type Action, type GuardEvent } from "@qsetu/shield-guard";
 import { clientFamily, hashOf, ipHash, netHash, safeRoute } from "./privacy";
+import { requestShape } from "./model/features";
 import type { LiveModel } from "./model/learn";
 import { DEFAULT_SITE, type EvidenceStore } from "./store";
 import type { AttackEvent } from "./types";
@@ -132,6 +133,15 @@ export function createRecorder(o: RecorderOptions) {
         client: clientFamily(one(req.headers["user-agent"])),
         method: (req.method ?? "GET").toUpperCase().slice(0, 10),
         route: safeRoute(req.url ?? "/", o.canaryKeys),
+        // Numbers only: the query and body text are never kept.
+        shape: requestShape(
+          safeRoute(req.url ?? "/", o.canaryKeys) +
+            ((req.url ?? "").includes("?")
+              ? (req.url ?? "").slice((req.url ?? "").indexOf("?"))
+              : ""),
+          "",
+          Number(one(req.headers["content-length"])) || 0,
+        ),
         flagged: c.types.length > 0,
         types: [...new Set(c.types)],
         signals: c.signals,

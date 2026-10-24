@@ -16,7 +16,14 @@ import { labPage } from "@/lib/lab/page";
 import { IncidentStory } from "@/components/lab/IncidentStory";
 import { ModelVerdict } from "@/components/lab/ModelVerdict";
 import { Copy } from "@/components/ui/Copy";
-import { incidentWords, patternStory, story } from "@/lib/lab/words";
+import {
+  incidentWords,
+  LABEL_WORDS,
+  patternStory,
+  RESPONSE_WORDS,
+  shieldSentence,
+  story,
+} from "@/lib/lab/words";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +34,7 @@ const DOT = {
   sig: "bg-sig",
   "fg-2": "bg-fg-2",
   "fg-3": "bg-fg-3",
+  kem: "bg-kem",
 };
 
 export default async function LabIncident({
@@ -103,6 +111,14 @@ export default async function LabIncident({
             Green dots are steps Shield stopped; grey ones it let through.
           </p>
           <IncidentStory steps={story(t.steps, inc.clients[0])} />
+          <p className="mt-6 border-t border-line pt-4 text-body text-fg-2">
+            <span className="text-fg">What Shield and the model did: </span>
+            {shieldSentence(t.actions)}{" "}
+            {d.verdict
+              ? `The threat model rated its riskiest request "${LABEL_WORDS[d.verdict.verdict.label]}" (risk ${Math.round(d.verdict.verdict.score * 100)}/100) and advised: ${RESPONSE_WORDS[d.verdict.verdict.response]}.`
+              : ""}{" "}
+            Every step is in the tamper-proof record.
+          </p>
         </div>
         <div data-copy="technical">
           <h2 className="text-h3 font-medium text-fg">Summary</h2>
@@ -210,7 +226,9 @@ export default async function LabIncident({
             </p>
             <dl className="mt-4 grid grid-cols-keys gap-x-4 gap-y-2 font-mono text-small">
               <dt className="text-fg-3">algorithm</dt>
-              <dd className="text-fg">{d.key.alg}</dd>
+              <dd className="text-fg">
+                <Copy simple={`quantum-safe signature (${d.key.alg})`} technical={d.key.alg} />
+              </dd>
               <dt className="text-fg-3">key id</dt>
               <dd className="break-all text-fg">{d.key.keyId}</dd>
               <dt className="text-fg-3">events</dt>

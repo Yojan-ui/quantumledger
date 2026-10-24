@@ -31,7 +31,8 @@ test("Demo 1: real handshake, then an attack is rejected by ML-DSA", async ({ pa
   const errors = trackErrors(page);
   await page.goto("/demo/how-it-works");
   await page.getByRole("button", { name: /Play/ }).click();
-  await expect(page.getByText(/messages over AES-256-GCM/)).toBeVisible();
+  // Play runs the whole film (holds, camera flights, real crypto): ~25 s on a fast machine.
+  await expect(page.getByText(/messages over AES-256-GCM/)).toBeVisible({ timeout: 75_000 });
   await page.getByRole("button", { name: /Attack it/ }).click();
   await expect(page.getByText(/ML-DSA-65 verification failed/)).toBeVisible();
   // Crypto agility: hot-swap the server policy, then put it back.

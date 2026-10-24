@@ -30,7 +30,7 @@
   --ok: #3ddc97; /* verified / protected: ✓, protected nodes, success */
   --danger: #ff5c5c; /* attack / tampered: rejected packets, broken ledger entry */
 
-  /* motion: fast. Hover 120 ms, UI 220 ms, reveals 450 ms. */
+  /* motion: fast. Hover 160 ms (ease-out), UI 220 ms, reveals 450 ms. */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* A spring (stiffness 400, damping 30, mass 1: ζ = 0.75, ~3% overshoot), sampled into linear(). */
   --ease-spring: linear(
@@ -60,7 +60,7 @@
     1.015,
     1
   );
-  --dur-hover: 120ms;
+  --dur-hover: 160ms;
   --dur-ui: 220ms;
   --dur-reveal: 450ms;
 }

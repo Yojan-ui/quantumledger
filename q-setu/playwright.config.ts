@@ -24,6 +24,8 @@ export default defineConfig({
     channel: process.env.PW_CHANNEL === "" ? undefined : (process.env.PW_CHANNEL ?? "chrome"),
     launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] },
     viewport: { width: 1440, height: 1000 },
+    // A failed test keeps its trace (CI uploads test-results/), so a CI-only failure can be read.
+    trace: "retain-on-failure",
   },
   webServer: {
     command: offline
