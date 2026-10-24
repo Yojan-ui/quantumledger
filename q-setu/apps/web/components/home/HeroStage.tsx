@@ -177,14 +177,13 @@ export function HeroStatus() {
           ? "ML-KEM-768 key pair · generating in this browser…"
           : keygenMs
             ? `ML-KEM-768 key pair · ${keygenMs.toFixed(2)} ms · in this browser`
-            : ""}
+            : " "}
       </span>
-      {s.stage >= 0 && (
-        <span className="text-fg-3">
-          {s.domain || EXAMPLE_DOMAIN}
-          {s.cached ? ` · cached example${date ? ` · scanned ${date}` : ""}` : " · live scan"}
-        </span>
-      )}
+      {/* Its line is held from the first paint, so the pipeline starting doesn't shift the hero. */}
+      <span className={s.stage >= 0 ? "text-fg-3" : "invisible"} aria-hidden={s.stage < 0}>
+        {s.domain || EXAMPLE_DOMAIN}
+        {s.cached ? ` · cached example${date ? ` · scanned ${date}` : ""}` : " · live scan"}
+      </span>
     </div>
   );
 }

@@ -17,10 +17,24 @@ import { HeroTrust } from "@/components/trust/HeroTrust";
 import { SealedText, sealedClass, sealedLine, useSealed } from "@/components/trust/Sealed";
 import { HERO_LINES } from "@/lib/trust/headlines";
 
-/** One sentence of the headline: sealed until its beat lands, then verified and decrypted. */
+/**
+ * One sentence of the headline: sealed until its beat lands, then verified and decrypted. An invisible
+ * copy of the plain words holds the line's size, and the sealed layer sits in the same cell, clipped
+ * to it: ciphertext doesn't wrap, so without this a wrapped line would collapse and re-grow (layout
+ * shift; the hero is anchored to the bottom, so the whole block would jump).
+ */
 function HeroLine({ text, visible }: { text: string; visible: boolean }) {
   const v = useSealed(text, visible);
-  return <span className={sealedClass(v)}>{sealedLine(text, 0, text.length, v)}</span>;
+  return (
+    <span className="inline-grid max-w-full">
+      <span className="invisible" style={{ gridArea: "1 / 1" }}>
+        {text}
+      </span>
+      <span className={`min-w-0 overflow-hidden ${sealedClass(v)}`} style={{ gridArea: "1 / 1" }}>
+        {sealedLine(text, 0, text.length, v)}
+      </span>
+    </span>
+  );
 }
 
 // The hero 3D stage (and three.js with it) mounts after the first paint, so the headline, copy and

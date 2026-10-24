@@ -205,7 +205,8 @@ export function Impact({ index }: { index: string }) {
                 style={{ left: `calc(${x(RISK_FROM)} + 8px)` }}
               >
                 Quantum risk window {RISK_FROM}–{RISK_TO}+{" "}
-                <a href={`#fact-${n}`} className="text-fg-3 underline underline-offset-4">
+                {/* The label's own colour: grey on the warn band is below 4.5:1. */}
+                <a href={`#fact-${n}`} className="underline underline-offset-4">
                   [{n}]
                 </a>
               </span>

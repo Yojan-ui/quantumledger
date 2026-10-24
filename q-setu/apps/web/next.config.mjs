@@ -7,6 +7,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   devIndicators: false,
+  // Metadata goes in <head> for every visitor, not streamed into <body> for non-bots (Lighthouse and
+  // some crawlers only read <head>). Our metadata is static, so nothing waits on it.
+  htmlLimitedBots: /.*/,
   // The site's ML-DSA-65 public key, pinned into the bundle: the browser verifies against it.
   env: { NEXT_PUBLIC_QSETU_SITE_KEY: sitePublicKey() },
   transpilePackages: [
