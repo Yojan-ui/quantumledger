@@ -48,28 +48,33 @@ for (const [path, h1] of PAGES) {
   });
 }
 
-test("home: ten sections in order for a first-time visitor", async ({ page }) => {
+test("home: thirteen sections in four chapters for a first-time visitor", async ({ page }) => {
   await page.goto("/");
-  const ids = await page.locator("main > section[id]").evaluateAll((s) => s.map((x) => x.id));
+  const ids = await page
+    .locator("main [data-chapter] > section[id]")
+    .evaluateAll((s) => s.map((x) => x.id));
   expect(ids).toEqual([
     "top",
-    "join-live",
     "analogy",
-    "index",
+    "impact",
     "scan",
     "how-it-works",
     "adapters",
-    "solutions",
-    "impact",
     "device",
+    "join-live",
+    "index",
     "whats-new",
+    "solutions",
     "why-quantumledger",
     "early-access",
   ]);
-  // Every numbered section label, 02–10, in order (the hero is 01 and the scan box is part of 03).
-  const labels = await page.locator("main > section [class*=uppercase]").allInnerTexts();
-  const nums = labels.map((t) => /^(\d{2}) —/.exec(t)?.[1]).filter(Boolean);
-  expect([...new Set(nums)]).toEqual(["02", "03", "04", "05", "06", "07", "08", "09", "10"]);
+  // Section labels are numbered within their chapter ("1.2 — …"), in order.
+  const labels = await page.locator("main section [class*=uppercase]").allInnerTexts();
+  const nums = labels.map((t) => /^(\d\.\d) —/.exec(t)?.[1]).filter(Boolean);
+  expect([...new Set(nums)]).toEqual([...new Set(nums)].sort());
+  expect(nums).toEqual(
+    expect.arrayContaining(["1.2", "1.3", "2.2", "2.3", "3.2", "3.3", "4.1", "4.2", "4.3"]),
+  );
   await expect(page.getByRole("button", { name: "Take the 3-minute tour" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
