@@ -75,7 +75,7 @@ const jitter = (i: number) => {
 export function sealedLine(line: string, offset: number, total: number, v: SealView): ReactNode {
   if (v.mode === "plain") return line;
   if (v.mode === "open") return v.text.slice(offset, offset + line.length) || line;
-  if (v.mode === "hidden") return <span className="text-transparent">{line}</span>;
+  if (v.mode === "hidden") return <span style={{ color: "transparent" }}>{line}</span>;
   const hex = v.hex;
   const runs: { hex: boolean; s: string }[] = [];
   for (let j = 0; j < line.length; j++) {

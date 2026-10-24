@@ -31,7 +31,6 @@ export function log(req: Request, route: string, status: number, ms: number, ext
     ip: ipHash(req),
     ...safe,
   };
-  // eslint-disable-next-line no-console
   console.log(JSON.stringify(line));
   onLogged?.(line);
 }
