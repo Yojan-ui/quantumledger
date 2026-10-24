@@ -9,6 +9,9 @@
 #           -e LAB_DEMO_ACCOUNTS=team@quantumledger.dev=team q-setu
 FROM node:24-bookworm-slim AS build
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+# better-sqlite3 compiles from source when no prebuilt binary matches: it needs Python, make and g++.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 WORKDIR /app
 COPY . .
