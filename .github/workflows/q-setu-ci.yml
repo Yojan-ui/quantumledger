@@ -54,6 +54,14 @@ jobs:
           retention-days: 7
       - name: Lighthouse CI (Perf ≥ 90, A11y 100, SEO 100, LCP < 2.0 s, CLS < 0.05)
         run: pnpm dlx @lhci/cli@0.15.1 autorun
+      - name: Lighthouse reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lighthouse-reports
+          path: q-setu/.lighthouseci
+          include-hidden-files: true
+          retention-days: 7
 
   security:
     runs-on: ubuntu-latest
