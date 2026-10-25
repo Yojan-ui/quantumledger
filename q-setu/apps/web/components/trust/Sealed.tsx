@@ -70,6 +70,32 @@ const jitter = (i: number) => {
 };
 
 /**
+ * What each position of a line shows: the plain (or decrypted) character, or a hex digit of the
+ * ciphertext. While resolving, positions turn from hex into words left to right, with jitter.
+ */
+export function sealedChars(
+  line: string,
+  offset: number,
+  total: number,
+  v: SealView,
+): { ch: string; hex: boolean }[] {
+  return line.split("").map((ch, j) => {
+    const g = offset + j;
+    if (v.mode === "plain" || v.mode === "hidden") return { ch, hex: false };
+    if (v.mode === "open") return { ch: v.text[g] ?? ch, hex: false };
+    let isHex = ch !== " ";
+    if (v.mode === "resolving" && isHex)
+      isHex = v.p < (g / Math.max(1, total)) * 0.7 + jitter(g) * 0.3;
+    if (isHex) return { ch: v.hex[g % v.hex.length]!, hex: true };
+    return { ch: v.mode === "resolving" ? (v.text[g] ?? ch) : ch, hex: false };
+  });
+}
+
+/** The tone of a sealed line (its flash or its failure), without sealedClass's no-wrap. */
+export const sealedTone = (v: SealView) =>
+  v.mode === "bad" ? "seal-bad" : v.mode === "resolving" || v.mode === "open" ? "seal-flash" : "";
+
+/**
  * One rendered line of a sealed headline. `line` is the plain line as laid out; `offset` is where it
  * starts in the whole headline (so each line shows the next stretch of ciphertext).
  */
@@ -77,18 +103,11 @@ export function sealedLine(line: string, offset: number, total: number, v: SealV
   if (v.mode === "plain") return line;
   if (v.mode === "open") return v.text.slice(offset, offset + line.length) || line;
   if (v.mode === "hidden") return <span style={{ color: "transparent" }}>{line}</span>;
-  const hex = v.hex;
   const runs: { hex: boolean; s: string }[] = [];
-  for (let j = 0; j < line.length; j++) {
-    const g = offset + j;
-    const ch = line[j]!;
-    let isHex = ch !== " ";
-    if (v.mode === "resolving" && isHex)
-      isHex = v.p < (g / Math.max(1, total)) * 0.7 + jitter(g) * 0.3;
-    const out = !isHex ? (v.mode === "resolving" ? (v.text[g] ?? ch) : ch) : hex[g % hex.length]!;
+  for (const c of sealedChars(line, offset, total, v)) {
     const last = runs[runs.length - 1];
-    if (last && last.hex === isHex) last.s += out;
-    else runs.push({ hex: isHex, s: out });
+    if (last && last.hex === c.hex) last.s += c.ch;
+    else runs.push({ hex: c.hex, s: c.ch });
   }
   return runs.map((r, i) =>
     r.hex ? (

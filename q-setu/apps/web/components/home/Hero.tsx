@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { chunkFailed } from "@/lib/client/chunk";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
 import { Button, ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
@@ -14,27 +14,102 @@ import { world } from "@/components/world/store";
 import { scrollToY } from "@/lib/client/scroll";
 import { HERO } from "./chapters";
 import { HeroTrust } from "@/components/trust/HeroTrust";
-import { SealedText, sealedClass, sealedLine, useSealed } from "@/components/trust/Sealed";
+import { SealedText, sealedChars, sealedTone, useSealed } from "@/components/trust/Sealed";
 import { HERO_LINES } from "@/lib/trust/headlines";
 
 /**
- * One sentence of the headline: sealed until its beat lands, then verified and decrypted. An invisible
- * copy of the plain words holds the line's size, and the sealed layer sits in the same cell, clipped
- * to it: ciphertext doesn't wrap, so without this a wrapped line would collapse and re-grow (layout
- * shift; the hero is anchored to the bottom, so the whole block would jump).
+ * A glyph drawn over the box of the plain letter it stands in for (invisible, so the box keeps its
+ * size). Out of flow, so it never moves the layout; no line height of its own, since Geist Mono's
+ * metrics would lower the baseline.
  */
-function HeroLine({ text, visible }: { text: string; visible: boolean }) {
-  const v = useSealed(text, visible);
+function Over({ plain, hex, children }: { plain: string; hex: boolean; children: ReactNode }) {
   return (
-    <span className="inline-grid max-w-full">
-      <span className="invisible" style={{ gridArea: "1 / 1" }}>
-        {text}
-      </span>
-      <span className={`min-w-0 overflow-hidden ${sealedClass(v)}`} style={{ gridArea: "1 / 1" }}>
-        {sealedLine(text, 0, text.length, v)}
+    <span className="relative inline-block">
+      <span className="invisible">{plain}</span>
+      <span className="absolute inset-0 whitespace-nowrap text-center">
+        <span className={hex ? "seal-hex" : undefined} style={{ lineHeight: 0 }}>
+          {children}
+        </span>
       </span>
     </span>
   );
+}
+
+/**
+ * A sentence's ciphertext: one run of hex over the invisible sentence, narrowed (a transform, never
+ * layout) just enough to fit its width, so it can't run into the next sentence.
+ */
+function HexRun({ plain, hex }: { plain: string; hex: string }) {
+  const box = useRef<HTMLSpanElement>(null);
+  const run = useRef<HTMLSpanElement>(null);
+  const fit = () => {
+    const b = box.current;
+    const r = run.current;
+    if (!b || !r) return;
+    const k = Math.min(1, b.offsetWidth / Math.max(1, r.offsetWidth));
+    r.style.transform = k < 1 ? `scaleX(${k.toFixed(3)})` : "";
+  };
+  useLayoutEffect(fit);
+  useEffect(() => {
+    // Fonts arriving or the viewport changing re-measure.
+    const ro = new ResizeObserver(fit);
+    if (box.current) ro.observe(box.current);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <span ref={box} className="relative inline-block">
+      <span className="invisible">{plain}</span>
+      <span className="absolute inset-0 whitespace-nowrap">
+        <span
+          ref={run}
+          className="seal-hex inline-block"
+          style={{ lineHeight: 0, transformOrigin: "0 0" }}
+        >
+          {hex}
+        </span>
+      </span>
+    </span>
+  );
+}
+
+/**
+ * One sentence of the headline: sealed until its beat lands, then verified and decrypted. It always
+ * lays out as the plain sentence, so ciphertext, the resolve and the words never shift it (the hero
+ * is anchored to the bottom: any change in a line's size or wrap would move the whole block). The
+ * ciphertext is one run of hex over the invisible sentence; from the resolve on, each letter is drawn
+ * over its own plain letter (words don't break, spaces stay spaces), so as the hex turns into words
+ * left to right nothing around it moves.
+ */
+function HeroLine({ text, visible }: { text: string; visible: boolean }) {
+  const v = useSealed(text, visible);
+  const shown = sealedChars(text, 0, text.length, v);
+  if (v.mode === "cipher" || v.mode === "bad")
+    return (
+      <span className={sealedTone(v)}>
+        <HexRun plain={text} hex={shown.map((s) => s.ch).join("")} />
+      </span>
+    );
+  const out: ReactNode[] = [];
+  let end = 0;
+  for (const m of text.matchAll(/\S+/g)) {
+    const at = m.index;
+    const word = m[0];
+    if (at > end) out.push(text.slice(end, at));
+    end = at + word.length;
+    out.push(
+      <span key={at} className="whitespace-nowrap">
+        {word.split("").map((ch, j) => {
+          const s = shown[at + j]!;
+          return (
+            <Over key={j} plain={ch} hex={s.hex}>
+              {s.ch}
+            </Over>
+          );
+        })}
+      </span>,
+    );
+  }
+  return <span className={sealedTone(v)}>{out}</span>;
 }
 
 // The hero 3D stage (and three.js with it) mounts after the first paint, so the headline, copy and
