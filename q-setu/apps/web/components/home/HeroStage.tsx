@@ -17,6 +17,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
 import { generateVisitorKeys } from "@/components/home/visitor";
 import { waitForCanvas } from "@/components/hud/waitForCanvas";
+import { gfx, gfxKnown } from "@/lib/client/gfx";
 import { LazyView } from "@/components/scenes/LazyView";
 import { ASSEMBLE_MS, BURST_MS, hero, setHero, useHero } from "@/lib/client/hero";
 import {
@@ -57,14 +58,16 @@ function useOpening() {
       setHero({ phase: "idle" });
       return;
     }
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     void (async () => {
       setHero({ phase: "keygen" });
       const keys = generateVisitorKeys().catch(() => undefined);
-      await Promise.all([keys, waitForCanvas()]);
+      await Promise.all([keys, waitForCanvas(), gfxKnown()]);
       const k = await keys;
       if (!live) return;
       setHero({ keygenMs: k?.timings.mlkem ?? 0 });
+      // A slow device (lib/client/gfx) plays the reduced-motion opening: the same real stages,
+      // without the particle assembly, the burst or the holds, so it reaches idle (and rests) soon.
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches || gfx.slow;
       if (!reduce) {
         setHero({ phase: "logo", assembleAt: performance.now() });
         await wait(ASSEMBLE_MS + 900);
@@ -140,7 +143,7 @@ export function HeroStage() {
   const veil = useRef<HTMLDivElement>(null);
   useExit(ref, veil);
   return (
-    <div ref={ref} className="absolute inset-0" data-hud-stage data-world-drag>
+    <div ref={ref} className="absolute inset-0" data-hud-stage data-world-drag data-ambient>
       <LazyView
         className="h-full w-full"
         label={`The diagnostics stage, full screen: ${s.domain || "the cached example"}`}

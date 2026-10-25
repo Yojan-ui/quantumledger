@@ -6,6 +6,10 @@
  *      0 full · 1 lower DPR (1.25) · 2 no dust layer, half the particles · 3 no glass transmission,
  *      no line glow, focus dimming or halos (DPR 1).
  *  - lost: the GL context was lost; 3D areas show their static poster until it is rebuilt.
+ *  - slow: this device can't keep up even at the bottom of the ladder (or draws WebGL in software).
+ *      The canvas then eases off (components/world/WorldScene): ~20 fps, the hero's opening without
+ *      its particle assembly and burst, and no frames at all while the idle hero is all that's on
+ *      screen and nobody is scrolling, pointing or typing. html[data-gfx-slow] marks it.
  */
 import { useSyncExternalStore } from "react";
 
@@ -19,7 +23,7 @@ export const dprCap = (q: Quality) =>
     ? Math.min(PHONE_DPR_CAP, DPR[q])
     : DPR[q];
 
-const state = { quality: 0 as Quality, lost: false };
+const state = { quality: 0 as Quality, lost: false, slow: false };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((fn) => fn());
 
@@ -31,6 +35,31 @@ export function setQuality(q: number) {
   state.quality = next;
   emit();
 }
+
+/** Ease off for the rest of the page view (it never flips back: no stutter between modes). */
+export function setSlow() {
+  if (state.slow) return;
+  state.slow = true;
+  state.quality = 3;
+  document.documentElement.setAttribute("data-gfx-slow", "");
+  emit();
+}
+
+/** WebGL drawn on the CPU (no usable GPU): SwiftShader, llvmpipe, Microsoft's Basic Render Driver. */
+const SOFTWARE = /swiftshader|llvmpipe|softpipe|software|basic render|mesa offscreen/i;
+export function isSoftwareRenderer(gl: WebGLRenderingContext | WebGL2RenderingContext): boolean {
+  const info = gl.getExtension("WEBGL_debug_renderer_info");
+  const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? "");
+  return SOFTWARE.test(name);
+}
+
+let known: (() => void) | undefined;
+const ready = new Promise<void>((r) => (known = r));
+/** The canvas has its GL context, so `slow` already reflects a software renderer. */
+export const markGfxKnown = () => known?.();
+/** Resolves once the renderer is known (or after `ms`, if the canvas never comes). */
+export const gfxKnown = (ms = 5000) =>
+  Promise.race([ready, new Promise<void>((r) => setTimeout(r, ms))]);
 
 export function setLost(lost: boolean) {
   if (lost === state.lost) return;
@@ -46,7 +75,7 @@ export function useGfx<T>(select: (s: typeof state) => T): T {
       return () => void listeners.delete(fn);
     },
     () => select(state),
-    () => select({ quality: 0, lost: false }),
+    () => select({ quality: 0, lost: false, slow: false }),
   );
 }
 
@@ -57,8 +86,7 @@ let watching = false;
 export function invalidateAreas() {
   areas = null;
 }
-export function any3dOnScreen(): boolean {
-  const h = window.innerHeight;
+function allAreas(): HTMLElement[] {
   // The element list is cached and re-queried only after the DOM changes; per frame, only the
   // rectangles are read.
   if (!watching) {
@@ -68,10 +96,21 @@ export function any3dOnScreen(): boolean {
       subtree: true,
     });
   }
-  areas ??= [...document.querySelectorAll<HTMLElement>("[data-world-focus], [data-view-on]")];
-  for (const el of areas) {
-    const r = el.getBoundingClientRect();
-    if (r.bottom > 0 && r.top < h && r.width > 0 && r.height > 0) return true;
-  }
-  return false;
+  return (areas ??= [
+    ...document.querySelectorAll<HTMLElement>("[data-world-focus], [data-view-on]"),
+  ]);
 }
+const onScreen = (el: HTMLElement) => {
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight && r.width > 0 && r.height > 0;
+};
+export const any3dOnScreen = () => allAreas().some(onScreen);
+
+/**
+ * True if every 3D area on screen sits in a [data-ambient] stage: one whose motion is only drift,
+ * so a slow device may stop drawing it while nothing happens (WorldScene's Driver).
+ */
+export const onlyAmbientOnScreen = () =>
+  allAreas()
+    .filter(onScreen)
+    .every((el) => el.closest("[data-ambient]"));
