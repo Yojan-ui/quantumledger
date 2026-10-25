@@ -80,6 +80,8 @@ function useOpening() {
       actions.setDomain("");
       try {
         await actions.detect(EXAMPLE_DOMAIN, true);
+        // Left the page while the scan ran (the tour, a link): whoever is on screen now drives.
+        if (!live) return;
         await autoplay(reduce ? 0 : 1200, reduce ? [0, 0, 0, 0, 0] : ATTRACT_HOLD_MS);
       } catch {
         /* the input still works; the stage shows whatever ran */

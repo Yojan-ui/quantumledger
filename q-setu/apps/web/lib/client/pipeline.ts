@@ -530,6 +530,13 @@ export async function autoplay(holdMs = 1500, holds: readonly number[] = HOLD_MS
   while (state.autoplay) {
     const i = nextStage();
     if (i < 0) break;
+    // Another run (the hero's opening, a click) has this stage in flight: wait for its result.
+    // Calling it again returns at once (run() ignores a running stage), and the loop would spin on
+    // resolved promises, freezing the page before that result could ever arrive.
+    if (state.status[i] === "running") {
+      await new Promise((r) => setTimeout(r, 100));
+      continue;
+    }
     const prev = i > 0 ? state.doneAt[i - 1]! : 0;
     const hold = Math.max(holdMs, i > 0 ? holds[i - 1]! : 0);
     const wait = prev ? Math.max(0, hold - (performance.now() - prev)) : 0;
