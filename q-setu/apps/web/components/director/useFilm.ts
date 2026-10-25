@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { no3d } from "@/lib/client/gfx";
 import type { Director } from "./useDirector";
 
 /** The demos' hold after each beat (the beat has played; the next waits this long). */
@@ -65,6 +66,12 @@ export function useFilm(
     arrivals.current.splice(0).forEach((r) => r());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [director.onSettled]);
+
+  // No live 3D (lib/client/gfx no3d): there is no camera to report back, so a shot has arrived as
+  // soon as it is reached. The film plays on its real work and holds, over the static poster.
+  useEffect(() => {
+    if (no3d()) onSettled();
+  }, [index, take, onSettled]);
 
   const stop = useCallback(() => {
     playRef.current = false;

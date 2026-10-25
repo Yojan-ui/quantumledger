@@ -190,6 +190,10 @@
   html[data-gl-lost] [data-gl-lost-note] {
     display: inline;
   }
+  /* No live 3D on this device (lib/client/gfx no3d): copy that describes the 3D goes too. */
+  html[data-gl-off] [data-needs-3d] {
+    display: none;
+  }
   /* A button whose async step is running: dimmed, with a thin sweeping bar along its bottom edge. */
   button[aria-busy="true"] {
     opacity: 0.7;

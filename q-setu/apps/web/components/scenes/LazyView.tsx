@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { SceneBoundary } from "@/components/world/SceneBoundary";
-import { invalidateAreas } from "@/lib/client/gfx";
+import { invalidateAreas, no3d } from "@/lib/client/gfx";
 
 // drei's View (and with it three.js) loads only when a scene first scrolls near. A chunk that fails
 // to load is fetched once more; if it fails again the area's SceneBoundary keeps its poster.
@@ -50,10 +50,6 @@ export function GlPoster() {
   );
 }
 
-const stillPhone = () =>
-  matchMedia("(prefers-reduced-motion: reduce)").matches &&
-  matchMedia("(max-width: 767px)").matches;
-
 /**
  * A 3D window in the site's single WebGL canvas (drei View) that mounts only when it first comes
  * near the viewport, and tells its scene whether it's on screen so animation can pause. The box keeps
@@ -72,8 +68,9 @@ export function LazyView({
   const [mounted, setMounted] = useState(false);
   const [onScreen, setOnScreen] = useState(false);
   useEffect(() => {
-    // Phones with reduced motion keep the static poster: no 3D at all, so no GPU or battery cost.
-    if (stillPhone()) return;
+    // No live 3D here (no GPU, or a phone that asks for reduced motion): the static poster stays,
+    // so there's no GPU, CPU or battery cost (lib/client/gfx no3d).
+    if (no3d()) return;
     const io = new IntersectionObserver(
       ([e]) => {
         const on = !!e?.isIntersecting;

@@ -49,7 +49,9 @@ function ByteTip() {
 export function HeroTrust() {
   return (
     <>
+      {/* Only true while the dot field is drawn: hidden over the static poster (html[data-gl-off]). */}
       <p
+        data-needs-3d
         style={{ maxWidth: 300 }}
         className="pointer-events-none absolute bottom-16 right-5 hidden text-right font-mono text-micro uppercase text-fg-3 md:right-8 lg:block"
       >

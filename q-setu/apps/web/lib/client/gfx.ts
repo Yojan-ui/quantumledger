@@ -10,6 +10,9 @@
  *      The canvas then eases off (components/world/WorldScene): ~20 fps, the hero's opening without
  *      its particle assembly and burst, and no frames at all while the idle hero is all that's on
  *      screen and nobody is scrolling, pointing or typing. html[data-gfx-slow] marks it.
+ *  - no3d(): no live 3D at all. A browser that draws WebGL in software (no usable GPU) never starts
+ *      the canvas, and every 3D area keeps its static poster (html[data-gl-off]); so does a phone
+ *      that asks for reduced motion. ?3d=on (kept for the tab) forces live 3D anyway.
  */
 import { useSyncExternalStore } from "react";
 
@@ -52,6 +55,42 @@ export function isSoftwareRenderer(gl: WebGLRenderingContext | WebGL2RenderingCo
   const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? "");
   return SOFTWARE.test(name);
 }
+
+let soft: boolean | undefined;
+/**
+ * True if this browser draws WebGL in software, where the site's 3D blocks the page for seconds.
+ * Probed once per page load with a throwaway context, released at once. ?3d=on overrides it for
+ * the tab (a demo on a GPU-less laptop, or a check of the 3D itself).
+ */
+export function softwareGL(): boolean {
+  if (soft !== undefined) return soft;
+  soft = false;
+  try {
+    const q = new URLSearchParams(location.search).get("3d");
+    if (q) sessionStorage.setItem("ql-3d", q);
+    if (sessionStorage.getItem("ql-3d") === "on") return soft;
+  } catch {
+    /* storage blocked: probe as usual */
+  }
+  try {
+    const gl = document.createElement("canvas").getContext("webgl");
+    if (gl) {
+      soft = isSoftwareRenderer(gl);
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+    }
+  } catch {
+    /* no WebGL: the canvas doesn't start anyway */
+  }
+  if (soft) document.documentElement.setAttribute("data-gl-off", "");
+  return soft;
+}
+
+const stillPhone = () =>
+  matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  matchMedia("(max-width: 767px)").matches;
+
+/** No live 3D here: 3D areas keep their posters, and films move on without a camera to wait for. */
+export const no3d = () => softwareGL() || stillPhone();
 
 let known: (() => void) | undefined;
 const ready = new Promise<void>((r) => (known = r));

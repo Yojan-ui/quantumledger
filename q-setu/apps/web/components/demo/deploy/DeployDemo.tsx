@@ -390,10 +390,16 @@ export function DeployDemo() {
       tick();
     });
   }
+  /** A system picked while another was seating: it seats next (the latest pick wins). */
+  const queuedSeat = useRef<(typeof SITES)[number] | null>(null);
   async function seat(s: (typeof SITES)[number]) {
     // Picking a system always selects it; the seat waits for a deploy or a film move to finish.
     setAdapter(s.adapter);
-    if (running || reel.busy || seatingRef.current) return;
+    if (seatingRef.current) {
+      queuedSeat.current = s;
+      return;
+    }
+    if (running || reel.busy) return;
     seatingRef.current = true;
     reel.stop();
     try {
@@ -415,6 +421,9 @@ export function DeployDemo() {
       world.seat = null;
       seatingRef.current = false;
       setSeating(null);
+      const next = queuedSeat.current;
+      queuedSeat.current = null;
+      if (next) void seat(next);
     }
   }
   useEffect(

@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { setLost } from "@/lib/client/gfx";
+import { setLost, softwareGL } from "@/lib/client/gfx";
 import { SceneBoundary } from "./SceneBoundary";
 import { world } from "./store";
 import type { Dots } from "./shapes";
@@ -87,6 +87,8 @@ export function WorldCanvas() {
       typeof WebGLRenderingContext === "undefined"
     )
       return;
+    // No GPU (WebGL in software): no canvas at all; every 3D area keeps its poster (gfx no3d).
+    if (softwareGL()) return;
     const small = window.innerWidth < 768;
     let worker: Worker | undefined;
     let cancelled = false;

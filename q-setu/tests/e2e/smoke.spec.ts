@@ -174,3 +174,19 @@ test("Web shield: a plain HTML form is sealed by one script tag", async ({ page 
   await expect(page.getByText(/Arrived sealed with QuantumLedger/)).toBeVisible();
   await expect(page.getByRole("cell", { name: "Kavya Nair" })).toBeVisible();
 });
+
+// The test browser draws WebGL in software (SwiftShader), like a machine with no usable GPU.
+test("no GPU: static posters instead of live 3D, the demos still play; ?3d=on brings it back", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-gl-off", "");
+  await expect(page.locator("[data-hud-stage] [data-gl-poster]")).toHaveCSS("opacity", "1");
+  await expect(page.locator("[data-needs-3d]")).toBeHidden();
+  // The opening still runs its real stages to the end.
+  await expect(page.getByRole("status").filter({ hasText: "SECURED" })).toBeVisible();
+  expect(await page.locator("[data-world] canvas").count()).toBe(0);
+  await page.goto("/?3d=on");
+  await expect(page.locator("html")).not.toHaveAttribute("data-gl-off", "");
+  await expect(page.locator("[data-world] canvas")).toHaveCount(1);
+});
