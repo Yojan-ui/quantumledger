@@ -1,0 +1,3 @@
+# Verified false positives: the "secret" is the TLS key-exchange group name X25519MLKEM768, not a key.
+853419fbfe0ba4c8706429d2bbf59ccda526f56a:q-setu/docs/security/rotate.md:generic-api-key:9
+7ac5057879ade9f3cb5c6480c13861ebbb305907:q-setu/docs/security/audit.md:generic-api-key:142
