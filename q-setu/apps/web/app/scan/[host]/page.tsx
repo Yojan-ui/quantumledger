@@ -7,13 +7,14 @@ import { Nav } from "@/components/ui/Nav";
 import { pageMeta } from "@/lib/meta";
 import type { ScanView } from "@/lib/scan-types";
 import { storedScan } from "@/lib/server/scan-lookup";
+import { safeDecode } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ host: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const host = decodeURIComponent((await params).host).slice(0, 120);
+  const host = safeDecode((await params).host).slice(0, 120);
   const r = await storedScan(host);
   const meta = pageMeta({
     title: `Is ${host} quantum-safe?`,
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const host = decodeURIComponent((await params).host).slice(0, 253);
+  const host = safeDecode((await params).host).slice(0, 253);
   const r = await storedScan(host);
   return (
     <>

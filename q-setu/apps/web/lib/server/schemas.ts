@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { Sector } from "./api";
+import { webhookHost } from "./webhook";
 
 /** Request schemas, shared by the routes (validation) and /api/docs (OpenAPI). */
 
@@ -155,8 +156,19 @@ export const SiteCreateBody = z.object({
 export const SiteSettingsBody = z.object({
   mode: z.enum(["off", "monitor", "protect", "strict"]).optional(),
   alertEmail: z.union([Email, z.literal("")]).optional(),
+  // A public https address only (no internal hosts): checked again, with DNS, at send time.
   alertWebhook: z
-    .union([z.string().url().max(500).startsWith("https://"), z.literal("")])
+    .union([
+      z
+        .string()
+        .url()
+        .max(500)
+        .superRefine((u, ctx) => {
+          const h = webhookHost(u);
+          if ("error" in h) ctx.addIssue({ code: "custom", message: h.error });
+        }),
+      z.literal(""),
+    ])
     .optional(),
 });
 export const ReportQuery = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) });

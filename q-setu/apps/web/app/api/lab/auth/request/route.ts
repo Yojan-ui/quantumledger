@@ -38,6 +38,13 @@ export async function POST(req: Request) {
   };
   if (!known) return Response.json(sent);
 
+  // The link's host comes from configuration, never from the request: a Host header is the
+  // sender's to choose, and a link pointing elsewhere would hand that host the sign-in token.
+  // Without NEXT_PUBLIC_SITE_URL a production server sends no links at all.
+  if (!process.env.NEXT_PUBLIC_SITE_URL && process.env.NODE_ENV === "production") {
+    console.error("[lab] sign-in links need NEXT_PUBLIC_SITE_URL; none sent");
+    return Response.json(sent);
+  }
   const origin = process.env.NEXT_PUBLIC_SITE_URL ? siteUrl() : new URL(req.url).origin;
   const link = `${origin}/api/lab/auth/verify?token=${encodeURIComponent(linkToken(email)!)}`;
   const key = process.env.RESEND_API_KEY;

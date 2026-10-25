@@ -1,5 +1,9 @@
 # Python 3.11+
-fastapi==0.115.12
-uvicorn[standard]==0.34.2
-cryptography==44.0.3
-orjson==3.10.18
+# Pinned to releases that fix the advisories pip-audit reported (2026-10-25): starlette (Host and
+# path validation, Range and form-limit DoS), cryptography (EC key and name-constraint checks,
+# bundled OpenSSL), orjson (unbounded recursion). FastAPI accepts this starlette.
+fastapi==0.143.0
+starlette==1.7.0
+uvicorn[standard]==0.54.0
+cryptography==50.0.2
+orjson==3.13.0

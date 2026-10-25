@@ -27,6 +27,7 @@ import type { SiteRow } from "@/lib/db/repo";
 import { alert as securityAlert } from "./alert";
 import { live } from "./runtime";
 import { verifyTotp } from "./totp";
+import { postWebhook } from "./webhook";
 
 export const APP_COOKIE = "ql_app";
 const SESSION_MS = 12 * 3_600_000;
@@ -233,15 +234,9 @@ export async function siteAlert(
   const s = settingsOf(site);
   const text = `QuantumLedger Shield on ${site.domain}: ${count} ${type} event(s). Mode: ${site.mode}. Latest: ${JSON.stringify(sample).slice(0, 300)}`;
   const jobs: Promise<unknown>[] = [];
-  if (s.alertWebhook && /^https:\/\//.test(s.alertWebhook))
-    jobs.push(
-      fetch(s.alertWebhook, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text, site: site.domain, type, count, sample }),
-        signal: AbortSignal.timeout(3000),
-      }).catch(() => {}),
-    );
+  // The customer's URL: public addresses only, pinned, no redirects (lib/server/webhook).
+  if (s.alertWebhook)
+    jobs.push(postWebhook(s.alertWebhook, { text, site: site.domain, type, count, sample }));
   const key = process.env.RESEND_API_KEY;
   if (s.alertEmail && key)
     jobs.push(

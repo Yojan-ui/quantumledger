@@ -54,6 +54,9 @@ export interface LabServerOptions {
 
 const MAX_JOBS = 20;
 
+/** The Host names a loopback request carries (IPv6 in brackets). */
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
+
 export function startLabServer(o: LabServerOptions) {
   const { store, sandbox } = o;
   const jobs = new Map<string, ReplayJob>();
@@ -178,6 +181,13 @@ export function startLabServer(o: LabServerOptions) {
     const url = new URL(req.url ?? "/", "http://lab");
     const p = url.pathname;
     const site = url.searchParams.get("site") ?? undefined;
+    // Server to server only. Listening on loopback isn't enough on its own: any web page the team's
+    // browser has open can still reach 127.0.0.1, by a simple cross-site POST (no preflight), or by
+    // DNS rebinding a hostile name onto 127.0.0.1 and then reading every answer. So the Host must
+    // be a loopback name, and nothing a browser sends (Origin, fetch metadata) is served.
+    const host = String(req.headers.host ?? "").replace(/:\d+$/, "");
+    if (!LOOPBACK_HOSTS.has(host) || req.headers.origin || req.headers["sec-fetch-site"])
+      return send(res, 403, { error: "Forbidden" });
     if (o.token) {
       const got = Buffer.from(String(req.headers.authorization ?? ""));
       const want = Buffer.from(`Bearer ${o.token}`);

@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { signManifest, sri, type Manifest } from "@qsetu/shield/manifest";
+import { siteUrl } from "@/lib/server/env";
 import { siteIdentity } from "@/lib/server/site-identity";
 
 export const runtime = "nodejs";
@@ -64,13 +65,18 @@ export async function GET(req: Request) {
       files[url] = h.sri;
       stamps.push(`${url}|${stamp}`);
     }
+  // The site the manifest vouches for: the configured URL. The request's own origin only stands in
+  // where none is configured (local runs), and then it's signed for that request alone: a Host
+  // header is the sender's to choose, and must not decide what every other visitor is served.
+  const configured = process.env.NEXT_PUBLIC_SITE_URL ? siteUrl() : undefined;
+  if (!configured)
+    return Response.json(
+      signManifest({ site: new URL(req.url).origin, files, identity: siteIdentity() }),
+      { headers: { "cache-control": "no-store" } },
+    );
   const fingerprint = stamps.sort().join("\n");
   if (!cache.manifest || fingerprint !== cache.fingerprint) {
-    cache.manifest = signManifest({
-      site: new URL(req.url).origin,
-      files,
-      identity: siteIdentity(),
-    });
+    cache.manifest = signManifest({ site: configured, files, identity: siteIdentity() });
     cache.fingerprint = fingerprint;
   }
   return Response.json(cache.manifest, { headers: { "cache-control": "no-cache" } });

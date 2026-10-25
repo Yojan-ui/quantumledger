@@ -27,6 +27,7 @@ from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel, Field
 
 import harvest
+from local_only import APP_ORIGINS, LocalOnly
 import quantumledger
 from agents.market_simulator import NIST_MLDSA_Agent, Paranoid_MLKEM_Agent, kem_session
 from aether import protocol as P
@@ -202,8 +203,10 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="AetherPool Bridge", lifespan=lifespan, default_response_class=ORJSONResponse)
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+app.add_middleware(CORSMiddleware, allow_origins=sorted(APP_ORIGINS),
                    allow_methods=["*"], allow_headers=["*"])
+# Outermost: only this machine's own UI reaches any route or the WebSocket (see local_only.py).
+app.add_middleware(LocalOnly)
 
 
 def H() -> Hub:

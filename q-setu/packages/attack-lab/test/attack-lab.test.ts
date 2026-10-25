@@ -1,3 +1,4 @@
+import { request } from "node:http";
 import { createIdentity } from "@qsetu/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -10,6 +11,7 @@ import {
   replay,
   sandboxUrl,
   simulate,
+  startLabServer,
   startSandbox,
   stepsFromTimeline,
   verifyRecord,
@@ -167,4 +169,42 @@ describe("end to end on the sandbox", () => {
       await box.close();
     }
   }, 60_000);
+});
+
+describe("engine API: server to server only", () => {
+  let live: Sandbox;
+  let store: EvidenceStore;
+  let api: { url: string; close(): Promise<void> };
+  beforeAll(async () => {
+    store = new EvidenceStore({ signer, sealDelayMs: 10 });
+    live = await startSandbox();
+    api = await startLabServer({ store, sandbox: live, port: 0 });
+  });
+  afterAll(async () => {
+    await api.close();
+    store.close();
+    await live.close();
+  });
+  // node:http, not fetch: a browser-like Host header has to be set by hand.
+  const get = (headers: Record<string, string>) =>
+    new Promise<number>((resolve, reject) => {
+      const u = new URL("/api/overview", api.url);
+      request({ host: u.hostname, port: u.port, path: u.pathname, headers }, (res) => {
+        res.resume();
+        resolve(res.statusCode ?? 0);
+      })
+        .on("error", reject)
+        .end();
+    });
+
+  it("answers the web app's server (a loopback Host, no browser headers)", async () => {
+    expect(await get({})).toBe(200);
+    expect(await get({ host: `localhost:${new URL(api.url).port}` })).toBe(200);
+  });
+
+  it("refuses a rebound hostile name, and anything a browser sends", async () => {
+    expect(await get({ host: "evil.example:4100" })).toBe(403);
+    expect(await get({ origin: "https://evil.example" })).toBe(403);
+    expect(await get({ "sec-fetch-site": "cross-site" })).toBe(403);
+  });
 });

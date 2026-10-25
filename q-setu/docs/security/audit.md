@@ -145,3 +145,40 @@ None is reachable from a request to the production server, but all should be fix
   `git log --all -- '**/.data'` is empty. Nothing needs rotating (see `rotate.md`, phase 2).
 - **Working tree:** the only real secrets on disk are the local demo KMS files in `apps/web/.data/` (`kms.kek`,
   `keystore.json`, mode 600), which are ignored.
+
+## Follow-up audit (2026-10-25)
+
+Scope: everything added since phase 0 (the Lab, the Shield dashboard, the Attack Lab engine) and the
+root AetherPool app (FastAPI bridge, Vite frontend, C++ engine), plus every dependency tree.
+
+### Fixed
+
+| #   | Severity | Issue                                                                                                                                                                                                                                              | Fix                                                                                                                                                                                  | Test                               |
+| --- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| 1   | High     | **Lab sign-in link poisoning.** Without `NEXT_PUBLIC_SITE_URL`, the emailed magic link took its host from the request, so a forged Host/X-Forwarded-Host sent a real link to the victim pointing at the attacker (token theft → account takeover). | Links only from configuration; production without it sends none (`api/lab/auth/request`).                                                                                            | manual                             |
+| 2   | High     | **SSRF via Shield alert webhooks.** Any account could set an `https://` webhook to an internal host (or one redirecting to `169.254.169.254`); the server POSTed to it.                                                                            | `lib/server/webhook.ts`: https on 443 only, public addresses only (every DNS answer checked), request pinned to the checked IP, no redirects, 3 s deadline; also refused when saved. | `test/webhook.test.ts`             |
+| 3   | Medium   | **Signed manifest poisoning.** `/.well-known/qsetu-manifest.json` signed and cached `site` from the first request's Host/X-Forwarded-Proto, then served it to everyone (and signed any site name on request).                                      | Configured URL only for the cached manifest; per-request, uncached otherwise.                                                                                                        | verified over HTTP                 |
+| 4   | Medium   | **Attack Lab engine reachable from web pages.** Loopback-only, but with no token a page could POST simulate/replay (no preflight) or DNS-rebind and read customers and incidents.                                                                  | Host must be loopback; requests with Origin or Sec-Fetch-Site refused.                                                                                                               | `attack-lab.test.ts`               |
+| 5   | Medium   | **AetherPool bridge reachable from web pages.** Body-less `POST /api/ql/remediate`, `GET /api/ql/cbom?record=true` and the `/ws` stream worked cross-site; no Host check (DNS rebinding).                                                          | `backend/local_only.py` (ASGI, HTTP + WebSocket): loopback Host, app Origin only, no cross-site fetch metadata.                                                                      | `backend/tests/test_local_only.py` |
+| 6   | Medium   | **Vulnerable dependencies (backend).** starlette 0.46.2 (Host/path validation, Range and form-limit DoS), cryptography 44.0.3, orjson 3.10.18.                                                                                                     | fastapi 0.143.0, starlette 1.7.0, uvicorn 0.54.0, cryptography 50.0.2, orjson 3.13.0. `pip-audit`: clean.                                                                            | app imports, guard tests           |
+| 7   | Medium   | **Vulnerable dependencies (root frontend).** vite 5.4.11, postcss 8.4.47, drei 9.117.3 (uuid).                                                                                                                                                     | vite 5.4.21, postcss 8.5.30, drei 9.122.0. `npm audit --omit=dev`: clean.                                                                                                            | `npm run build`                    |
+| 8   | Low      | A malformed Lab cookie (`ql_lab=%E0`) threw in `decodeURIComponent` → 500 on Lab routes.                                                                                                                                                           | Treated as signed out.                                                                                                                                                               | verified over HTTP                 |
+| 9   | Low      | `/scan/%25E0/opengraph-image` → 500 (double decode).                                                                                                                                                                                               | `safeDecode` in the scan pages.                                                                                                                                                      | verified over HTTP                 |
+
+### Reviewed, no change needed
+
+Lab tokens (HMAC, constant-time, typed, single-use links); dashboard (scrypt, TOTP replay guard,
+every site query scoped by account); Shield Edge cert paths (validated names); Attack Lab customer
+patch (field whitelist); raw-HTML sinks (static constants only); C++ engine framing (bounded reader,
+exact signature lengths before use, 127.0.0.1 only).
+
+### Open (recommendations)
+
+- **Root frontend dev tooling:** remaining advisories need majors (Vite ≥ 6.4.4: Windows-only
+  `server.fs` bypasses and launch-editor; Tailwind 4: postcss-selector-parser DoS). Dev server only,
+  bound to 127.0.0.1; nothing ships.
+- **`TRUSTED_PROXY_HOPS`** defaults to 1: right behind Render's proxy, but a bare `next start`
+  (LAN demo) trusts the client's X-Forwarded-For for rate limits. Set it to match the deployment.
+- **Stateless sessions** (Lab, dashboard) can't be revoked before expiry (8 h); a revoked customer
+  keeps access until then.
+- **Set `NEXT_PUBLIC_SITE_URL` in every deployment** (sign-in links and the cached manifest need it).
