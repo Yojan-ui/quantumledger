@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { Breadcrumb, NextStep, PagePurpose } from "@/components/ui/Wayfinding";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button, Container, Heading, Legend, Text } from "@/components/ui";
 import { resetAll } from "@/lib/client/present";
 
 /** One click (or R in presenter mode) puts every demo back to a clean start. */
 function ResetAll() {
-  const [state, setState] = useState<"idle" | "busy" | "done">("idle");
+  const [state, setState] = useState<"idle" | "busy" | "done" | "denied">("idle");
   return (
     <button
       type="button"
@@ -15,14 +16,20 @@ function ResetAll() {
       onClick={async () => {
         if (state === "busy") return;
         setState("busy");
-        await resetAll();
-        setState("done");
-        setTimeout(() => setState("idle"), 1500);
+        // Resetting every demo changes them for all visitors: production needs the admin sign-in.
+        setState((await resetAll()) ? "done" : "denied");
+        setTimeout(() => setState("idle"), 2500);
       }}
       title="Reset every demo (R in presenter mode)"
       className="h-10 px-2 text-small text-fg-3 transition-colors duration-150 hover:text-fg"
     >
-      {state === "busy" ? "Resetting…" : state === "done" ? "All reset ✓" : "Reset all"}
+      {state === "busy"
+        ? "Resetting…"
+        : state === "done"
+          ? "All reset ✓"
+          : state === "denied"
+            ? "Admin only"
+            : "Reset all"}
     </button>
   );
 }
@@ -75,6 +82,7 @@ export function DemoShell({
     <div className="flex min-h-svh flex-col">
       <header className="sticky top-0 z-40 border-b border-line bg-base">
         <Container className="flex flex-wrap items-center gap-x-6 gap-y-3 py-4">
+          <Breadcrumb className="basis-full" />
           <Link
             href="/demos"
             className="text-small text-fg-3 transition-colors duration-150 hover:text-fg"
@@ -101,25 +109,28 @@ export function DemoShell({
             <ResetAll />
           </div>
           <div className="flex basis-full flex-wrap items-end justify-between gap-x-6 gap-y-3">
-            <Text size="small" className="max-w-text">
-              {caption}
-            </Text>
+            <div>
+              <Text size="small" className="max-w-text">
+                {caption}
+              </Text>
+              <PagePurpose className="mt-1" />
+            </div>
             <Legend align="right" />
           </div>
         </Container>
       </header>
       <main id="main" className="flex-1">
-        <Container className="py-12">
-          {side ? (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-split">
-              <div className="min-w-0">{children}</div>
-              <aside className="xl:sticky xl:top-24 xl:self-start">{side}</aside>
-            </div>
-          ) : (
-            children
-          )}
+        <Container className="pb-12">
+          {/* The 3D is the star: the stage spans the page; the console is a drawer over its edge. */}
+          <div className="relative">
+            {children}
+            {side && (
+              <aside className="mt-6 md:absolute md:right-0 md:top-4 md:z-10 md:mt-0">{side}</aside>
+            )}
+          </div>
         </Container>
       </main>
+      <NextStep />
       {meter && (
         <div className="z-30 border-t border-line bg-base md:sticky md:bottom-0">{meter}</div>
       )}

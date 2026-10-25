@@ -13,6 +13,7 @@ import {
   VaultProof,
   WebProof,
 } from "@/components/home/Proofs";
+import { termify } from "@/components/ui/Term";
 
 interface Feature {
   id: string;
@@ -156,7 +157,11 @@ export function Features() {
   useEffect(() => void (world.socket = hot), [hot]);
 
   return (
-    <section ref={ref} id="adapters" className="relative scroll-mt-14 py-24 md:py-40">
+    <section
+      ref={ref}
+      id="adapters"
+      className="crosshairs relative scroll-mt-14 py-10 md:py-15 lg:py-20"
+    >
       <div className="mx-auto w-full max-w-container px-5 md:px-6">
         <Label className="mb-6 block">02 — Proof, per adapter</Label>
         <Grid className="gap-y-12">
@@ -190,7 +195,7 @@ export function Features() {
                   </div>
                   <Text className="mt-3 max-w-text">{f.problem}</Text>
                   <Heading as="h3" variant="h2" className="mt-6 max-w-text">
-                    {f.fix}
+                    {termify(f.fix)}
                   </Heading>
                   {f.code && (
                     <div className="mt-6">

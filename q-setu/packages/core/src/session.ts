@@ -292,6 +292,8 @@ export class Session {
   private readonly rotateEvery: number;
   private readonly rotateAfterMs: number;
   private readonly now: () => number;
+  /** For exportKey(): derived from the master secret before it is wiped. */
+  private readonly exporterSecret: Bytes;
   readonly stats = { sent: 0, received: 0, rotations: 0, rejected: 0 };
 
   constructor(
@@ -309,7 +311,23 @@ export class Session {
     const t = this.now();
     this.send = { key: directionKey(master, out), epoch: 0, seq: 0, startedAt: t };
     this.recv = { key: directionKey(master, inn), epoch: 0, startedAt: t };
+    this.exporterSecret = hkdf(sha256, master, undefined, utf8ToBytes("qsetu-v1/exporter"), 32);
     master.fill(0);
+  }
+
+  /**
+   * Keying material for a layer built on this session (like TLS exporters, RFC 8446 §7.5): both
+   * ends get the same bytes for the same label, independent of the message keys. Shield's binary
+   * tunnel takes its stream keys from here.
+   */
+  exportKey(label: string, length = 32): Bytes {
+    return hkdf(
+      sha256,
+      this.exporterSecret,
+      undefined,
+      utf8ToBytes(`qsetu-v1/export/${label}`),
+      length,
+    );
   }
 
   get epoch(): number {

@@ -1,5 +1,6 @@
 /** The visitor's freshly generated keys (public halves only) and how long they took. */
 import { notify, world } from "@/components/world/store";
+import { workerRpc } from "@/lib/client/worker-rpc";
 
 export interface VisitorKeys {
   kid: string;
@@ -10,30 +11,25 @@ export interface VisitorKeys {
 
 export const visitor: { keys?: VisitorKeys; pending?: Promise<VisitorKeys> } = {};
 
+/**
+ * The keys worker stays alive for the page view: it holds the secret keys, and does every
+ * verification the page makes (lib/client/trust).
+ */
+export const keysCall = workerRpc(
+  () => new Worker(new URL("../world/keys.worker.ts", import.meta.url)),
+);
+
 export function generateVisitorKeys(): Promise<VisitorKeys> {
-  visitor.pending ??= new Promise((resolve, reject) => {
-    const w = new Worker(new URL("../world/keys.worker.ts", import.meta.url));
-    w.onmessage = (e) => {
-      const d = e.data as {
-        kemPublicKey: Uint8Array;
-        kid: string;
-        hybridPublicKey: Uint8Array;
-        timings: VisitorKeys["timings"];
-        signatureBytes: number;
-      };
-      world.key = d.kemPublicKey;
-      visitor.keys = {
-        kid: d.kid,
-        hybridPublicKey: d.hybridPublicKey,
-        timings: d.timings,
-        signatureBytes: d.signatureBytes,
-      };
-      w.terminate();
-      notify();
-      resolve(visitor.keys);
+  visitor.pending ??= keysCall<VisitorKeys & { kemPublicKey: Uint8Array }>("keys").then((d) => {
+    world.key = d.kemPublicKey;
+    visitor.keys = {
+      kid: d.kid,
+      hybridPublicKey: d.hybridPublicKey,
+      timings: d.timings,
+      signatureBytes: d.signatureBytes,
     };
-    w.onerror = (e) => reject(new Error(e.message));
-    w.postMessage(null);
+    notify();
+    return visitor.keys;
   });
   return visitor.pending;
 }

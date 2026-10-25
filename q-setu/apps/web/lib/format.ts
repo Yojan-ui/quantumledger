@@ -17,3 +17,12 @@ export const hexPreview = (b: Uint8Array, n = 24) => {
   for (let i = 0; i < Math.min(b.length, n); i++) s += b[i]!.toString(16).padStart(2, "0");
   return b.length > n ? `${s}…` : s;
 };
+
+/** decodeURIComponent that never throws: a malformed escape (a stray "%") comes back as it was. */
+export function safeDecode(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}

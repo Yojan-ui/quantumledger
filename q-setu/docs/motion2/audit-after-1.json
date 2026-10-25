@@ -1,0 +1,7111 @@
+[
+  {
+    "path": "/",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [106],
+      "scroll": {
+        "frames": 289,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 212,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0033,
+      "shifts": [
+        {
+          "value": 0.0023,
+          "nodes": ["div.mt-8"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/platform?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/diagnostics?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 241
+  },
+  {
+    "path": "/platform",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [76],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 36,
+        "worst": 83,
+        "p95": 16.8,
+        "over50": 1,
+        "fps": 54
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=4RbsUTmCTnNodW50",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 257.6
+  },
+  {
+    "path": "/shield",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 81,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/app?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield/live?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=1wEsswCW_yeBmKfp",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 270
+  },
+  {
+    "path": "/shield/live",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 93,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 260
+  },
+  {
+    "path": "/solutions",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [77],
+      "scroll": {
+        "frames": 262,
+        "worst": 50,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 91,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=dakuujLrL6N7y_yt",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 221
+  },
+  {
+    "path": "/solutions/fintech",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [103],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 58,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=IZbjg0DerzkZ-Fj5",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 181
+  },
+  {
+    "path": "/solutions/healthcare",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [92],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=LVXhpXTeImHILPPC",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 201
+  },
+  {
+    "path": "/solutions/education",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [90],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=Jadk1AE5QIYc9RdH",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 221
+  },
+  {
+    "path": "/solutions/government",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [82],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/platform?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=hrbEPuy2OQrrqYy6",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 231
+  },
+  {
+    "path": "/diagnostics",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [76],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 360,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0043,
+      "shifts": [
+        {
+          "value": 0.0017,
+          "nodes": [
+            "p.text-fg-2",
+            "button.hidden.h-8.rounded-sm",
+            "button.h-8.rounded-sm.border",
+            "(text)",
+            "dd.min-w-0.truncate.text-right"
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/?_rsc=5uLgBCEKVAcDC1CS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 61
+  },
+  {
+    "path": "/demos",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 260,
+        "worst": 33,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 59
+      },
+      "transition": {
+        "frames": 126,
+        "worst": 34,
+        "p95": 33.4,
+        "over50": 0,
+        "fps": 33
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=Jf_cbMjXKcBw7QMQ",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 220
+  },
+  {
+    "path": "/index",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [95],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/shield?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=_gTsEsVXdPB9twQu",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 181
+  },
+  {
+    "path": "/demo/how-it-works",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [78],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 245,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.008,
+      "shifts": [
+        {
+          "value": 0.007,
+          "nodes": [
+            "div.pointer-events-none.absolute.inset-x-0",
+            "div.pr-6.md:border-l.md:border-line",
+            "div.pr-6.md:border-l.md:border-line",
+            "div.pr-6.md:border-l.md:border-line",
+            "div.pr-6.md:border-l.md:border-line"
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demos?_rsc=wZyECymZZ2VIot9Z",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 61
+  },
+  {
+    "path": "/demo/deploy",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [78],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 243,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demos?_rsc=kqn8NtDtrZ53EOk8",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 61
+  },
+  {
+    "path": "/demo/qday",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [78],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 245,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.019,
+      "shifts": [
+        {
+          "value": 0.0122,
+          "nodes": ["div.pointer-events-none.absolute.inset-x-0"]
+        },
+        {
+          "value": 0.003,
+          "nodes": [
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3"
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demos?_rsc=fkENv3RCJmSH95Zg",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=WVgpNe78MT_28VeH",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 21
+  },
+  {
+    "path": "/demo/ledger",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [77],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 574,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0083,
+      "shifts": [
+        {
+          "value": 0.0033,
+          "nodes": [
+            "div.ml-auto.flex.flex-wrap",
+            "div.pr-6.md:border-l.md:border-line",
+            "div.pr-6.md:border-l.md:border-line",
+            "div.pr-6.md:border-l.md:border-line",
+            "div.pr-6.md:border-l.md:border-line"
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demos?_rsc=qePgz_B-wUDGm_7C",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=r_APt36-VFXudRiP",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=r_APt36-VFXudRiP",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=r_APt36-VFXudRiP",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=r_APt36-VFXudRiP",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 51
+  },
+  {
+    "path": "/demo/scanner",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 305,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0003,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demos?_rsc=cFioy5qGKfabZFhF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 60
+  },
+  {
+    "path": "/pricing",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=yrzGVZEURCHTUGxG",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 210
+  },
+  {
+    "path": "/security",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=lNyNOyqLeBrCcjRN",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 210
+  },
+  {
+    "path": "/about",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [91],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=_paE49VugaXyxB1G",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 211
+  },
+  {
+    "path": "/changelog",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=wzdoXYREmoMA9dfK",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 150
+  },
+  {
+    "path": "/contact",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 210
+  },
+  {
+    "path": "/privacy",
+    "tag": "1440",
+    "m": {
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED"
+        }
+      ],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=rwu5VT28ZerHQs0v",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/api/stream",
+          "why": "net::ERR_NETWORK_IO_SUSPENDED"
+        }
+      ]
+    },
+    "score": 245
+  },
+  {
+    "path": "/terms",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 264,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/platform?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=DNFl5fs2IjKQRqXM",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 240
+  },
+  {
+    "path": "/docs/api",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=ZEGLIF8C-3DXSnI0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=ZEGLIF8C-3DXSnI0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=ZEGLIF8C-3DXSnI0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 270
+  },
+  {
+    "path": "/docs",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 310
+  },
+  {
+    "path": "/docs/security-model",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 224,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 260
+  },
+  {
+    "path": "/docs/adapters/edge",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=wkvWoIQEw9j83LrQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=wkvWoIQEw9j83LrQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=wkvWoIQEw9j83LrQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 300
+  },
+  {
+    "path": "/docs/adapters/sdk",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=xiFmjObillsgkiqD",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=xiFmjObillsgkiqD",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=xiFmjObillsgkiqD",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=xiFmjObillsgkiqD",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 280
+  },
+  {
+    "path": "/docs/adapters/shield",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=n8f0dZreNMTPCDj2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=n8f0dZreNMTPCDj2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=n8f0dZreNMTPCDj2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=n8f0dZreNMTPCDj2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 250
+  },
+  {
+    "path": "/docs/adapters/vault",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/platform?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 270
+  },
+  {
+    "path": "/docs/adapters/web",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=XftLZ3UCnnNkeN9O",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=XftLZ3UCnnNkeN9O",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=XftLZ3UCnnNkeN9O",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=XftLZ3UCnnNkeN9O",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=XftLZ3UCnnNkeN9O",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 250
+  },
+  {
+    "path": "/docs/concepts/hybrid-kem",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/platform?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 280
+  },
+  {
+    "path": "/docs/concepts",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=XhJMm7VSZ5zT8J-b",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=XhJMm7VSZ5zT8J-b",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=XhJMm7VSZ5zT8J-b",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 290
+  },
+  {
+    "path": "/docs/concepts/key-rotation",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demos?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=6_yHZT3Tb5PdBHUG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=6_yHZT3Tb5PdBHUG",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 290
+  },
+  {
+    "path": "/docs/concepts/sessions",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 290
+  },
+  {
+    "path": "/docs/concepts/signatures",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 290
+  },
+  {
+    "path": "/join",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0132,
+      "shifts": [
+        {
+          "value": 0.0132,
+          "nodes": ["fieldset.mt-8", "::after."]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/?_rsc=ZKT-nziZdQWI1pvG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=a87G1evOvoS83bya",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=a87G1evOvoS83bya",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=a87G1evOvoS83bya",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=a87G1evOvoS83bya",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 50
+  },
+  {
+    "path": "/pitch",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [78],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/ledger?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 51
+  },
+  {
+    "path": "/scan/www.irctc.co.in",
+    "tag": "1440",
+    "m": {
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED"
+        }
+      ],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/api/stream",
+          "why": "net::ERR_NETWORK_IO_SUSPENDED"
+        }
+      ]
+    },
+    "score": 265
+  },
+  {
+    "path": "/this-page-does-not-exist",
+    "tag": "1440",
+    "m": {
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 257,
+        "worst": 283,
+        "p95": 16.8,
+        "over50": 1,
+        "fps": 56
+      },
+      "transition": {
+        "frames": 40,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/this-page-does-not-exist",
+          "why": "HTTP 404"
+        },
+        {
+          "url": "/?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/shield?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/fintech?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/healthcare?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/education?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/solutions/government?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/contact?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/about?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/privacy?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/terms?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/api/health",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 321.6
+  },
+  {
+    "path": "/",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [108, 56, 68, 200],
+      "scroll": {
+        "frames": 278,
+        "worst": 33,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 214,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0059,
+      "shifts": [
+        {
+          "value": 0.0054,
+          "nodes": ["div.absolute.right-5.top-6"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=ZmCQ44b92m4mXe_R",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 34
+  },
+  {
+    "path": "/platform",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54, 99, 187],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=igG17uxtuZnTNGU2",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 33
+  },
+  {
+    "path": "/shield",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [51, 117],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=Cl5qVxdK7x_EkJZi",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 42
+  },
+  {
+    "path": "/shield/live",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53, 121],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=qf1TO_W2Uutzm343",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/security?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=soh_8Rj2uyTDXI7T",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 82
+  },
+  {
+    "path": "/solutions",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [52, 115, 196],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=OORq0xsJAT4Ux3pG",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 43
+  },
+  {
+    "path": "/solutions/fintech",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53, 119, 192],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=1s1cDpN3PerCYgd4",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 33
+  },
+  {
+    "path": "/solutions/healthcare",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54, 117, 189],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=Bt4bAK-uhjfiVdYp",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 43
+  },
+  {
+    "path": "/solutions/education",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [52, 119, 195],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=zkRnjQUQJYniuD5_",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 33
+  },
+  {
+    "path": "/solutions/government",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53, 118, 193],
+      "scroll": {
+        "frames": 267,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=uqhsyBNQ7mioKwOT",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 43
+  },
+  {
+    "path": "/diagnostics",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [52, 93, 131, 92, 415, 66, 73],
+      "scroll": {
+        "frames": 279,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 360,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0236,
+      "shifts": [
+        {
+          "value": 0.0077,
+          "nodes": ["div.absolute.bottom-3.left-3", "dd.min-w-0.truncate.text-right"]
+        },
+        {
+          "value": 0.0076,
+          "nodes": ["button.h-8.rounded-sm.border", "(text)", "dd.min-w-0.truncate.text-right"]
+        },
+        {
+          "value": 0.005,
+          "nodes": [
+            "button.h-8.rounded-sm.border",
+            "button.h-8.rounded-sm.border",
+            "dd.min-w-0.truncate.text-right",
+            "(text)",
+            "dd.min-w-0.truncate.text-right"
+          ]
+        },
+        {
+          "value": 0.0019,
+          "nodes": [
+            "dd.min-w-0.truncate.text-right",
+            "dd.min-w-0.truncate.text-right",
+            "dd.min-w-0.truncate.text-right",
+            "(text)",
+            "dd.min-w-0.truncate.text-right"
+          ]
+        },
+        {
+          "value": 0.0013,
+          "nodes": ["div.absolute.bottom-3.left-3"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=X1OHO8Wm4TCDMONl",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 47
+  },
+  {
+    "path": "/demos",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [96, 224],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 135,
+        "worst": 34,
+        "p95": 33.4,
+        "over50": 0,
+        "fps": 36
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=v0d3kxW6pJe8X4cc",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 42
+  },
+  {
+    "path": "/index",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54, 96, 196],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=li3HOL36sEipfFMQ",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 53
+  },
+  {
+    "path": "/demo/how-it-works",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [57, 73, 56, 210],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 238,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0059,
+      "shifts": [
+        {
+          "value": 0.0059,
+          "nodes": ["div.pointer-events-none.absolute.inset-x-0"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=CVhrOiiOx8uuK5BS",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 44
+  },
+  {
+    "path": "/demo/deploy",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [61, 165, 211],
+      "scroll": {
+        "frames": 264,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 225,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=HAx0ck6KAccnSpQw",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 33
+  },
+  {
+    "path": "/demo/qday",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [81, 110, 280],
+      "scroll": {
+        "frames": 265,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 228,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0158,
+      "shifts": [
+        {
+          "value": 0.0096,
+          "nodes": [
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3",
+            "li.flex.items-center.gap-3"
+          ]
+        },
+        {
+          "value": 0.0059,
+          "nodes": ["div.pointer-events-none.absolute.inset-x-0"]
+        }
+      ],
+      "failed": []
+    },
+    "score": 3
+  },
+  {
+    "path": "/demo/ledger",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [64, 88, 276],
+      "scroll": {
+        "frames": 267,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 640,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=r_APt36-VFXudRiP",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=r_APt36-VFXudRiP",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 23
+  },
+  {
+    "path": "/demo/scanner",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [72, 161],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 308,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0238,
+      "shifts": [
+        {
+          "value": 0.0238,
+          "nodes": [
+            "textarea#scan-input.h-stage-sm.w-full.resize-y",
+            "div.inline-flex.flex-wrap.rounded-sm"
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=XOdE9CWIKECMXNsK",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 32
+  },
+  {
+    "path": "/pricing",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [57, 132],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=mf32xbX59GT2m-y9",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 32
+  },
+  {
+    "path": "/security",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [58, 128],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=YyJpiOpUMgxYTgWR",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 52
+  },
+  {
+    "path": "/about",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [58, 128, 212],
+      "scroll": {
+        "frames": 269,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=kL8YMqvKhVCpUJei",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 33
+  },
+  {
+    "path": "/changelog",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [73, 165],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=YcWaCux-N8fbPgQB",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 32
+  },
+  {
+    "path": "/contact",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [58, 127],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=HqxYgmTx6NZNLxiF",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=8k6vkql5ktX3Dkf2",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 72
+  },
+  {
+    "path": "/privacy",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [57, 126],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=hWY7gX7Gns5i7uOm",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 42
+  },
+  {
+    "path": "/terms",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [60, 133],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=PVgkf2z9MJ5DB4vO",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 42
+  },
+  {
+    "path": "/docs/api",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [59, 133],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=-XNKPIF-pp59HNTb",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=ZEGLIF8C-3DXSnI0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=ZEGLIF8C-3DXSnI0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/join?_rsc=ZEGLIF8C-3DXSnI0",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 162
+  },
+  {
+    "path": "/docs",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [57, 126],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 225,
+        "worst": 33,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=mOOM5CVjrHYor5c0",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=-yZNePjRDOH8dHa4",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 122
+  },
+  {
+    "path": "/docs/security-model",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [59, 140],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/docs/adapters/edge?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=ejw0jUwc8VnsHoWA",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=qKiOHNskj0JCCwW5",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 72
+  },
+  {
+    "path": "/docs/adapters/edge",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [58, 126],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=WD6m8JxCZODu4c8E",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=wkvWoIQEw9j83LrQ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=wkvWoIQEw9j83LrQ",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 122
+  },
+  {
+    "path": "/docs/adapters/sdk",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [60, 140],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/docs/adapters/vault?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=j4lQJqjKtAVasEwn",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=xiFmjObillsgkiqD",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=xiFmjObillsgkiqD",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 92
+  },
+  {
+    "path": "/docs/adapters/shield",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [59, 137],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=567VnnVyoS7TtiLK",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=n8f0dZreNMTPCDj2",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 112
+  },
+  {
+    "path": "/docs/adapters/vault",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [58, 139],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=kv9lsddgBKhJD5rs",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=1jfxpR2Zi_uAEwDm",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 122
+  },
+  {
+    "path": "/docs/adapters/web",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [64, 150],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 33,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=BBL8WKlfLAiV_t0U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=XftLZ3UCnnNkeN9O",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 122
+  },
+  {
+    "path": "/docs/concepts/hybrid-kem",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [60, 90, 214],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 224,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/sdk?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=gqGTFSTsulNNLLgj",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=7xDt0A_MVBf5rktZ",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 143
+  },
+  {
+    "path": "/docs/concepts",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [88, 199],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=EESBW6h5xnrddwAd",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 102
+  },
+  {
+    "path": "/docs/concepts/key-rotation",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [137, 65, 334],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/docs/adapters/edge?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=6_yHZT3Tb5PdBHUG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=6_yHZT3Tb5PdBHUG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=6_yHZT3Tb5PdBHUG",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=G8tipOl4ncPBQSUy",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 73
+  },
+  {
+    "path": "/docs/concepts/sessions",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [89, 202],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/hybrid-kem?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/signatures?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=-z7zyCPbfJKqBtEY",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/platform?_rsc=NOTXi-IqyABhXujR",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 112
+  },
+  {
+    "path": "/docs/concepts/signatures",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [90, 198],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/docs?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/shield?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/web?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/edge?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/adapters/vault?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/sessions?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/concepts/key-rotation?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/security-model?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/how-it-works?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=7bVME0r6j-Fvcmtf",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=khOlON73OxRI5Y2k",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 142
+  },
+  {
+    "path": "/join",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [74, 91, 219],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0936,
+      "shifts": [
+        {
+          "value": 0.0936,
+          "nodes": ["fieldset.mt-8"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/demo/qday?_rsc=a87G1evOvoS83bya",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 21.72
+  },
+  {
+    "path": "/pitch",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [111, 79, 227],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/deploy?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=MyG8qYdSY3bNpC4n",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 43
+  },
+  {
+    "path": "/scan/www.irctc.co.in",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [59, 119, 63, 270],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/demo/how-it-works?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=omhYoygxHSoetFhJ",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/pricing?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/scanner?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/changelog?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/docs/api?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demos?_rsc=FP8iid7NPS2Otlbx",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 94
+  },
+  {
+    "path": "/this-page-does-not-exist",
+    "tag": "390",
+    "m": {
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [90, 197],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/this-page-does-not-exist",
+          "why": "HTTP 404"
+        },
+        {
+          "url": "/?_rsc=0JRbJX4JgpfuvHsr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/deploy?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/ledger?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/demo/qday?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/index?_rsc=gP-dKIzQhcdxdKSx",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 77
+  }
+]

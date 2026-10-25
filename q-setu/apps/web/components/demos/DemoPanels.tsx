@@ -3,6 +3,7 @@
 import { Grid, Heading, Panel, Reveal, Text } from "@/components/ui";
 import { useEffect, useRef } from "react";
 import { track } from "@/lib/client/analytics";
+import { termify } from "@/components/ui/Term";
 
 export const DEMOS = [
   {
@@ -48,7 +49,7 @@ export function DemoPanels() {
                   {d.title}
                 </Heading>
                 <Text size="small" className="mt-2">
-                  {d.body}
+                  {termify(d.body)}
                 </Text>
                 <p className="mt-6 text-small text-fg">Launch →</p>
               </div>

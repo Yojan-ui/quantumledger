@@ -3,13 +3,15 @@ import { Footer } from "./Footer";
 import { Container, Grid } from "./layout";
 import { Nav } from "./Nav";
 import { Label, Text } from "./type";
+import { Breadcrumb, NextStep, PagePurpose } from "./Wayfinding";
 
-/** Every content page: nav, main, footer. */
+/** Every content page: nav, main, its next step, footer. */
 export function PageShell({ children }: { children: ReactNode }) {
   return (
     <>
       <Nav />
       <main id="main">{children}</main>
+      <NextStep />
       <Footer />
     </>
   );
@@ -35,11 +37,17 @@ export function PageHero({
   return (
     <section className="border-b border-line">
       <Container>
-        <Grid className="gap-y-8 py-24 md:py-32">
+        <Grid className="gap-y-8 py-20 md:py-30">
           <div className={`col-span-12 ${globe ? "md:col-span-7" : "lg:col-span-8"}`}>
+            <Breadcrumb className="mb-6" />
             <Label>{label}</Label>
             <h1 className="mt-4 max-w-text text-h1-sm font-medium text-fg md:text-h1">{title}</h1>
-            {lead && <Text className="mt-4 max-w-text">{lead}</Text>}
+            <PagePurpose className="mt-3" />
+            {lead && (
+              <Text size="lead" className="mt-6 max-w-text">
+                {lead}
+              </Text>
+            )}
             {children && <div className="mt-8">{children}</div>}
           </div>
           {globe && (
@@ -69,7 +77,10 @@ export function Block({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-20 border-b border-line py-16 md:py-24">
+    <section
+      id={id}
+      className="crosshairs scroll-mt-20 border-b border-line py-10 md:py-15 lg:py-20"
+    >
       <Container>
         <Grid className="gap-y-6">
           <div className="col-span-12 md:col-span-4">

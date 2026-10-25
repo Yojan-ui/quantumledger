@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { Sector } from "./api";
+import { webhookHost } from "./webhook";
 
 /** Request schemas, shared by the routes (validation) and /api/docs (OpenAPI). */
 
@@ -35,13 +36,13 @@ export const ScanUrlBody = z.object({
 });
 
 export const FindingInput = z.object({
-  ruleId: z.string(),
-  line: z.number().int(),
-  algorithm: z.string(),
+  ruleId: z.string().max(64),
+  line: z.number().int().min(0).max(1_000_000),
+  algorithm: z.string().max(120),
   primitive: z.enum(["pke", "signature", "key-agree", "kem", "hash", "block-cipher", "protocol"]),
   severity: z.enum(["critical", "high", "medium", "low", "info"]),
   quantumVulnerable: z.boolean(),
-  match: z.string(),
+  match: z.string().max(500),
 });
 
 export const PlanBody = z.object({
@@ -108,10 +109,10 @@ export const RoomSendBody = z.object({
     v: z.number(),
     profile: z.enum(["standard", "edge", "maximum"]),
     algIds: z.object({
-      kem: z.string(),
-      sig: z.string().nullable(),
-      kdf: z.string(),
-      aead: z.string(),
+      kem: z.string().max(64),
+      sig: z.string().max(64).nullable(),
+      kdf: z.string().max(64),
+      aead: z.string().max(64),
     }),
     rid: z.string().max(64),
     sid: z.string().max(64).nullable(),
@@ -135,3 +136,61 @@ export const AnchorBody = z.object({
 });
 
 export const AnchorParams = z.object({ id: z.coerce.number().int().min(1) });
+
+// ── Shield dashboard ─────────────────────────────────────────────────────────────────────────
+const Email = z.string().trim().toLowerCase().email().max(254);
+export const AppSignupBody = z.object({ email: Email, password: z.string().min(12).max(256) });
+export const AppLoginBody = z.object({ email: Email, password: z.string().min(1).max(256) });
+export const AppCodeBody = z.object({ code: z.string().regex(/^\d{6}$/) });
+export const SiteCreateBody = z.object({
+  domain: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(253)
+    .regex(
+      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/,
+      "A domain like www.example.com",
+    ),
+});
+export const SiteSettingsBody = z.object({
+  mode: z.enum(["off", "monitor", "protect", "strict"]).optional(),
+  alertEmail: z.union([Email, z.literal("")]).optional(),
+  // A public https address only (no internal hosts): checked again, with DNS, at send time.
+  alertWebhook: z
+    .union([
+      z
+        .string()
+        .url()
+        .max(500)
+        .superRefine((u, ctx) => {
+          const h = webhookHost(u);
+          if ("error" in h) ctx.addIssue({ code: "custom", message: h.error });
+        }),
+      z.literal(""),
+    ])
+    .optional(),
+});
+export const ReportQuery = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) });
+export const ShieldEventsBody = z.object({
+  events: z
+    .array(
+      z.object({
+        type: z.string().max(32),
+        at: z.number().int().nonnegative(),
+        ip: z.string().max(64),
+        path: z.string().max(2000),
+        score: z.number().min(0).max(100),
+        reasons: z.array(z.string().max(200)).max(20),
+        monitorOnly: z.boolean(),
+      }),
+    )
+    .max(500),
+  stats: z
+    .object({
+      pq: z.number().int().nonnegative().max(1e9).optional(),
+      classical: z.number().int().nonnegative().max(1e9).optional(),
+      requests: z.number().int().nonnegative().max(1e9).optional(),
+    })
+    .optional(),
+});

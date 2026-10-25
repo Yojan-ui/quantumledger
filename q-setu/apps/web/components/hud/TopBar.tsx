@@ -20,8 +20,10 @@ import {
 import { download, reportPdf } from "@/lib/client/report-pdf";
 import { setSfx, useSfx } from "@/lib/client/sfx";
 import { WORDMARK } from "@/lib/brand/mark";
+import { Term } from "@/components/ui/Term";
 
 const PILL = {
+  idle: { text: "AWAITING TARGET", cls: "border-line text-fg-3" },
   critical: { text: "THREAT CRITICAL", cls: "border-danger text-danger" },
   mitigating: { text: "MITIGATING", cls: "border-warn text-warn" },
   secured: { text: "SECURED", cls: "border-ok text-ok" },
@@ -70,12 +72,16 @@ export function TopBar({ compact = false }: { compact?: boolean }) {
           </span>
         )}
       </Link>
+      {/* Real values only. Until they exist the readout is invisible but keeps its width (a
+          same-length stand-in), so the bar never re-wraps when they arrive. */}
       <span
-        className="hidden font-mono text-micro uppercase tabular text-fg-3 xl:inline"
+        className={`hidden font-mono text-micro uppercase tabular text-fg-3 xl:inline ${s.patch && metrics ? "" : "invisible"}`}
+        aria-hidden={!(s.patch && metrics) || undefined}
         data-coords
       >
-        SID {s.patch ? s.patch.sessionId.slice(0, 8) : "--------"} · NODES{" "}
-        {metrics?.policy.links ?? "–"} · G{metrics?.policy.generation ?? "–"}
+        <Term id="sid">SID</Term> {s.patch ? s.patch.sessionId.slice(0, 8) : "00000000"} ·{" "}
+        <Term id="nodes">NODES</Term> {metrics?.policy.links ?? 0} · G
+        {metrics?.policy.generation ?? 0}
       </span>
       <div
         role="radiogroup"
@@ -93,7 +99,10 @@ export function TopBar({ compact = false }: { compact?: boolean }) {
             title={`${LEVELS[l].kem} · ${LEVELS[l].sig}`}
             className={`h-7 px-2 font-mono text-micro uppercase transition-colors duration-150 disabled:opacity-40 ${s.level === l ? "bg-raised text-fg" : "text-fg-3 hover:text-fg"}`}
           >
-            {l} <span className="hidden md:inline">{LEVELS[l].label}</span>
+            <Term id={l === "L1" ? "l1" : l === "L5" ? "l5" : "l3"} focusable={false}>
+              {l}
+            </Term>{" "}
+            <span className="hidden md:inline">{LEVELS[l].label}</span>
           </button>
         ))}
       </div>
@@ -152,7 +161,10 @@ export function TopBar({ compact = false }: { compact?: boolean }) {
               }
               className={`${btn} text-fg-2 hover:text-fg disabled:opacity-40`}
             >
-              CBOM.JSON
+              <Term id="cbom" focusable={false}>
+                CBOM
+              </Term>
+              .JSON
             </button>
           </>
         )}

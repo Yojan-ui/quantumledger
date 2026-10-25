@@ -3,17 +3,29 @@
 /**
  * Twelve great-circle arcs, one per live-mesh route. Every pulse is a real packet from the bus
  * (LiveTraffic): its travel time follows the measured latency, and an arc lights up while it carries
- * traffic, then settles back. A rejected (tampered) packet snaps halfway and its arc flashes saffron.
+ * traffic, then settles back. A packet is thrown along its arc: fast out, slowest at the apex, fast
+ * in (lib/motion throwArc), with a short fading trail sampled from its own recent path (a faster
+ * packet leaves a longer streak), and its landing ripples on the destination node (accent if sealed,
+ * warn if classical). A rejected (tampered) packet snaps halfway and its arc flashes saffron.
  * The director still decides which arc a chapter is about; that one stays fully bright.
  */
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import { params } from "./director";
 import { ARCS, arcPoints, toVec3 } from "./geo";
 import { palette } from "./palette";
 import { setPinned, world, type PacketInfo } from "./store";
 import { set3 } from "@/components/scenes/geometry";
+import { throwArc } from "@/lib/motion";
+
+/** Points per packet: the head and its trail. */
+const TRAIL = 6;
+/** Seconds between trail samples (the trail is sampled in time, so speed stretches it). */
+const TRAIL_DT = 0.035;
 
 const SEG = 64;
 const N = ARCS.length;
@@ -164,16 +176,47 @@ export function Arcs() {
     return { g, m };
   }, [c]);
 
+  // The arcs drawn thick (screen-space, ~2 px) with a soft glow pass. The shader above stays the
+  // source of truth for the per-arc state; its colour and alpha are baked per vertex on the CPU
+  // each frame (premultiplied, additive), written in place into the line's colour buffer.
+  const view = useThree((st) => st.size);
+  const thick = useMemo(() => {
+    const pos = lines.g.attributes.position!.array as Float32Array;
+    const geo = new LineSegmentsGeometry();
+    geo.setPositions(pos);
+    geo.setColors(new Float32Array(pos.length));
+    const mat = (w: number, o: number) =>
+      new LineMaterial({
+        linewidth: w,
+        vertexColors: true,
+        transparent: true,
+        opacity: o,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        worldUnits: false,
+        toneMapped: false,
+      });
+    const core = new LineSegments2(geo, mat(2, 1));
+    const glow = new LineSegments2(geo, mat(7, 0.16));
+    core.frustumCulled = glow.frustumCulled = false;
+    const buf = (geo.attributes.instanceColorStart as THREE.InterleavedBufferAttribute)
+      .data as THREE.InstancedInterleavedBuffer;
+    return { geo, core, glow, buf };
+  }, [lines]);
+  const mix3 = useMemo(() => ({ acc: new THREE.Color(), c: new THREE.Color() }), []);
+
   const pulses = useMemo(() => {
     const n = 64;
+    const pts = n * TRAIL;
     const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-    g.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(n), 1));
-    g.setAttribute("aWarn", new THREE.BufferAttribute(new Float32Array(n), 1));
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pts * 3), 3));
+    g.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(pts), 1));
+    g.setAttribute("aWarn", new THREE.BufferAttribute(new Float32Array(pts), 1));
+    g.setAttribute("aAlpha", new THREE.BufferAttribute(new Float32Array(pts).fill(1), 1));
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 3);
     const m = new THREE.ShaderMaterial({
-      vertexShader: `attribute float aSize; attribute float aWarn; varying float vWarn; uniform float uPR; void main(){ vWarn = aWarn; vec4 mv = modelViewMatrix*vec4(position,1.); gl_Position = projectionMatrix*mv; gl_PointSize = aSize*uPR/-mv.z; }`,
-      fragmentShader: `uniform vec3 uColor; uniform vec3 uWarn; varying float vWarn; void main(){ float d = length(gl_PointCoord-.5); if (d > .5) discard; gl_FragColor = vec4(mix(uColor, uWarn, vWarn), smoothstep(.5,.2,d)); }`,
+      vertexShader: `attribute float aSize; attribute float aWarn; attribute float aAlpha; varying float vWarn; varying float vAlpha; uniform float uPR; void main(){ vWarn = aWarn; vAlpha = aAlpha; vec4 mv = modelViewMatrix*vec4(position,1.); gl_Position = projectionMatrix*mv; gl_PointSize = aSize*uPR/-mv.z; }`,
+      fragmentShader: `uniform vec3 uColor; uniform vec3 uWarn; varying float vWarn; varying float vAlpha; void main(){ float d = length(gl_PointCoord-.5); if (d > .5) discard; gl_FragColor = vec4(mix(uColor, uWarn, vWarn), smoothstep(.5,.2,d) * vAlpha); }`,
       uniforms: {
         uPR: { value: pr },
         uColor: { value: c.warn.clone() },
@@ -198,7 +241,13 @@ export function Arcs() {
     const tint = lines.m.uniforms.uTint!.value as number[];
     const fl = lines.m.uniforms.uFlash!.value as number[];
     const snap = lines.m.uniforms.uSnap!.value as number[];
+    // The global Q-Day switch: every classical (untinted) arc cracks for its 6 s; sealed ones hold.
+    const qday = world.qdayAt ? performance.now() - world.qdayAt : -1;
     for (let i = 0; i < N; i++) {
+      if (qday >= 0 && qday < 6000 && tint[i]! < 0.5) {
+        flash.current[i] = Math.max(flash.current[i]!, 0.9);
+        snap[i] = 0.5;
+      }
       // Traffic lights an arc up (an arc "spawns" with its packet), then it settles back.
       activity.current[i] = Math.max(0, activity.current[i]! - dt * 0.35);
       flash.current[i] = Math.max(0, flash.current[i]! - dt * 1.1);
@@ -213,6 +262,46 @@ export function Arcs() {
         : Math.max(params.arcTint[i]!, activity.current[i]! > 0.05 ? 1 : 0);
       tint[i] = tint[i]! + (tintTarget - tint[i]!) * Math.min(1, dt * 3);
       fl[i] = flash.current[i]!;
+    }
+
+    // Bake the arcs' colour × alpha per vertex into the thick lines (see the shader for the maths).
+    {
+      const arr = thick.buf.array as Float32Array;
+      const accent = lines.m.uniforms.uAccent!.value as THREE.Color;
+      const g = lines.m.uniforms.uGrad!.value as number;
+      const sm = (e0: number, e1: number, x: number) => {
+        const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+        return t * t * (3 - 2 * t);
+      };
+      const { acc, c: col } = mix3;
+      for (let a = 0; a < N; a++) {
+        const lv = level[a]!;
+        const tn = tint[a]!;
+        const flv = fl[a]!;
+        const sn = snap[a]!;
+        for (let i = 0; i < SEG; i++) {
+          for (let e = 0; e < 2; e++) {
+            const t = (i + e) / SEG;
+            acc.copy(c.kem).lerp(c.sig, t);
+            acc.lerpColors(accent, acc, g);
+            col.copy(c.text).lerp(acc, tn).lerp(c.danger, flv);
+            const ends = sm(0, 0.05, t) * (1 - sm(0.95, 1, t));
+            const gap = flv > 0 ? sm(0, 0.01, Math.abs(t - sn) - (1 - flv) * 0.12) : 1;
+            const al = Math.max(lv * 0.55, flv * 0.9) * ends * gap;
+            const k = ((a * SEG + i) * 2 + e) * 3;
+            arr[k] = col.r * al;
+            arr[k + 1] = col.g * al;
+            arr[k + 2] = col.b * al;
+          }
+        }
+      }
+      thick.buf.needsUpdate = true;
+      const w = view.width * pr;
+      const h = view.height * pr;
+      (thick.core.material as LineMaterial).resolution.set(w, h);
+      (thick.glow.material as LineMaterial).resolution.set(w, h);
+      (thick.core.material as LineMaterial).linewidth = 2 * pr;
+      (thick.glow.material as LineMaterial).linewidth = 7 * pr;
     }
 
     // Live packets: at most one per arc in flight, so at most 12 on screen.
@@ -259,6 +348,7 @@ export function Arcs() {
     const pos = pulses.g.attributes.position!.array as Float32Array;
     const size = pulses.g.attributes.aSize!.array as Float32Array;
     const warn = pulses.g.attributes.aWarn!.array as Float32Array;
+    const alpha = pulses.g.attributes.aAlpha!.array as Float32Array;
     size.fill(0);
     let k = 0;
     // Compacted in place (no new array per frame).
@@ -274,16 +364,28 @@ export function Arcs() {
       }
       if (l.t >= 1) {
         world.harvested++;
-        if (l.arriveAt && params.accent === "accent")
-          world.ripples.push({ city: l.arriveAt, at: performance.now() });
+        if (l.arriveAt)
+          world.ripples.push({
+            city: l.arriveAt,
+            at: performance.now(),
+            tone: params.accent === "accent" ? "accent" : "warn",
+          });
         continue;
       }
-      if (k < pulses.n) {
-        pointOnArc(l.arc, l.reverse ? 1 - l.t : l.t, tmp);
-        set3(pos, k, tmp.x, tmp.y, tmp.z);
-        warn[k] = l.doomed ? Math.min(1, l.t * 2) : 0;
-        slots.current[k] = l;
-        size[k++] = l.size * Math.min(1, level[l.arc]! * 1.6 + 0.25);
+      if (k + TRAIL <= pulses.n * TRAIL) {
+        // The head (slot k, the one a click inspects), then its trail: the same throw, earlier.
+        const head = l.size * Math.min(1, level[l.arc]! * 1.6 + 0.25);
+        for (let j = 0; j < TRAIL; j++) {
+          const tj = l.t - j * TRAIL_DT * l.speed;
+          if (j > 0 && tj <= 0) break;
+          const u = throwArc(Math.max(0, tj));
+          pointOnArc(l.arc, l.reverse ? 1 - u : u, tmp);
+          set3(pos, k, tmp.x, tmp.y, tmp.z);
+          warn[k] = l.doomed ? Math.min(1, tj * 2) : 0;
+          slots.current[k] = j === 0 ? l : undefined;
+          alpha[k] = j === 0 ? 1 : (1 - j / TRAIL) ** 1.5 * 0.7;
+          size[k++] = j === 0 ? head : head * (1 - j / (TRAIL + 1)) * 0.75;
+        }
       }
       list[keep++] = l;
     }
@@ -292,11 +394,13 @@ export function Arcs() {
     pulses.g.attributes.position!.needsUpdate = true;
     pulses.g.attributes.aSize!.needsUpdate = true;
     pulses.g.attributes.aWarn!.needsUpdate = true;
+    pulses.g.attributes.aAlpha!.needsUpdate = true;
   });
 
   return (
     <group ref={group}>
-      <lineSegments geometry={lines.g} material={lines.m} />
+      <primitive object={thick.glow} />
+      <primitive object={thick.core} />
       <points geometry={pulses.g} material={pulses.m} frustumCulled={false} />
     </group>
   );

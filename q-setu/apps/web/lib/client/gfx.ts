@@ -3,15 +3,30 @@
 /**
  * Shared graphics state for the site's one WebGL canvas.
  *  - quality: the adaptive ladder. PerformanceMonitor steps it up when fps drops, in this order:
- *      0 full · 1 lower DPR (1.25) · 2 fewer particles · 3 no focus dimming or glow halos.
+ *      0 full · 1 lower DPR (1.25) · 2 no dust layer, half the particles · 3 no glass transmission,
+ *      no line glow, focus dimming or halos (DPR 1).
  *  - lost: the GL context was lost; 3D areas show their static poster until it is rebuilt.
+ *  - slow: this device can't keep up even at the bottom of the ladder (or draws WebGL in software).
+ *      The canvas then eases off (components/world/WorldScene): ~20 fps, the hero's opening without
+ *      its particle assembly and burst, and no frames at all while the idle hero is all that's on
+ *      screen and nobody is scrolling, pointing or typing. html[data-gfx-slow] marks it.
+ *  - no3d(): no live 3D at all. A browser that draws WebGL in software (no usable GPU) never starts
+ *      the canvas, and every 3D area keeps its static poster (html[data-gl-off]); so does a phone
+ *      that asks for reduced motion. ?3d=on (kept for the tab) forces live 3D anyway.
  */
 import { useSyncExternalStore } from "react";
 
 export type Quality = 0 | 1 | 2 | 3;
-export const DPR: Record<Quality, number> = { 0: 1.75, 1: 1.25, 2: 1.25, 3: 1 };
+export const DPR: Record<Quality, number> = { 0: 1.5, 1: 1.25, 2: 1.25, 3: 1 };
+/** Phones (< 768 px wide) never render above 1.5× however dense the screen: a 3× buffer costs
+ * four times the fill rate of 1.5× for detail nobody sees at arm's length. */
+export const PHONE_DPR_CAP = 1.5;
+export const dprCap = (q: Quality) =>
+  typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
+    ? Math.min(PHONE_DPR_CAP, DPR[q])
+    : DPR[q];
 
-const state = { quality: 0 as Quality, lost: false };
+const state = { quality: 0 as Quality, lost: false, slow: false };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((fn) => fn());
 
@@ -23,6 +38,67 @@ export function setQuality(q: number) {
   state.quality = next;
   emit();
 }
+
+/** Ease off for the rest of the page view (it never flips back: no stutter between modes). */
+export function setSlow() {
+  if (state.slow) return;
+  state.slow = true;
+  state.quality = 3;
+  document.documentElement.setAttribute("data-gfx-slow", "");
+  emit();
+}
+
+/** WebGL drawn on the CPU (no usable GPU): SwiftShader, llvmpipe, Microsoft's Basic Render Driver. */
+const SOFTWARE = /swiftshader|llvmpipe|softpipe|software|basic render|mesa offscreen/i;
+export function isSoftwareRenderer(gl: WebGLRenderingContext | WebGL2RenderingContext): boolean {
+  const info = gl.getExtension("WEBGL_debug_renderer_info");
+  const name = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? "");
+  return SOFTWARE.test(name);
+}
+
+let soft: boolean | undefined;
+/**
+ * True if this browser draws WebGL in software, where the site's 3D blocks the page for seconds.
+ * Probed once per page load with a throwaway context, released at once. ?3d=on overrides it for
+ * the tab (a demo on a GPU-less laptop, or a check of the 3D itself).
+ */
+export function softwareGL(): boolean {
+  if (soft !== undefined) return soft;
+  soft = false;
+  try {
+    const q = new URLSearchParams(location.search).get("3d");
+    if (q) sessionStorage.setItem("ql-3d", q);
+    if (sessionStorage.getItem("ql-3d") === "on") return soft;
+  } catch {
+    /* storage blocked: probe as usual */
+  }
+  try {
+    const gl = document.createElement("canvas").getContext("webgl");
+    if (gl) {
+      soft = isSoftwareRenderer(gl);
+      gl.getExtension("WEBGL_lose_context")?.loseContext();
+    }
+  } catch {
+    /* no WebGL: the canvas doesn't start anyway */
+  }
+  if (soft) document.documentElement.setAttribute("data-gl-off", "");
+  return soft;
+}
+
+const stillPhone = () =>
+  matchMedia("(prefers-reduced-motion: reduce)").matches &&
+  matchMedia("(max-width: 767px)").matches;
+
+/** No live 3D here: 3D areas keep their posters, and films move on without a camera to wait for. */
+export const no3d = () => softwareGL() || stillPhone();
+
+let known: (() => void) | undefined;
+const ready = new Promise<void>((r) => (known = r));
+/** The canvas has its GL context, so `slow` already reflects a software renderer. */
+export const markGfxKnown = () => known?.();
+/** Resolves once the renderer is known (or after `ms`, if the canvas never comes). */
+export const gfxKnown = (ms = 5000) =>
+  Promise.race([ready, new Promise<void>((r) => setTimeout(r, ms))]);
 
 export function setLost(lost: boolean) {
   if (lost === state.lost) return;
@@ -38,7 +114,7 @@ export function useGfx<T>(select: (s: typeof state) => T): T {
       return () => void listeners.delete(fn);
     },
     () => select(state),
-    () => select({ quality: 0, lost: false }),
+    () => select({ quality: 0, lost: false, slow: false }),
   );
 }
 
@@ -49,8 +125,7 @@ let watching = false;
 export function invalidateAreas() {
   areas = null;
 }
-export function any3dOnScreen(): boolean {
-  const h = window.innerHeight;
+function allAreas(): HTMLElement[] {
   // The element list is cached and re-queried only after the DOM changes; per frame, only the
   // rectangles are read.
   if (!watching) {
@@ -60,10 +135,21 @@ export function any3dOnScreen(): boolean {
       subtree: true,
     });
   }
-  areas ??= [...document.querySelectorAll<HTMLElement>("[data-world-focus], [data-view-on]")];
-  for (const el of areas) {
-    const r = el.getBoundingClientRect();
-    if (r.bottom > 0 && r.top < h && r.width > 0 && r.height > 0) return true;
-  }
-  return false;
+  return (areas ??= [
+    ...document.querySelectorAll<HTMLElement>("[data-world-focus], [data-view-on]"),
+  ]);
 }
+const onScreen = (el: HTMLElement) => {
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight && r.width > 0 && r.height > 0;
+};
+export const any3dOnScreen = () => allAreas().some(onScreen);
+
+/**
+ * True if every 3D area on screen sits in a [data-ambient] stage: one whose motion is only drift,
+ * so a slow device may stop drawing it while nothing happens (WorldScene's Driver).
+ */
+export const onlyAmbientOnScreen = () =>
+  allAreas()
+    .filter(onScreen)
+    .every((el) => el.closest("[data-ambient]"));

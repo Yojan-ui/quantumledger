@@ -9,6 +9,7 @@ import { burst } from "@/lib/client/burst";
 import { track } from "@/lib/client/analytics";
 import { errText } from "@/lib/client/api";
 import { SUGGESTED_HOSTS, type ScanView } from "@/lib/scan-types";
+import { useJourney } from "@/lib/client/journey";
 
 /**
  * "Is your bank quantum-safe?" The signature interaction: a real TLS probe of any public site. The
@@ -16,6 +17,7 @@ import { SUGGESTED_HOSTS, type ScanView } from "@/lib/scan-types";
  */
 export function ScanSite() {
   const ref = useRef<HTMLDivElement>(null);
+  useJourney(ref, 4, 5);
   const input = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -80,7 +82,7 @@ export function ScanSite() {
     <Section id="scan" label="Scan any site" role="warn">
       <div ref={ref}>
         <Grid className="gap-y-12">
-          <div className="col-span-12 lg:col-span-7">
+          <div className="col-span-12 lg:col-span-7 lg:col-start-6">
             <CopyHeading
               simple={"Is your bank quantum\u2011safe?"}
               technical="Scan any site's TLS, live."
@@ -141,16 +143,35 @@ export function ScanSite() {
               )}
               {!busy && !error && result && <ScanResult r={result} />}
               {!busy && !error && !result && (
-                <Text size="small" className="border-t border-line pt-6 text-fg-3">
-                  Results show a 0–100 readiness score, what was negotiated, and three findings in
-                  plain language. Nothing about you is stored; scanned results are kept by host so
-                  they can be shared.
-                </Text>
+                // Before a scan, the result's frame with empty readings: what a scan will fill in.
+                <div className="border-t border-line pt-6">
+                  <dl className="grid grid-cols-3 border-b border-line pb-6">
+                    {[
+                      ["Readiness", "– / 100"],
+                      ["Key exchange", "–"],
+                      ["Certificate key", "–"],
+                    ].map(([k, v]) => (
+                      <div
+                        key={k}
+                        className="border-l border-line pl-4 first:border-l-0 first:pl-0"
+                      >
+                        <dt className="font-mono text-label uppercase text-fg-3">{k}</dt>
+                        <dd className="mt-2 font-mono text-h3 text-fg-3">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <Text size="small" className="mt-6 text-fg-3">
+                    Results show a 0–100 readiness score, what was negotiated, and three findings in
+                    plain language. Nothing about you is stored; scanned results are kept by host so
+                    they can be shared.
+                  </Text>
+                </div>
               )}
             </div>
           </div>
-          <div className="col-span-12 hidden lg:col-span-5 lg:block">
-            <div data-world-focus className="sticky top-24 h-stage" aria-hidden />
+          {/* The globe on the left this time: a close, low shot over the scanned server's city. */}
+          <div className="col-span-12 hidden lg:col-span-5 lg:col-start-1 lg:row-start-1 lg:block">
+            <div data-world-focus data-world-drag className="sticky top-14 h-story" aria-hidden />
           </div>
         </Grid>
       </div>

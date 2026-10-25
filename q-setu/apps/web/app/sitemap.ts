@@ -8,6 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "/",
     "/platform",
+    "/shield",
+    "/shield/live",
     "/solutions",
     ...SOLUTIONS.map((s) => `/solutions/${s.id}`),
     "/diagnostics",

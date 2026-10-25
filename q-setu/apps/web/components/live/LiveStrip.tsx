@@ -118,7 +118,11 @@ export function LiveStrip() {
             Offline mode · scans from cache
           </span>
         )}
-        <p className="flex shrink-0 items-center gap-2 text-fg-2">
+        {/* Hidden (space kept) until the first real metrics arrive: no "0.0" placeholder. */}
+        <p
+          className={`flex shrink-0 items-center gap-2 text-fg-2 ${metrics ? "" : "invisible"}`}
+          aria-hidden={!metrics || undefined}
+        >
           <span className="block h-dot w-dot animate-live rounded-full bg-accent" aria-hidden />
           Live · <Odometer value={rate} /> ops/sec
         </p>

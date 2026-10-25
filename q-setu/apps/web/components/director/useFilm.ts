@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { MIN_HOLD_MS, type Director } from "./useDirector";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { no3d } from "@/lib/client/gfx";
+import type { Director } from "./useDirector";
+
+/** The demos' hold after each beat (the beat has played; the next waits this long). */
+export const BEAT_HOLD_MS = 1200;
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Turns a director into a film a demo can play. Moving to a shot runs the real work that shot shows
  * (`need(i)`) while the camera flies there, and resolves once both are done. Play holds each shot for
- * at least MIN_HOLD_MS after it settles, then advances, so autoplay never outruns the crypto.
+ * at least BEAT_HOLD_MS after it settles, then advances, so autoplay never outruns the crypto.
  * A "detour" (e.g. Attack it) cuts to a shot outside the sequence, runs its work, holds, and returns.
  */
 export function useFilm(
@@ -24,7 +28,7 @@ export function useFilm(
     last: number;
     /** Perform the real work shot `i` shows (crypto, deploys, API calls). */
     need: (i: number) => void | Promise<void>;
-    /** Hold for a shot (ms) in autoplay; at least MIN_HOLD_MS. */
+    /** Hold for a shot (ms) in autoplay; at least BEAT_HOLD_MS. */
     hold?: (id: string) => number | undefined;
     /** Called when the camera arrives at a shot (to stage things that should happen in view). */
     onArrive?: (id: string) => void;
@@ -41,6 +45,18 @@ export function useFilm(
   const returnTo = useRef(0);
   const queued = useRef(false);
   const arrivals = useRef<(() => void)[]>([]);
+  /**
+   * The beat: the shot whose real event has happened and whose camera has arrived. Captions follow
+   * this, not the camera, so a caption never runs ahead of what is on screen.
+   */
+  const [beat, setBeat] = useState(0);
+  const driving = useRef(false);
+  const { settled, index, take } = director.state;
+  useEffect(() => {
+    // Moves the film didn't make (a demo's own buttons, Prev): the beat is the arrival.
+    if (settled && !driving.current) setBeat(index);
+  }, [settled, index]);
+  useEffect(() => setBeat(0), [take]);
   const cfg = useRef({ need, hold, onArrive, restart });
   cfg.current = { need, hold, onArrive, restart };
 
@@ -50,6 +66,12 @@ export function useFilm(
     arrivals.current.splice(0).forEach((r) => r());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [director.onSettled]);
+
+  // No live 3D (lib/client/gfx no3d): there is no camera to report back, so a shot has arrived as
+  // soon as it is reached. The film plays on its real work and holds, over the static poster.
+  useEffect(() => {
+    if (no3d()) onSettled();
+  }, [index, take, onSettled]);
 
   const stop = useCallback(() => {
     playRef.current = false;
@@ -78,8 +100,14 @@ export function useFilm(
   async function advance(i: number) {
     const moving = i !== shot.current;
     const arrive = moving ? new Promise<void>((r) => arrivals.current.push(r)) : null;
-    if (moving) director.go(i);
-    await Promise.all([cfg.current.need(i), arrive]);
+    driving.current = true;
+    try {
+      if (moving) director.go(i);
+      await Promise.all([cfg.current.need(i), arrive]);
+      setBeat(i);
+    } finally {
+      driving.current = false;
+    }
   }
 
   function next() {
@@ -117,7 +145,7 @@ export function useFilm(
     setPlaying(true);
     while (playRef.current && shot.current < last) {
       const id = director.shots[shot.current]!.id;
-      await wait(Math.max(MIN_HOLD_MS, cfg.current.hold?.(id) ?? 0));
+      await wait(Math.max(BEAT_HOLD_MS, cfg.current.hold?.(id) ?? 0));
       if (!playRef.current) break;
       await exclusive(() => advance(shot.current + 1));
     }
@@ -130,15 +158,17 @@ export function useFilm(
     return exclusive(async () => {
       if (shot.current <= last) returnTo.current = shot.current;
       const arrive = new Promise<void>((r) => arrivals.current.push(r));
+      driving.current = true;
       director.go(i);
       await arrive;
-      await fn();
+      await fn().finally(() => (driving.current = false));
+      setBeat(i);
       await wait(holdMs);
       director.go(returnTo.current);
     });
   };
 
-  return { playing, busy, onSettled, next, prev, play, stop, to, detour };
+  return { playing, busy, beat, onSettled, next, prev, play, stop, to, detour };
 }
 
 export type FilmControls = ReturnType<typeof useFilm>;

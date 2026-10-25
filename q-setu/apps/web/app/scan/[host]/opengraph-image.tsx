@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { OgCard } from "@/lib/og/card";
 import { serverToken } from "@/lib/brand/tokens-server";
 import { storedScan } from "@/lib/server/scan-lookup";
+import { safeDecode } from "@/lib/format";
 
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
@@ -10,7 +11,7 @@ export const alt = "QuantumLedger quantum-readiness score";
 
 /** The share card for a scan: host, 0–100 score and the one-line verdict. */
 export default async function Image({ params }: { params: Promise<{ host: string }> }) {
-  const host = decodeURIComponent((await params).host).slice(0, 80);
+  const host = safeDecode((await params).host).slice(0, 80);
   const r = await storedScan(host);
   const fg = serverToken("--text");
   const fg2 = serverToken("--text-2");

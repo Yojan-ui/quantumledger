@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { Suspense, useEffect, useState } from "react";
 import { demoOnPage, resetAll, sendPresent } from "@/lib/client/present";
 import { scrollToY } from "@/lib/client/scroll";
@@ -9,9 +10,16 @@ import { scrollToY } from "@/lib/client/scroll";
 const KEY = "qsetu:present";
 
 /** Q in presenter mode: a large join code for the room, with the live counter under it. */
-const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
-  ssr: false,
-});
+const RoomPanel = dynamic(
+  () =>
+    import("@/components/room/RoomPanel")
+      .catch(() => import("@/components/room/RoomPanel"))
+      .then((m) => m.RoomPanel)
+      .catch(chunkFailed),
+  {
+    ssr: false,
+  },
+);
 /** 1–6 jump between the diagnostics HUD and the demos. */
 const DEMOS = [
   "/diagnostics",
@@ -79,7 +87,9 @@ function PresenterInner() {
         router.push(DEMOS[Number(e.key) - 1]!);
       } else if (e.key === "r" || e.key === "R") {
         flash("Resetting every demo…");
-        void resetAll().then(() => flash("Everything reset ✓"));
+        void resetAll().then((ok) =>
+          flash(ok ? "Everything reset ✓" : "Reset needs the admin sign-in (/admin)"),
+        );
       } else if (e.key === "q" || e.key === "Q") {
         setQr((v) => !v);
       } else if (e.key === "Escape") {

@@ -1,0 +1,84 @@
+{
+  "when": "2026-10-14T04:14:38.335Z",
+  "node": "v24.21.0",
+  "openssl": "3.5.8",
+  "cpu": "Apple M4",
+  "platform": "darwin/arm64",
+  "warm": {
+    "requests": 3000,
+    "bare": {
+      "p50": 0.05,
+      "p95": 0.065
+    },
+    "edge": {
+      "p50": 0.109,
+      "p95": 0.15
+    },
+    "added": {
+      "p50": 0.06,
+      "p95": 0.085,
+      "p99": 0.097
+    }
+  },
+  "resumed": {
+    "connections": 1000,
+    "reusedShare": 1,
+    "p50": 0.628,
+    "p95": 0.734
+  },
+  "handshake": {
+    "handshakes": 2000,
+    "note": "Edge-process CPU per full handshake (TLS 1.3, ECDSA P-256 certificate), including one small request.",
+    "x25519": {
+      "group": "X25519",
+      "cpuMs": 0.308
+    },
+    "x25519mlkem768": {
+      "group": "X25519MLKEM768",
+      "cpuMs": 0.338
+    },
+    "extraCpuMs": 0.03
+  },
+  "load": {
+    "tool": "autocannon",
+    "targetRps": 1000,
+    "achievedRps": 1000,
+    "seconds": 20,
+    "errors": 0,
+    "latencyMs": {
+      "p50": 1,
+      "p97_5": 7,
+      "p99": 14
+    },
+    "bareLatencyMs": {
+      "p50": 0,
+      "p97_5": 1,
+      "p99": 2
+    },
+    "note": "autocannon reports latency in whole milliseconds; the warm-connection test above has the sub-millisecond view.",
+    "edgeCpuShareOfOneCore": 0.041
+  },
+  "idle": {
+    "connections": 1000,
+    "rssPerConnectionKiB": 60
+  },
+  "edgeMetrics": {
+    "connections": {
+      "X25519MLKEM768": 4152,
+      "X25519": 2100,
+      "other": 0,
+      "unknown": 0
+    },
+    "pqShare": 0.6641074856046065,
+    "handshakes": 6252,
+    "resumed": 1000,
+    "tlsErrors": 0,
+    "openConnections": 779,
+    "requests": 28551,
+    "statuses": {
+      "2xx": 28551
+    },
+    "originErrors": 0
+  },
+  "failures": []
+}

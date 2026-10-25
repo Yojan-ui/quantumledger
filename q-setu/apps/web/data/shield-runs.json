@@ -1,0 +1,581 @@
+{
+  "recordedAt": "2026-10-14T18:46:51.725Z",
+  "node": "v24.21.0",
+  "openssl": "3.5.8",
+  "runs": {
+    "dns": [
+      {
+        "t": "start",
+        "domain": "ledgerwood-bank.example",
+        "mode": "dns",
+        "sim": [
+          "(sim) the site is the bundled demo bank at ledgerwood-bank.example, on loopback",
+          "(sim) the CNAME is shown, not published: the edge runs on this server's loopback.",
+          "(sim) the harvester counts handshakes it could record; nothing is stored"
+        ]
+      },
+      {
+        "t": "scan",
+        "before": {
+          "protocol": "TLSv1.3",
+          "group": "X25519",
+          "hybridPq": false,
+          "certKey": "ECDSA prime256v1",
+          "transport": 45,
+          "checks": {
+            "tls13": {
+              "ok": false,
+              "seen": "TLS 1.2 accepted"
+            },
+            "hsts": {
+              "ok": false
+            },
+            "nosniff": {
+              "ok": false
+            },
+            "frame": {
+              "ok": false
+            },
+            "referrer": {
+              "ok": false
+            },
+            "csp": {
+              "ok": false
+            },
+            "stack": {
+              "ok": false,
+              "seen": "Express"
+            }
+          },
+          "score": 31
+        }
+      },
+      {
+        "t": "visit",
+        "n": 1,
+        "group": "X25519",
+        "ms": 0.77,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 2,
+        "group": "X25519",
+        "ms": 0.79,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 3,
+        "group": "X25519",
+        "ms": 0.73,
+        "quantumSafe": false
+      },
+      {
+        "t": "install",
+        "mode": "dns",
+        "artifact": "ledgerwood-bank.example.  300  IN  CNAME  edge.quantumledger.app.",
+        "note": "(sim) the CNAME is shown, not published: the edge runs on this server's loopback."
+      },
+      {
+        "t": "handshake",
+        "group": "X25519MLKEM768",
+        "protocol": "TLSv1.3",
+        "ms": 1.89,
+        "quantumSafe": true
+      },
+      {
+        "t": "visit",
+        "n": 4,
+        "group": "X25519MLKEM768",
+        "ms": 0.63,
+        "quantumSafe": true
+      },
+      {
+        "t": "visit",
+        "n": 5,
+        "group": "X25519MLKEM768",
+        "ms": 0.64,
+        "quantumSafe": true
+      },
+      {
+        "t": "visit",
+        "n": 6,
+        "group": "X25519MLKEM768",
+        "ms": 0.65,
+        "quantumSafe": true
+      },
+      {
+        "t": "fix",
+        "id": "tls13",
+        "ok": true,
+        "seen": "TLS 1.2 refused"
+      },
+      {
+        "t": "fix",
+        "id": "hsts",
+        "ok": true,
+        "seen": "max-age=63072000; includeSubDomains"
+      },
+      {
+        "t": "fix",
+        "id": "nosniff",
+        "ok": true
+      },
+      {
+        "t": "fix",
+        "id": "frame",
+        "ok": true,
+        "seen": "frame-ancestors 'none'"
+      },
+      {
+        "t": "fix",
+        "id": "referrer",
+        "ok": true,
+        "seen": "strict-origin-when-cross-origin"
+      },
+      {
+        "t": "fix",
+        "id": "csp",
+        "ok": false,
+        "partial": true,
+        "seen": "Report-Only"
+      },
+      {
+        "t": "fix",
+        "id": "stack",
+        "ok": true
+      },
+      {
+        "t": "rescan",
+        "after": {
+          "protocol": "TLSv1.3",
+          "group": "X25519MLKEM768",
+          "hybridPq": true,
+          "certKey": "ECDSA prime256v1",
+          "transport": 70,
+          "checks": {
+            "tls13": {
+              "ok": true,
+              "seen": "TLS 1.2 refused"
+            },
+            "hsts": {
+              "ok": true,
+              "seen": "max-age=63072000; includeSubDomains"
+            },
+            "nosniff": {
+              "ok": true
+            },
+            "frame": {
+              "ok": true,
+              "seen": "frame-ancestors 'none'"
+            },
+            "referrer": {
+              "ok": true,
+              "seen": "strict-origin-when-cross-origin"
+            },
+            "csp": {
+              "ok": false,
+              "partial": true,
+              "seen": "Report-Only"
+            },
+            "stack": {
+              "ok": true
+            }
+          },
+          "score": 77
+        }
+      },
+      {
+        "t": "report",
+        "url": "/verified/ledgerwood-bank.example",
+        "signedAt": "2026-10-14T18:46:51.643Z"
+      },
+      {
+        "t": "done",
+        "ms": 62
+      }
+    ],
+    "container": [
+      {
+        "t": "start",
+        "domain": "ledgerwood-bank.example",
+        "mode": "container",
+        "sim": [
+          "(sim) the site is the bundled demo bank at ledgerwood-bank.example, on loopback",
+          "(sim) no container runtime here: the same edge runs in-process.",
+          "(sim) the harvester counts handshakes it could record; nothing is stored"
+        ]
+      },
+      {
+        "t": "scan",
+        "before": {
+          "protocol": "TLSv1.3",
+          "group": "X25519",
+          "hybridPq": false,
+          "certKey": "ECDSA prime256v1",
+          "transport": 45,
+          "checks": {
+            "tls13": {
+              "ok": false,
+              "seen": "TLS 1.2 accepted"
+            },
+            "hsts": {
+              "ok": false
+            },
+            "nosniff": {
+              "ok": false
+            },
+            "frame": {
+              "ok": false
+            },
+            "referrer": {
+              "ok": false
+            },
+            "csp": {
+              "ok": false
+            },
+            "stack": {
+              "ok": false,
+              "seen": "Express"
+            }
+          },
+          "score": 31
+        }
+      },
+      {
+        "t": "visit",
+        "n": 1,
+        "group": "X25519",
+        "ms": 0.67,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 2,
+        "group": "X25519",
+        "ms": 0.63,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 3,
+        "group": "X25519",
+        "ms": 0.65,
+        "quantumSafe": false
+      },
+      {
+        "t": "install",
+        "mode": "container",
+        "artifact": "docker run -d -p 443:443 -e SHIELD_ORIGIN=http://bank:4000 quantumledger/shield-edge",
+        "note": "(sim) no container runtime here: the same edge runs in-process."
+      },
+      {
+        "t": "handshake",
+        "group": "X25519MLKEM768",
+        "protocol": "TLSv1.3",
+        "ms": 0.82,
+        "quantumSafe": true
+      },
+      {
+        "t": "visit",
+        "n": 4,
+        "group": "X25519MLKEM768",
+        "ms": 0.64,
+        "quantumSafe": true
+      },
+      {
+        "t": "visit",
+        "n": 5,
+        "group": "X25519MLKEM768",
+        "ms": 0.63,
+        "quantumSafe": true
+      },
+      {
+        "t": "visit",
+        "n": 6,
+        "group": "X25519MLKEM768",
+        "ms": 0.61,
+        "quantumSafe": true
+      },
+      {
+        "t": "fix",
+        "id": "tls13",
+        "ok": true,
+        "seen": "TLS 1.2 refused"
+      },
+      {
+        "t": "fix",
+        "id": "hsts",
+        "ok": true,
+        "seen": "max-age=63072000; includeSubDomains"
+      },
+      {
+        "t": "fix",
+        "id": "nosniff",
+        "ok": true
+      },
+      {
+        "t": "fix",
+        "id": "frame",
+        "ok": true,
+        "seen": "frame-ancestors 'none'"
+      },
+      {
+        "t": "fix",
+        "id": "referrer",
+        "ok": true,
+        "seen": "strict-origin-when-cross-origin"
+      },
+      {
+        "t": "fix",
+        "id": "csp",
+        "ok": false,
+        "partial": true,
+        "seen": "Report-Only"
+      },
+      {
+        "t": "fix",
+        "id": "stack",
+        "ok": true
+      },
+      {
+        "t": "rescan",
+        "after": {
+          "protocol": "TLSv1.3",
+          "group": "X25519MLKEM768",
+          "hybridPq": true,
+          "certKey": "ECDSA prime256v1",
+          "transport": 70,
+          "checks": {
+            "tls13": {
+              "ok": true,
+              "seen": "TLS 1.2 refused"
+            },
+            "hsts": {
+              "ok": true,
+              "seen": "max-age=63072000; includeSubDomains"
+            },
+            "nosniff": {
+              "ok": true
+            },
+            "frame": {
+              "ok": true,
+              "seen": "frame-ancestors 'none'"
+            },
+            "referrer": {
+              "ok": true,
+              "seen": "strict-origin-when-cross-origin"
+            },
+            "csp": {
+              "ok": false,
+              "partial": true,
+              "seen": "Report-Only"
+            },
+            "stack": {
+              "ok": true
+            }
+          },
+          "score": 77
+        }
+      },
+      {
+        "t": "report",
+        "url": "/verified/ledgerwood-bank.example",
+        "signedAt": "2026-10-14T18:46:51.687Z"
+      },
+      {
+        "t": "done",
+        "ms": 43
+      }
+    ],
+    "code": [
+      {
+        "t": "start",
+        "domain": "ledgerwood-bank.example",
+        "mode": "code",
+        "sim": [
+          "(sim) the site is the bundled demo bank at ledgerwood-bank.example, on loopback",
+          "(sim) the harvester counts handshakes it could record; nothing is stored"
+        ]
+      },
+      {
+        "t": "scan",
+        "before": {
+          "protocol": "TLSv1.3",
+          "group": "X25519",
+          "hybridPq": false,
+          "certKey": "ECDSA prime256v1",
+          "transport": 45,
+          "checks": {
+            "tls13": {
+              "ok": false,
+              "seen": "TLS 1.2 accepted"
+            },
+            "hsts": {
+              "ok": false
+            },
+            "nosniff": {
+              "ok": false
+            },
+            "frame": {
+              "ok": false
+            },
+            "referrer": {
+              "ok": false
+            },
+            "csp": {
+              "ok": false
+            },
+            "stack": {
+              "ok": false,
+              "seen": "Express"
+            }
+          },
+          "score": 31
+        }
+      },
+      {
+        "t": "visit",
+        "n": 1,
+        "group": "X25519",
+        "ms": 0.58,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 2,
+        "group": "X25519",
+        "ms": 0.62,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 3,
+        "group": "X25519",
+        "ms": 0.58,
+        "quantumSafe": false
+      },
+      {
+        "t": "install",
+        "mode": "code",
+        "artifact": "app.use(shield({ siteKey: process.env.QSETU_SITE_KEY }))",
+        "note": "One line in the bank's app. It adds the defence and the headers; your TLS stays as it is. Post-quantum TLS needs the DNS or container route."
+      },
+      {
+        "t": "handshake",
+        "group": "X25519",
+        "protocol": "TLSv1.3",
+        "ms": 0.6,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 4,
+        "group": "X25519",
+        "ms": 0.6,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 5,
+        "group": "X25519",
+        "ms": 0.58,
+        "quantumSafe": false
+      },
+      {
+        "t": "visit",
+        "n": 6,
+        "group": "X25519",
+        "ms": 0.52,
+        "quantumSafe": false
+      },
+      {
+        "t": "fix",
+        "id": "tls13",
+        "ok": false,
+        "seen": "TLS 1.2 accepted"
+      },
+      {
+        "t": "fix",
+        "id": "hsts",
+        "ok": true,
+        "seen": "max-age=63072000; includeSubDomains"
+      },
+      {
+        "t": "fix",
+        "id": "nosniff",
+        "ok": true
+      },
+      {
+        "t": "fix",
+        "id": "frame",
+        "ok": true,
+        "seen": "X-Frame-Options: SAMEORIGIN"
+      },
+      {
+        "t": "fix",
+        "id": "referrer",
+        "ok": true,
+        "seen": "strict-origin-when-cross-origin"
+      },
+      {
+        "t": "fix",
+        "id": "csp",
+        "ok": false
+      },
+      {
+        "t": "fix",
+        "id": "stack",
+        "ok": true
+      },
+      {
+        "t": "rescan",
+        "after": {
+          "protocol": "TLSv1.3",
+          "group": "X25519",
+          "hybridPq": false,
+          "certKey": "ECDSA prime256v1",
+          "transport": 45,
+          "checks": {
+            "tls13": {
+              "ok": false,
+              "seen": "TLS 1.2 accepted"
+            },
+            "hsts": {
+              "ok": true,
+              "seen": "max-age=63072000; includeSubDomains"
+            },
+            "nosniff": {
+              "ok": true
+            },
+            "frame": {
+              "ok": true,
+              "seen": "X-Frame-Options: SAMEORIGIN"
+            },
+            "referrer": {
+              "ok": true,
+              "seen": "strict-origin-when-cross-origin"
+            },
+            "csp": {
+              "ok": false
+            },
+            "stack": {
+              "ok": true
+            }
+          },
+          "score": 53
+        }
+      },
+      {
+        "t": "report",
+        "url": "/verified/ledgerwood-bank.example",
+        "signedAt": "2026-10-14T18:46:51.709Z"
+      },
+      {
+        "t": "done",
+        "ms": 27
+      }
+    ]
+  }
+}

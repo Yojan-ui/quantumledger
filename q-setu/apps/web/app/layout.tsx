@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { CommandMenu } from "@/components/ui/CommandMenu";
 import { Interactions } from "@/components/ui/Interactions";
@@ -14,8 +15,10 @@ import { WorldCanvas } from "@/components/world/WorldCanvas";
 import { ServerNote } from "@/components/ui/ServerNote";
 import { Shortcuts } from "@/components/ui/Shortcuts";
 import { ToastHost } from "@/components/ui/ToastHost";
+import { QDayOverlay } from "@/components/ui/QDayOverlay";
 import { serverToken } from "@/lib/brand/tokens-server";
-import { COPY_MODE_SCRIPT } from "@/lib/copy-mode-script";
+import { COPY_MODE_SCRIPT, SEAL_SCRIPT } from "@/lib/copy-mode-script";
+import { NONCE_HEADER } from "@/lib/server/csp";
 import { SITE_NAME, SITE_URL } from "@/lib/meta";
 import "./globals.css";
 
@@ -64,7 +67,9 @@ const JSON_LD = {
 const PLAUSIBLE =
   process.env.NEXT_PUBLIC_OFFLINE === "1" ? undefined : process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The middleware's per-request CSP nonce (lib/server/csp): the two inline scripts need it.
+  const nonce = (await headers()).get(NONCE_HEADER) ?? undefined;
   return (
     <html
       lang="en"
@@ -73,7 +78,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         {/* Simple / Technical copy, applied before first paint (no flash of the other version). */}
-        <script dangerouslySetInnerHTML={{ __html: COPY_MODE_SCRIPT }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: COPY_MODE_SCRIPT }}
+        />
+        {/* Homepage headlines wait for their ciphertext (zero trust: lib/client/trust). */}
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: SEAL_SCRIPT }}
+        />
       </head>
       <body>
         <script
@@ -83,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {PLAUSIBLE && (
           <Script
             defer
+            nonce={nonce}
             data-domain={PLAUSIBLE}
             src={
               process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ??
@@ -103,6 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CommandMenu />
         <Shortcuts />
         <ToastHost />
+        <QDayOverlay />
         <Presenter />
         <Tour />
         <div className="relative z-10">{children}</div>

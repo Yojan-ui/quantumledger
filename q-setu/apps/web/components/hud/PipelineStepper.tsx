@@ -95,9 +95,11 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
   const [table, setTable] = useState(false);
   const next = nextStage(s);
   const busy = s.status.includes("running");
+  const locked = (i: number) => i > 0 && s.status[i - 1] !== "done" && s.status[i] !== "done";
   return (
     <div className={`border border-line bg-glass ${className}`} role="group" aria-label="Pipeline">
-      <ol className="grid grid-cols-5">
+      {/* Phones: a row that scrolls sideways with full labels (faded at the edge); md+: five columns. */}
+      <ol className="fade-x flex overflow-x-auto md:grid md:grid-cols-5 md:overflow-visible">
         {STAGES.map((st, i) => {
           const status = s.status[i]!;
           const active = s.stage === i;
@@ -105,7 +107,7 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
           return (
             <li
               key={st.id}
-              className="relative border-r border-line px-2 py-2 last:border-r-0 md:px-3"
+              className="relative w-32 shrink-0 border-r border-line px-2 py-2 last:border-r-0 md:w-auto md:px-3"
               data-stage={st.id}
               data-status={status}
             >
@@ -122,20 +124,29 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
               <p
                 className={`font-mono text-micro uppercase ${active ? role.text : status === "done" ? "text-fg" : "text-fg-3"}`}
               >
-                {status === "done" ? "✓" : st.n} <span className="hidden md:inline">{st.name}</span>
-                <span className="md:hidden">{st.name.slice(0, 3)}</span>
+                {status === "done" ? "✓" : st.n} <span>{st.name}</span>
               </p>
-              <button
-                type="button"
-                onClick={() => runStage(i)}
-                disabled={
-                  busy || (i > 0 && s.status[i - 1] !== "done") || (status === "done" && i !== 4)
-                }
-                data-ripple={st.role}
-                className={`mt-1 hidden w-full truncate rounded-sm border px-2 py-1 text-left text-small transition-colors duration-150 disabled:opacity-40 md:block ${i === next ? "border-line-strong text-fg hover:bg-raised" : "border-line text-fg-2"}`}
-              >
-                {status === "running" ? "Running…" : st.cta}
-              </button>
+              {locked(i) ? (
+                // Not available yet: deliberately locked (a lock and the step it waits for), not
+                // a greyed-out button that looks broken.
+                <p
+                  className="mt-1 hidden w-full items-center gap-2 truncate rounded-sm border border-dashed border-line px-2 py-1 text-small text-fg-3 md:flex"
+                  title={`Unlocks after ${STAGES[i - 1]!.name.toLowerCase()}`}
+                >
+                  <LockGlyph />
+                  <span className="truncate">After {STAGES[i - 1]!.name.toLowerCase()}</span>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => runStage(i)}
+                  disabled={busy || (status === "done" && i !== 4)}
+                  data-ripple={st.role}
+                  className={`mt-1 hidden w-full truncate rounded-sm border px-2 py-1 text-left text-small transition-colors duration-150 disabled:opacity-40 md:block ${i === next ? "border-line-strong text-fg hover:bg-raised" : "border-line text-fg-2"}`}
+                >
+                  {status === "running" ? "Running…" : st.cta}
+                </button>
+              )}
             </li>
           );
         })}
@@ -165,12 +176,18 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
         >
           Replay · R
         </button>
+        {/* Always shown, so the row never reflows. Until there's an anchored block it's disabled in
+            the readable secondary text colour (4.6:1) with a tooltip saying why. aria-disabled, not
+            disabled, keeps it focusable so the reason is reachable from the keyboard too. */}
         <button
           type="button"
-          onClick={() => void actions.tamper()}
-          disabled={!s.proof || busy}
-          data-ripple="danger"
-          className="h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-danger disabled:opacity-40"
+          onClick={() => {
+            if (!busy && s.proof) void actions.tamper();
+          }}
+          aria-disabled={busy || !s.proof || undefined}
+          title={s.proof ? "Change one byte of the anchored record" : "Run a scan first"}
+          data-ripple={s.proof ? "danger" : undefined}
+          className={`h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase ${s.proof && !busy ? "text-danger" : "cursor-not-allowed text-fg-3"}`}
         >
           Try tamper
         </button>
@@ -190,5 +207,20 @@ export function PipelineStepper({ className = "" }: { className?: string }) {
       )}
       {table && <LegacyVsPq />}
     </div>
+  );
+}
+
+function LockGlyph() {
+  return (
+    <svg
+      viewBox="0 0 12 14"
+      className="h-3 w-3 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      aria-hidden
+    >
+      <rect x="1.5" y="6" width="9" height="6.5" rx="1" />
+      <path d="M3.5 6V4a2.5 2.5 0 0 1 5 0v2" />
+    </svg>
   );
 }

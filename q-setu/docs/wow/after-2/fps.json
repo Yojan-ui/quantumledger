@@ -1,0 +1,89 @@
+{
+  "base": "http://localhost:3000",
+  "sections": {
+    "top": {
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "worstMs": 66.7,
+      "over20ms": 0.2
+    },
+    "join-live": {
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "analogy": {
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "index": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "scan": {
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "how-it-works": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "adapters": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "band": {
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "solutions": {
+      "fps": 56,
+      "p95FrameMs": 16.8,
+      "worstMs": 283.4,
+      "over20ms": 0.4
+    },
+    "impact": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "device": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "whats-new": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "why-quantumledger": {
+      "fps": 60,
+      "p95FrameMs": 16.7,
+      "worstMs": 16.8,
+      "over20ms": 0
+    },
+    "early-access": {
+      "fps": 60,
+      "p95FrameMs": 16.8,
+      "worstMs": 16.8,
+      "over20ms": 0
+    }
+  }
+}

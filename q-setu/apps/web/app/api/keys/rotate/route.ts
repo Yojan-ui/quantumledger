@@ -1,3 +1,4 @@
+import { requireOperator } from "@/lib/server/admin";
 import { fail, parseBody } from "@/lib/server/api";
 import { live } from "@/lib/server/runtime";
 import { KeysRotateBody } from "@/lib/server/schemas";
@@ -5,8 +6,10 @@ import { KeysRotateBody } from "@/lib/server/schemas";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST /api/keys/rotate { purpose }: rotates a key now (it also rotates on a schedule). Logged to the Proof Chain. */
+/** POST /api/keys/rotate { purpose }: rotates a key now (it also rotates on a schedule). Logged to the Proof Chain. Production: admin or API token only. */
 export async function POST(req: Request) {
+  const denied = await requireOperator(req);
+  if (denied) return denied;
   const b = await parseBody(req, KeysRotateBody);
   if (!b.ok) return b.res;
   const k = (await live()).keys.rotate(b.data.purpose);

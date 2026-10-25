@@ -8,10 +8,12 @@ import {
   type SectorId,
 } from "@qsetu/sim";
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrambleText } from "@/components/demo/ScrambleText";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
 import { DemoShell } from "@/components/demo/shell/DemoShell";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
 import { SectorSwitcher } from "@/components/demo/shell/SectorSwitcher";
 import { DirectorHUD } from "@/components/director/HUD";
 import type { Shot, Step } from "@/components/director/types";
@@ -27,11 +29,22 @@ import { pushLocal } from "@/lib/client/live";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
 import { openStream } from "@/lib/client/server";
+import { base64ToBytes } from "@qsetu/core";
 
 /** The simulator's real hops on the server, and the Q-Day attack running in this tab. */
 const consoleFilter = (e: OpEvent) => e.source === "sim" || e.source === "browser";
 
-const QDayFilm = dynamic(() => import("./QDayFilm"), { ssr: false, loading: () => null });
+const QDayFilm = dynamic(
+  () =>
+    import("./QDayFilm")
+      .catch(() => import("./QDayFilm"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const START = new Date().getFullYear();
 /**
@@ -54,29 +67,29 @@ const STEP_BAR: Step[] = [
 const SHOTS: Shot[] = [
   {
     id: "split",
-    camera: { position: [0, 0.7, 8], target: [0, -0.3, -0.6], fov: 40 },
+    camera: { position: [0, 0.4, 8.6], target: [-0.4, -0.55, 0], fov: 40 },
     step: 0,
     caption: "An adversary records both systems' encrypted traffic, today.",
     simple: "An attacker copies both systems' locked messages, today.",
   },
   {
     id: "timelapse",
-    camera: { position: [-2.2, 1.6, 8.6], target: [0, 0, -1], fov: 40 },
-    focus: "orb",
+    camera: { position: [-2.1, 0.3, 5.4], target: [-2.8, -1.0, 0.2], fov: 40 },
+    focus: "drum",
     step: 1,
     caption: "Years pass; the recordings are kept, unreadable for now.",
     simple: "Years pass. The copies wait, still locked.",
   },
   {
     id: "climax",
-    camera: { position: [0, 0.4, 5.6], target: [0, -0.15, -0.4], fov: 40 },
+    camera: { position: [0, 0.9, 5.6], target: [0, 0.3, 0], fov: 40 },
     step: 2,
     caption: "Q-Day: classical keys fall, and the recorded data opens.",
     simple: "Q-Day: the old locks break, and the copies open.",
   },
   {
     id: "aftermath",
-    camera: { position: [0, 1.4, 8.4], target: [0, -0.35, -0.4], fov: 40 },
+    camera: { position: [0, 0.6, 8.4], target: [-0.3, -0.45, 0], fov: 40 },
     step: 3,
     caption: "Classical records are exposed; QuantumLedger records stay sealed.",
     simple: "Old-lock records are exposed. QuantumLedger records stay locked.",
@@ -269,7 +282,8 @@ export function QDayDemo() {
         for (let k = 0; k < 300 && !attacked.current && take.current === mine; k++) await wait(100);
       }
     },
-    hold: (id) => (id === "climax" ? 2600 : undefined),
+    // Long enough for the freeze, the slow-motion shatter and the plaintext rising out of it.
+    hold: (id) => (id === "climax" ? 4800 : undefined),
     // Dolly in, a 300 ms beat, then the shock wave.
     onArrive: (id) => id === "climax" && setBreakAt(performance.now() + 300),
     restart: () => reset(),
@@ -297,6 +311,25 @@ export function QDayDemo() {
     [broken, sector],
   );
 
+  // The real recorded bytes the film folds: a classical record's ciphertext (the crumpled sheet the
+  // simulated attacker unfolds) and two QuantumLedger records' ciphertexts (bricks that jam).
+  const samples = useMemo(() => {
+    const dec = (b64?: string) => {
+      try {
+        return b64 ? base64ToBytes(b64) : undefined;
+      } catch {
+        return undefined;
+      }
+    };
+    const classical = dec(records.find((r) => r.classical)?.classical?.ciphertext);
+    const hybrid = records
+      .filter((r) => r.qsetu)
+      .slice(0, 2)
+      .map((r) => dec(r.qsetu!.message.ciphertext))
+      .filter((b): b is Uint8Array => !!b);
+    return { classical, hybrid };
+  }, [records]);
+
   const switchSector = (s: SectorId) => {
     reset();
     setHarvest({ classical: 0, qsetu: 0 });
@@ -316,6 +349,7 @@ export function QDayDemo() {
       meter={<ComputeMeter reading={reading} />}
       console={
         <LiveConsole
+          drawer
           title="Live console · recording and attack"
           filter={consoleFilter}
           highlight={HIGHLIGHT[director.state.shot.id]}
@@ -323,10 +357,10 @@ export function QDayDemo() {
       }
       onAutoplay={() => void reel.play()}
     >
-      <div className="relative mb-12 overflow-hidden rounded-lg border border-line">
+      <div className="full-bleed relative mb-12 overflow-hidden border-y border-line">
         <LazyView
-          className="h-stage-sm md:h-stage"
-          label={`Two corridors of recorded packets, classical and QuantumLedger, watched by an adversary. Year ${year}. ${qday ? "Q-Day: classical packets break open; QuantumLedger packets stay whole." : "Recording traffic."}`}
+          className="h-stage-full min-h-stage"
+          label={`One line of packets, classical and hybrid, copied into an attacker's drum. Year ${year}. ${qday ? "Q-Day: classical packets break open; hybrid packets stay whole." : "Recording traffic."}`}
         >
           {(onScreen) => (
             <QDayFilm
@@ -341,10 +375,18 @@ export function QDayDemo() {
               qExposed={qsetuOutcomes ? qExposed : undefined}
               small={small}
               qDayYear={Q_DAY}
+              samples={samples}
             />
           )}
         </LazyView>
-        <div className="pointer-events-none absolute left-4 top-4 md:left-6 md:top-6" aria-hidden>
+        <StagePurpose>
+          recorded traffic opens at Q-Day unless it was sealed with a hybrid key.
+        </StagePurpose>
+        <div
+          className="pointer-events-none absolute left-4 top-12 md:left-6 md:top-14"
+          aria-hidden
+          data-label-avoid
+        >
           <span
             className={`tabular block font-mono text-h2 transition-colors duration-300 ${qday ? "text-warn" : "text-fg"}`}
           >
@@ -355,6 +397,7 @@ export function QDayDemo() {
         <DirectorHUD
           director={director}
           steps={STEP_BAR}
+          beat={reel.beat}
           playing={reel.playing}
           busy={reel.busy}
           onToggle={() => void reel.play()}

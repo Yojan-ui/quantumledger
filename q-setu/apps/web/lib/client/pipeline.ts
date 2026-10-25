@@ -18,6 +18,7 @@ import type { ScanView } from "@/lib/scan-types";
 import { hs } from "./handshake-crypto";
 import { pushLocal } from "./live";
 import { errText } from "./api";
+import { verifiedFetch } from "@/lib/client/trust";
 
 export const STAGES = [
   { id: "detect", n: "01", name: "DETECT", cta: "Run scan", role: "danger" },
@@ -162,8 +163,9 @@ export function usePipeline<T>(select: (s: PipelineState) => T): T {
   );
 }
 
+/** Every pipeline response is signed by the site; it is verified before the stage uses it. */
 const post = async <T>(url: string, body?: unknown): Promise<T> => {
-  const r = await fetch(url, {
+  const r = await verifiedFetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -217,8 +219,9 @@ export function shorExposure(s: PipelineState): { pct: number; sim: boolean } {
   return { pct: ((kexClassical ? 1 : 0) + (certClassical ? 1 : 0)) * 50, sim: false };
 }
 
-/** The status pill. */
-export function threat(s: PipelineState): "critical" | "mitigating" | "secured" {
+/** The status pill. Nothing is judged until a scan result exists. */
+export function threat(s: PipelineState): "idle" | "critical" | "mitigating" | "secured" {
+  if (!s.scan) return "idle";
   if (s.status[4] === "done" && s.sweep?.ok) return "secured";
   if (s.status[2] === "done") return "mitigating";
   return "critical";
@@ -516,13 +519,26 @@ export const nextStage = (s = state) => s.status.findIndex((x) => x !== "done");
  */
 const HOLD_MS = [3200, 3600, 3400, 4400, 0];
 
-export async function autoplay(holdMs = 1500) {
+/**
+ * The homepage attract loop's holds: the same five real stages, compressed to about 9 s in all
+ * (each stage still waits for its real result; only the pause after it is shorter).
+ */
+export const ATTRACT_HOLD_MS = [1300, 1500, 1500, 1800, 0];
+
+export async function autoplay(holdMs = 1500, holds: readonly number[] = HOLD_MS) {
   set({ autoplay: true });
   while (state.autoplay) {
     const i = nextStage();
     if (i < 0) break;
+    // Another run (the hero's opening, a click) has this stage in flight: wait for its result.
+    // Calling it again returns at once (run() ignores a running stage), and the loop would spin on
+    // resolved promises, freezing the page before that result could ever arrive.
+    if (state.status[i] === "running") {
+      await new Promise((r) => setTimeout(r, 100));
+      continue;
+    }
     const prev = i > 0 ? state.doneAt[i - 1]! : 0;
-    const hold = Math.max(holdMs, i > 0 ? HOLD_MS[i - 1]! : 0);
+    const hold = Math.max(holdMs, i > 0 ? holds[i - 1]! : 0);
     const wait = prev ? Math.max(0, hold - (performance.now() - prev)) : 0;
     if (wait) await new Promise((r) => setTimeout(r, wait));
     if (!state.autoplay) break;

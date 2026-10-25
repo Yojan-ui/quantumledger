@@ -13,11 +13,13 @@ import { shortError, showToast } from "@/lib/client/toast";
 
 type Variant = "primary" | "secondary";
 
+// On phones a label too long for the screen wraps onto a second line (max-w-full, min-h-10) rather
+// than pushing the page sideways; from sm up buttons are one line, 40 px tall.
 const BASE =
-  "relative inline-flex h-10 overflow-hidden shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 aria-busy:cursor-progress";
+  "relative inline-flex min-h-10 max-w-full overflow-hidden shrink-0 items-center justify-center gap-2 py-2 text-center sm:h-10 sm:py-0 sm:whitespace-nowrap rounded-sm px-4 text-small font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-40 aria-busy:cursor-progress";
 const STYLE: Record<Variant, string> = {
   primary: "bg-fg text-base hover:opacity-90",
-  secondary: "border border-line-strong text-fg hover:bg-raised",
+  secondary: "border border-line-strong text-fg hover:border-fg-3",
 };
 
 export const buttonClass = (variant: Variant = "primary") => `${BASE} ${STYLE[variant]}`;
@@ -30,7 +32,8 @@ const motion = (variant: Variant) =>
   variant === "primary" ? { "data-magnetic": "", "data-shimmer": "" } : { "data-magnetic": "" };
 
 /**
- * Every button ignores a second click within 350 ms (a double click acts once). If `onClick` returns
+ * Every button ignores the extra clicks of a double click (the browser's click count, `e.detail`),
+ * and key-repeat activations within 350 ms, so a double click acts once. If `onClick` returns
  * a promise, the button is busy until it settles: further clicks are ignored and it shows
  * aria-busy (progress cursor, the busy style in globals.css), so async steps can't run twice. When it
  * settles the button flashes done (data-state="done") or, if it failed, error, and a toast gives a
@@ -47,7 +50,8 @@ export function Button({
   children: ReactNode;
   onClick?: (e: MouseEvent<HTMLButtonElement>) => unknown;
 }) {
-  const last = useRef(0);
+  // Not 0: performance.now() counts from navigation, so 0 would drop a key press in a page's first 350 ms.
+  const lastKey = useRef(-Infinity);
   const [busy, setBusy] = useState(false);
   const [state, setState] = useState<"done" | "error">();
   const flash = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -58,9 +62,14 @@ export function Button({
     flash.current = setTimeout(() => setState(undefined), 1200);
   };
   const click = (e: MouseEvent<HTMLButtonElement>) => {
-    const now = performance.now();
-    if (busy || now - last.current < 350) return;
-    last.current = now;
+    if (busy || e.detail > 1) return;
+    // Keyboard activation has no click count (detail 0): a held Enter repeats, so throttle it by time.
+    // Not by time for pointer clicks: separate clicks in quick succession (verify, tamper, verify) all count.
+    if (e.detail === 0) {
+      const now = performance.now();
+      if (now - lastKey.current < 350) return;
+      lastKey.current = now;
+    }
     const r = onClick?.(e);
     if (r instanceof Promise) {
       setBusy(true);
@@ -117,7 +126,7 @@ export function ButtonLink({
   );
 }
 
-/** Text link with an optional arrow; colour shifts on hover only. */
+/** Text link with an optional arrow; an underline draws in on hover and focus. */
 export function TextLink({
   href,
   children,
@@ -128,10 +137,7 @@ export function TextLink({
   className?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={`text-small text-fg transition-opacity duration-150 hover:opacity-70 ${className}`}
-    >
+    <Link href={href} className={`link-u text-small text-fg ${className}`}>
       {children}
     </Link>
   );

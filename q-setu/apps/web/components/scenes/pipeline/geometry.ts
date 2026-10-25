@@ -58,3 +58,52 @@ export function textPoints(text: string, n: number, height = 0.9): Float32Array 
   }
   return out;
 }
+
+/**
+ * `n` points on the QuantumLedger mark in 3D: a cube's 12 edges plus each face's two midlines (the
+ * 2 × 2 lattice on every face, as in lib/brand/mark.ts), turned to the mark's isometric view.
+ */
+export function logoPoints(n: number, a = 1.15): Float32Array {
+  const segs: [number[], number[]][] = [];
+  const v = [-a, a];
+  // 12 edges: vary one axis, fix the other two at ±a.
+  for (let ax = 0; ax < 3; ax++)
+    for (const p of v)
+      for (const q of v) {
+        const s = [0, 0, 0];
+        const e = [0, 0, 0];
+        const [i, j] = [(ax + 1) % 3, (ax + 2) % 3];
+        s[ax] = -a;
+        e[ax] = a;
+        s[i] = e[i] = p;
+        s[j] = e[j] = q;
+        segs.push([s, e]);
+      }
+  // 12 face midlines: on each face (axis = ±a), the two lines through its centre.
+  for (let ax = 0; ax < 3; ax++)
+    for (const f of v)
+      for (let k = 1; k <= 2; k++) {
+        const vary = (ax + k) % 3;
+        const s = [0, 0, 0];
+        const e = [0, 0, 0];
+        s[ax] = e[ax] = f;
+        s[vary] = -a;
+        e[vary] = a;
+        segs.push([s, e]);
+      }
+  const r = rng(11);
+  const rot = new THREE.Euler(Math.atan(1 / Math.SQRT2), Math.PI / 4, 0, "XYZ");
+  const m = new THREE.Matrix4().makeRotationFromEuler(rot);
+  const p = new THREE.Vector3();
+  const out = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const [s, e] = segs[i % segs.length]!;
+    const t = r();
+    p.set(s[0]! + (e[0]! - s[0]!) * t, s[1]! + (e[1]! - s[1]!) * t, s[2]! + (e[2]! - s[2]!) * t);
+    p.applyMatrix4(m);
+    out[i * 3] = p.x + (r() - 0.5) * 0.02;
+    out[i * 3 + 1] = p.y + (r() - 0.5) * 0.02;
+    out[i * 3 + 2] = p.z + (r() - 0.5) * 0.02;
+  }
+  return out;
+}

@@ -34,10 +34,10 @@ export function Warmup() {
       // parsing three.js there is a 100 ms+ task that can land on the user's scroll.
       if (window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768) return;
       idle(() => {
-        void import("@/components/world/SceneView");
-        void import("@/components/demo/handshake/HandshakeFilm");
-        void import("@/components/demo/qday/QDayFilm");
-        void import("@/components/demo/ledger/LedgerFilm");
+        import("@/components/world/SceneView").catch(() => {});
+        import("@/components/demo/handshake/HandshakeFilm").catch(() => {});
+        import("@/components/demo/qday/QDayFilm").catch(() => {});
+        import("@/components/demo/ledger/LedgerFilm").catch(() => {});
       }, 6000);
     };
     if (document.readyState === "complete") idle(go, 3000);

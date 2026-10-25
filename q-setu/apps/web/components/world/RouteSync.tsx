@@ -37,6 +37,8 @@ export function RouteSync() {
     world.glow =
       mode === "page" ? "kem" : mode === "deploy" ? "ok" : mode === "story" ? "kem" : null;
     if (mode !== "story") world.chapter = 0;
+    // The homepage flight belongs to the homepage; other pages frame the globe their own way.
+    if (mode !== "story") world.journey = -1;
     world.hover = null;
     world.index = null;
     notify();

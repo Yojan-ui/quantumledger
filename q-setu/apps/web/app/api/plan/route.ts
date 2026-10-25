@@ -1,12 +1,13 @@
 import { parseBody } from "@/lib/server/api";
 import { buildPlan, planToMarkdown } from "@/lib/live/plan";
 import { PlanBody } from "@/lib/server/schemas";
+import { signed } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** POST /api/plan { findings, dataLifetimeYears, source, format? }: an ordered migration checklist. */
-export async function POST(req: Request) {
+export const POST = signed(async function POST(req: Request) {
   const b = await parseBody(req, PlanBody);
   if (!b.ok) return b.res;
   const { format, ...input } = b.data;
@@ -16,4 +17,4 @@ export async function POST(req: Request) {
       headers: { "content-type": "text/markdown; charset=utf-8" },
     });
   return Response.json({ ...plan, markdown: planToMarkdown(plan) });
-}
+});

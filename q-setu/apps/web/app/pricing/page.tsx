@@ -77,12 +77,13 @@ export default function Pricing() {
         title="Start free. Pay when we run it for you."
         lead="The cryptography is the same in every tier. What changes is who operates it."
       />
-      <Container className="py-16 md:py-24">
+      <Container className="py-10 md:py-15 lg:py-20">
         <Grid className="gap-y-6">
           {TIERS.map((t, i) => (
+            // Three equal-height cards, the same inner padding; the border brightens on hover.
             <section
               key={t.name}
-              className="col-span-12 flex flex-col border-t border-line pt-6 md:col-span-4"
+              className="col-span-12 flex flex-col rounded-sm border border-line p-6 transition-colors duration-150 hover:border-line-strong md:col-span-4 md:p-8"
             >
               <Heading as="h2" variant="h3">
                 {t.name}

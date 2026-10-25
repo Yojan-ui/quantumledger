@@ -11,6 +11,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { easeToken } from "@/lib/ease";
 import { palette } from "@/components/world/palette";
+import { Thicken } from "@/components/scenes/Thicken";
 
 const N = 12;
 
@@ -97,7 +98,7 @@ export default function LedgerChain({
   });
 
   return (
-    <>
+    <Thicken>
       <OrthographicCamera makeDefault position={[0, 0, 100]} zoom={1} />
       <instancedMesh ref={blocks} args={[undefined, undefined, N]}>
         <boxGeometry args={[1, 1, 1]} />
@@ -106,6 +107,6 @@ export default function LedgerChain({
       <lineSegments ref={links} geometry={linkGeo}>
         <lineBasicMaterial vertexColors toneMapped={false} />
       </lineSegments>
-    </>
+    </Thicken>
   );
 }

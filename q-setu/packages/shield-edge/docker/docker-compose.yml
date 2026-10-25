@@ -1,0 +1,53 @@
+# Shield Edge in front of your app with one file.
+#   SHIELD_KEK=$(openssl rand -base64 48) ACME_EMAIL=you@example.com docker compose up -d
+# Point your domain's DNS at this host first (Let's Encrypt must reach port 80).
+services:
+  shield:
+    image: quantumledger/shield:latest
+    restart: unless-stopped
+    ports:
+      - "443:8443"
+      - "80:8080"
+    environment:
+      EDGE_ORIGIN: http://app:3000 # your app, on the private compose network
+      EDGE_DOMAINS: www.example.com # comma-separated
+      SHIELD_KEK: ${SHIELD_KEK:?set SHIELD_KEK to 48+ random characters}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
+      ACME_DIRECTORY: production # "staging" while you test
+    volumes:
+      - shield-data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    depends_on: [app]
+
+  app:
+    image: your-app:latest # replace with your app; it no longer needs a public port
+    expose: ["3000"]
+
+  # Optional WAF: the OWASP Core Rule Set v4 on ModSecurity, the CRS project's own image. Start it with
+  #   docker compose --profile waf up -d
+  # and set the shield's EDGE_ORIGIN to http://waf:8080. It begins in DetectionOnly (logs what it
+  # would block); switch MODSEC_RULE_ENGINE to On after checking its log against real traffic.
+  waf:
+    profiles: [waf]
+    image: owasp/modsecurity-crs:4.25.2-nginx-alpine-202610051210-lts
+    restart: unless-stopped
+    expose: ["8080"]
+    environment:
+      BACKEND: http://app:3000
+      MODSEC_RULE_ENGINE: DetectionOnly
+      PARANOIA: "1"
+      ANOMALY_INBOUND: "5"
+      ANOMALY_OUTBOUND: "4"
+      # The edge sets X-Forwarded-For itself (clients can't spoof it); log the real client.
+      REAL_IP_HEADER: X-Forwarded-For
+    read_only: false
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETUID, SETGID]
+    security_opt: ["no-new-privileges:true"]
+    depends_on: [app]
+
+volumes:
+  shield-data:

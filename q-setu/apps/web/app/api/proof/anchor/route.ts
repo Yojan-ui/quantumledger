@@ -3,6 +3,7 @@ import { clientKey, RateLimiter } from "@/lib/live/rate-limit";
 import { anchorProof, LEAF_LABELS } from "@/lib/live/proof";
 import { live } from "@/lib/server/runtime";
 import { AnchorBody } from "@/lib/server/schemas";
+import { signed } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ const limiter = (g.__qsetuAnchorLimit ??= new RateLimiter(30, 60_000));
  * leaves into a SHA3-256 Merkle tree and appends a signed checkpoint and a signed anchor entry to
  * the Proof Chain. Returns both entries, every tree level and the entries the block chains onto.
  */
-export async function POST(req: Request) {
+export const POST = signed(async function POST(req: Request) {
   const wait = limiter.take(clientKey(req));
   if (wait) return fail("rate_limited", `Too many anchors. Try again in ${wait} s.`, 429);
   const b = await parseBody(req, AnchorBody);
@@ -24,4 +25,4 @@ export async function POST(req: Request) {
   const t = performance.now();
   const r = await anchorProof(ledger, b.data);
   return Response.json({ ...r, labels: LEAF_LABELS, ms: performance.now() - t });
-}
+});

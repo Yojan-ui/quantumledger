@@ -1,0 +1,37 @@
+{
+  "name": "@qsetu/shield-edge",
+  "version": "0.1.0",
+  "description": "Shield Edge: a reverse proxy that terminates TLS with a hybrid post-quantum key exchange (X25519MLKEM768) in front of any website.",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./onboard": "./src/onboard.ts",
+    "./bench-results": "./bench/results.json"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "tsx src/cli.ts",
+    "build": "tsup",
+    "bench": "tsx bench/run.ts",
+    "bench:quick": "tsx bench/run.ts --quick"
+  },
+  "bin": {
+    "qsetu-edge": "./dist/cli.js"
+  },
+  "dependencies": {
+    "@qsetu/shield-guard": "workspace:*",
+    "acme-client": "5.4.0"
+  },
+  "devDependencies": {
+    "autocannon": "8.0.0",
+    "@types/autocannon": "7.12.7",
+    "tsup": "8.5.1"
+  }
+}

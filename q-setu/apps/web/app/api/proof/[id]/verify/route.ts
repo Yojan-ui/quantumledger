@@ -1,7 +1,8 @@
-import { fail, parseParams } from "@/lib/server/api";
+import { fail, parseParams, safeMessage } from "@/lib/server/api";
 import { sweep } from "@/lib/live/proof";
 import { live } from "@/lib/server/runtime";
 import { AnchorParams } from "@/lib/server/schemas";
+import { signed } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,10 @@ export const dynamic = "force-dynamic";
  * POST /api/proof/{id}/verify: the verification sweep for one anchor. A fresh ML-DSA check of its
  * signed checkpoint, a walk of every entry after the checkpoint, and the Merkle root recomputed.
  */
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = signed(async function POST(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const p = parseParams(await ctx.params, AnchorParams);
   if (!p.ok) return p.res;
   const { ledger, bus } = await live();
@@ -28,6 +32,6 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     });
     return Response.json(r);
   } catch (e) {
-    return fail("not_found", (e as Error).message, 404);
+    return fail("not_found", safeMessage(e, "No proof with that id."), 404);
   }
-}
+});

@@ -207,20 +207,16 @@ export function HudShell({
             <RiskGauge className="shrink-0 overflow-hidden" />
           </div>
         </div>
-        {/* Phones: the stage on top, the panels in a swipeable drawer. */}
-        <div className="flex min-h-0 flex-col gap-2 md:hidden">
+        {/* Phones: the stage on top, then the panels stacked full width (nothing scrolls sideways;
+            min-w-0 lets long readouts truncate instead of widening the column). */}
+        <div className="flex min-w-0 shrink-0 flex-col gap-2 md:hidden">
           <div className="relative h-hud-stage border border-line" data-hud-stage>
             {stage}
             <StageFrame compact />
           </div>
-          <div
-            className="flex snap-x snap-mandatory gap-2 overflow-x-auto"
-            aria-label="Panels (swipe)"
-          >
-            <Diagnostics className="w-full shrink-0 snap-center" />
-            <RiskGauge className="w-full shrink-0 snap-center" />
-            <Terminal className="h-80 w-full shrink-0 snap-center" />
-          </div>
+          <Diagnostics className="min-w-0 shrink-0" />
+          <RiskGauge className="min-w-0 shrink-0" />
+          <Terminal className="h-80 min-w-0 shrink-0" />
         </div>
         <PipelineStepper className="sticky bottom-0 z-10 bg-base md:static md:bg-glass" />
       </div>

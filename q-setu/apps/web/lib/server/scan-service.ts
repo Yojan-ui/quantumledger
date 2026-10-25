@@ -3,6 +3,7 @@ import { scan, type Finding } from "@qsetu/core";
 import CACHE from "@/data/scan-cache.json";
 import { explain } from "@/lib/live/explain";
 import { locate, type GeoPoint } from "@/lib/live/geo";
+import { ScanError } from "@/lib/live/tls";
 import { buildPlan, planToMarkdown, type Plan } from "@/lib/live/plan";
 import { hostFromInput, probeTls, type TlsProbe } from "@/lib/live/tls";
 import { isOffline } from "./env";
@@ -58,7 +59,7 @@ export async function scanHost(input: string): Promise<ScanRecord> {
   if (isOffline()) {
     const c = cachedScan(host);
     if (c) return c;
-    throw new Error(`Offline mode: no cached scan for ${host}. Try one of the suggested sites.`);
+    throw new ScanError("unreachable", `offline, no cached scan for ${host}`);
   }
   let probe: TlsProbe;
   try {

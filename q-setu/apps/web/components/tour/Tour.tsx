@@ -9,6 +9,7 @@
  * work offline. Mounted in the root layout, so it survives page changes.
  */
 import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sendPresent } from "@/lib/client/present";
@@ -18,9 +19,16 @@ import { actions, autoplay, getPipeline, nextStage } from "@/lib/client/pipeline
 import { pct, READINESS, share } from "@/lib/readiness";
 import { scrollToY } from "@/lib/client/scroll";
 
-const RoomPanel = dynamic(() => import("@/components/room/RoomPanel").then((m) => m.RoomPanel), {
-  ssr: false,
-});
+const RoomPanel = dynamic(
+  () =>
+    import("@/components/room/RoomPanel")
+      .catch(() => import("@/components/room/RoomPanel"))
+      .then((m) => m.RoomPanel)
+      .catch(chunkFailed),
+  {
+    ssr: false,
+  },
+);
 
 const KEY = "qsetu:tour";
 const START = "qsetu:tour-start";

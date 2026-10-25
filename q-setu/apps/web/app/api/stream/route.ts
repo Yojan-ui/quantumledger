@@ -3,6 +3,7 @@ import { parseQuery } from "@/lib/server/api";
 import { getBus, live, policyState } from "@/lib/server/runtime";
 import { StreamQuery } from "@/lib/server/schemas";
 import { getNetwork } from "@/lib/server/state";
+import { openStreamSlot } from "@/lib/server/limits";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,18 @@ export const dynamic = "force-dynamic";
  *  - `sector=fintech|healthcare|education|all`: raw simulator hops (NetEvents), for Demo 3.
  */
 export async function GET(req: Request) {
+  // At most a few open streams per client: each holds a socket and a subscription.
+  const release = openStreamSlot(req);
+  if (!release)
+    return Response.json(
+      {
+        error: {
+          code: "rate_limited",
+          message: "Too many open live connections from your network.",
+        },
+      },
+      { status: 429 },
+    );
   const q = parseQuery(req, StreamQuery);
   if (!q.ok) return q.res;
   const enc = new TextEncoder();
@@ -51,6 +64,7 @@ export async function GET(req: Request) {
       }
       const ping = setInterval(() => send(": ping\n\n"), 15_000);
       cleanup = () => {
+        release();
         clearInterval(ping);
         offs.splice(0).forEach((o) => o());
       };

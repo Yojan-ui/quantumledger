@@ -1,6 +1,7 @@
 import { parseBody } from "@/lib/server/api";
 import { live, policyState } from "@/lib/server/runtime";
 import { PolicyBody } from "@/lib/server/schemas";
+import { signed } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,9 +16,9 @@ export async function GET() {
  * signature algorithm (ML-DSA-65, ML-DSA-44, SLH-DSA). Nothing restarts; each live session re-keys
  * onto the new policy at its next rotation.
  */
-export async function POST(req: Request) {
+export const POST = signed(async function POST(req: Request) {
   const b = await parseBody(req, PolicyBody);
   if (!b.ok) return b.res;
   (await live()).policy.set(b.data);
   return Response.json(await policyState());
-}
+});

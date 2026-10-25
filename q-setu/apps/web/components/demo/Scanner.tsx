@@ -2,11 +2,30 @@
 
 import type { ScanResult, Severity } from "@qsetu/core";
 import { SCAN_SAMPLES } from "@qsetu/core/samples";
-import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { chunkFailed } from "@/lib/client/chunk";
+import { useEffect, useRef, useState } from "react";
+import { StagePurpose } from "@/components/demo/shell/StagePurpose";
+import { LazyView } from "@/components/scenes/LazyView";
+import type { ScanPillar } from "./ScannerBars";
 import { Button, Code, Heading, Label, MiniStat, Stat, Text } from "@/components/ui";
 import { errText } from "@/lib/client/api";
 import { usePresent } from "@/lib/client/present";
+import { useReducedMotion } from "@/lib/client/motion";
 import type { Plan } from "@/lib/live/plan";
+import { Term, termify } from "@/components/ui/Term";
+
+const ScannerBars = dynamic(
+  () =>
+    import("./ScannerBars")
+      .catch(() => import("./ScannerBars"))
+
+      .catch(chunkFailed),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const LIFETIMES = [1, 5, 10, 25] as const;
 
@@ -41,6 +60,30 @@ export function Scanner() {
   const [lifetime, setLifetime] = useState<number>(10);
   const [plan, setPlan] = useState<Plan & { markdown: string }>();
   const [done, setDone] = useState<Set<string>>(new Set());
+  // This session's scans, as pillars (the scan itself is the beat): kind and score only.
+  const [pillars, setPillars] = useState<ScanPillar[]>([]);
+  // When the scan in flight started: its result's pillar shows the real scan time.
+  const scanFrom = useRef(0);
+  useEffect(() => {
+    if (busy) scanFrom.current = performance.now();
+  }, [busy]);
+  useEffect(() => {
+    if (!result) return;
+    setPillars((h) =>
+      [
+        ...h,
+        {
+          at: performance.now(),
+          score: result.score,
+          grade: result.grade,
+          kind: probe ? "live TLS" : "pasted config",
+          ms: scanFrom.current ? performance.now() - scanFrom.current : undefined,
+        },
+      ].slice(-5),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
+  const reduce = useReducedMotion();
 
   // /demo/scanner?url=host#url (the hero's "Scan your site" link) focuses the URL field and runs it.
   useEffect(() => {
@@ -78,12 +121,14 @@ export function Scanner() {
         hybridPq: probe?.hybridPq,
       }),
     })
-      .then((r) => r.json())
-      .then((p: Plan & { markdown: string }) => {
-        if (!live) return;
+      // An error reply (a 429, a 400) has no plan in it: keep the last plan rather than render one.
+      .then((r) => (r.ok ? (r.json() as Promise<Plan & { markdown: string }>) : undefined))
+      .then((p) => {
+        if (!live || !p) return;
         setPlan(p);
         setDone(new Set());
-      });
+      })
+      .catch(() => {});
     return () => {
       live = false;
     };
@@ -97,7 +142,8 @@ export function Scanner() {
       href,
       download: `migration-plan-${filename.replace(/\W+/g, "-")}.md`,
     }).click();
-    URL.revokeObjectURL(href);
+    // Revoked a moment later: revoking at once can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
   }
 
   function choose(id: string) {
@@ -174,7 +220,8 @@ export function Scanner() {
       download: `cbom-${filename.replace(/\W+/g, "-")}.json`,
     });
     a.click();
-    URL.revokeObjectURL(url);
+    // Revoked a moment later: revoking at once can cancel the download before it starts.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   const field =
@@ -267,7 +314,10 @@ export function Scanner() {
             {busy ? "Scanning…" : "Scan"}
           </Button>
           <Button onClick={downloadCbom} disabled={!result}>
-            Download CBOM
+            Download{" "}
+            <Term id="cbom" focusable={false}>
+              CBOM
+            </Term>
           </Button>
         </div>
         {error && <Text size="small">{error}</Text>}
@@ -286,6 +336,24 @@ export function Scanner() {
         ) : (
           <Text size="small">Pick a sample or paste your own, then press Scan.</Text>
         )}
+        {/* Always on the page (the site's one canvas starts only where a 3D area exists at load). */}
+        <div className="relative mt-8 overflow-hidden rounded-sm border border-line">
+          <LazyView
+            className="h-stage-sm"
+            label={
+              result
+                ? `Readiness ${result.score} of 100 (${result.grade}): ${result.summary.critical} critical, ${result.summary.high} high, ${result.summary.medium} medium and ${result.summary.low} low findings.`
+                : "Each scan rises here as a glass pillar, filled to its readiness score."
+            }
+          >
+            {(onScreen) => (
+              <ScannerBars pillars={pillars} pending={busy} active={onScreen} reduce={reduce} />
+            )}
+          </LazyView>
+          <StagePurpose>
+            each scan rises as a pillar filled to its readiness score, in totals only.
+          </StagePurpose>
+        </div>
       </aside>
 
       {result && (
@@ -369,9 +437,9 @@ export function Scanner() {
             </div>
           </div>
           <Text size="small" className="max-w-text">
-            Priority uses Mosca’s inequality: if data lifetime plus migration time exceeds the years
-            left until {plan.assumptions.horizonYear} (a planning horizon, not a prediction), that
-            step is already late.
+            Priority uses <Term id="mosca">Mosca’s inequality</Term>: if data lifetime plus
+            migration time exceeds the years left until {plan.assumptions.horizonYear} (a planning
+            horizon, not a prediction), that step is already late.
           </Text>
           <ol className="border-b border-line">
             {plan.steps.map((st) => {
@@ -399,7 +467,7 @@ export function Scanner() {
                       <span
                         className={`block text-body ${checked ? "text-fg-3 line-through" : "text-fg"}`}
                       >
-                        {st.title}
+                        {termify(st.title, false)}
                       </span>
                       <span className="mt-1 block font-mono text-label uppercase text-fg-3">
                         <span className={st.priority === "P1" ? "text-warn" : ""}>
@@ -410,7 +478,9 @@ export function Scanner() {
                     </span>
                   </label>
                   <p className="col-span-12 text-small text-fg-2 md:col-span-4">{st.why}</p>
-                  <p className="col-span-12 text-small text-fg-2 md:col-span-3">{st.action}</p>
+                  <p className="col-span-12 text-small text-fg-2 md:col-span-3">
+                    {termify(st.action)}
+                  </p>
                 </li>
               );
             })}
