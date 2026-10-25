@@ -29,3 +29,42 @@ test("a phone seals a message and a tampered one is rejected", async ({ page, br
   expect(errors).toEqual([]);
   await ctx.close();
 });
+
+test("a browser without workers gets a plain message, not a crash", async ({ browser }) => {
+  const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+  const phone = await ctx.newPage();
+  const crashes: string[] = [];
+  phone.on("pageerror", (e) => crashes.push(String(e)));
+  await phone.addInitScript(() => {
+    // @ts-expect-error simulating an old browser
+    delete window.Worker;
+  });
+  await phone.goto("/join");
+  await expect(phone.locator("[data-room-unsupported]")).toContainText("background workers");
+  await expect(phone.getByText("watch the big screen")).toBeVisible();
+  expect(crashes).toEqual([]);
+  await ctx.close();
+});
+
+test("a crypto worker that fails to load offers a fresh start instead of hanging", async ({
+  browser,
+}) => {
+  const ctx = await browser.newContext({ ...devices["iPhone 13"] });
+  const phone = await ctx.newPage();
+  // A worker whose script fails to load: it reports an error and never answers.
+  await phone.addInitScript(() => {
+    window.Worker = class extends EventTarget {
+      onerror: ((e: ErrorEvent) => void) | null = null;
+      constructor() {
+        super();
+        setTimeout(() => this.onerror?.(new ErrorEvent("error", { message: "404" })), 50);
+      }
+      postMessage() {}
+      terminate() {}
+    } as unknown as typeof Worker;
+  });
+  await phone.goto("/join");
+  await expect(phone.locator("[data-room-error]")).toContainText("couldn't run the encryption");
+  await expect(phone.getByRole("button", { name: "Start again" })).toBeVisible();
+  await ctx.close();
+});

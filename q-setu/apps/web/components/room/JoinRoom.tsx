@@ -15,7 +15,8 @@ import { MAX_MESSAGE_BYTES } from "@/lib/live/room-limits";
 import { ROOM_EMOJI, roomCity, visitorCss } from "@/data/room";
 import { errText } from "@/lib/client/api";
 import { burst } from "@/lib/client/burst";
-import { roomKeygen, roomReceipt, roomSeal } from "@/lib/client/room-crypto";
+import { RoomCryptoError, roomKeygen, roomReceipt, roomSeal } from "@/lib/client/room-crypto";
+import { missingForRoom } from "@/lib/client/room-support";
 import { ms } from "@/lib/format";
 
 interface Me {
@@ -46,9 +47,34 @@ interface Sent {
 const fmtBytes = (n: number) => `${n.toLocaleString("en-IN")} B`;
 const utf8Len = (s: string) => new TextEncoder().encode(s).length;
 
+/**
+ * POST JSON to the room. A dropped connection or a reply that isn't JSON (a proxy's error page)
+ * becomes a message a visitor can act on, not "Failed to fetch" or "Unexpected token <".
+ */
+async function post<T>(url: string, body: unknown): Promise<{ ok: boolean; status: number; j: T }> {
+  let r: Response;
+  try {
+    r = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error(
+      "Can't reach the demo. Check this phone is on the same Wi-Fi as the screen, then try again.",
+    );
+  }
+  try {
+    return { ok: r.ok, status: r.status, j: (await r.json()) as T };
+  } catch {
+    throw new Error(`The demo server didn't answer properly (${r.status}). Try again in a moment.`);
+  }
+}
+
 export function JoinRoom() {
   const [me, setMe] = useState<Me>();
   const [err, setErr] = useState<string>();
+  const [missing, setMissing] = useState<string[]>([]);
   const [text, setText] = useState("");
   const [pick, setPick] = useState<string>(ROOM_EMOJI[0]);
   const [log, setLog] = useState<Sent[]>([]);
@@ -57,16 +83,20 @@ export function JoinRoom() {
 
   useEffect(() => {
     let off = false;
+    const lacks = missingForRoom();
+    if (lacks.length) {
+      setMissing(lacks);
+      return;
+    }
     (async () => {
       try {
         const k = await roomKeygen();
-        const r = await fetch("/api/room/join", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ publicKey: k.publicKey }),
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(errText(j, "Couldn't join the room"));
+        const { ok, j } = await post<{
+          id: string;
+          visitor: { name: string; colour: number; city: string };
+          key: { publicKey: string; kid: string };
+        }>("/api/room/join", { publicKey: k.publicKey });
+        if (!ok) throw new Error(errText(j, "Couldn't join the room"));
         if (off) return;
         setMe({
           id: j.id,
@@ -110,15 +140,11 @@ export function JoinRoom() {
         state: "sending",
       };
       setLog((l) => [entry, ...l].slice(0, 6));
-      const r = await fetch("/api/room/send", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id: me.id, envelope: s.envelope, sealMs: s.ms }),
-      });
-      const j = (await r.json()) as
+      const { j } = await post<
         | { ok: true; receipt: EnvelopeJSON; openMs: number }
         | { ok: false; reason: string; openMs: number }
-        | { error: unknown };
+        | { error: unknown }
+      >("/api/room/send", { id: me.id, envelope: s.envelope, sealMs: s.ms });
       let next: Partial<Sent>;
       if ("ok" in j && j.ok) {
         const rc = await roomReceipt(j.receipt, me.id, message);
@@ -137,6 +163,8 @@ export function JoinRoom() {
       }
       setLog((l) => l.map((x) => (x.n === n ? { ...x, ...next } : x)));
     } catch (e) {
+      // The worker held this phone's key pair: if it stopped, start over with a fresh one.
+      if (e instanceof RoomCryptoError) setErr(e.message);
       setLog((l) =>
         l.map((x) => (x.n === n ? { ...x, state: "error", detail: (e as Error).message } : x)),
       );
@@ -145,12 +173,26 @@ export function JoinRoom() {
     }
   }
 
+  if (missing.length)
+    return (
+      <div className="mt-10" role="alert" data-room-unsupported>
+        <h1 className="text-h1-sm font-medium text-fg">This browser can&apos;t join the demo</h1>
+        <Text className="mt-3">
+          It&apos;s missing {missing.join(", ")}, which the encryption needs. Open this page in an
+          up-to-date Chrome or Safari, or just watch the big screen: the demo carries on there.
+        </Text>
+      </div>
+    );
+
   if (err)
     return (
-      <div className="mt-10" role="alert">
+      <div className="mt-10" role="alert" data-room-error>
         <Text>{err}</Text>
-        <Button className="mt-4" onClick={() => location.reload()}>
-          Try again
+        <Text size="small" className="mt-2">
+          Nothing was sent. The demo carries on on the big screen.
+        </Text>
+        <Button className="mt-4 h-12" onClick={() => location.reload()}>
+          Start again
         </Button>
       </div>
     );
