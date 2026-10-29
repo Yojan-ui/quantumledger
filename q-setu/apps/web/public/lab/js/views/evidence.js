@@ -3,6 +3,7 @@
 import { h } from "../dom.js";
 import { ms, when } from "../fmt.js";
 import { href } from "../router.js";
+import { chainStage, loadChain } from "../scenes/chain.js";
 import { loadResult } from "./results.js";
 
 export async function view(ctx) {
@@ -22,6 +23,33 @@ export async function view(ctx) {
     );
   const plan = r.plan;
   const lg = r.ledger;
+  const chain = lg ? await loadChain(ctx) : null;
+  const stage = chain
+    ? chainStage(ctx, chain, { selectedId: lg.entryId, plan: plan ? plan.steps : null })
+    : null;
+  // a real verify of the whole chain, now (POST /api/ledger/verify): drives the sweep and the shading
+  const verifyOut = h("p", { class: "mono", "aria-live": "polite" });
+  async function verifyNow(btn) {
+    btn.setAttribute("aria-disabled", "true");
+    verifyOut.textContent = "Verifying every entry's SHA3-256 link and ML-DSA-65 signature…";
+    stage.verifying();
+    try {
+      const v = await ctx.api.post("/api/ledger/verify");
+      stage.verified(v);
+      verifyOut.textContent = v.ok
+        ? `Verified now: ${v.checked} entries in ${ms(v.ms)}`
+        : `Broken at #${v.broken.id}: ${v.broken.detail || v.broken.reason}`;
+      ctx.announce(
+        v.ok
+          ? `Proof Chain verified, ${v.checked} entries`
+          : `Proof Chain broken at entry ${v.broken.id}`,
+      );
+    } catch {
+      stage.verifyFailed();
+      verifyOut.textContent = "";
+    }
+    btn.removeAttribute("aria-disabled");
+  }
   const meta = [
     ["Run", r.runId],
     ["Status", r.status],
@@ -56,6 +84,28 @@ export async function view(ctx) {
         plan ? dl("plan", "Plan (Markdown)") : null,
       ),
     ),
+    stage
+      ? h(
+          "section",
+          { class: "c-12 section" },
+          h("p", {
+            class: "eyebrow",
+            text: `Proof Chain · entry #${lg.entryId} among ${chain.count} · plan steps beside it`,
+          }),
+          stage.el,
+          stage.legend,
+          h(
+            "div",
+            { class: "actions" },
+            h(
+              "button",
+              { class: "btn", type: "button", onclick: (e) => verifyNow(e.currentTarget) },
+              "Verify chain now",
+            ),
+            verifyOut,
+          ),
+        )
+      : null,
     plan
       ? h(
           "section",
@@ -177,5 +227,5 @@ export async function view(ctx) {
       h("a", { href: href("results", { id }), "data-link": true, text: "Back to results" }),
     ),
   );
-  return { el, crumbs: ["Lab", "Evidence", id] };
+  return { el, crumbs: ["Lab", "Evidence", id], stage: stage && stage.spec };
 }

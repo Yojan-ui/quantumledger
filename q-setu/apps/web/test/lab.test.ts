@@ -31,7 +31,8 @@ type Routes =
   | "result"
   | "exportRoute"
   | "cancel"
-  | "scene";
+  | "scene"
+  | "chain";
 let api: Record<Routes, Mod>;
 const P = (id: string) => ({ params: Promise.resolve({ id }) });
 const json = (body: unknown) =>
@@ -56,6 +57,7 @@ beforeAll(async () => {
     exportRoute: await import("@/app/api/lab/runs/[id]/export/route"),
     cancel: await import("@/app/api/lab/runs/[id]/cancel/route"),
     scene: await import("@/app/api/lab/runs/[id]/scene/route"),
+    chain: await import("@/app/api/lab/chain/route"),
   } as unknown as Record<Routes, Mod>;
 });
 
@@ -178,7 +180,24 @@ describe("lab API", () => {
     const events = await readEvents(runId);
     const types = events.map((e) => e.type);
     expect(types.at(-1)).toBe("result");
+    const ledgerEv = events.filter((e) => e.type === "ledger").map((e) => e.data);
+    expect(ledgerEv).toHaveLength(2);
+    expect(ledgerEv[0].verify).toBeNull();
+    expect(ledgerEv[1].verify).toMatchObject({ ok: true, brokenId: null });
     expect(types.filter((t) => t === "file")).toHaveLength(SCAN_SAMPLES.length);
+    for (const e of events.filter((x) => x.type === "file")) {
+      const s = SCAN_SAMPLES.find((x) => x.filename === e.data.name)!;
+      const direct = scan(s.text, s.filename);
+      expect(e.data.positions).toEqual(
+        direct.findings.map((f, n) => ({
+          n,
+          line: f.line,
+          severity: f.severity,
+          weight: SEVERITY_WEIGHT[f.severity],
+          quantumSafe: f.quantumSafe,
+        })),
+      );
+    }
     const progress = events.filter((e) => e.type === "progress").map((e) => e.data.done);
     expect(progress).toEqual([...progress].sort((a, b) => a - b));
 
@@ -290,6 +309,74 @@ describe("lab API", () => {
     const ev = await readEvents(r2);
     expect(ev.at(-1)!.type).toBe("error");
     expect(ev.at(-1)!.data.error.message).toContain("probe live");
+  });
+
+  it("LAB_TEST_DELAY_MS: off by default, clamped, ignored in production", async () => {
+    const { testDelayMs } = await import("@/lib/lab/runs");
+    expect(testDelayMs({} as NodeJS.ProcessEnv)).toBe(0);
+    expect(testDelayMs({ LAB_TEST_DELAY_MS: "300" } as unknown as NodeJS.ProcessEnv)).toBe(300);
+    expect(testDelayMs({ LAB_TEST_DELAY_MS: "99999" } as unknown as NodeJS.ProcessEnv)).toBe(5000);
+    expect(testDelayMs({ LAB_TEST_DELAY_MS: "soon" } as unknown as NodeJS.ProcessEnv)).toBe(0);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(
+      testDelayMs({
+        LAB_TEST_DELAY_MS: "300",
+        NODE_ENV: "production",
+      } as unknown as NodeJS.ProcessEnv),
+    ).toBe(0);
+    warn.mockRestore();
+    const h = await (await (api.health.GET as () => Response)()).json();
+    expect(h.testDelayMs).toBe(0);
+  });
+
+  it("with the test delay a run can be cancelled mid-scan; unscanned inputs are never reported", async () => {
+    process.env.LAB_TEST_DELAY_MS = "150";
+    try {
+      const ws = await newWorkspace();
+      const inputs = SCAN_SAMPLES.map((s) => ({ kind: "sample", id: s.id }));
+      const { runId } = await (await startRun({ workspace: ws, inputs })).json();
+      await new Promise((r) => setTimeout(r, 200)); // inside the first or second unit
+      await (api.cancel.POST as (r: Request, c: unknown) => Promise<Response>)(
+        new Request("http://lab.test", { method: "POST" }),
+        P(runId),
+      );
+      const ev = await readEvents(runId);
+      expect(ev.at(-1)!.type).toBe("cancelled");
+      expect(ev.filter((e) => e.type === "file").length).toBeLessThan(SCAN_SAMPLES.length);
+    } finally {
+      delete process.env.LAB_TEST_DELAY_MS;
+    }
+  });
+
+  it("chain lists every entry with lab-run ids, matches the ledger, and answers 304 on its ETag", async () => {
+    const get = api.chain.GET as (r: Request) => Promise<Response>;
+    const res = await get(new Request("http://lab.test/c"));
+    expect(res.status).toBe(200);
+    const c = await res.json();
+    const { live } = await import("@/lib/server/runtime");
+    const { ledger } = await live();
+    // the demo mesh keeps appending in the background, so compare against the response itself
+    expect(c.count).toBeLessThanOrEqual(await ledger.count());
+    expect(c.entries).toHaveLength(c.count);
+    expect(c.entries.map((e: { id: number }) => e.id)).toEqual(
+      Array.from({ length: c.count }, (_, i) => i + 1),
+    );
+    expect(c.entries.at(-1)).toMatchObject({ id: c.head.id, hash: c.head.hash });
+    const lab = c.entries.filter((e: { kind: string }) => e.kind === "lab-run");
+    expect(lab.length).toBeGreaterThan(0);
+    for (const e of lab) {
+      const full = await ledger.get(e.id);
+      expect(e.runId).toBe(full!.payload.runId);
+      expect(e.hash).toBe(full!.hash);
+    }
+    // 304 when nothing changed in between (retry if the mesh appended between the two calls)
+    let status = 0;
+    for (let i = 0; i < 5 && status !== 304; i++) {
+      const etag = (await get(new Request("http://lab.test/c"))).headers.get("etag")!;
+      status = (await get(new Request("http://lab.test/c", { headers: { "if-none-match": etag } })))
+        .status;
+    }
+    expect(status).toBe(304);
   });
 
   it("scene data mirrors the run's findings with the scanner's weights, with an ETag and 304", async () => {

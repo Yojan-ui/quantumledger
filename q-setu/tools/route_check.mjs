@@ -114,7 +114,7 @@ let runId = null,
   step = "e2e host";
   await page.goto(`${BASE}/lab/input`);
   await page.fill("#url", "ecc256.badssl.com");
-  await page.getByText(/cached real scan only/).waitFor();
+  await page.locator(".meta", { hasText: "cached real scan only" }).first().waitFor();
   await page.getByRole("button", { name: /Run scan/ }).click();
   await page.waitForURL(/\/lab\/runs\/[a-f0-9]{16}$/);
   hostRunId = page.url().match(/runs\/([a-f0-9]{16})/)[1];
@@ -241,6 +241,123 @@ for (let i = 0; i < 100; i++) {
   await ctx.close();
 }
 
+// ---------- 2b. stage-4 scenes: intro, chain picking, verify, cancel, live map, DPR 2 ----------
+const addSamples = async (page, n = 3) => {
+  for (let i = 0; i < n; i++)
+    await page.locator("aside .list li").nth(i).getByRole("button", { name: "Add" }).click();
+  await page.getByText(/Parse preview/).waitFor();
+};
+{
+  const health = await (await fetch(`${BASE}/api/lab/health`)).json();
+  report.testDelayMs = health.testDelayMs;
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop });
+  const page = await ctx.newPage();
+  let step = "landing intro";
+  watch(page, () => step);
+  await page.goto(`${BASE}/lab`, { waitUntil: "domcontentloaded" });
+  await worldOn(page).catch(() => fail(step, "chain stage never attached"));
+  if (!(await page.evaluate(() => window.__lab3d.flying)))
+    fail(step, "no intro flight on the first landing visit");
+  await settle(page);
+
+  step = "chain picking";
+  const chain = await (await fetch(`${BASE}/api/lab/chain`)).json();
+  const entry = chain.entries.find((e) => e.runId === multi);
+  const pt = entry && (await page.evaluate((id) => window.__lab3d.project({ id }), entry.id));
+  if (!pt) fail(step, "the multi run's lab-run entry is not on the chain");
+  else {
+    await page.mouse.move(pt.x, pt.y);
+    await page.waitForTimeout(150);
+    const tip = await page
+      .locator(".tip:not([hidden]) b")
+      .innerText()
+      .catch(() => "");
+    if (!tip.startsWith(`#${entry.id} `)) fail(step, `tooltip "${tip}" for entry #${entry.id}`);
+    else {
+      await page.mouse.click(pt.x, pt.y);
+      await page
+        .waitForURL(new RegExp(`/runs/${multi}/results$`), { timeout: 5000 })
+        .catch(() => fail(step, "clicking the lab-run slab did not open its run"));
+      report.chainPicking = { tooltip: tip, opened: page.url().replace(BASE, "") };
+    }
+  }
+
+  step = "evidence verify";
+  await page.goto(`${BASE}/lab/runs/${multi}/evidence`, { waitUntil: "networkidle" });
+  await worldOn(page).catch(() => fail(step, "chain stage never attached"));
+  await page.getByRole("button", { name: "Verify chain now" }).click();
+  await page
+    .getByText(/Verified now: \d+ entries/)
+    .waitFor({ timeout: 10000 })
+    .catch(() => fail(step, "no verify result"));
+
+  if (health.testDelayMs > 0) {
+    step = "cancel";
+    await page.goto(`${BASE}/lab/input`, { waitUntil: "networkidle" });
+    await addSamples(page);
+    await page.getByRole("button", { name: /Run scan/ }).click();
+    await page.waitForURL(/\/lab\/runs\/[a-f0-9]{16}$/);
+    const cid = page.url().match(/runs\/([a-f0-9]{16})/)[1];
+    await page.getByRole("button", { name: /Cancel run/ }).click();
+    await page
+      .getByText(/· cancelled/)
+      .first()
+      .waitFor({ timeout: 10000 })
+      .catch(() => fail(step, "run view never showed cancelled"));
+    const r = await (await fetch(`${BASE}/api/lab/runs/${cid}/result`)).json();
+    if (r.status !== "cancelled" || r.ledger !== null)
+      fail(step, `result ${r.status}, ledger ${JSON.stringify(r.ledger)}`);
+    report.cancel = {
+      runId: cid,
+      status: r.status,
+      filesScanned: r.files.length,
+      of: r.inputs.length,
+    };
+    await page.goto(`${BASE}/lab/runs/${cid}/results`, { waitUntil: "networkidle" });
+    await page
+      .getByText(/This run was cancelled/)
+      .waitFor({ timeout: 5000 })
+      .catch(() => fail(step, "results did not say cancelled"));
+  } else report.cancel = "skipped: server started without LAB_TEST_DELAY_MS";
+  await ctx.close();
+}
+{
+  // live map in 2D: every "waiting" column resolves from the run's own events
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop });
+  const page = await ctx.newPage();
+  const step = "live map 2D";
+  watch(page, () => step);
+  await page.goto(`${BASE}/lab/input?no3d`, { waitUntil: "networkidle" });
+  await addSamples(page);
+  await page.getByRole("button", { name: /Run scan/ }).click();
+  await page.waitForURL(/\/lab\/runs\/[a-f0-9]{16}$/);
+  await page.getByRole("link", { name: /Open results/ }).waitFor({ timeout: 30000 });
+  const texts = await page.locator(".fallback2d svg text").allTextContents(); // SVG text has no innerText
+  if (texts.some((t) => t.startsWith("waiting")))
+    fail(step, "a column still says waiting after the run");
+  if (texts.filter((t) => / \/ 100 · /.test(t)).length !== 3)
+    fail(step, `scores on the map: ${texts.join(" | ")}`);
+  if ((await page.locator(".fallback2d svg a").count()) === 0)
+    fail(step, "bars did not become links when done");
+  await ctx.close();
+}
+{
+  // frame stats at DPR 2 (Retina-class backing store)
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop, deviceScaleFactor: 2 });
+  const page = await ctx.newPage();
+  const step = "3d dpr2";
+  watch(page, () => step);
+  await page.goto(`${BASE}/lab/runs/${multi}/results`, { waitUntil: "networkidle" });
+  await worldOn(page).catch(() => fail(step, "3D stage never attached"));
+  await page.locator("[data-stage]").scrollIntoViewIfNeeded();
+  await settle(page);
+  await page.evaluate(() => window.__lab3d.resetStats());
+  await page.waitForTimeout(4000);
+  report.framesDpr2 = await page.evaluate(() => window.__lab3d.stats());
+  if (report.framesDpr2.dpr !== 2) fail(step, `renderer DPR ${report.framesDpr2.dpr}, expected 2`);
+  await ctx.close();
+}
+
 // ---------- 3. fallbacks ----------
 for (const [name, opts, q] of [
   ["no3d", {}, "?no3d"],
@@ -312,6 +429,15 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
       const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       if (over > 0) fail(where, `horizontal scroll ${over}px`);
       await page.screenshot({ path: join(OUT, `${name}-${vp}-${mode}.png`), fullPage: true });
+      if (hasStage && mode === "3d") {
+        // the world canvas is fixed to the viewport, so a full-page capture cannot show a stage below the
+        // first screen; this viewport shot shows the stage as a person scrolled to it sees it
+        await page.locator("[data-stage]").first().scrollIntoViewIfNeeded();
+        await settle(page);
+        await page.waitForTimeout(200);
+        await page.screenshot({ path: join(OUT, `${name}-${vp}-3d-stage.png`) });
+        await page.evaluate(() => window.scrollTo(0, 0));
+      }
       await page.keyboard.press("Tab");
       const first = await page.evaluate(() => document.activeElement?.className);
       if (first !== "skip") fail(where, `first Tab focuses .${first}, not the skip link`);

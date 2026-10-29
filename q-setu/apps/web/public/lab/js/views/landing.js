@@ -3,15 +3,27 @@ import { h } from "../dom.js";
 import { gradeClass, ms, short, when } from "../fmt.js";
 import { rollNumber } from "../motion.js";
 import { href } from "../router.js";
+import { chainStage, loadChain } from "../scenes/chain.js";
 
 export async function view(ctx) {
-  const [ledger, ws] = await Promise.all([
-    ctx.api.get("/api/ledger?limit=1"),
+  const [chain, ws] = await Promise.all([
+    loadChain(ctx),
     ctx.store.get(`ws:${ctx.ws}`, `/api/lab/workspaces/${ctx.ws}`),
   ]);
-  const head = ledger.entries && ledger.entries[0];
+  const head = chain.head;
+  // intro shot once per tab session: the camera comes down onto the column while it fills, oldest entry first,
+  // and the count rolls up to the real number
+  let intro = false;
+  try {
+    intro = !sessionStorage.getItem("qlab.intro");
+    sessionStorage.setItem("qlab.intro", "1");
+  } catch {
+    /* private mode: no intro bookkeeping */
+  }
+  const stage = chainStage(ctx, chain, { intro, tall: true });
   const count = h("p", { class: "hero", "aria-describedby": "chain-sub" });
-  rollNumber(count, ledger.count);
+  if (intro) count._value = 0;
+  rollNumber(count, chain.count);
   const verifyOut = h("div", { "aria-live": "polite" });
 
   async function verify(btn) {
@@ -22,8 +34,10 @@ export async function view(ctx) {
         text: "Verifying every entry's SHA3-256 link and ML-DSA-65 signature…",
       }),
     );
+    stage.verifying();
     try {
       const v = await ctx.api.post("/api/ledger/verify");
+      stage.verified(v);
       verifyOut.replaceChildren(
         v.ok
           ? h(
@@ -48,6 +62,7 @@ export async function view(ctx) {
       );
     } catch {
       verifyOut.replaceChildren();
+      stage.verifyFailed();
     }
     btn.removeAttribute("aria-disabled");
   }
@@ -111,7 +126,7 @@ export async function view(ctx) {
     { class: "page enter" },
     h(
       "section",
-      { class: "c-7" },
+      { class: "c-6" },
       h("h1", { class: "sr", text: "QuantumLedger Lab: scan for quantum-vulnerable cryptography" }),
       h("p", { class: "eyebrow", text: "Proof Chain · ML-DSA-65 signed · SHA3-256 chained" }),
       count,
@@ -145,9 +160,20 @@ export async function view(ctx) {
       ),
       verifyOut,
     ),
+    // the chain itself stands beside the number it counts; the intro shot happens here, above the fold
     h(
       "section",
-      { class: "c-start-9" },
+      { class: "c-start-7" },
+      h("p", {
+        class: "eyebrow",
+        text: `${chain.truncated ? `newest ${chain.entries.length} of ${chain.count} · ` : ""}click a lab-run slab to open its run`,
+      }),
+      stage.el,
+      stage.legend,
+    ),
+    h(
+      "section",
+      { class: "c-12 section" },
       h("p", { class: "eyebrow", text: `Workspace ${ctx.ws}` }),
       runs.length
         ? h("p", { class: "big-muted", text: `${runs.length} run${runs.length === 1 ? "" : "s"}` })
@@ -155,5 +181,10 @@ export async function view(ctx) {
       runList,
     ),
   );
-  return { el, crumbs: ["Lab"], keys: { n: () => ctx.go(href("input", {}, { ws: ctx.ws })) } };
+  return {
+    el,
+    crumbs: ["Lab"],
+    keys: { n: () => ctx.go(href("input", {}, { ws: ctx.ws })) },
+    stage: stage.spec,
+  };
 }

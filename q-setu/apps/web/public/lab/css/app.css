@@ -115,6 +115,9 @@ a {
 .c-4 {
   grid-column: span 4;
 }
+.c-start-7 {
+  grid-column: 7 / span 6;
+}
 .c-start-8 {
   grid-column: 8 / span 5;
 }
@@ -127,6 +130,7 @@ a {
   .c-6,
   .c-5,
   .c-4,
+  .c-start-7,
   .c-start-8,
   .c-start-9 {
     grid-column: span 12;
@@ -710,6 +714,10 @@ main {
 [data-stage].stage-sm {
   height: var(--stage-h-sm);
 }
+[data-stage].stage-tall {
+  height: var(--stage-h-tall);
+  margin-top: 0;
+}
 /* 2D map: the no-3D version of every stage, and what screen readers and keyboards use */
 .fallback2d {
   height: 100%;
@@ -751,6 +759,59 @@ main {
 }
 .map-bar {
   fill: var(--text);
+}
+/* score gauge: outline = the 0-100 scale; empty outline + bold "0 / 100" = a real score of 0; dashed = waiting */
+.map-gauge {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: var(--rule);
+}
+.map-gauge.waiting {
+  stroke: var(--text-3);
+  stroke-dasharray: 2 3;
+}
+.map-zero {
+  font: var(--weight-bold) var(--fs-12) var(--font-mono);
+  fill: var(--text);
+}
+.pending .map-name,
+.pending .map-meta {
+  fill: var(--text-3);
+}
+.chain-cell {
+  fill: var(--text);
+  fill-opacity: 0.42;
+}
+.chain-cell.lab {
+  fill-opacity: 0.9;
+}
+.chain-cell.bad,
+.chain-cell.on {
+  fill-opacity: 1;
+  stroke: var(--text);
+  stroke-width: var(--rule-strong);
+}
+.plate {
+  fill: var(--text);
+  fill-opacity: 0.82;
+}
+.plate.rejected {
+  fill: none;
+  stroke: var(--text);
+  stroke-dasharray: 3 3;
+}
+.plate-mark {
+  stroke: var(--base);
+  stroke-width: var(--rule);
+}
+.stage-caption {
+  position: absolute;
+  inset: auto 0 var(--s-5) 0;
+  margin: 0;
+  text-align: center;
+  font: var(--weight-regular) var(--fs-12) var(--font-mono);
+  color: var(--text-2);
+  pointer-events: none;
 }
 .map-bar.safe {
   stroke: var(--text);

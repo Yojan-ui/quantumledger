@@ -10,7 +10,7 @@ import { execFileSync } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { existsSync, readdirSync } from "node:fs";
 import { buildPlan, type Plan } from "@/lib/live/plan";
-import { scan, type ScanResult } from "@qsetu/core";
+import { scan, SEVERITY_WEIGHT, type ScanResult } from "@qsetu/core";
 import webPkg from "@/package.json";
 import corePkg from "../../../../packages/core/package.json";
 import { sha256, type ResolvedInput, type RunBody } from "./inputs";
@@ -222,6 +222,27 @@ function tick(a: Active) {
 }
 const yieldTurn = () => new Promise<void>((r) => setImmediate(r));
 
+let warnedProdDelay = false;
+/**
+ * Test-only slow path: LAB_TEST_DELAY_MS (0-5000) waits that long before each scan unit and before the plan,
+ * so browser tests can hit Cancel. Off by default; ignored (with one warning) in production builds.
+ */
+export function testDelayMs(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env.LAB_TEST_DELAY_MS;
+  if (!raw) return 0;
+  if (env.NODE_ENV === "production") {
+    if (!warnedProdDelay) console.warn("LAB_TEST_DELAY_MS is ignored in production builds");
+    warnedProdDelay = true;
+    return 0;
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.max(0, Math.min(5000, Math.round(n))) : 0;
+}
+const testDelay = () => {
+  const ms = testDelayMs();
+  return ms ? new Promise<void>((r) => setTimeout(r, ms)) : Promise.resolve();
+};
+
 async function stage<T>(a: Active, name: StageName, fn: () => Promise<T>): Promise<T> {
   const st = a.rec.stages.find((s) => s.name === name)!;
   st.status = "running";
@@ -264,6 +285,7 @@ async function execute(a: Active, inputs: ResolvedInput[], deps: RunDeps) {
       for (const inp of inputs) {
         checkCancel(a);
         await yieldTurn();
+        await testDelay();
         checkCancel(a);
         if (inp.source === "url") {
           if (inp.probeLive)
@@ -302,6 +324,15 @@ async function execute(a: Active, inputs: ResolvedInput[], deps: RunDeps) {
             grade: res.grade,
             summary: res.summary,
             findings: res.findings.length,
+            lines: inp.lines,
+            // positions for the live 3D lattice: the same fields the scene endpoint serves later
+            positions: res.findings.map((x, n) => ({
+              n,
+              line: x.line,
+              severity: x.severity,
+              weight: SEVERITY_WEIGHT[x.severity],
+              quantumSafe: x.quantumSafe,
+            })),
             ms,
           });
           log(
@@ -313,6 +344,7 @@ async function execute(a: Active, inputs: ResolvedInput[], deps: RunDeps) {
         tick(a);
       }
     });
+    await testDelay();
     checkCancel(a);
     await stage(a, "plan", async () => {
       const urlFindings = (r.url?.findings as ScanResult["findings"] | undefined) ?? [];
@@ -376,12 +408,22 @@ async function execute(a: Active, inputs: ResolvedInput[], deps: RunDeps) {
         },
       );
       r.ledger = { entryId: e.id, hash: e.hash, kind: "lab-run", note: LAB_RUN_NOTE, verify: null };
+      emit(a, "ledger", { entryId: e.id, hash: e.hash, verify: null });
       log(a, "sign", `Proof Chain entry #${e.id} (lab-run, ML-DSA-65 signed) hash ${e.hash}`);
       tick(a);
     });
     await stage(a, "verify", async () => {
       const v = (await deps.ledger.verify()) as Record<string, unknown>;
       r.ledger!.verify = v;
+      emit(a, "ledger", {
+        entryId: r.ledger!.entryId,
+        hash: r.ledger!.hash,
+        verify: {
+          ok: v.ok,
+          checked: v.checked,
+          brokenId: (v.broken as { id?: number } | undefined)?.id ?? null,
+        },
+      });
       log(
         a,
         "verify",

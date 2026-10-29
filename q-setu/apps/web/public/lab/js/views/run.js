@@ -4,6 +4,7 @@ import { h, put } from "../dom.js";
 import { gradeClass, ms, short, when } from "../fmt.js";
 import { rollNumber } from "../motion.js";
 import { href } from "../router.js";
+import { runStage } from "../scenes/lattice.js";
 
 const STAGE_LABEL = {
   validate: "Validate",
@@ -157,7 +158,10 @@ export async function view(ctx) {
     }
   }
 
+  // the live map moves only on these real events (stage, file, url, ledger, result / cancelled / error)
+  const live = runStage(ctx, run);
   const close = ctx.store.runStream(id, ({ type, data }) => {
+    live.on(type, data);
     if (type === "status") st.status = data.status;
     else if (type === "stage") {
       const s = st.stages.find((x) => x.name === data.name);
@@ -256,6 +260,13 @@ export async function view(ctx) {
     h("section", { class: "c-12" }, stagesEl),
     h(
       "section",
+      { class: "c-12" },
+      h("p", { class: "eyebrow", text: "Live map · moves only on the run's own events" }),
+      live.el,
+      live.legend,
+    ),
+    h(
+      "section",
       { class: "c-6" },
       h("p", { class: "eyebrow", text: "Results as they arrive" }),
       filesEl,
@@ -267,6 +278,7 @@ export async function view(ctx) {
     el,
     crumbs: ["Lab", "Run", id],
     dispose: close,
+    stage: live.spec,
     keys: {
       escape: () => {
         const b = actions.querySelector("button.btn-primary");

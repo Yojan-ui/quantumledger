@@ -29,6 +29,7 @@ export function createStore({
       "log",
       "file",
       "url",
+      "ledger",
       "result",
       "error",
       "cancelled",

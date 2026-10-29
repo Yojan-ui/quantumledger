@@ -218,16 +218,31 @@ export function createWorld({ onLost = () => {} } = {}) {
     for (const [t, fn] of listeners) spec.el.addEventListener(t, fn);
     stage = { spec, layer, tip, listeners };
     hover = null;
+    // the view keeps a handle to feed real events into the layer, and can ask for a reframe after data changes
+    spec.repose = () => {
+      if (!stage || stage.spec !== spec) return;
+      const rr = stageRect();
+      setPose(spec.pose(layer, rr.w / Math.max(1, rr.h), FOV), false);
+    };
+    if (spec.bind) spec.bind(layer);
     const r = stageRect();
-    const pose = spec.pose(layer, r.w / Math.max(1, r.h), FOV);
+    const aspect = r.w / Math.max(1, r.h);
+    const pose = spec.pose(layer, aspect, FOV) || layer.overview(aspect, FOV);
     if (fresh) {
-      // arrival: fly in from further out along the same view direction
-      const p = new THREE.Vector3(...pose.pos),
-        t = new THREE.Vector3(...pose.target);
-      const back = p.clone().sub(t).multiplyScalar(1.7).add(t);
-      setPose({ pos: back.toArray(), target: pose.target }, true);
+      // arrival: from the route's intro pose if it has one, else from further out along the same view direction
+      const intro = spec.intro && spec.intro(layer, aspect, FOV);
+      if (intro) setPose(intro, true);
+      else {
+        const p = new THREE.Vector3(...pose.pos),
+          t = new THREE.Vector3(...pose.target);
+        setPose(
+          { pos: p.clone().sub(t).multiplyScalar(1.7).add(t).toArray(), target: pose.target },
+          true,
+        );
+      }
     }
     setPose(pose, false);
+    if (fresh && layer.onArrive) layer.onArrive(flight ? flight.dur : 0);
     if (layer.select) layer.select(spec.selected ?? null);
     spec.el.setAttribute("data-world", "on");
     start();

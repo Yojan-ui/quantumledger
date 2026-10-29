@@ -107,6 +107,7 @@
   --textarea-h: 220px;
   --stage-h: 46vh;
   --stage-h-sm: 300px;
+  --stage-h-tall: min(62vh, 600px);
 
   /* shape */
   --r-chip: 2px;

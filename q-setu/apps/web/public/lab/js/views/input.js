@@ -4,6 +4,7 @@
 import { h, put } from "../dom.js";
 import { bytes, short } from "../fmt.js";
 import { href } from "../router.js";
+import { platesStage } from "../scenes/plates.js";
 
 export async function view(ctx) {
   const [health, samples] = await Promise.all([
@@ -36,6 +37,63 @@ export async function view(ctx) {
       out.push([{ kind: "url", url: state.url.trim(), probeLive: state.probeLive }, "url"]);
     return out;
   }
+  // staged inputs for the plates view: the server's preview when it has one, else the values the server
+  // already returned (uploads, samples) or the pasted text itself; rejected = the server's field error
+  const enc = new TextEncoder();
+  const lineCount = (t) => t.split(/\r?\n/).length;
+  function plateItems() {
+    return specs().map(([spec, key], i) => {
+      const p = preview && preview[i];
+      let name = spec.url || spec.name || "pasted-input",
+        b = 0,
+        n = 0,
+        sha = p && p.sha256;
+      if (spec.kind === "paste") {
+        b = enc.encode(spec.text).length;
+        n = lineCount(spec.text);
+      } else if (spec.kind === "upload") {
+        const u = state.uploads.find((x) => x.id === spec.id);
+        if (u) {
+          name = u.name;
+          b = u.bytes;
+          n = u.lines;
+          sha = sha || u.sha256;
+        }
+      } else if (spec.kind === "sample") {
+        const x = samples.samples.find((y) => y.id === spec.id);
+        if (x) {
+          name = x.filename;
+          b = x.bytes;
+          n = lineCount(x.text);
+          sha = sha || x.sha256;
+        }
+      }
+      if (p) {
+        name = p.name ?? name;
+        b = p.bytes ?? b;
+        n = p.lines ?? n;
+      }
+      const err = errs.get(key);
+      return {
+        key,
+        name,
+        kind: spec.kind === "url" ? "url" : "file",
+        bytes: b,
+        lines: n,
+        rejected: !!err,
+        maxBytes: L.fileBytes,
+        tip: [
+          name,
+          spec.kind === "url"
+            ? `host · ${spec.probeLive ? "live probe" : "cached real scan only"}`
+            : `${spec.kind} · ${bytes(b)} · ${n} lines`,
+          err ? `rejected: ${err}` : sha ? `sha256 ${short(sha)}` : "checking…",
+        ],
+      };
+    });
+  }
+  const plates = platesStage();
+
   const body = () => ({
     inputs: specs().map(([s]) => s),
     dataLifetimeYears: Number(state.lifetime),
@@ -449,6 +507,7 @@ export async function view(ctx) {
       pv,
     );
     runBtn.toggleAttribute("disabled", running || uploading || !specs().length);
+    plates.set(plateItems());
     runBtn.firstChild.textContent = running ? "Starting run…" : "Run scan";
   }
 
@@ -511,6 +570,8 @@ export async function view(ctx) {
         "div",
         { class: "section" },
         h("p", { class: "eyebrow", text: "Staged inputs" }),
+        plates.el,
+        plates.legend,
         staged,
         errorBox,
         h("div", { class: "actions" }, runBtn),
@@ -526,6 +587,7 @@ export async function view(ctx) {
     el,
     crumbs: ["Lab", "New scan"],
     keys: { "mod+enter": run },
+    stage: plates.spec,
     dispose: () => {
       clearTimeout(timer);
       blobUrls.forEach((u) => URL.revokeObjectURL(u));
