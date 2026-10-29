@@ -2,6 +2,7 @@
 import { h } from "../dom.js";
 import { orderedFindings } from "../fmt.js";
 import { href } from "../router.js";
+import { latticeStage, loadScene } from "../scenes/lattice.js";
 import { loadResult } from "./results.js";
 
 export async function view(ctx) {
@@ -56,6 +57,8 @@ export async function view(ctx) {
     ...(x.parameter ? [["Parameter", x.parameter]] : []),
     ["Input SHA-256", f.sha256],
   ];
+  const stage = latticeStage(ctx, id, await loadScene(ctx, id), { fi: file, n });
+  stage.el.classList.add("stage-sm");
   const el = h(
     "div",
     { class: "page enter" },
@@ -112,7 +115,9 @@ export async function view(ctx) {
     h(
       "aside",
       { class: "c-start-9" },
-      h("p", { class: "eyebrow", text: "Source" }),
+      h("p", { class: "eyebrow", text: "Where it sits in the run" }),
+      stage.el,
+      h("p", { class: "eyebrow section", text: "Source" }),
       h(
         "table",
         {},
@@ -130,5 +135,6 @@ export async function view(ctx) {
     el,
     crumbs: ["Lab", "Results", `${f.name}:${x.line}`],
     keys: { j: () => step(1), k: () => step(-1), escape: () => ctx.go(href("results", { id })) },
+    stage: stage.spec,
   };
 }

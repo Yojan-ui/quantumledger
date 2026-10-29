@@ -1,6 +1,7 @@
 // QuantumLedger Lab bootstrap: workspace, router, views, toasts, keyboard. Plain ES modules, no build step.
 import { createApi } from "./api.js";
 import { clear, h } from "./dom.js";
+import { prefersReducedMotion } from "./motion.js";
 import { match, ROUTES } from "./router.js";
 import { createStore } from "./store.js";
 
@@ -70,6 +71,66 @@ async function resolveWorkspace() {
 }
 
 let current = null; // { dispose, keys }
+// 3D gate: ?no3d (kept for the tab session; ?3d clears it), reduced motion, no WebGL or a lost context all
+// give the full 2D version. The engine (and three.js) loads only after the first screen is on, so it never
+// delays first paint. html[data-world] = loading | on | off.
+const safeSs = {
+  get: (k) => {
+    try {
+      return sessionStorage.getItem(k);
+    } catch {
+      return null;
+    }
+  },
+  set: (k, v) => {
+    try {
+      v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v);
+    } catch {
+      /* private mode */
+    }
+  },
+};
+{
+  const q = new URLSearchParams(location.search);
+  if (q.has("no3d")) safeSs.set("qlab.no3d", "1");
+  if (q.has("3d")) safeSs.set("qlab.no3d", null);
+}
+const want3d = !safeSs.get("qlab.no3d") && !prefersReducedMotion();
+document.documentElement.dataset.world = want3d ? "loading" : "off";
+let worldReady = null;
+function loadWorld() {
+  if (worldReady) return worldReady;
+  worldReady = !want3d
+    ? Promise.resolve(null)
+    : import("./engine/world.js")
+        .then((m) =>
+          m.createWorld({
+            onLost: () => {
+              document.documentElement.dataset.world = "off";
+              announce("The 3D view stopped (graphics context lost). Showing the 2D view.");
+            },
+          }),
+        )
+        .catch(() => null)
+        .then((w) => {
+          document.documentElement.dataset.world = w ? "on" : "off";
+          return w;
+        });
+  return worldReady;
+}
+async function syncStage(v, my) {
+  const spec = v && v.stage;
+  if (!spec && !worldReady) return;
+  const w = await loadWorld();
+  if (my !== navSeq || !w || w.dead) return;
+  if (!spec) return w.detach();
+  try {
+    await w.attach(spec);
+  } catch {
+    spec.el.removeAttribute("data-world"); // the 2D map stays
+  }
+}
+
 let firstRender = true; // on a fresh load the skip link stays first in tab order
 let navSeq = 0;
 let ws = null;
@@ -136,6 +197,7 @@ async function render() {
     );
     crumbs.textContent = "Lab / not found";
     document.title = "Not found · QuantumLedger Lab";
+    syncStage(null, my);
     return;
   }
   const loading = setTimeout(() => {
@@ -166,6 +228,7 @@ async function render() {
     if (!firstRender) main.focus({ preventScroll: true });
     firstRender = false;
     window.scrollTo(0, 0);
+    syncStage(v, my);
   } catch (e) {
     clearTimeout(loading);
     if (my !== navSeq) return;
@@ -185,6 +248,7 @@ async function render() {
       ),
     );
     crumbs.textContent = "Lab / error";
+    syncStage(null, my);
   }
 }
 
@@ -200,7 +264,7 @@ document.addEventListener("click", (e) => {
     e.altKey
   )
     return;
-  const u = new URL(a.href, location.href);
+  const u = new URL(a.getAttribute("href"), location.href); // works for SVG <a> too (its .href is not a string)
   if (u.origin !== location.origin || !u.pathname.startsWith("/lab")) return;
   e.preventDefault();
   go(u.pathname + u.search);

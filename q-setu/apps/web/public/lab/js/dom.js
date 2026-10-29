@@ -25,3 +25,14 @@ export const clear = (el) => {
 };
 /** replaceChildren that skips null/false (the DOM method would render them as the text "null"). */
 export const put = (el, ...kids) => append(clear(el), kids);
+/** SVG element builder (same rules as h: text via textContent only). */
+export function s(tag, attrs = {}, ...kids) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === "text") el.textContent = v;
+    else if (k === "class") el.setAttribute("class", v);
+    else el.setAttribute(k, v === true ? "" : String(v));
+  }
+  return append(el, kids);
+}

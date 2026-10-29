@@ -4,6 +4,7 @@ import { h } from "../dom.js";
 import { gradeClass, ms, orderedFindings, SEVERITIES, short, when } from "../fmt.js";
 import { rollNumber } from "../motion.js";
 import { href } from "../router.js";
+import { latticeStage, loadScene } from "../scenes/lattice.js";
 
 export async function loadResult(ctx, id) {
   try {
@@ -212,6 +213,8 @@ export async function view(ctx) {
       )
     : null;
 
+  const scene = r.files.length ? await loadScene(ctx, id) : null;
+  const stage = scene ? latticeStage(ctx, id, scene) : null;
   const el = h(
     "div",
     { class: "page enter" },
@@ -274,6 +277,15 @@ export async function view(ctx) {
           )
         : h("p", { class: "muted", text: "Not signed" }),
     ),
+    stage
+      ? h(
+          "section",
+          { class: "c-12 section" },
+          h("p", { class: "eyebrow", text: "Findings map · hover for fields, click to open" }),
+          stage.el,
+          stage.legend,
+        )
+      : null,
     ...fileBlocks,
     urlBlock,
   );
@@ -281,5 +293,10 @@ export async function view(ctx) {
     const tr = e.target.closest("tr[data-href]");
     if (tr && !e.target.closest("a")) ctx.go(tr.dataset.href);
   });
-  return { el, crumbs: ["Lab", "Results", id], keys: { enter: inspect } };
+  return {
+    el,
+    crumbs: ["Lab", "Results", id],
+    keys: { enter: inspect },
+    stage: stage && stage.spec,
+  };
 }

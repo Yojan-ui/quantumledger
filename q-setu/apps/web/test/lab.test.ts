@@ -6,7 +6,7 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { SCAN_SAMPLES, scan } from "@qsetu/core";
+import { SCAN_SAMPLES, SEVERITY_WEIGHT, scan } from "@qsetu/core";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 // `server-only` is Next's build-time guard against importing server code into client bundles; it throws
@@ -30,7 +30,8 @@ type Routes =
   | "events"
   | "result"
   | "exportRoute"
-  | "cancel";
+  | "cancel"
+  | "scene";
 let api: Record<Routes, Mod>;
 const P = (id: string) => ({ params: Promise.resolve({ id }) });
 const json = (body: unknown) =>
@@ -54,6 +55,7 @@ beforeAll(async () => {
     result: await import("@/app/api/lab/runs/[id]/result/route"),
     exportRoute: await import("@/app/api/lab/runs/[id]/export/route"),
     cancel: await import("@/app/api/lab/runs/[id]/cancel/route"),
+    scene: await import("@/app/api/lab/runs/[id]/scene/route"),
   } as unknown as Record<Routes, Mod>;
 });
 
@@ -288,6 +290,34 @@ describe("lab API", () => {
     const ev = await readEvents(r2);
     expect(ev.at(-1)!.type).toBe("error");
     expect(ev.at(-1)!.data.error.message).toContain("probe live");
+  });
+
+  it("scene data mirrors the run's findings with the scanner's weights, with an ETag and 304", async () => {
+    const ws = await newWorkspace();
+    const sample = SCAN_SAMPLES[0]!;
+    const { runId } = await (
+      await startRun({ workspace: ws, inputs: [{ kind: "sample", id: sample.id }] })
+    ).json();
+    await readEvents(runId);
+    const get = api.scene.GET as (r: Request, c: unknown) => Promise<Response>;
+    const res = await get(new Request("http://lab.test/s"), P(runId));
+    expect(res.status).toBe(200);
+    const etag = res.headers.get("etag")!;
+    const scene = await res.json();
+    expect(etag).toBe(`"${scene.resultSha256}-scene-v1"`);
+    expect(scene.weights).toEqual(SEVERITY_WEIGHT);
+    const direct = scan(sample.text, sample.filename);
+    expect(scene.files[0].score).toBe(direct.score);
+    expect(scene.files[0].lines).toBe(sample.text.split(/\r?\n/).length);
+    expect(
+      scene.files[0].findings.map((f: { line: number; weight: number }) => [f.line, f.weight]),
+    ).toEqual(direct.findings.map((f) => [f.line, SEVERITY_WEIGHT[f.severity]]));
+    const again = await get(
+      new Request("http://lab.test/s", { headers: { "if-none-match": etag } }),
+      P(runId),
+    );
+    expect(again.status).toBe(304);
+    expect((await get(new Request("http://lab.test/s"), P("0".repeat(16)))).status).toBe(404);
   });
 
   it("CSV cells neutralise spreadsheet formulas", async () => {

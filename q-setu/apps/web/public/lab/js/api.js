@@ -54,7 +54,7 @@ export function createApi({
         body,
         credentials: "same-origin",
         signal: ctl.signal,
-        cache: "no-store",
+        cache: opts.cache ?? "no-store",
       });
       if (opts.raw && res.ok) return res;
       const text = await res.text();

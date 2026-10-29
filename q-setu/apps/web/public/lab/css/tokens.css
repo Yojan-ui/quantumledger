@@ -106,6 +106,7 @@
   --dropzone-h: 132px;
   --textarea-h: 220px;
   --stage-h: 46vh;
+  --stage-h-sm: 300px;
 
   /* shape */
   --r-chip: 2px;

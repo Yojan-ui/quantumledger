@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
  * Lab route check against a running server (no mocks: every screen reads the real /api/lab backend).
- *   node tools/route_check.mjs [--base http://127.0.0.1:3000] [--out screenshots/lab/stageN]
- * 1. End-to-end through the UI: sample scan -> run -> results -> finding (J) -> evidence; a cached
- *    host scan; a rejected input showing its field error.
- * 2. Every route x 3 viewports x (default, ?no3d): no console errors, no page errors, no failed or
+ *   node tools/route_check.mjs [--base http://127.0.0.1:3000] [--out screenshots/lab/stageN] [--swiftshader]
+ * 1. End-to-end through the UI: sample scan -> run -> results -> finding (J) -> evidence; a cached host
+ *    scan; a rejected input (field error); an oversized upload (field error).
+ * 2. 3D: picking (tooltip fields = the finding the click opens), Esc flight back within the band, draw
+ *    calls <= 60, fps / p95 / worst frame on the real GPU (Chromium with Metal/ANGLE unless --swiftshader).
+ * 3. Fallbacks: ?no3d, reduced motion and a forced WebGL context loss all give the 2D map with working links.
+ * 4. Every route x 3 viewports x (3D, ?no3d): no console errors or warnings, no page errors, no failed or
  *    4xx/5xx requests, an h1, no horizontal scroll, skip link first in tab order; full-page screenshot.
- * 3. FCP of /lab per viewport (performance paint timing).
  * Exits 1 on any problem.
  */
 import { mkdirSync } from "node:fs";
@@ -19,6 +21,9 @@ const arg = (k, d) => {
 };
 const BASE = arg("--base", "http://127.0.0.1:3000");
 const OUT = arg("--out", "screenshots/lab/latest");
+const GPU_ARGS = process.argv.includes("--swiftshader")
+  ? []
+  : ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal"];
 mkdirSync(OUT, { recursive: true });
 const VIEWPORTS = {
   desktop: { width: 1440, height: 900 },
@@ -27,11 +32,13 @@ const VIEWPORTS = {
 };
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
+const report = {};
 
 function watch(page, where) {
   page.on("console", (m) => {
-    if (m.type() === "error" && !(page._expect4xx && /status of 4\d\d/.test(m.text())))
-      fail(where(), `console error: ${m.text()}`);
+    if (!["error", "warning"].includes(m.type())) return;
+    if (page._expect4xx && /status of 4\d\d/.test(m.text())) return;
+    fail(where(), `console ${m.type()}: ${m.text()}`);
   });
   page.on("pageerror", (e) => fail(where(), `page error: ${e.message}`));
   page.on("requestfailed", (r) => {
@@ -42,8 +49,21 @@ function watch(page, where) {
     if (r.status() >= 400 && !page._expect4xx) fail(where(), `HTTP ${r.status()} ${r.url()}`);
   });
 }
+const post = async (path, body) => {
+  const r = await fetch(BASE + path, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return r.json();
+};
+const settle = (page) =>
+  page
+    .waitForFunction(() => !window.__lab3d || !window.__lab3d.flying, null, { timeout: 5000 })
+    .catch(() => {});
+const worldOn = (page) => page.waitForSelector('[data-stage][data-world="on"]', { timeout: 15000 });
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: GPU_ARGS });
 const t0 = Date.now();
 
 // ---------- 1. end-to-end ----------
@@ -91,7 +111,6 @@ let runId = null,
     .waitFor()
     .catch(() => fail(step, "no 'Chain verified' on evidence"));
 
-  // cached real host scan (offline-safe)
   step = "e2e host";
   await page.goto(`${BASE}/lab/input`);
   await page.fill("#url", "ecc256.badssl.com");
@@ -101,7 +120,6 @@ let runId = null,
   hostRunId = page.url().match(/runs\/([a-f0-9]{16})/)[1];
   await page.getByRole("link", { name: /Open results/ }).waitFor({ timeout: 30000 });
 
-  // rejected input: the server's field error renders on the field
   step = "e2e invalid";
   page._expect4xx = true;
   await page.goto(`${BASE}/lab/input`);
@@ -111,23 +129,155 @@ let runId = null,
     .locator(".field[data-invalid] .field-error")
     .waitFor()
     .catch(() => fail(step, "no field error for lifetime 500"));
+  step = "e2e oversized upload";
+  await page.goto(`${BASE}/lab/input`);
+  await page.setInputFiles("#file-input", {
+    name: "big.properties",
+    mimeType: "text/plain",
+    buffer: Buffer.alloc(256 * 1024 + 1, 0x61),
+  });
+  await page
+    .locator(".dropzone[data-invalid]")
+    .waitFor({ timeout: 5000 })
+    .catch(() => fail(step, "oversized file not rejected"));
   page._expect4xx = false;
   await ctx.close();
 }
 
-// ---------- 2. matrix ----------
-const routes = runId
-  ? [
-      ["landing", "/lab"],
-      ["input", "/lab/input"],
-      ["run", `/lab/runs/${runId}`],
-      ["results", `/lab/runs/${runId}/results`],
-      ["finding", `/lab/runs/${runId}/findings/0/0`],
-      ["evidence", `/lab/runs/${runId}/evidence`],
-      ["host-results", `/lab/runs/${hostRunId}/results`],
-      ["not-found", "/lab/nope"],
-    ]
-  : [];
+// a run over all three Sample data inputs (16 findings) for the 3D checks
+const ws = (await post("/api/lab/workspaces", {})).id;
+const samples = (await (await fetch(`${BASE}/api/lab/samples`)).json()).samples;
+const multi = (
+  await post("/api/lab/runs", {
+    workspace: ws,
+    inputs: samples.map((s) => ({ kind: "sample", id: s.id })),
+  })
+).runId;
+for (let i = 0; i < 100; i++) {
+  const r = await (await fetch(`${BASE}/api/lab/runs/${multi}`)).json();
+  if (r.status === "done") break;
+  await new Promise((s) => setTimeout(s, 50));
+}
+
+// ---------- 2. 3D: picking, flight, budgets ----------
+{
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop });
+  const page = await ctx.newPage();
+  let step = "3d results";
+  watch(page, () => step);
+  await page.goto(`${BASE}/lab/runs/${multi}/results`, { waitUntil: "networkidle" });
+  await worldOn(page).catch(() => fail(step, "3D stage never attached"));
+  await page.locator("[data-stage]").scrollIntoViewIfNeeded();
+  await settle(page);
+  await page.evaluate(() => window.__lab3d.resetStats());
+  await page.waitForTimeout(4000);
+  const s = await page.evaluate(() => window.__lab3d.stats());
+  report.frames = s;
+  if (s.drawCalls > 60) fail(step, `${s.drawCalls} draw calls (budget 60)`);
+
+  step = "3d picking";
+  const scene = await (await fetch(`${BASE}/api/lab/runs/${multi}/scene`)).json();
+  let picked = false;
+  outer: for (const [fi, f] of scene.files.entries()) {
+    for (const x of f.findings) {
+      const pt = await page.evaluate((ref) => window.__lab3d.project(ref), { fi, n: x.n });
+      if (!pt) continue;
+      await page.mouse.move(pt.x, pt.y);
+      await page.waitForTimeout(120);
+      const tip = page.locator(".tip:not([hidden])");
+      if (!(await tip.count())) continue;
+      const first = (await tip.locator("b").innerText()).trim();
+      if (!/:\d+$/.test(first)) continue; // a score slab, not a pillar
+      await page.mouse.click(pt.x, pt.y);
+      await page.waitForURL(/\/findings\/\d+\/\d+$/, { timeout: 5000 });
+      // the URL changes first; wait until the finding view itself has rendered
+      await page.waitForFunction(
+        () => /:\d+$/.test(document.getElementById("crumbs").textContent),
+        null,
+        { timeout: 5000 },
+      );
+      const crumbs = await page.locator("#crumbs").innerText();
+      if (!crumbs.toLowerCase().includes(first.toLowerCase()))
+        fail(step, `tooltip "${first}" but the click opened "${crumbs}"`);
+      report.picking = { tooltip: first, opened: crumbs };
+      picked = true;
+      break outer;
+    }
+  }
+  if (!picked) fail(step, "no pillar could be hovered and opened");
+
+  step = "3d flight";
+  await worldOn(page);
+  await settle(page);
+  await page.evaluate(() => window.__lab3d.resetStats());
+  await page.keyboard.press("Escape");
+  await page.waitForURL(/\/results$/);
+  const fly0 = Date.now();
+  await page
+    .waitForFunction(() => window.__lab3d.flying, null, { timeout: 2000 })
+    .catch(() => fail(step, "Esc did not start a flight"));
+  await page.waitForFunction(() => !window.__lab3d.flying, null, { timeout: 4000 });
+  report.flightMs = Date.now() - fly0;
+  report.framesDuringFlight = await page.evaluate(() => window.__lab3d.stats());
+  if (report.flightMs > 1600 + 250) fail(step, `flight took ${report.flightMs} ms`);
+
+  step = "3d context loss";
+  await page.evaluate(() =>
+    document
+      .querySelector("canvas.world")
+      .getContext("webgl2")
+      .getExtension("WEBGL_lose_context")
+      .loseContext(),
+  );
+  await page
+    .waitForFunction(() => document.documentElement.dataset.world === "off", null, {
+      timeout: 5000,
+    })
+    .catch(() => fail(step, "no fallback after context loss"));
+  if (await page.locator('[data-stage][data-world="on"]').count())
+    fail(step, "stage still marked 3D after context loss");
+  if (!(await page.locator(".fallback2d svg a").first().isVisible()))
+    fail(step, "2D map not visible after context loss");
+  await ctx.close();
+}
+
+// ---------- 3. fallbacks ----------
+for (const [name, opts, q] of [
+  ["no3d", {}, "?no3d"],
+  ["reduced motion", { reducedMotion: "reduce" }, ""],
+]) {
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop, ...opts });
+  const page = await ctx.newPage();
+  const step = `fallback ${name}`;
+  watch(page, () => step);
+  await page.goto(`${BASE}/lab/runs/${multi}/results${q}`, { waitUntil: "networkidle" });
+  if ((await page.evaluate(() => document.documentElement.dataset.world)) !== "off")
+    fail(step, "3D not off");
+  if (await page.locator("canvas.world").count()) fail(step, "a WebGL canvas was created");
+  const links = await page.locator(".fallback2d svg a").count();
+  const total = (await (await fetch(`${BASE}/api/lab/runs/${multi}/scene`)).json()).files.reduce(
+    (a, f) => a + f.findings.length,
+    0,
+  );
+  if (links !== total) fail(step, `${links} map links for ${total} findings`);
+  await page.locator(".fallback2d svg a").first().click();
+  await page
+    .waitForURL(/\/findings\/\d+\/\d+$/, { timeout: 5000 })
+    .catch(() => fail(step, "map link did not open the finding"));
+  await ctx.close();
+}
+
+// ---------- 4. matrix ----------
+const routes = [
+  ["landing", "/lab"],
+  ["input", "/lab/input"],
+  ["run", `/lab/runs/${runId}`],
+  ["results", `/lab/runs/${multi}/results`],
+  ["finding", `/lab/runs/${multi}/findings/0/0`],
+  ["evidence", `/lab/runs/${runId}/evidence`],
+  ["host-results", `/lab/runs/${hostRunId}/results`],
+  ["not-found", "/lab/nope"],
+];
 const fcp = {};
 let checked = 0;
 for (const [vp, size] of Object.entries(VIEWPORTS)) {
@@ -138,8 +288,9 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
     watch(page, () => where);
     for (const [name, path] of routes) {
       where = `${vp}/${mode} ${name}`;
-      const url = `${BASE}${path}${mode === "no3d" ? (path.includes("?") ? "&" : "?") + "no3d" : ""}`;
-      await page.goto(url, { waitUntil: "networkidle" });
+      await page.goto(`${BASE}${path}${mode === "no3d" ? "?no3d" : ""}`, {
+        waitUntil: "networkidle",
+      });
       await page
         .locator("main h1")
         .first()
@@ -149,6 +300,15 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
         fcp[vp] = await page.evaluate(
           () => performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? null,
         );
+      const hasStage = await page.locator("[data-stage]").count();
+      if (hasStage && mode === "3d") {
+        await worldOn(page).catch(() => fail(where, "3D stage never attached"));
+        await settle(page);
+        const calls = await page.evaluate(() => window.__lab3d.stats().drawCalls);
+        if (calls > 60) fail(where, `${calls} draw calls`);
+      }
+      if (hasStage && mode === "no3d" && !(await page.locator(".fallback2d svg").isVisible()))
+        fail(where, "2D map not visible");
       const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       if (over > 0) fail(where, `horizontal scroll ${over}px`);
       await page.screenshot({ path: join(OUT, `${name}-${vp}-${mode}.png`), fullPage: true });
@@ -167,10 +327,12 @@ console.log(
     {
       base: BASE,
       runId,
+      multiRunId: multi,
       hostRunId,
       pagesChecked: checked,
       screenshots: OUT,
       fcpMs: fcp,
+      ...report,
       seconds: (Date.now() - t0) / 1000,
       problems: problems.length,
     },

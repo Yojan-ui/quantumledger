@@ -685,11 +685,110 @@ pre.code {
   font-size: var(--fs-11);
 }
 
-/* stage reserved for the 3D world (stage 3); 2D content renders inside it until then */
+/* the world: one fixed canvas behind the page; it draws only inside the route's [data-stage] rect */
+.world {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: var(--z-world);
+  pointer-events: none;
+  display: block;
+}
+main {
+  position: relative;
+  z-index: var(--z-page);
+}
 [data-stage] {
   position: relative;
-  min-height: var(--stage-h);
-  border-top: var(--rule) solid var(--hairline);
+  height: var(--stage-h);
+  margin: var(--s-4) 0 var(--s-3);
+  border: var(--rule) solid var(--hairline);
+  border-radius: var(--r-surface);
+  overflow: hidden;
+}
+[data-stage].stage-sm {
+  height: var(--stage-h-sm);
+}
+/* 2D map: the no-3D version of every stage, and what screen readers and keyboards use */
+.fallback2d {
+  height: 100%;
+  overflow: auto;
+  padding: var(--s-4);
+}
+[data-stage][data-world="on"] .fallback2d {
+  visibility: hidden;
+}
+.map2d {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
+}
+/* the legend describes whichever version is on screen */
+.legend-2d,
+[data-stage][data-world="on"] + .legend .legend-3d {
+  display: inline;
+}
+.legend-3d,
+[data-stage][data-world="on"] + .legend .legend-2d {
+  display: none;
+}
+.map-name {
+  font: var(--weight-medium) var(--fs-11) var(--font-mono);
+  fill: var(--text);
+}
+.map-meta {
+  font: var(--weight-regular) var(--fs-11) var(--font-mono);
+  fill: var(--text-2);
+}
+.map-score {
+  fill: var(--text);
+}
+.map-rail {
+  stroke: var(--hairline-strong);
+  stroke-width: var(--rule);
+}
+.map-bar {
+  fill: var(--text);
+}
+.map-bar.safe {
+  stroke: var(--text);
+  stroke-width: var(--rule);
+}
+.map-bar.on {
+  stroke: var(--text);
+  stroke-width: var(--rule-strong);
+  fill-opacity: 1;
+}
+a:focus-visible .map-bar {
+  stroke: var(--text);
+  stroke-width: var(--rule-strong);
+}
+.tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: var(--z-tip);
+  display: grid;
+  gap: var(--s-1);
+  max-width: 320px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-chip);
+  background: var(--invert-bg);
+  color: var(--invert-text);
+  font: var(--weight-regular) var(--fs-12) / 1.35 var(--font-mono);
+  pointer-events: none;
+}
+.tip[hidden] {
+  display: none;
+}
+.legend {
+  margin: 0;
+  font: var(--weight-regular) var(--fs-11) / 1.6 var(--font-mono);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--text-2);
 }
 
 /* view enter (overlay motion tokens) */
