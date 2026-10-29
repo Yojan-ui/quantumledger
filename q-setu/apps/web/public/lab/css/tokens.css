@@ -1,0 +1,163 @@
+/* QuantumLedger Lab design tokens. Black and white only: emphasis is pure white, inverted blocks, size
+   and weight, never colour. Every colour, size, space, radius, duration and z-index used by app.css
+   lives here. Contrast pairs: test/lab-js/contrast.test.mjs. Motion values mirror js/motion.js
+   (test/lab-js/motion.test.mjs). --text-3 (#737373) is 4.43:1 on #000 and is used for LARGE text only. */
+@font-face {
+  font-family: "Inter Tight";
+  src: url("/lab/fonts/inter-tight-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter Tight";
+  src: url("/lab/fonts/inter-tight-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/lab/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/lab/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+/* metric-matched fallbacks so the swap to the real face does not shift layout */
+@font-face {
+  font-family: "Inter Tight Fallback";
+  src: local("Arial"), local("Helvetica");
+  size-adjust: 94%;
+  ascent-override: 103%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "JetBrains Mono Fallback";
+  src: local("Menlo"), local("Courier New");
+  size-adjust: 99%;
+  ascent-override: 104%;
+  descent-override: 31%;
+  line-gap-override: 0%;
+}
+
+:root {
+  color-scheme: dark;
+  /* colour */
+  --base: #000000;
+  --base-2: #050505;
+  --surface: #0a0a0a;
+  --surface-2: #111111;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.16);
+  --text: #f5f5f5;
+  --text-2: #a3a3a3;
+  --text-3: #737373;
+  --invert-bg: #f5f5f5;
+  --invert-text: #000000;
+  --scrim: rgba(0, 0, 0, 0.72);
+  --hatch: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0 2px, transparent 2px 6px);
+  --world-clear: #000000;
+
+  /* type */
+  --font-display: "Inter Tight", "Inter Tight Fallback", -apple-system, "Segoe UI", sans-serif;
+  --font-mono:
+    "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, Menlo, Consolas, monospace;
+  --fs-hero: clamp(96px, 10vw, 160px);
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-20: 20px;
+  --fs-28: 28px;
+  --fs-40: 40px;
+  --fs-64: 64px;
+  --lh-tight: 1.05;
+  --lh-body: 1.5;
+  --track-display: -0.035em;
+  --track-tight: -0.02em;
+  --track-label: 0.12em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* space (4 px base) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+
+  /* grid */
+  --cols: 12;
+  --gutter: 24px;
+  --page-max: 1440px;
+  --page-pad: 40px;
+  --strip-h: 52px;
+  --field-h: 44px;
+  --dropzone-h: 132px;
+  --textarea-h: 220px;
+  --stage-h: 46vh;
+
+  /* shape */
+  --r-chip: 2px;
+  --r-surface: 8px;
+  --rule: 1px;
+  --rule-strong: 2px;
+  --focus-ring: 2px;
+  --focus-offset: 2px;
+
+  /* motion (mirrors js/motion.js) */
+  --dur-overlay: 280ms;
+  --dur-exit: 180ms;
+  --dur-stagger: 40ms;
+  --dur-roll: 600ms;
+  --dur-flight-min: 1100ms;
+  --dur-flight-max: 1600ms;
+  --rise: 24px;
+  --ease-overlay: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* layers */
+  --z-world: 0;
+  --z-page: 10;
+  --z-strip: 20;
+  --z-tip: 40;
+  --z-toast: 50;
+  --z-skip: 60;
+}
+
+/* Light theme: exact inverse, same contrast. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --base: #ffffff;
+  --base-2: #fafafa;
+  --surface: #f5f5f5;
+  --surface-2: #eeeeee;
+  --hairline: rgba(0, 0, 0, 0.08);
+  --hairline-strong: rgba(0, 0, 0, 0.16);
+  --text: #0a0a0a;
+  --text-2: #5c5c5c;
+  --text-3: #767676;
+  --invert-bg: #0a0a0a;
+  --invert-text: #ffffff;
+  --scrim: rgba(255, 255, 255, 0.72);
+  --hatch: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 6px);
+  --world-clear: #ffffff;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --page-pad: 16px;
+    --gutter: 16px;
+    --textarea-h: 180px;
+  }
+}

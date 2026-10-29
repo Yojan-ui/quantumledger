@@ -22,3 +22,6 @@ dist/
 
 # Glitch-audit videos (large; regenerate with pnpm audit:glitch)
 docs/smooth/videos-*/
+
+# Lab route_check screenshots (regenerate with node tools/route_check.mjs)
+screenshots/lab/

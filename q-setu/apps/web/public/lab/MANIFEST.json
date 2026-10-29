@@ -1,0 +1,23 @@
+{
+  "note": "Vendored for offline use (no CDN). Checked by apps/web/test/lab-assets.test.ts.",
+  "three": {
+    "version": "0.180.0",
+    "source": "q-setu/apps/web/node_modules/three (pnpm lockfile), build/three.module.min.js + build/three.core.min.js",
+    "license": "MIT"
+  },
+  "fonts": {
+    "source": "Inter Tight 600/700 and JetBrains Mono 400/500, latin subset, woff2 (fontsource builds)",
+    "license": "SIL Open Font License 1.1 (OFL-*.txt)"
+  },
+  "files": {
+    "vendor/three-0.180.0/LICENSE.txt": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+    "vendor/three-0.180.0/three.core.min.js": "61ba0df005b05991361d040d8ff670e1aadfd0ce7aeebd1fdb0725957a8957de",
+    "vendor/three-0.180.0/three.module.min.js": "e2b5ee6bccd38fd6d8a2428546b83c5f2426d84b152ef82be8055556e3b40eb6",
+    "fonts/OFL-inter-tight.txt": "1e1c8b3dc6dfcbd5498a33f17fcc68ff2d39c599f6e8195fbf14601261dbef6a",
+    "fonts/OFL-jetbrains-mono.txt": "403581b69dac5cff4079205e01c6b467e56af449ecbd7247693ddb1baafa005b",
+    "fonts/inter-tight-latin-600-normal.woff2": "db1a039d03ed646ef6a899f9ff92bf2f6fe382a49f1b0992066e85caf88b5be9",
+    "fonts/inter-tight-latin-700-normal.woff2": "9c4f02f38678f2628292d66c4f7a1a6a06af7ffac4d279359b09074e7d0f1fe0",
+    "fonts/jetbrains-mono-latin-400-normal.woff2": "14425ba9c695763c1547f48a206b7aa60350a33ae23de09f0407877f3fcd89eb",
+    "fonts/jetbrains-mono-latin-500-normal.woff2": "cb182feeed4d798ff6961d3c79f7026279448fca0676438aaecb21f3fc39553a"
+  }
+}

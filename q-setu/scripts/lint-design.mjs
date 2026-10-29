@@ -22,7 +22,11 @@ const SKIP_FILES = new Set([
   "tsconfig.tsbuildinfo",
   "styles/tokens.css",
   "public/tokens.css",
+  // the Lab UI keeps its own black-and-white token file (same role as styles/tokens.css)
+  "public/lab/css/tokens.css",
 ]);
+// vendored third-party builds, checked by hash in apps/web/test/lab-assets.test.ts
+const SKIP_PREFIXES = ["public/lab/vendor/"];
 const EXT = /\.(tsx?|mjs|js|css|html|svg)$/;
 
 const RULES = [
@@ -87,7 +91,7 @@ function walk(dir, files = []) {
 const problems = [];
 for (const file of walk(ROOT)) {
   const rel = relative(ROOT, file);
-  if (SKIP_FILES.has(rel)) continue;
+  if (SKIP_FILES.has(rel) || SKIP_PREFIXES.some((p) => rel.startsWith(p))) continue;
   const src = readFileSync(file, "utf8");
   const lineOf = (i) => src.slice(0, i).split("\n").length;
   for (const rule of RULES) {
