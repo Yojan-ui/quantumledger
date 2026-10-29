@@ -5,6 +5,7 @@ import { gradeClass, ms, short, when } from "../fmt.js";
 import { rollNumber } from "../motion.js";
 import { href } from "../router.js";
 import { runStage } from "../scenes/lattice.js";
+import { play } from "../sound.js";
 
 const STAGE_LABEL = {
   validate: "Validate",
@@ -160,8 +161,14 @@ export async function view(ctx) {
 
   // the live map moves only on these real events (stage, file, url, ledger, result / cancelled / error)
   const live = runStage(ctx, run);
+  // sounds only for events that happen while watching; a finished run replays its events silently
+  const watching = !["done", "failed", "cancelled"].includes(run.status);
   const close = ctx.store.runStream(id, ({ type, data }) => {
     live.on(type, data);
+    if (watching && (type === "file" || type === "url")) play("file");
+    if (watching && type === "result") play("done");
+    if (watching && type === "cancelled") play("cancelled");
+    if (watching && type === "error") play("error");
     if (type === "status") st.status = data.status;
     else if (type === "stage") {
       const s = st.stages.find((x) => x.name === data.name);

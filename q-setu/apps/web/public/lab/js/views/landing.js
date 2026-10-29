@@ -4,6 +4,7 @@ import { gradeClass, ms, short, when } from "../fmt.js";
 import { rollNumber } from "../motion.js";
 import { href } from "../router.js";
 import { chainStage, loadChain } from "../scenes/chain.js";
+import { play } from "../sound.js";
 
 export async function view(ctx) {
   const [chain, ws] = await Promise.all([
@@ -38,6 +39,7 @@ export async function view(ctx) {
     try {
       const v = await ctx.api.post("/api/ledger/verify");
       stage.verified(v);
+      play(v.ok ? "verified" : "broken");
       verifyOut.replaceChildren(
         v.ok
           ? h(

@@ -407,8 +407,50 @@ describe("lab API", () => {
     expect((await get(new Request("http://lab.test/s"), P("0".repeat(16)))).status).toBe(404);
   });
 
+  it("printable report: the run's own numbers, inline or attachment, a no-script CSP, everything escaped", async () => {
+    const ws = await newWorkspace();
+    const sample = SCAN_SAMPLES[0]!;
+    const { runId } = await (
+      await startRun({ workspace: ws, inputs: [{ kind: "sample", id: sample.id }] })
+    ).json();
+    await readEvents(runId);
+    const get = api.exportRoute.GET as (r: Request, c: unknown) => Promise<Response>;
+    const res = await get(new Request("http://lab.test/x?format=report&inline=1"), P(runId));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/html");
+    expect(res.headers.get("content-disposition")).toMatch(/^inline;/);
+    expect(res.headers.get("content-security-policy")).toContain("default-src 'none'");
+    const html = await res.text();
+    const result = await (
+      await (api.result.GET as (r: Request, c: unknown) => Promise<Response>)(
+        new Request("http://lab.test"),
+        P(runId),
+      )
+    ).json();
+    expect(html).toContain(result.resultSha256);
+    expect(html).toContain(result.inputSha256);
+    expect(html).toContain(`#${result.ledger.entryId} · lab-run`);
+    expect(html).toContain("not handshake evidence");
+    expect(html.match(/<tr>/g)!.length).toBeGreaterThan(result.files[0].findings.length);
+    expect(html).not.toMatch(/<script/i);
+    const att = await get(new Request("http://lab.test/x?format=report"), P(runId));
+    expect(att.headers.get("content-disposition")).toMatch(/^attachment;/);
+
+    // escaping, on a record carrying hostile text where scanned input can reach the page
+    const { renderReport } = await import("@/lib/lab/report");
+    const evil = "<script>alert(1)</script><img src=x onerror=alert(2)>";
+    const hostile = structuredClone(result);
+    hostile.files[0].findings[0].match = evil;
+    hostile.log.push({ t: "t", stage: "scan", message: evil });
+    const out = renderReport(hostile);
+    expect(out).not.toMatch(/<script|<img/i);
+    expect(out).toContain(
+      "&lt;script&gt;alert(1)&lt;/script&gt;&lt;img src=x onerror=alert(2)&gt;",
+    );
+  });
+
   it("CSV cells neutralise spreadsheet formulas", async () => {
-    const { csvCell } = await import("@/app/api/lab/runs/[id]/export/route");
+    const { csvCell } = await import("@/lib/lab/csv");
     expect(csvCell("=HYPERLINK(1)")).toBe(`"'=HYPERLINK(1)"`);
     expect(csvCell('say "hi"')).toBe(`"say ""hi"""`);
   });

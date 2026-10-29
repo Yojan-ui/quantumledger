@@ -358,6 +358,114 @@ const addSamples = async (page, n = 3) => {
   await ctx.close();
 }
 
+// ---------- 2c. stage-5 interaction: palette, shortcuts, theme, sound, printable report ----------
+{
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop });
+  const page = await ctx.newPage();
+  let step = "palette";
+  watch(page, () => step);
+  await page.goto(`${BASE}/lab/runs/${multi}/results`, { waitUntil: "networkidle" });
+  await page.keyboard.press("Control+k");
+  const dlg = page.getByRole("dialog", { name: "Command palette" });
+  await dlg.waitFor({ timeout: 3000 }).catch(() => fail(step, "Ctrl+K did not open the palette"));
+  if (!(await page.evaluate(() => document.activeElement?.classList.contains("palette-input"))))
+    fail(step, "focus is not in the palette input");
+  await page.keyboard.type("evidence");
+  const first = await page
+    .locator('.palette-list li[aria-selected="true"] .palette-title')
+    .innerText();
+  if (first !== "Evidence and export") fail(step, `top match for "evidence" is "${first}"`);
+  await page.keyboard.press("Escape");
+  await dlg
+    .waitFor({ state: "detached", timeout: 2000 })
+    .catch(() => fail(step, "Esc did not close the palette"));
+  if (!page.url().endsWith("/results")) fail(step, "Esc navigated");
+  await page.click("#palette-btn");
+  await page.keyboard.type("new scan");
+  await page.keyboard.press("Enter");
+  await page
+    .waitForURL(/\/lab\/input/, { timeout: 5000 })
+    .catch(() => fail(step, "Enter did not run the command"));
+
+  step = "shortcuts";
+  await page.locator("main h1").first().waitFor();
+  await page.focus("main");
+  await page.keyboard.press("?");
+  const sc = page.getByRole("dialog", { name: "Keyboard shortcuts" });
+  await sc.waitFor({ timeout: 3000 }).catch(() => fail(step, "? did not open the shortcut list"));
+  await page.keyboard.press("Escape");
+  await sc
+    .waitFor({ state: "detached", timeout: 2000 })
+    .catch(() => fail(step, "Esc did not close it"));
+  if ((await page.evaluate(() => document.activeElement?.tagName)) === "BODY")
+    fail(step, "focus lost after closing");
+
+  step = "theme and sound";
+  await page.click("#theme-btn");
+  await page.click("#sound-btn");
+  await page.reload({ waitUntil: "networkidle" });
+  if ((await page.evaluate(() => document.documentElement.dataset.theme)) !== "light")
+    fail(step, "light theme not kept after reload");
+  if ((await page.getAttribute("#sound-btn", "aria-pressed")) !== "true")
+    fail(step, "sound setting not kept after reload");
+  await worldOn(page).catch(() => fail(step, "3D stage missing in the light theme"));
+  await page.click("#theme-btn");
+  await page.click("#sound-btn");
+  if ((await page.evaluate(() => document.documentElement.dataset.theme)) !== undefined)
+    fail(step, "dark theme not restored");
+
+  step = "printable report";
+  const res = await page.request.get(`${BASE}/api/lab/runs/${multi}/export?format=report&inline=1`);
+  if (
+    res.status() !== 200 ||
+    !/default-src 'none'/.test(res.headers()["content-security-policy"] || "")
+  )
+    fail(step, `HTTP ${res.status()}, CSP ${res.headers()["content-security-policy"]}`);
+  const rp = await ctx.newPage();
+  const msgs = [];
+  rp.on("console", (m) => msgs.push(m.text()));
+  rp.on("pageerror", (e) => msgs.push(e.message));
+  await rp.goto(`${BASE}/api/lab/runs/${multi}/export?format=report&inline=1`);
+  const result = await (await fetch(`${BASE}/api/lab/runs/${multi}/result`)).json();
+  const body = await rp.content();
+  if (!body.includes(result.resultSha256) || !body.includes(result.inputSha256))
+    fail(step, "report lacks the run's hashes");
+  if (msgs.length) fail(step, `report console: ${msgs.join(" | ")}`);
+  await rp.screenshot({ path: join(OUT, "report-desktop.png"), fullPage: true });
+  report.printableReport = { bytes: body.length, consoleMessages: msgs.length };
+  await ctx.close();
+}
+{
+  // light theme: every route once at desktop size, 3D on, zero errors, stage attached where there is one
+  const ctx = await browser.newContext({ viewport: VIEWPORTS.desktop });
+  await ctx.addInitScript(() => {
+    try {
+      localStorage.setItem("qlab.theme", "light");
+    } catch {}
+  });
+  const page = await ctx.newPage();
+  let where = "";
+  watch(page, () => where);
+  for (const [name, path] of [
+    ["landing", "/lab"],
+    ["input", "/lab/input"],
+    ["results", `/lab/runs/${multi}/results`],
+    ["finding", `/lab/runs/${multi}/findings/0/0`],
+    ["evidence", `/lab/runs/${multi}/evidence`],
+  ]) {
+    where = `light ${name}`;
+    await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    if ((await page.evaluate(() => document.documentElement.dataset.theme)) !== "light")
+      fail(where, "not light");
+    await worldOn(page).catch(() => fail(where, "3D stage never attached"));
+    await settle(page);
+    await page.locator("[data-stage]").first().scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+    await page.screenshot({ path: join(OUT, `${name}-desktop-light.png`) });
+  }
+  await ctx.close();
+}
+
 // ---------- 3. fallbacks ----------
 for (const [name, opts, q] of [
   ["no3d", {}, "?no3d"],

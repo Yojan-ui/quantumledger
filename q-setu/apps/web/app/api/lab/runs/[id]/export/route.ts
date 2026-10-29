@@ -1,20 +1,18 @@
 import { planToMarkdown } from "@/lib/live/plan";
+import { csvCell } from "@/lib/lab/csv";
 import { labFail } from "@/lib/lab/http";
+import { renderReport } from "@/lib/lab/report";
 import { findRun, isTerminal } from "@/lib/lab/runs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const FORMATS = ["json", "csv", "cbom", "plan"] as const;
+const FORMATS = ["json", "csv", "cbom", "plan", "report"] as const;
 
-/** Spreadsheet-safe CSV cell: quoted, and formula-leading characters neutralised (CSV injection). */
-export function csvCell(v: unknown): string {
-  let s = v === null || v === undefined ? "" : String(v);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  return `"${s.replace(/"/g, '""')}"`;
-}
-
-/** GET /api/lab/runs/{id}/export?format=json|csv|cbom|plan: downloads built only from the run record. */
+/**
+ * GET /api/lab/runs/{id}/export?format=json|csv|cbom|plan|report[&inline=1]: downloads built only from the run
+ * record. `report` is a printable HTML page; inline=1 opens it in the browser (to print) instead of downloading.
+ */
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const r = findRun((await ctx.params).id);
   if (!r) return labFail("not_found", "No such run", 404);
@@ -34,6 +32,20 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
         "cache-control": "no-store",
       },
     });
+  if (format === "report") {
+    const inline = new URL(req.url).searchParams.get("inline") === "1";
+    return new Response(renderReport(r), {
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "content-disposition": `${inline ? "inline" : "attachment"}; filename="${base}.report.html"`,
+        "cache-control": "no-store",
+        // the page has no scripts; this makes sure scanned text inside it never runs as one
+        "content-security-policy":
+          "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  }
   if (format === "json") {
     const { events: _e, ...rest } = r;
     return download(JSON.stringify(rest, null, 2), "application/json", "json");

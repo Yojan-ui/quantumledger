@@ -125,7 +125,7 @@ export async function view(ctx) {
               { class: "c-12 tbl-wrap" },
               h(
                 "table",
-                {},
+                { class: "findings" },
                 h(
                   "thead",
                   {},
@@ -146,19 +146,23 @@ export async function view(ctx) {
                       { "data-href": href("finding", { id, file: fi, n }) },
                       h(
                         "td",
-                        { class: "num" },
+                        { class: "num", "data-label": "Line" },
                         h("a", {
                           href: href("finding", { id, file: fi, n }),
                           "data-link": true,
                           text: `${f.name}:${x.line}`,
                         }),
                       ),
-                      h("td", {}, h("span", { class: `sev sev-${x.severity}`, text: x.severity })),
-                      h("td", { text: x.algorithm }),
-                      h("td", { class: "mono", text: x.primitive }),
                       h(
                         "td",
-                        {},
+                        { "data-label": "Severity" },
+                        h("span", { class: `sev sev-${x.severity}`, text: x.severity }),
+                      ),
+                      h("td", { "data-label": "Algorithm", text: x.algorithm }),
+                      h("td", { class: "mono", "data-label": "Primitive", text: x.primitive }),
+                      h(
+                        "td",
+                        { "data-label": "Match" },
                         h("code", {
                           text: x.match.length > 80 ? `${x.match.slice(0, 79)}…` : x.match,
                         }),

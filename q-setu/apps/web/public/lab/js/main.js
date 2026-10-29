@@ -2,6 +2,9 @@
 import { createApi } from "./api.js";
 import { clear, h } from "./dom.js";
 import { prefersReducedMotion } from "./motion.js";
+import { isOpen, openPalette, openShortcuts } from "./palette.js";
+import { applyTheme, prefs } from "./prefs.js";
+import { play, unlock } from "./sound.js";
 import { match, ROUTES } from "./router.js";
 import { createStore } from "./store.js";
 
@@ -201,7 +204,22 @@ async function render() {
     return;
   }
   const loading = setTimeout(() => {
-    if (my === navSeq) clear(main).append(stateView("loading", "Loading…", ""));
+    if (my !== navSeq) return;
+    // the screen's own title over a hatched bar; aria-busy until the real content replaces it
+    const id = m.params.id ? ` · run ${m.params.id}` : "";
+    clear(main).append(
+      h(
+        "div",
+        { class: "page", "aria-busy": "true" },
+        h(
+          "section",
+          { class: "c-8", role: "status" },
+          h("p", { class: "eyebrow", text: `${m.route.title}${id}` }),
+          h("h1", { text: `Loading ${m.route.title.toLowerCase()}…` }),
+          h("div", { class: "skeleton-bar" }),
+        ),
+      ),
+    );
   }, 120);
   try {
     const mod = await LOADERS[m.name]();
@@ -271,10 +289,186 @@ document.addEventListener("click", (e) => {
 });
 addEventListener("popstate", render);
 
+// ---------- header controls: command palette, theme, sound ----------
+const themeBtn = document.getElementById("theme-btn");
+const soundBtn = document.getElementById("sound-btn");
+function paintControls() {
+  const light = prefs.theme === "light";
+  themeBtn.textContent = light ? "Dark" : "Light";
+  themeBtn.setAttribute(
+    "aria-label",
+    light ? "Switch to the dark theme" : "Switch to the light theme",
+  );
+  soundBtn.textContent = prefs.sound ? "Sound on" : "Sound off";
+  soundBtn.setAttribute("aria-pressed", String(prefs.sound));
+}
+function toggleTheme() {
+  prefs.theme = prefs.theme === "light" ? "dark" : "light";
+  paintControls();
+  announce(`${prefs.theme === "light" ? "Light" : "Dark"} theme`);
+}
+function toggleSound() {
+  prefs.sound = !prefs.sound;
+  if (prefs.sound) unlock();
+  paintControls();
+  announce(prefs.sound ? "Sound on" : "Sound off");
+}
+themeBtn.addEventListener("click", toggleTheme);
+soundBtn.addEventListener("click", toggleSound);
+applyTheme();
+paintControls();
+
+/** Every command comes from the route and from this workspace's real runs; nothing is invented. */
+async function commands() {
+  const m = match(location.pathname);
+  const id = m && m.params.id;
+  const list = [
+    {
+      id: "home",
+      group: "Go",
+      title: "Lab home",
+      keywords: "landing proof chain",
+      run: () => go("/lab"),
+    },
+    {
+      id: "new",
+      group: "Go",
+      title: "New scan",
+      keywords: "input paste upload sample host",
+      hint: "N",
+      run: () => go(`/lab/input?ws=${ws}`),
+    },
+  ];
+  if (id) {
+    list.push(
+      {
+        id: "results",
+        group: "This run",
+        title: "Results",
+        keywords: id,
+        run: () => go(`/lab/runs/${id}/results`),
+      },
+      {
+        id: "evidence",
+        group: "This run",
+        title: "Evidence and export",
+        keywords: `${id} plan ledger`,
+        run: () => go(`/lab/runs/${id}/evidence`),
+      },
+      {
+        id: "report",
+        group: "This run",
+        title: "Open printable report",
+        keywords: "print pdf html",
+        run: () =>
+          window.open(`/api/lab/runs/${id}/export?format=report&inline=1`, "_blank", "noopener"),
+      },
+      ...["json", "csv", "cbom", "plan", "report"].map((f) => ({
+        id: `dl-${f}`,
+        group: "This run",
+        title: `Download ${{ json: "JSON", csv: "findings CSV", cbom: "CBOM (CycloneDX 1.6)", plan: "plan (Markdown)", report: "report (HTML)" }[f]}`,
+        keywords: "export download",
+        run: () => {
+          const a = h("a", { href: `/api/lab/runs/${id}/export?format=${f}`, download: "" });
+          document.body.append(a);
+          a.click();
+          a.remove();
+        },
+      })),
+    );
+  }
+  try {
+    const w = await store.get(`ws:${ws}`, `/api/lab/workspaces/${ws}`, { quiet: true });
+    for (const r of (w.runs || []).slice(0, 8)) {
+      if (r.runId === id) continue;
+      list.push({
+        id: `run-${r.runId}`,
+        group: "Runs",
+        title: `${r.status === "done" ? "Results" : "Run"} · ${r.inputs.map((i) => i.name).join(", ")}`,
+        keywords: `${r.runId} ${r.status}`,
+        run: () => go(`/lab/runs/${r.runId}${r.status === "done" ? "/results" : ""}`),
+      });
+    }
+  } catch {
+    /* workspace list unavailable: navigation commands still work */
+  }
+  list.push(
+    {
+      id: "verify",
+      group: "Proof Chain",
+      title: "Verify the Proof Chain now",
+      keywords: "ledger ml-dsa sha3 check",
+      run: verifyChain,
+    },
+    {
+      id: "theme",
+      group: "Settings",
+      title: prefs.theme === "light" ? "Dark theme" : "Light theme",
+      keywords: "theme colour mode",
+      run: toggleTheme,
+    },
+    {
+      id: "sound",
+      group: "Settings",
+      title: prefs.sound ? "Turn sound off" : "Turn sound on",
+      keywords: "audio",
+      run: toggleSound,
+    },
+    {
+      id: "3d",
+      group: "Settings",
+      title:
+        document.documentElement.dataset.world === "off" ? "Turn 3D on" : "Turn 3D off (2D view)",
+      keywords: "webgl no3d 2d accessibility",
+      run: () => {
+        location.href = `${location.pathname}?${want3d ? "no3d" : "3d"}`;
+      },
+    }, // reload: the 3D gate is decided at boot
+    {
+      id: "keys",
+      group: "Help",
+      title: "Keyboard shortcuts",
+      keywords: "help keys",
+      hint: "?",
+      run: openShortcuts,
+    },
+  );
+  return list;
+}
+async function verifyChain() {
+  try {
+    const v = await api.post("/api/ledger/verify");
+    play(v.ok ? "verified" : "broken");
+    const msg = v.ok
+      ? `${v.checked} entries verified in ${v.ms.toFixed(1)} ms`
+      : `Broken at #${v.broken.id}: ${v.broken.detail || v.broken.reason}`;
+    toast({ title: v.ok ? "Proof Chain verified" : "Proof Chain broken", message: msg });
+    announce(msg);
+  } catch {
+    /* the api layer already showed the error */
+  }
+}
+async function showPalette() {
+  if (isOpen()) return;
+  openPalette(await commands());
+}
+document.getElementById("palette-btn").addEventListener("click", showPalette);
+
 document.addEventListener("keydown", (e) => {
-  if (!current || !current.keys) return;
-  const typing = e.target.closest && e.target.closest("input, textarea, select, [contenteditable]");
+  if (isOpen()) return; // the dialog handles its own keys
   const key = `${e.metaKey || e.ctrlKey ? "mod+" : ""}${e.key.toLowerCase()}`;
+  const typing = e.target.closest && e.target.closest("input, textarea, select, [contenteditable]");
+  if (key === "mod+k") {
+    e.preventDefault();
+    showPalette();
+    return;
+  }
+  if (key === "?" && !typing) {
+    e.preventDefault();
+    openShortcuts();
+    return;
+  }
+  if (!current || !current.keys) return;
   if (typing && key !== "mod+enter" && key !== "escape") return;
   const fn = current.keys[key];
   if (fn) {

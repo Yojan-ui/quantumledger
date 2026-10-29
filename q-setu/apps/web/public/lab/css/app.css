@@ -86,6 +86,177 @@ a {
 .strip .chip {
   flex: none;
 }
+/* header controls: command palette, theme, sound */
+.controls {
+  display: flex;
+  gap: var(--s-2);
+  flex: none;
+}
+.ctl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 32px;
+  padding: 0 var(--s-3);
+  border: var(--rule) solid var(--hairline-strong);
+  border-radius: var(--r-chip);
+  background: transparent;
+  color: var(--text);
+  font: var(--weight-medium) var(--fs-11) var(--font-mono);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ctl:hover {
+  border-color: var(--text-2);
+}
+.ctl[aria-pressed="true"] {
+  background: var(--invert-bg);
+  color: var(--invert-text);
+  border-color: var(--invert-bg);
+}
+kbd {
+  font: var(--weight-regular) var(--fs-11) var(--font-mono);
+  color: var(--text-2);
+}
+@media (max-width: 760px) {
+  .strip {
+    gap: var(--s-3);
+  }
+  .crumbs,
+  .strip .chip,
+  .ctl-label {
+    display: none;
+  }
+  .controls {
+    margin-left: auto;
+  }
+}
+
+/* command palette and shortcut list */
+.palette-back {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: grid;
+  place-items: start center;
+  padding: 12vh var(--page-pad) 0;
+  background: var(--scrim);
+  animation: fade var(--dur-overlay) var(--ease-overlay) both;
+}
+.palette-back.leaving {
+  animation: fade-out var(--dur-exit) var(--ease-exit) both;
+}
+.palette {
+  width: min(640px, 100%);
+  max-height: 64vh;
+  display: flex;
+  flex-direction: column;
+  border: var(--rule) solid var(--hairline-strong);
+  border-radius: var(--r-surface);
+  background: var(--surface);
+  overflow: hidden;
+  animation: rise var(--dur-overlay) var(--ease-overlay) both;
+}
+.palette-input {
+  height: 56px;
+  padding: 0 var(--s-5);
+  border: 0;
+  border-bottom: var(--rule) solid var(--hairline-strong);
+  background: transparent;
+  color: var(--text);
+  font: var(--weight-regular) var(--fs-16) var(--font-mono);
+}
+.palette-input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--text);
+}
+.palette-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-2) 0;
+  overflow: auto;
+}
+.palette-list li {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  gap: var(--s-3);
+  align-items: baseline;
+  padding: var(--s-2) var(--s-5);
+  cursor: pointer;
+}
+.palette-list li[aria-selected="true"] {
+  background: var(--invert-bg);
+  color: var(--invert-text);
+}
+.palette-list li[aria-selected="true"] .palette-group,
+.palette-list li[aria-selected="true"] kbd {
+  color: var(--invert-text);
+}
+.palette-group {
+  font: var(--weight-medium) var(--fs-11) var(--font-mono);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.palette-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.palette-empty {
+  margin: 0;
+  padding: var(--s-5);
+  color: var(--text-2);
+  font: var(--weight-regular) var(--fs-12) var(--font-mono);
+}
+.palette .eyebrow,
+.palette .shortcuts,
+.palette .actions {
+  margin-left: var(--s-5);
+  margin-right: var(--s-5);
+}
+.palette .eyebrow {
+  margin-top: var(--s-5);
+}
+.palette .actions {
+  margin-bottom: var(--s-5);
+}
+.shortcuts th {
+  width: 40%;
+  text-transform: none;
+  letter-spacing: 0;
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@media (max-width: 600px) {
+  .palette-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .palette-group {
+    display: none;
+  }
+}
+
+/* the count over its total: same family, one size down, never touching */
+.hero .big-muted {
+  font-size: var(--fs-64);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--track-tight);
+  margin-left: var(--s-2);
+}
+
+/* designed loading state: the route's own title over a hatched placeholder */
+.skeleton-bar {
+  height: var(--s-6);
+  margin-top: var(--s-5);
+  max-width: 480px;
+  background: var(--hatch);
+  border-radius: var(--r-chip);
+}
 
 /* page grid */
 .page {
@@ -890,5 +1061,43 @@ a:focus-visible .map-bar {
   }
   to {
     opacity: 1;
+  }
+}
+
+/* findings table as cards on phones: every cell keeps its column name */
+@media (max-width: 600px) {
+  table.findings thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  table.findings,
+  table.findings tbody,
+  table.findings tr,
+  table.findings td {
+    display: block;
+    width: 100%;
+  }
+  table.findings tr {
+    padding: var(--s-3) 0;
+    border-bottom: var(--rule) solid var(--hairline);
+  }
+  table.findings td {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--s-3);
+    padding: var(--s-1) 0;
+    border: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  table.findings td::before {
+    content: attr(data-label);
+    font: var(--weight-medium) var(--fs-11) var(--font-mono);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--text-2);
   }
 }

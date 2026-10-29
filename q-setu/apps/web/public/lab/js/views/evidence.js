@@ -1,9 +1,10 @@
 // Evidence and export: migration plan, Proof Chain entry and verify, run metadata, inputs and downloads.
-// Primary action: Download JSON (the printable report arrives in stage 5).
+// Primary action: Printable report (opens the report page to print or save); every other export beside it.
 import { h } from "../dom.js";
 import { ms, when } from "../fmt.js";
 import { href } from "../router.js";
 import { chainStage, loadChain } from "../scenes/chain.js";
+import { play } from "../sound.js";
 import { loadResult } from "./results.js";
 
 export async function view(ctx) {
@@ -36,6 +37,7 @@ export async function view(ctx) {
     try {
       const v = await ctx.api.post("/api/ledger/verify");
       stage.verified(v);
+      play(v.ok ? "verified" : "broken");
       verifyOut.textContent = v.ok
         ? `Verified now: ${v.checked} entries in ${ms(v.ms)}`
         : `Broken at #${v.broken.id}: ${v.broken.detail || v.broken.reason}`;
@@ -78,7 +80,19 @@ export async function view(ctx) {
       h(
         "div",
         { class: "actions" },
-        dl("json", "Download JSON", true),
+        h(
+          "a",
+          {
+            class: "btn btn-primary",
+            href: `/api/lab/runs/${id}/export?format=report&inline=1`,
+            target: "_blank",
+            rel: "noopener",
+            "data-primary": true,
+          },
+          "Printable report",
+        ),
+        dl("report", "Report (HTML)"),
+        dl("json", "JSON"),
         dl("csv", "Findings CSV"),
         dl("cbom", "CBOM (CycloneDX 1.6)"),
         plan ? dl("plan", "Plan (Markdown)") : null,

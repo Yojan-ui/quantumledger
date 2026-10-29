@@ -28,6 +28,13 @@
     <script type="importmap">
       { "imports": { "three": "/lab/vendor/three-0.180.0/three.module.min.js" } }
     </script>
+    <script>
+      // theme before first paint (no flash); dark is the default
+      try {
+        if (localStorage.getItem("qlab.theme") === "light")
+          document.documentElement.dataset.theme = "light";
+      } catch (e) {}
+    </script>
     <link rel="modulepreload" href="/lab/js/main.js" />
   </head>
   <body>
@@ -36,6 +43,19 @@
       <a class="wordmark" href="/lab" data-link>QuantumLedger<span>Lab</span></a>
       <nav class="crumbs" id="crumbs" aria-label="Location"></nav>
       <span class="chip" id="ws-chip" title="Workspace"></span>
+      <div class="controls">
+        <button
+          class="ctl"
+          id="palette-btn"
+          type="button"
+          aria-haspopup="dialog"
+          aria-label="Command palette (Command or Control + K)"
+        >
+          <span class="ctl-label">Commands</span><kbd>⌘K</kbd>
+        </button>
+        <button class="ctl" id="theme-btn" type="button">Light</button>
+        <button class="ctl" id="sound-btn" type="button" aria-pressed="false">Sound off</button>
+      </div>
     </header>
     <main id="main" tabindex="-1"></main>
     <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
