@@ -78,30 +78,38 @@ export function planHeadline(fcfs, greedy, scenario) {
 function curves(r, scenario) {
   const S0 = curveSeries(r, scenario).map((s) => ({ ...s, short: SHORT[s.cls] }));
   if (!S0.length) return h("p", { class: "mv-note", text: "Exposure curves: not yet run" });
+  if (!r.assets.length || S0.every((s) => s.points.every((p) => !p.exposure_years))) return h("p", { class: "mv-note", text: "Nothing to migrate: no RSA/ECC found" });
   const { end, zero } = axisEnd(S0);
   const cut = (s) => ({ ...s, points: s.points.filter((p) => p.week <= end) });
   const S = mergeIdentical(S0).map((s) => ({ ...cut(s), twins: s.twins.map(cut) }));
+  for (const s of S) if (s.twins.length === 2) s.tieLabel = ["Same plan for all three orders", `(${r.assets.length} systems)`];
   const W = 1100, H = 420, L = 92, R = 400, T = 20, B = 54;  // wide right margin: end labels never clip
   const maxY = Math.max(...S.flatMap((s) => s.points.map((p) => p.exposure_years)), 1e-9);
   const X = (w) => L + (w / end) * (W - L - R), Y = (v) => T + (1 - v / maxY) * (H - T - B);
   const svg = h("svg", { viewBox: `0 0 ${W} ${H}`, class: "pl-chart", role: "img", "aria-label": `Remaining exposure-years by week, scenario ${scenario}: ${S.map((s) => s.label).join(", ")}` });
-  for (let i = 0; i <= 4; i++) { const v = (maxY * i) / 4; svg.append(h("line", { ns: "svg", x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: "bn-grid" }), h("text", { ns: "svg", x: L - 10, y: Y(v) + 5, "text-anchor": "end" }, v.toFixed(maxY < 1 ? 3 : maxY < 10 ? 1 : 0))); }
+  const tv = [0, 1, 2, 3, 4].map((i) => (maxY * i) / 4);
+  let dec = maxY < 1 ? 3 : maxY < 10 ? 1 : 0;
+  while (dec < 3 && new Set(tv.map((v) => v.toFixed(dec))).size < tv.length) dec++;  // distinct where possible, at most 3 decimals
+  for (const v of tv) svg.append(h("line", { ns: "svg", x1: L, x2: W - R, y1: Y(v), y2: Y(v), class: "bn-grid" }), h("text", { ns: "svg", x: L - 10, y: Y(v) + 5, "text-anchor": "end" }, v.toFixed(dec)));
   for (let w = 0; w <= end; w += Math.max(1, Math.ceil(end / 12))) svg.append(h("text", { ns: "svg", x: X(w), y: H - B + 26, "text-anchor": "middle" }, String(w)));
   svg.append(h("text", { ns: "svg", x: (L + W - R) / 2, y: H - 4, "text-anchor": "middle" }, "week of the migration"),
     h("text", { ns: "svg", x: 14, y: T + (H - T - B) / 2, transform: `rotate(-90 14 ${T + (H - T - B) / 2})`, "text-anchor": "middle" }, "exposure-years still ahead"));
   const pts = (s, dy = 0) => s.points.map((p) => `${X(p.week).toFixed(1)},${(Y(p.exposure_years) + dy).toFixed(1)}`).join(" ");
   S.forEach((s) => {
     svg.append(h("polyline", { ns: "svg", class: `pl-line ${s.cls}`, points: pts(s) }));
-    s.twins.forEach((t, k) => svg.append(h("polyline", { ns: "svg", class: `pl-line ${t.cls}`, points: pts(t, -4 * (k + 1)) })));  // identical plan: drawn offset, same data
+    s.twins.forEach((t, k) => svg.append(h("polyline", { ns: "svg", class: `pl-line ${t.cls}`, points: pts(t, -4 * (k + 1)), "stroke-dasharray": k ? "3 5" : "8 6" })));  // identical plan: drawn offset, same data
     s.points.forEach((p) => svg.append(h("circle", { ns: "svg", class: `pl-pt ${s.cls}`, cx: X(p.week), cy: Y(p.exposure_years), r: 5, tabindex: "0",
       "data-prov": provAttr({ run_id: (s.produced.run_ids || []).join(", ") || "n/a", solver: s.produced.solver || "n/a", job_id: "none (local solve, no platform job ID)", ts: r.generated_at, note: `${scenario} · week ${p.week}: ${p.exposure_years.toFixed(2)} exposure-years` }, s.label) })));
   });
   const ends = S.map((s) => Y(s.points.at(-1).exposure_years));
   spreadLabels(ends, S.some((s) => s.twins.length) ? 52 : 30, T + 10, H - B - 16).forEach((y, k) => {
-    const s = S[k];
+    const s = S[k], tx = X(end) + 58, ly = s.tieLabel || s.twins.length === 1 ? y - 15 : y - 6;
+    // legend sample: a short stroke in each merged series' own .pl-line class (opt solid, fcfs dashed, greedy dotted)
+    [s, ...s.twins].forEach((t, j) => svg.append(h("line", { ns: "svg", class: `pl-line ${t.cls}`, x1: X(end) + 20, x2: X(end) + 50, y1: ly + j * 8, y2: ly + j * 8 })));
     svg.append(h("line", { ns: "svg", x1: X(end) + 4, y1: ends[k], x2: X(end) + 16, y2: y - 5, class: "bn-grid" }),
-      s.twins.length === 1 ? h("text", { ns: "svg", class: `pl-lab ${s.cls}`, x: X(end) + 20, y: y - 10 }, h("tspan", { ns: "svg", text: s.label.replace(" (identical plan)", "") }),
-        h("tspan", { ns: "svg", x: X(end) + 20, dy: 24, text: "(identical plan)" })) : h("text", { ns: "svg", class: `pl-lab ${s.cls}`, x: X(end) + 20, y }, s.label));
+      s.tieLabel ? h("text", { ns: "svg", class: `pl-lab ${s.cls}`, x: tx, y: y - 10 }, h("tspan", { ns: "svg", text: s.tieLabel[0] }), h("tspan", { ns: "svg", x: tx, dy: 24, text: s.tieLabel[1] }))
+      : s.twins.length === 1 ? h("text", { ns: "svg", class: `pl-lab ${s.cls}`, x: tx, y: y - 10 }, h("tspan", { ns: "svg", text: s.label.replace(" (identical plan)", "") }),
+        h("tspan", { ns: "svg", x: tx, dy: 24, text: "(identical plan)" })) : h("text", { ns: "svg", class: `pl-lab ${s.cls}`, x: tx, y }, s.label));
   });
   const makespan = r.exposure && r.exposure.makespan_weeks;
   return h("div", {}, svg, dd({ shows: `All systems migrated by week ${makespan ?? "–"} (optimised plan); exposure still ahead reaches 0 by week ${zero}.`, read: `The axis stops at week ${end}, after which no line changes.` }));
@@ -210,21 +218,21 @@ export async function mount(ctx) {
         solversEl.replaceChildren(compareBlock(ctx, P) || runBench(ctx));
       }).catch(() => { solversEl.replaceChildren(runBench(ctx)); });
       const picker = h("div", { class: "sg-row", role: "radiogroup", "aria-label": "CRQC scenario" });
-      let tie = false;
       const demoEl = h("div", { class: "cmp-demo" });
-      const drawDemo = () => ctx.ws !== "demo" && ctx.store.get("demo", "results", { signal: ctx.signal }).then((d) => {
+      const drawDemo = () => ctx.ws !== "demo" && ctx.store.get("demo", "results", { signal: ctx.signal }).then((x) => {
+        const d = x && (x.results || x);  // the store returns { results }
         const sc = d && (d.assumptions.scenarios.find((s) => s.name === scenario) || d.assumptions.scenarios[0]);
-        if (sc) demoEl.replaceChildren(h("h3", { class: "pl-h3", text: "Harder inventory: demo snapshot" }), chip("recorded", "read-only demo snapshot"), curves(d, sc.name));
+        if (sc) demoEl.replaceChildren(h("h3", { class: "pl-h3", text: `Harder inventory: demo snapshot (${d.assets.length} systems)` }), chip("recorded", "read-only demo snapshot"), curves(d, sc.name),
+          h("h3", { class: "pl-h3", text: "Demo snapshot: the objective by Q-Day scenario" }), optimisation(d));
       }).catch(() => {});
       const draw = () => {
         const a = headlineAvoided(m, scenario);
-        tie = mergeIdentical(curveSeries(m.results, scenario)).length === 1;
-        if (tie) drawDemo();
+        drawDemo();
         heroEl.replaceChildren(
           h("p", { class: "pl-head", tabindex: "0", "data-prov": a.fcfs.source ? provAttr(a.fcfs.source, "avoided vs FCFS") : null, text: planHeadline(a.fcfs, a.greedy, scenario) }),
           dd({ source: solverLine(m.results) }),
           h("h2", { class: "mv-h2", text: "Comparison: exposure still ahead, week by week" }),
-          tie ? h("p", { class: "cmp-tie", text: `Same plan for all orders (${m.results.assets.length} systems)` }) : curves(m.results, scenario), tie ? demoEl : null,
+          curves(m.results, scenario), ctx.ws !== "demo" ? demoEl : null,
           dd({ read: "each line is how much exposure (years that data stays readable after Q-Day) is still ahead at each week. Lower is better; the gap at week 0 is the total avoided. Lines are unweighted exposure-years; the optimiser minimises the risk- and scenario-weighted total, so lines can cross." }));
         heroEl.append(h("section", { class: "pl-opt" }, h("h2", { class: "mv-h2", text: "Optimisation: the objective by Q-Day scenario" }), optimisation(m.results)),
           h("section", { class: "pl-opt" }, h("h2", { class: "mv-h2", text: "Why MILP" }), whyMilp(m.results)),

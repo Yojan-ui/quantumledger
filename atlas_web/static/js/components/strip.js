@@ -38,7 +38,10 @@ export function strip({ api, store, onSignOut, onWorkspace, kiosk }) {
     const signedIn = !!me;
     ws.hidden = !signedIn || !workspaces;
     if (signedIn && workspaces) {
-      wsSelect.replaceChildren(...workspaces.map((w) => h("option", { value: w.id, selected: w.id === wsId }, wsLine(w))));
+      // several workspaces can share a name (e.g. "live-demo"): then the id from the URL tells them apart
+      const dup = new Set(workspaces.map((w) => w.name).filter((n, i, all) => all.indexOf(n) !== i));
+      wsSelect.replaceChildren(...workspaces.map((w) => h("option", { value: w.id, selected: w.id === wsId }, wsLine(w, dup.has(w.name)))));
+      wsSelect.value = wsId;
       const cur = workspaces.find((w) => w.id === wsId);
       badge.replaceChildren(...(cur ? [h("span", { class: "chip neutral", text: cur.type || "" }),
         cur.ledger_verified === null || cur.ledger_verified === undefined ? null
@@ -99,9 +102,9 @@ export function installRailKeys(navigate, getWs, signal) {
 }
 
 // One line per workspace in the switcher: type badge, assets, ledger verified, last run (all from the API).
-export function wsLine(w) {
+export function wsLine(w, showId = false) {
   const ago = (ts) => { const m = Math.round((Date.now() / 1000 - ts) / 60); return m < 60 ? `${m} min ago` : m < 2880 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
-  return [w.name, w.type, w.assets === null || w.assets === undefined ? "not yet run" : `${w.assets} assets`,
+  return [showId ? `${w.name} (${w.id})` : w.name, w.type, w.assets === null || w.assets === undefined ? "not yet run" : `${w.assets} assets`,
     w.ledger_verified === null || w.ledger_verified === undefined ? null : w.ledger_verified ? "ledger ✔" : "ledger ✖",
     w.last_run ? `run ${ago(w.last_run.ts)} (${w.last_run.status})` : w.generated_at ? `snapshot ${w.generated_at.slice(0, 10)}` : null].filter(Boolean).join(" · ");
 }

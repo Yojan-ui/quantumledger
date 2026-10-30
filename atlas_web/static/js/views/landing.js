@@ -90,7 +90,7 @@ export async function mount(ctx) {
     h("p", { class: "eyebrow" }, h("span", { class: "accent", text: "PQC-01" }), " · Q-Shield Atlas"),
     h("h1", { class: "ld-h1", text: "Find quantum-breakable crypto. Fix it in order. Prove it." }),
     h("p", { class: "ld-lede", text: "A future quantum computer can break RSA and ECC, so traffic recorded today can be read later. Atlas finds that crypto, schedules the move and proves every step." }),
-    h("div", { class: "sg-row ld-cta" }, h("a", { class: "btn primary", href: go("/w/demo/pipeline?guided=1"), text: "See it run" }), h("a", { class: "btn", href: go("/settings/new-workspace"), text: "Scan your own repo" })));
+    h("div", { class: "sg-row ld-cta" }, h("a", { class: "btn primary", href: go("/w/demo/pipeline?guided=1"), text: "See it run" })));
   // Proof chain strip: a label with the real count and one row of small blocks (one per signed record)
   const chainLabel = h("p", { class: "ld-chain-k", text: "Proof chain: loading…" });
   const chain = h("ol", { class: "ld-chain", "aria-hidden": "true" });
@@ -146,17 +146,11 @@ function sections(ctx, go) {
     }).catch(() => { nums.textContent = "not yet run"; });
     return c;
   }));
-  // 4 bring your own
-  const url = h("input", { type: "url", class: "ld-url", placeholder: "https://github.com/org/repo", "aria-label": "Public GitHub repository URL" });
-  const scan = h("form", { class: "ld-scan", onsubmit: (e) => { e.preventDefault(); ctx.navigate(go(`/settings/new-workspace?url=${encodeURIComponent(url.value.trim())}`)); } },
-    url, h("button", { class: "btn primary", type: "submit", text: "Scan" }));
   return [
     sec("The problem in 10 seconds", fact, h("div", {}, ...more("More", h("p", { text: "Harvest now, decrypt later: traffic protected by RSA or elliptic-curve key exchange can be recorded today and read once a large quantum computer exists." }), seen))),
     sec("How it works", h("ol", { class: "ld-steps" }, FLOW.map((f, i) => h("li", {}, h("a", { href: go(`/w/demo/${f.route}`) }, h("span", { class: "num", text: String(i + 1) }), h("b", { text: f.label })),
       h("span", { class: "ld-u", text: SHORT[i] }), h("div", {}, ...more("More", h("p", { text: f.does }))))))),
     sec("Real data", cards),
-    sec("Bring your own", h("p", { class: "ld-say", text: "Scan any public GitHub repository." }), scan,
-      h("div", {}, ...more("More", h("p", { text: "It is cloned into a new workspace and scanned; nothing runs until you start the pipeline." })))),
     sec("Honest by design", h("p", { class: "ld-say", text: "Simulated parts are labelled; nothing is overclaimed." }), h("div", {}, ...more("More", h("ul", { class: "ld-list" }, ["Real TLS handshakes and real public data where marked; migrations and lab stand-ins are simulated.", "No quantum advantage claimed: QAOA is a simulator cross-check against the exact optimum.",
       "Every result is signed (ML-DSA-65) into a hash-chained Proof Chain; any edit is detected.", "Paid QpiAI platform runs are disabled; everything shown ran locally."].map((t) => h("li", { text: t })))))),
   ];

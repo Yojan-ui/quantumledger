@@ -84,7 +84,7 @@ export async function mount(ctx) {
       { label: "systems to migrate", cell: num(r.assets.length, src), unit: "use RSA / ECC today", mean: "Systems whose encryption a future quantum computer could break." },
       { label: "weeks to migrate", cell: r.exposure ? num(r.exposure.makespan_weeks, source(r, { run_id: (r.solver_runs[0] || {}).run_id, solver: solverLabel(r), ts: r.generated_at })) : missing(), unit: "optimised plan", mean: "How long the whole move takes at the assumed team capacity." },
       { label: "proof records", cell: r.ledger ? num(r.ledger.entry_count, src) : missing(), unit: v && v.ok ? "signed and verified" : "signed", mean: "Every result is signed; any later edit is detected." },
-    ]) : null, main(flowCards(ctx, r, reviews), { title: "The seven steps" }));
+    ]) : "", main(flowCards(ctx, r, reviews), { title: "The seven steps" }));
     if (ro) {
       log.replaceWith(h("p", { class: "fine", style: { padding: "var(--s-4) 0" }, text: "This snapshot was produced by ./run_demo.sh in a terminal (its step logs are in out/demo_logs/). Runs started from this page stream their output here, line by line." }));
       drawStations(STEPS.map((step, i) => ({ step, stage: STAGE_OF[step], index: i + 1, status: r ? "ok" : "idle", duration: missing(r ? "snapshot" : "not yet run") })));

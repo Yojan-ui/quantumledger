@@ -164,7 +164,12 @@ function intake(ctx) {
     const pending = svc.filter((s) => s.manifest && s.manifest.suggested).length, bulkMsg = out();
     const bulk = (path, label) => h("button", { class: "btn", type: "button", onclick: async (e) => {
       e.target.disabled = true;
-      try { const d = await post(path, {}); say(bulkMsg, path.endsWith("suggest") ? `${d.written.length} manifests suggested from ${d.service_dirs} service directories; review them before a run.` : `${d.confirmed.length} manifests confirmed.`, false); changed(label); }
+      try {
+        const d = await post(path, {}), sug = path.endsWith("suggest");
+        const text = sug ? `${d.written.length} manifests suggested from ${d.service_dirs} service directories; review them before a run.`
+          : d.still_suggested ? `${d.confirmed.length} manifests confirmed; ${d.still_suggested} still need review.` : `${d.confirmed.length} manifests confirmed. You can run the pipeline now.`;
+        say(bulkMsg, text, !sug && d.still_suggested > 0); changed(sug ? `${d.written.length} manifests suggested` : `${d.confirmed.length} manifests confirmed`);
+      }
       catch (err) { if (err.code !== "aborted") say(bulkMsg, err.message); }
       e.target.disabled = false;
     } }, label);
