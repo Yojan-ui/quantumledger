@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { AtlasError, atlas, type ReviewItem } from "@/lib/client/atlas";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { AtlasErrorPanel, Chip, Part, Skeleton } from "../AtlasUI";
+import { AtlasErrorPanel, Chip, KeyStats, Part, Skeleton } from "../AtlasUI";
 
 function Decide({ ws, item, onDone }: { ws: string; item: ReviewItem; onDone: () => void }) {
   const [reason, setReason] = useState("");
@@ -91,44 +91,64 @@ export function ReviewStep() {
   // Reserve only a line while we learn who is signed in: a tall skeleton collapsing to one line shifted the page.
   if (!R.data) return <Skeleton className={me.user ? "mt-10 h-console" : "mt-10 h-24"} />;
   const { items, can_decide, read_only } = R.data;
+  const count = (st: string) => items.filter((i) => i.status === st).length;
   return (
-    <Part
-      title="Awaiting a person's decision"
-      label={
-        read_only ? "read-only snapshot: decisions disabled" : can_decide ? "operator" : "view only"
-      }
-    >
-      {items.length === 0 ? (
-        <p className="text-body text-fg-2">Nothing awaiting review: run the pipeline first.</p>
-      ) : (
-        <ul className="space-y-4">
-          {items.map((it) => (
-            <li key={it.id} className="rounded-lg border border-line p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-body text-fg">{it.title}</span>
-                <Chip status={it.status} />
-              </div>
-              <p className="mt-1 text-small text-fg-2">{it.summary}</p>
-              <p className="mt-1 font-mono text-micro text-fg-3">
-                {it.kind} · run {it.run_id.slice(0, 12)} · evidence{" "}
-                {it.evidence_sha256.slice(0, 12)}…
-              </p>
-              {it.decision && (
-                <p className="mt-2 text-small text-fg-2">
-                  {it.decision.decision === "approve" ? "Approved" : "Rejected"} by {it.decision.by}{" "}
-                  at {it.decision.ts}: “{it.decision.reason}”
-                  {it.decision.ledger_index !== undefined
-                    ? ` · Proof Chain #${it.decision.ledger_index}`
-                    : ""}
+    <>
+      <Part title="Review at a glance">
+        <KeyStats
+          items={[
+            {
+              label: "awaiting review",
+              value: count("pending"),
+              unit: read_only ? "read-only snapshot: decisions cannot be recorded" : "results",
+            },
+            { label: "approved", value: count("approved"), unit: "signed decisions" },
+            { label: "rejected", value: count("rejected"), unit: "signed decisions" },
+          ]}
+        />
+      </Part>
+      <Part
+        title="Awaiting a person's decision"
+        label={
+          read_only
+            ? "read-only snapshot: decisions disabled"
+            : can_decide
+              ? "operator"
+              : "view only"
+        }
+      >
+        {items.length === 0 ? (
+          <p className="text-body text-fg-2">Nothing awaiting review: run the pipeline first.</p>
+        ) : (
+          <ul className="space-y-4">
+            {items.map((it) => (
+              <li key={it.id} className="rounded-lg border border-line p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-body text-fg">{it.title}</span>
+                  <Chip status={it.status} />
+                </div>
+                <p className="mt-1 text-small text-fg-2">{it.summary}</p>
+                <p className="mt-1 font-mono text-micro text-fg-3">
+                  {it.kind} · run {it.run_id.slice(0, 12)} · evidence{" "}
+                  {it.evidence_sha256.slice(0, 12)}…
                 </p>
-              )}
-              {it.status === "pending" && can_decide && (
-                <Decide ws={ws} item={it} onDone={R.reload} />
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Part>
+                {it.decision && (
+                  <p className="mt-2 text-small text-fg-2">
+                    {it.decision.decision === "approve" ? "Approved" : "Rejected"} by{" "}
+                    {it.decision.by} at {it.decision.ts}: “{it.decision.reason}”
+                    {it.decision.ledger_index !== undefined
+                      ? ` · Proof Chain #${it.decision.ledger_index}`
+                      : ""}
+                  </p>
+                )}
+                {it.status === "pending" && can_decide && (
+                  <Decide ws={ws} item={it} onDone={R.reload} />
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Part>
+    </>
   );
 }

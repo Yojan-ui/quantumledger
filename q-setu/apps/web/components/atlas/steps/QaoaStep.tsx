@@ -8,7 +8,16 @@
 import { useState } from "react";
 import { AtlasError, atlas, type QaoaRow } from "@/lib/client/atlas";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { AtlasErrorPanel, Chip, Honesty, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
+import {
+  AtlasErrorPanel,
+  Chip,
+  Honesty,
+  KeyStats,
+  NotYetRun,
+  Part,
+  Skeleton,
+  Table,
+} from "../AtlasUI";
 import { fmt, pct, useResults } from "../useResults";
 
 function QuantumStatusPanel({ ws }: { ws: string }) {
@@ -67,6 +76,15 @@ function QuantumStatusPanel({ ws }: { ws: string }) {
   );
 }
 
+/** The metric columns of Atlas's QAOA table (viz/data.js QAOA_COLUMNS), in its order. */
+const COLS: [string, string][] = [
+  ["feasible_fraction", "Feasible"],
+  ["approximation_ratio", "Approx. ratio"],
+  ["energy_ratio", "Energy ratio"],
+  ["p_optimal", "P(opt)"],
+  ["p_optimal_assets", "P(opt set)"],
+];
+
 export function QaoaStep() {
   const { ws, results, error, loading, reload } = useResults();
   if (error) return <AtlasErrorPanel error={error} onRetry={reload} />;
@@ -78,8 +96,38 @@ export function QaoaStep() {
     exact?: { assets?: string[]; objective?: number };
     run_id?: string;
   } | null;
+  const levels = (q?.table ?? []).filter(
+    (r) => r.source === "local" && r.status === "ok" && r.metrics,
+  );
+  const top = [...levels].sort((x, y) => (y.p ?? 0) - (x.p ?? 0))[0];
+  const rnd = (q?.table ?? []).find((r) => r.source === "random" && r.status === "ok" && r.metrics);
+  const tm = (top?.metrics ?? {}) as Record<string, number | undefined>;
+  const rm = (rnd?.metrics ?? {}) as Record<string, number | undefined>;
   return (
     <>
+      {q?.table && top && (
+        <Part title="Wave selection at a glance">
+          <KeyStats
+            items={[
+              {
+                label: "systems in this choice",
+                value: fmt(q.problem?.assets?.length),
+                unit: `week ${fmt(q.problem?.week)} · ${fmt(q.problem?.n_variables)} QUBO variables`,
+              },
+              {
+                label: `feasible share · p = ${top.p}`,
+                value: fmt(tm.feasible_fraction, 4),
+                unit: `random baseline ${fmt(rm.feasible_fraction, 4)}`,
+              },
+              {
+                label: `P(optimal set) · p = ${top.p}`,
+                value: fmt(tm.p_optimal_assets, 4),
+                unit: `random baseline ${fmt(rm.p_optimal_assets, 4)}`,
+              },
+            ]}
+          />
+        </Part>
+      )}
       <Part
         title="QAOA against the exact answer"
         label={q?.run_id ? `run ${q.run_id.slice(0, 12)}` : undefined}
@@ -97,49 +145,30 @@ export function QaoaStep() {
             </p>
             <Table
               caption="QAOA rows by depth and backend"
-              head={[
-                "p",
-                "Source",
-                "Backend",
-                "Status",
-                "Feasible share",
-                "P(optimal set)",
-                "Approx. ratio",
-                "Job IDs",
-              ]}
+              head={["p", "Source", "Backend", "Shots", ...COLS.map(([, l]) => l), "Status"]}
               rows={q.table.map((row) => {
                 const ok = row.status === "ok" && row.metrics;
-                const m = row.metrics as {
-                  feasible_fraction?: number;
-                  p_optimal_assets?: number;
-                  approximation_ratio?: number;
-                } | null;
+                const m = (row.metrics ?? {}) as Record<string, number | undefined>;
                 return [
                   row.p ?? "–",
                   row.source,
                   <span key="b" className="text-micro">
                     {row.backend}
                   </span>,
-                  <Chip key="s" status={row.status} />,
-                  ...(ok
-                    ? [
-                        pct(m?.feasible_fraction),
-                        pct(m?.p_optimal_assets),
-                        fmt(m?.approximation_ratio, 3),
-                      ]
-                    : [
-                        <span key="t" className="text-fg-3">
-                          {row.status_text ?? row.status}
-                        </span>,
-                        "",
-                        "",
-                      ]),
-                  row.job_ids.length ? (
-                    <span key="j" className="font-mono text-micro">
-                      {row.job_ids.join(", ")}
+                  ok ? fmt(row.shots) : "",
+                  // Atlas (viz/data.js qaoaModel): metrics to 4 decimals for ok rows, status_text otherwise.
+                  ...COLS.map(([k]) => (ok ? fmt(m[k], 4) : "")),
+                  ok ? (
+                    <span key="s" className="text-small">
+                      <Chip status="ok">measured</Chip>{" "}
+                      <span className="font-mono text-micro text-fg-3">
+                        {row.job_ids.length ? `job ${row.job_ids.join(", ")}` : "no job ID (local)"}
+                      </span>
                     </span>
                   ) : (
-                    "none (local)"
+                    <span key="t" className="text-small text-fg-3">
+                      {row.status_text ?? row.status}
+                    </span>
                   ),
                 ];
               })}

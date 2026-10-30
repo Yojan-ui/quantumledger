@@ -178,3 +178,20 @@ export function Honesty({
     </p>
   );
 }
+
+export type KeyStat = { label: string; value: ReactNode; unit?: ReactNode };
+
+/** The headline numbers of a page: one row of equal-height cards (3 across on desktop, stacked on phones). */
+export function KeyStats({ items }: { items: KeyStat[] }) {
+  return (
+    <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      {items.map((s) => (
+        <li key={s.label} className="flex h-full flex-col gap-1 rounded-lg border border-line p-4">
+          <span className="font-mono text-micro uppercase text-fg-3">{s.label}</span>
+          <span className="tabular text-h2 font-medium text-fg">{s.value}</span>
+          {s.unit && <span className="text-small text-fg-2">{s.unit}</span>}
+        </li>
+      ))}
+    </ul>
+  );
+}

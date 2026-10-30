@@ -6,28 +6,31 @@
  * report.html keeps its own CSP: it opens as its own page, never injected into React).
  */
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { Container } from "@/components/ui/layout";
 import { Label } from "@/components/ui/type";
 import { atlas } from "@/lib/client/atlas";
+import { FLOW } from "@/lib/client/atlas-flow";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
 import { AtlasErrorPanel } from "./AtlasUI";
 
-/** The seven user-facing steps (contracts/stages.json `flow`), each with its page here. */
-export const FLOW_PAGES = [
-  { slug: "detect", label: "Detect" },
-  { slug: "inventory", label: "Inventory & drift" },
-  { slug: "schedule", label: "Plan" },
-  { slug: "handshakes", label: "Handshake gates" },
-  { slug: "qaoa", label: "Wave selection" },
-  { slug: "ledger", label: "Proof Chain" },
-  { slug: "review", label: "Review" },
-] as const;
+/**
+ * The tabs, in the original Atlas sidebar order: Overview, then the seven steps (Detect with its Inventory &
+ * drift sub-page; the Proof Chain appears twice, as step 2 and step 6, like Atlas's ?section=2 / ?section=6).
+ */
+const TABS: { href: string; label: string; n?: number }[] = [
+  { href: "", label: "Overview" },
+  ...FLOW.flatMap((f, i) => [
+    { href: f.href, label: f.label, n: i + 1 },
+    ...(f.id === "detect" ? [{ href: "inventory", label: "Inventory & drift" }] : []),
+  ]),
+];
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const { ws } = useParams<{ ws: string }>();
   const path = usePathname();
+  const section = useSearchParams().get("section");
   const me = useAtlasMe();
   // GET /workspaces/<ws> needs a session; signed out (the public demo) the id stands in for the name.
   const info = useAtlas(me.user ? `ws:${ws}:${me.user.username}` : null, (signal) =>
@@ -82,18 +85,23 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         className="mt-8 max-w-full overflow-x-auto border-b border-line"
       >
         <ol className="flex min-w-max gap-1">
-          {FLOW_PAGES.map((p, i) => {
-            const href = `/atlas/${encodeURIComponent(ws)}/${p.slug}`;
-            const on = path === href;
+          {TABS.map((t) => {
+            const [page, query] = t.href.split("?");
+            const href = `/atlas/${encodeURIComponent(ws)}${page ? `/${page}` : ""}${query ? `?${query}` : ""}`;
+            const want = query ? new URLSearchParams(query).get("section") : null;
+            const on =
+              path === `/atlas/${encodeURIComponent(ws)}${page ? `/${page}` : ""}` &&
+              (want === null ? !section : section === want);
             return (
-              <li key={p.slug}>
+              <li key={t.href || "overview"}>
                 <Link
                   prefetch={false}
                   href={href}
                   aria-current={on ? "page" : undefined}
                   className={`block border-b px-3 py-3 font-mono text-micro uppercase ${on ? "border-fg text-fg" : "border-transparent text-fg-3 hover:text-fg"}`}
                 >
-                  {i + 1} {p.label}
+                  {t.n ? `${t.n} ` : ""}
+                  {t.label}
                 </Link>
               </li>
             );

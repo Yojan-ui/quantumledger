@@ -1,7 +1,9 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { OverviewStep } from "@/components/atlas/steps/OverviewStep";
 
-/** /atlas/<ws> opens the first step. */
-export default async function WorkspaceIndex({ params }: { params: Promise<{ ws: string }> }) {
-  const { ws } = await params;
-  redirect(`/atlas/${encodeURIComponent(ws)}/detect`);
+export const metadata: Metadata = { title: "Overview · Q-Shield" };
+
+/** /atlas/<ws>: the workspace Overview (Atlas's /w/<ws>/pipeline). */
+export default function Page() {
+  return <OverviewStep />;
 }

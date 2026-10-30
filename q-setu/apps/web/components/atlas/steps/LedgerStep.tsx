@@ -7,13 +7,13 @@
  * LazyView) shows 12 blocks; a failure at entry i of N lights block ⌊12·i/N⌋.
  */
 import dynamic from "next/dynamic";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LazyView } from "@/components/scenes/LazyView";
 import { AtlasError, atlas } from "@/lib/client/atlas";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { AtlasErrorPanel, Chip, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
-import { fmt } from "../useResults";
+import { AtlasErrorPanel, Chip, KeyStats, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
+import { fmt, useResults } from "../useResults";
 
 const LedgerChain = dynamic(() => import("@/components/scenes/LedgerChain"), { ssr: false });
 
@@ -42,6 +42,13 @@ export function LedgerStep() {
     busy: false,
   });
   const [proof, setProof] = useState<{ n: number; out?: Proof; err?: string } | null>(null);
+  const { results } = useResults();
+  const want = useSearchParams().get("section");
+  // ?section=2 / ?section=6 open step 2 or step 6 of the pipeline (Atlas's sidebar links do the same).
+  useEffect(() => {
+    if (want && L.data)
+      document.getElementById(`section-${want}`)?.scrollIntoView({ block: "start" });
+  }, [want, L.data]);
   if (L.error) return <AtlasErrorPanel error={L.error} onRetry={L.reload} />;
   if (!L.data) return <Skeleton className="mt-10 h-console" />;
   if (!L.data.available) return <NotYetRun what="Proof Chain" />;
@@ -58,10 +65,90 @@ export function LedgerStep() {
       setProof({ n: i, err: e instanceof AtlasError ? e.message : "proof unavailable" });
     }
   };
+  // The two pipeline steps the chain proves (Atlas views/ledger.js sections 2 and 6), worded as Atlas does.
+  const e0 = led.entries.find((e) => e.type === "detect.run");
+  const pq = (
+    (
+      results?.handshake_evidence as {
+        sessions?: { service_id: string; negotiated_group?: string }[];
+      } | null
+    )?.sessions ?? []
+  ).filter((x) => /MLKEM/i.test(x.negotiated_group ?? ""));
+  const okLive = live !== null && live.ok === true;
+  const checked = live && "entries_checked" in live ? live.entries_checked : led.entry_count;
   return (
     <>
+      <Part title="Proof Chain at a glance">
+        <KeyStats
+          items={[
+            {
+              label: "signed records",
+              value: fmt(led.entry_count),
+              unit: `${led.alg}, hash-chained`,
+            },
+            {
+              label: "chain check",
+              value:
+                live === null
+                  ? "not checked"
+                  : live.ok === null
+                    ? "not verified"
+                    : live.ok
+                      ? "verified"
+                      : "failed",
+              unit:
+                live && live.ok !== null
+                  ? `${fmt(checked)} records re-checked`
+                  : live?.ok === null
+                    ? live.status_text
+                    : "no live check",
+            },
+            {
+              label: "signing key",
+              value: (
+                <span className="font-mono text-small">
+                  {led.pubkey_fp.slice(0, 12)}…{led.pubkey_fp.slice(-4)}
+                </span>
+              ),
+              unit: "public key fingerprint",
+            },
+          ]}
+        />
+      </Part>
+      <section id="section-2" className="scroll-mt-20">
+        <Part
+          title="2 · Proof: findings signed"
+          aside={<Chip status={e0 ? "PASS" : "pending"}>{e0 ? "signed" : "not yet run"}</Chip>}
+        >
+          <p className="max-w-text text-body text-fg-2">
+            {e0
+              ? `The RSA / ECC / DH findings (detect.run) were signed with ML-DSA-65 as entry #${e0.index} at ${e0.ts}, before planning; the existing chain was verified first.`
+              : "not yet run: no detect.run entry in this ledger"}
+          </p>
+        </Part>
+      </section>
+      <section id="section-6" className="scroll-mt-20">
+        <Part
+          title="6 · Proof: post-quantum verified"
+          aside={
+            <Chip status={okLive ? "PASS" : live?.ok === false ? "FAIL" : "pending"}>
+              {okLive ? "verified" : live?.ok === false ? "failed" : "not verified"}
+            </Chip>
+          }
+        >
+          <p className="max-w-text text-body text-fg-2">
+            {okLive
+              ? pq.length
+                ? `Every entry's ML-DSA-65 signature verified across the chain (${checked} entries); ML-KEM evidence signed: ${pq.map((x) => `${x.service_id} negotiated ${x.negotiated_group}`).join(", ")}.`
+                : `Signatures verified (${checked} entries); no post-quantum handshake recorded.`
+              : live?.ok === false
+                ? `Verification fails at #${String((live as { first_failure?: { index?: number } }).first_failure?.index ?? "?")}.`
+                : `not verified: ${live && live.ok === null ? live.status_text : "no check"}`}
+          </p>
+        </Part>
+      </section>
       <Part
-        title="Signed, hash-chained Proof Chain"
+        title="Hash chain: every block links to the one before"
         label={`${led.alg} · ${n} entries`}
         aside={
           live === null ? (

@@ -5,7 +5,16 @@
  * Q-day scenario (exposure-years still readable after Q-day; lower is better). Assumptions labelled.
  */
 import { MiniStat } from "@/components/ui/Stat";
-import { AtlasErrorPanel, Chip, Honesty, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
+import {
+  AtlasErrorPanel,
+  Chip,
+  Honesty,
+  KeyStats,
+  NotYetRun,
+  Part,
+  Skeleton,
+  Table,
+} from "../AtlasUI";
 import { fmt, useResults } from "../useResults";
 
 type Scen = {
@@ -63,10 +72,47 @@ export function ScheduleStep() {
   const scen = (r.exposure.per_scenario ?? []).map((s) => s.scenario);
   const by = (p: Plan, sc: string) => p.per_scenario?.find((x) => x.scenario === sc);
   const av = (l: Avoided[], sc: string) => l.find((x) => x.scenario === sc);
+  const first = scen[0]; // Atlas's Plan page opens on the first scenario
   const main =
     r.solver_runs.find((x) => x.stage?.endsWith(".expected.expected")) ?? r.solver_runs[0];
   return (
     <>
+      <Part title="Plan at a glance" label={`Q-day scenario ${first ?? "–"}`}>
+        <KeyStats
+          items={[
+            {
+              label: "weeks to migrate",
+              value: fmt(r.exposure.makespan_weeks),
+              unit: "optimised plan",
+            },
+            {
+              label: "exposure avoided vs first-come-first-served",
+              value: fmt(av(r.avoided.vs_fcfs, first ?? "")?.exposure_years_avoided, 3),
+              unit: "exposure-years",
+            },
+            {
+              label: "exposure avoided vs greedy",
+              value: fmt(av(r.avoided.vs_greedy, first ?? "")?.exposure_years_avoided, 3),
+              unit: "exposure-years",
+            },
+          ]}
+        />
+      </Part>
+      <Part title="Effort per wave vs team capacity" label="the real plan">
+        <Table
+          caption="Effort per wave against weekly capacity"
+          head={["Week", "Systems", "Effort (engineer-days)", "Capacity (assumption)", "Use"]}
+          rows={(r.exposure.waves ?? []).map((w) => [
+            fmt(w.week),
+            w.assets.length,
+            fmt(w.effort_days, 1),
+            fmt(r.assumptions.capacity_days_per_week),
+            r.assumptions.capacity_days_per_week
+              ? `${fmt(((w.effort_days ?? 0) / r.assumptions.capacity_days_per_week) * 100)} %`
+              : "–",
+          ])}
+        />
+      </Part>
       <Part title="Wave plan" label={`${fmt(r.exposure.makespan_weeks)} weeks`}>
         <ol className="grid gap-2 md:grid-cols-2">
           {(r.exposure.waves ?? []).map((w) => (

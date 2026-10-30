@@ -1,12 +1,26 @@
 "use client";
 
-/** Step 1 · Detect: RSA / ECC / DH findings with file:line evidence, from results.detect. */
+/**
+ * Step 1 · Detect (Atlas views/detect.js): vulnerable findings, files scanned and live connections probed;
+ * the static findings with file:line evidence, and the live TLS probes. From results.detect.
+ */
 import { useState } from "react";
-import { MiniStat } from "@/components/ui/Stat";
-import { AtlasErrorPanel, Chip, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
+import { AtlasErrorPanel, Chip, KeyStats, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
 import { fmt, useResults } from "../useResults";
 
 const PAGE = 60;
+
+type Probe = {
+  service?: string;
+  endpoint?: string;
+  live?: {
+    handshake_ok?: boolean;
+    group?: string;
+    kex_quantum_vulnerable?: boolean;
+    cert_algorithm?: string;
+  } | null;
+  drift?: unknown[];
+};
 
 export function DetectStep() {
   const { results, error, loading, reload } = useResults();
@@ -18,34 +32,36 @@ export function DetectStep() {
   const d = results.detect;
   if (!d)
     return <NotYetRun what="Detect" hint="This workspace's results have no Detect section." />;
-  const s = (d.summary ?? {}) as {
-    vulnerable_findings?: number;
-    pqc_findings?: number;
-    files_with_findings?: number;
-    by_family?: Record<string, number>;
-  };
+  const s = (d.summary ?? {}) as { vulnerable_findings?: number };
+  const probes = (d.probes as unknown as Probe[]) ?? [];
   const findings = d.findings;
   const shown = all ? findings : findings.slice(0, PAGE);
   return (
     <>
       <Part title="What the scanner found" label={`run ${d.run_id.slice(0, 12)}`}>
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          <MiniStat value={fmt(d.files_scanned)} label="files scanned" />
-          <MiniStat value={fmt(s.vulnerable_findings)} label="quantum-breakable findings" />
-          <MiniStat value={fmt(s.pqc_findings)} label="post-quantum findings" />
-          <MiniStat value={fmt(s.files_with_findings)} label="files with findings" />
-        </div>
-        {s.by_family && (
-          <p className="mt-6 font-mono text-micro uppercase text-fg-3">
-            {Object.entries(s.by_family)
-              .map(([k, v]) => `${k} ${v}`)
-              .join(" · ")}
-          </p>
-        )}
+        <KeyStats
+          items={[
+            {
+              label: "vulnerable findings",
+              value: fmt(s.vulnerable_findings),
+              unit: "RSA / ECC / DH / DSA",
+            },
+            {
+              label: "files scanned",
+              value: fmt(d.files_scanned),
+              unit: "code, configs, certificates",
+            },
+            {
+              label: "live connections probed",
+              value: fmt(probes.length),
+              unit: "one TLS handshake each",
+            },
+          ]}
+        />
       </Part>
-      <Part title="Findings with file:line evidence" label={`${findings.length} findings`}>
+      <Part title="Findings" label={`${findings.length} findings`}>
         <Table
-          caption="Findings with file and line"
+          caption="Static findings"
           head={["File:line", "Family", "Use", "Confidence", "Rule", "Evidence"]}
           rows={shown.map((f) => [
             <span key="f" className="font-mono text-micro text-fg">
@@ -76,6 +92,33 @@ export function DetectStep() {
           >
             {all ? "Show fewer" : `Show all ${findings.length}`}
           </button>
+        )}
+      </Part>
+      <Part title="Live connections" label={`${probes.length} probed`}>
+        {probes.length === 0 ? (
+          <p className="text-body text-fg-2">No live probe in this run.</p>
+        ) : (
+          <Table
+            caption="Live TLS probes"
+            head={["Service", "Endpoint", "Key exchange", "Certificate", "Drift alerts"]}
+            rows={probes.map((p) => [
+              p.service ?? "–",
+              <span key="e" className="font-mono text-micro">
+                {p.endpoint ?? "–"}
+              </span>,
+              p.live?.handshake_ok ? (
+                <Chip key="k" status={p.live.kex_quantum_vulnerable ? "HNDL-exposed" : "hybrid"}>
+                  {p.live.group ?? "–"}
+                </Chip>
+              ) : (
+                <Chip key="k" status="failed">
+                  no handshake
+                </Chip>
+              ),
+              p.live?.cert_algorithm ?? "–",
+              fmt((p.drift ?? []).length),
+            ])}
+          />
         )}
       </Part>
     </>

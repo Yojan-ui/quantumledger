@@ -1,7 +1,16 @@
 "use client";
 
 /** Inventory & drift: the systems Detect turned into migration work, and static-vs-live drift per probe. */
-import { AtlasErrorPanel, Chip, Honesty, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
+import {
+  AtlasErrorPanel,
+  Chip,
+  Honesty,
+  KeyStats,
+  NotYetRun,
+  Part,
+  Skeleton,
+  Table,
+} from "../AtlasUI";
 import { fmt, useResults } from "../useResults";
 
 type Drift = { kind?: string; severity?: string; detail?: string };
@@ -14,11 +23,27 @@ export function InventoryStep() {
   if (!results) return <NotYetRun what="Inventory & drift" />;
   const assets = results.assets as unknown as Record<string, unknown>[];
   const probes = (results.detect?.probes as unknown as Probe[] | undefined) ?? [];
+  // detect.inventory.not_vulnerable: services the scan found nothing to replace in (Atlas's "already safe").
+  const safe = ((results.detect?.inventory as { not_vulnerable?: string[] } | undefined)
+    ?.not_vulnerable ?? []) as string[];
   const drift = probes.flatMap((p) =>
     (p.drift ?? []).map((d) => ({ ...d, service: p.service, endpoint: p.endpoint })),
   );
   return (
     <>
+      <Part title="Inventory at a glance">
+        <KeyStats
+          items={[
+            { label: "systems to migrate", value: fmt(assets.length), unit: "with RSA / ECC / DH" },
+            {
+              label: "already safe",
+              value: fmt(safe.length),
+              unit: safe.length ? safe.join(", ") : "no vulnerable crypto found",
+            },
+            { label: "drift alerts", value: fmt(drift.length), unit: "live ≠ config" },
+          ]}
+        />
+      </Part>
       <Part title="Systems to migrate" label={`${assets.length} systems`}>
         {assets.length === 0 ? (
           <p className="text-body text-fg-2">Nothing to migrate: no RSA / ECC / DH found.</p>
