@@ -7,7 +7,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { AtlasError, atlas, type ReviewItem } from "@/lib/client/atlas";
-import { useAtlas } from "@/lib/client/useAtlas";
+import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
 import { AtlasErrorPanel, Chip, Part, Skeleton } from "../AtlasUI";
 
 function Decide({ ws, item, onDone }: { ws: string; item: ReviewItem; onDone: () => void }) {
@@ -69,7 +69,17 @@ function Decide({ ws, item, onDone }: { ws: string; item: ReviewItem; onDone: ()
 
 export function ReviewStep() {
   const { ws } = useParams<{ ws: string }>();
-  const R = useAtlas(`reviews:${ws}`, (signal) => atlas.reviews(ws, { signal }));
+  const me = useAtlasMe();
+  // /reviews needs a session: signed out, say so instead of requesting it.
+  const R = useAtlas(me.user ? `reviews:${ws}:${me.user.username}` : null, (signal) =>
+    atlas.reviews(ws, { signal }),
+  );
+  if (!me.loading && !me.user)
+    return (
+      <Part title="Review">
+        <p className="text-body text-fg-2">Sign in to see the items awaiting review.</p>
+      </Part>
+    );
   if (R.error)
     return R.error.status === 401 ? (
       <Part title="Review">
@@ -78,7 +88,8 @@ export function ReviewStep() {
     ) : (
       <AtlasErrorPanel error={R.error} onRetry={R.reload} />
     );
-  if (!R.data) return <Skeleton className="mt-10 h-console" />;
+  // Reserve only a line while we learn who is signed in: a tall skeleton collapsing to one line shifted the page.
+  if (!R.data) return <Skeleton className={me.user ? "mt-10 h-console" : "mt-10 h-24"} />;
   const { items, can_decide, read_only } = R.data;
   return (
     <Part

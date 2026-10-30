@@ -119,7 +119,7 @@ function follow(ws: string, runId: string) {
 
 export const atlasRun = {
   /** Loads the stages and, if a run is in progress in this workspace, follows it. */
-  async init(ws: string) {
+  async init(ws: string, signedIn: boolean) {
     if (state.ws !== ws) {
       close?.();
       close = null;
@@ -131,7 +131,8 @@ export const atlasRun = {
         stages,
         status: state.status.length === stages.length ? state.status : stages.map(() => "idle"),
       });
-      const runs = await atlas.runs(ws).catch(() => null);
+      // GET /runs needs a session: signed out there is nothing to follow (and no 401 in the console).
+      const runs = signedIn ? await atlas.runs(ws).catch(() => null) : null;
       if (runs?.active) follow(ws, runs.active);
     } catch (e) {
       set({ error: msg(e) });

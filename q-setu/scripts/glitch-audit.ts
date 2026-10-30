@@ -30,6 +30,7 @@ const ACTIONS: Record<string, string[]> = {
   "/demo/qday": ["Try it"],
   "/demo/ledger": ["Verify the chain", "Tamper with entry #42", "Verify the chain"],
   "/demo/scanner": ["Scan", "Scan live TLS"],
+  "/atlas/demo/ledger": ["#3"],
 };
 
 interface Metrics {
@@ -254,6 +255,16 @@ const pages = [
     "/pitch",
     "/scan/www.irctc.co.in",
     "/this-page-does-not-exist",
+    // Q-Shield (Atlas) pages: need `pnpm dev:atlas` on :8100; the demo workspace is public.
+    "/atlas/signin",
+    "/atlas/demo/detect",
+    "/atlas/demo/inventory",
+    "/atlas/demo/schedule",
+    "/atlas/demo/handshakes",
+    "/atlas/demo/qaoa",
+    "/atlas/demo/ledger",
+    "/atlas/demo/review",
+    "/diagnostics?ws=demo",
   ]),
 ].filter((p) => !ONLY || ONLY.includes(p));
 

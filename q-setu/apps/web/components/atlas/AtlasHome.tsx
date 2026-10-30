@@ -221,10 +221,11 @@ export function AtlasHome() {
     return (
       <Part title="Start with the public demo" label="read-only snapshot">
         <div className="flex flex-wrap gap-3">
-          <Link href="/atlas/demo/detect" className={btn}>
+          <Link prefetch={false} href="/atlas/demo/detect" className={btn}>
             Open the demo workspace
           </Link>
           <Link
+            prefetch={false}
             href="/atlas/signin?next=/atlas"
             className="h-10 rounded-sm border border-line px-4 py-3 font-mono text-micro uppercase text-fg-2 hover:text-fg"
           >
@@ -260,6 +261,7 @@ export function AtlasHome() {
             {list.data.workspaces.map((w) => (
               <li key={w.id}>
                 <Link
+                  prefetch={false}
                   href={`/atlas/${encodeURIComponent(w.id)}/detect`}
                   className="block rounded-lg border border-line p-4 hover:border-line-strong"
                 >

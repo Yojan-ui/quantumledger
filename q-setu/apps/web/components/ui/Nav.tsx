@@ -113,7 +113,8 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
-            <CopyToggle />
+            {/* Phones: the toggle moves into the menu (the bar was 434px wide at 390px: horizontal scroll). */}
+            <CopyToggle className="hidden md:flex" />
             <button
               type="button"
               onClick={openCommandMenu}
@@ -154,7 +155,8 @@ export function Nav() {
                   {l.label}
                 </Link>
               ))}
-              <div className="pt-3">
+              <div className="flex flex-wrap items-center gap-3 pt-3">
+                <CopyToggle />
                 <ButtonLink href="/#early-access">Get early access</ButtonLink>
               </div>
             </Container>

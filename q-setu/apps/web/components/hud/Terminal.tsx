@@ -33,6 +33,12 @@ const OP_TONE: Partial<Record<OpEvent["op"], string>> = {
 
 const clock = (at: number) => new Date(at).toTimeString().slice(0, 8);
 
+/** Atlas logs absolute paths; show them relative to the workspace (or the Atlas checkout). */
+const shortPaths = (t: string) =>
+  t
+    .replace(/\/\S*?\/atlas_web\/data\/workspaces\/[^/\s]+\//g, "./")
+    .replace(/\/\S*?\/qshield\//g, "qshield/");
+
 /** `atlas`: a Q-Shield run's own log (diagnostics ?ws= mode) instead of the live bus. */
 export function Terminal({
   className = "",
@@ -80,8 +86,8 @@ export function Terminal({
             data-term-stage={l.step}
           >
             <span className="text-ok">➜ </span>
-            <span className="text-fg-3">{l.step.padEnd(14)}</span>
-            {l.text}
+            <span className="text-fg-3">{l.step.padEnd(16)}</span>
+            {shortPaths(l.text)}
           </p>
         ))}
         {lines.map((e) => {

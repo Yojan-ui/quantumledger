@@ -29,13 +29,16 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
   const { ws } = useParams<{ ws: string }>();
   const path = usePathname();
   const me = useAtlasMe();
-  const info = useAtlas(`ws:${ws}`, (signal) => atlas.workspace(ws, { signal }));
+  // GET /workspaces/<ws> needs a session; signed out (the public demo) the id stands in for the name.
+  const info = useAtlas(me.user ? `ws:${ws}:${me.user.username}` : null, (signal) =>
+    atlas.workspace(ws, { signal }),
+  );
   return (
     <Container className="py-12 md:py-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Label>
-            <Link href="/atlas" className="hover:text-fg">
+            <Link prefetch={false} href="/atlas" className="hover:text-fg">
               Q-Shield
             </Link>{" "}
             / workspace
@@ -49,6 +52,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            prefetch={false}
             href={`/diagnostics?ws=${encodeURIComponent(ws)}`}
             className="flex h-10 items-center rounded-sm border border-line-strong px-4 font-mono text-micro uppercase text-fg hover:bg-raised"
           >
@@ -64,6 +68,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           </a>
           {!me.user && (
             <Link
+              prefetch={false}
               href={`/atlas/signin?next=${encodeURIComponent(path)}`}
               className="flex h-10 items-center rounded-sm border border-line px-4 font-mono text-micro uppercase text-fg-2 hover:text-fg"
             >
@@ -83,6 +88,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             return (
               <li key={p.slug}>
                 <Link
+                  prefetch={false}
                   href={href}
                   aria-current={on ? "page" : undefined}
                   className={`block border-b px-3 py-3 font-mono text-micro uppercase ${on ? "border-fg text-fg" : "border-transparent text-fg-3 hover:text-fg"}`}

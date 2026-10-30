@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
-import { Button, ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
+import { ButtonLink, Container, Legend, SectionLabel, Text, buttonClass } from "@/components/ui";
 import { DiagnosticsApp } from "@/components/hud/DiagnosticsApp";
 import { startTour } from "@/components/tour/Tour";
 import { Copy } from "@/components/ui/Copy";
@@ -72,9 +73,22 @@ export function Hero() {
               <Copy simple={HERO.body} technical={HERO.technical} />
             </Text>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button variant="primary" onClick={startTour} data-tour-start>
+              {/* A real link to ?tour=1, so a click before hydration still starts the tour (the Tour
+                  starts from ?tour=1 on mount); once hydrated it starts in place without reloading. */}
+              <Link
+                href="/?tour=1"
+                role="button"
+                data-tour-start
+                data-magnetic=""
+                data-shimmer=""
+                className={buttonClass("primary")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  startTour();
+                }}
+              >
                 Take the 3-minute tour
-              </Button>
+              </Link>
               <ButtonLink href="/diagnostics" variant="secondary">
                 Open full diagnostics
               </ButtonLink>

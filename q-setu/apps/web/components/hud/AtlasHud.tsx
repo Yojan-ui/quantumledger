@@ -71,10 +71,12 @@ export function AtlasHud({ ws }: { ws: string }) {
   const viewStatus = s.view >= 0 ? (s.status[s.view] ?? "idle") : "idle";
   const canRun = me.canOperate && ws !== "demo";
 
+  const signedIn = !!me.user;
   useEffect(() => {
-    void atlasRun.init(ws);
+    if (me.loading && !me.data) return; // wait to know whether /runs may be asked
+    void atlasRun.init(ws, signedIn);
     return () => atlasRun.dispose();
-  }, [ws]);
+  }, [ws, signedIn, me.loading, me.data]);
 
   usePresent({
     next: () => atlasRun.view(getAtlasRun().view + 1),
@@ -114,12 +116,14 @@ export function AtlasHud({ ws }: { ws: string }) {
         </p>
         <nav className="flex flex-wrap gap-2" aria-label="Diagnostics mode">
           <Link
+            prefetch={false}
             href="/diagnostics"
             className="h-8 rounded-sm border border-line px-3 py-2 font-mono text-micro uppercase text-fg-2 hover:text-fg"
           >
             Domain mode
           </Link>
           <Link
+            prefetch={false}
             href={`/atlas/${encodeURIComponent(ws)}/detect`}
             className="h-8 rounded-sm border border-line px-3 py-2 font-mono text-micro uppercase text-fg-2 hover:text-fg"
           >
@@ -187,6 +191,7 @@ export function AtlasHud({ ws }: { ws: string }) {
           </button>
           {!me.user && (
             <Link
+              prefetch={false}
               href={`/atlas/signin?next=${encodeURIComponent(`/atlas/${ws}/detect`)}`}
               className="ml-auto font-mono text-micro uppercase text-fg-3 hover:text-fg"
             >

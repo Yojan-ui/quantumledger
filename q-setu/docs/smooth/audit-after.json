@@ -8,18 +8,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [82],
+      "longTasks": [86],
       "scroll": {
         "frames": 288,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 216,
+        "frames": 217,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -30,9 +30,14 @@
           "nodes": ["div.mt-8"]
         }
       ],
-      "failed": []
+      "failed": [
+        {
+          "url": "/diagnostics?_rsc=1p-R_iEY6bj0jY31",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
     },
-    "score": 1
+    "score": 11
   },
   {
     "path": "/platform",
@@ -43,9 +48,39 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [69],
+      "longTasks": [70],
       "scroll": {
         "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/solutions",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [81],
+      "scroll": {
+        "frames": 262,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -65,36 +100,6 @@
     "score": 1
   },
   {
-    "path": "/solutions",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [69],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 54,
-        "worst": 233,
-        "p95": 16.8,
-        "over50": 1,
-        "fps": 48
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 37.6
-  },
-  {
     "path": "/solutions/fintech",
     "tag": "1440",
     "m": {
@@ -103,7 +108,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [69],
+      "longTasks": [73],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -112,7 +117,7 @@
         "fps": 60
       },
       "transition": {
-        "frames": 221,
+        "frames": 220,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -133,16 +138,16 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [69],
+      "longTasks": [75],
       "scroll": {
         "frames": 261,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 222,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -163,18 +168,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [71],
+      "longTasks": [84],
       "scroll": {
         "frames": 261,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 221,
+        "frames": 222,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -193,108 +198,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [69],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 223,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/diagnostics",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [73],
-      "scroll": {
-        "frames": 261,
-        "worst": 233,
-        "p95": 16.7,
-        "over50": 1,
-        "fps": 57
-      },
-      "transition": {
-        "frames": 360,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0.0033,
-      "shifts": [
-        {
-          "value": 0.0011,
-          "nodes": [
-            "button.hidden.h-8.rounded-sm",
-            "button.h-8.rounded-sm.border",
-            "(text)",
-            "dd.min-w-0.truncate.text-right",
-            "dd.min-w-0.truncate.text-right"
-          ]
-        }
-      ],
-      "failed": []
-    },
-    "score": 37.6
-  },
-  {
-    "path": "/demos",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [],
-      "scroll": {
-        "frames": 260,
-        "worst": 33,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 59
-      },
-      "transition": {
-        "frames": 127,
-        "worst": 33,
-        "p95": 33.4,
-        "over50": 0,
-        "fps": 33
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 0
-  },
-  {
-    "path": "/index",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [70],
+      "longTasks": [86],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -316,6 +220,107 @@
     "score": 1
   },
   {
+    "path": "/diagnostics",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [69],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 360,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.004,
+      "shifts": [
+        {
+          "value": 0.0017,
+          "nodes": [
+            "p.text-fg-2",
+            "button.hidden.h-8.rounded-sm",
+            "button.h-8.rounded-sm.border",
+            "(text)",
+            "dd.min-w-0.truncate.text-right"
+          ]
+        }
+      ],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/demos",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 260,
+        "worst": 33,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 59
+      },
+      "transition": {
+        "frames": 127,
+        "worst": 34,
+        "p95": 33.4,
+        "over50": 0,
+        "fps": 33
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 0
+  },
+  {
+    "path": "/index",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [94],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
     "path": "/demo/how-it-works",
     "tag": "1440",
     "m": {
@@ -324,9 +329,9 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [72],
+      "longTasks": [69],
       "scroll": {
-        "frames": 261,
+        "frames": 262,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
@@ -354,7 +359,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [71],
+      "longTasks": [67],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -363,17 +368,17 @@
         "fps": 60
       },
       "transition": {
-        "frames": 20,
-        "worst": 283,
-        "p95": 283.3,
-        "over50": 1,
-        "fps": 33
+        "frames": 245,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
       },
       "cls": 0,
       "shifts": [],
       "failed": []
     },
-    "score": 47.6
+    "score": 1
   },
   {
     "path": "/demo/qday",
@@ -384,7 +389,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [73],
+      "longTasks": [70],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -425,37 +430,26 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [73],
+      "longTasks": [71],
       "scroll": {
         "frames": 261,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 452,
-        "worst": 100,
+        "frames": 457,
+        "worst": 17,
         "p95": 16.7,
-        "over50": 1,
-        "fps": 59
+        "over50": 0,
+        "fps": 60
       },
-      "cls": 0.0016,
-      "shifts": [
-        {
-          "value": 0.0015,
-          "nodes": [
-            "div.ml-auto.flex.flex-wrap",
-            "div.pr-6.md:border-l.md:border-line",
-            "div.pr-6.md:border-l.md:border-line",
-            "div.pr-6.",
-            "div.pr-6.md:border-l.md:border-line"
-          ]
-        }
-      ],
+      "cls": 0.0001,
+      "shifts": [],
       "failed": []
     },
-    "score": 11
+    "score": 1
   },
   {
     "path": "/demo/scanner",
@@ -475,13 +469,43 @@
         "fps": 60
       },
       "transition": {
-        "frames": 305,
+        "frames": 307,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
-      "cls": 0.0003,
+      "cls": 0.0006,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 0
+  },
+  {
+    "path": "/atlas",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
       "shifts": [],
       "failed": []
     },
@@ -498,14 +522,14 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 261,
+        "frames": 262,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 224,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -528,16 +552,16 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 315,
+        "frames": 261,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 40,
+        "frames": 224,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -556,16 +580,16 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [74],
+      "longTasks": [96],
       "scroll": {
         "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 221,
+        "frames": 220,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
@@ -595,7 +619,7 @@
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 224,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
@@ -618,14 +642,14 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 262,
+        "frames": 261,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 223,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -650,12 +674,12 @@
       "scroll": {
         "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 221,
+        "frames": 224,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -678,16 +702,16 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 261,
+        "frames": 262,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 221,
+        "frames": 223,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -710,14 +734,14 @@
       "scroll": {
         "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 225,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -745,7 +769,7 @@
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 224,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -761,31 +785,41 @@
     "path": "/docs/security-model",
     "tag": "1440",
     "m": {
-      "console": [],
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED"
+        }
+      ],
       "pageErrors": [],
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 262,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
+        "frames": 261,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
+      "transition": {
+        "frames": 228,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
       "cls": 0,
       "shifts": [],
-      "failed": []
+      "failed": [
+        {
+          "url": "/api/stream",
+          "why": "net::ERR_NETWORK_IO_SUSPENDED"
+        }
+      ]
     },
-    "score": 0
+    "score": 25
   },
   {
     "path": "/docs/adapters/edge",
@@ -799,13 +833,13 @@
       "longTasks": [],
       "scroll": {
         "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
+        "worst": 217,
+        "p95": 16.8,
+        "over50": 1,
+        "fps": 57
       },
       "transition": {
-        "frames": 220,
+        "frames": 41,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
@@ -813,9 +847,14 @@
       },
       "cls": 0,
       "shifts": [],
-      "failed": []
+      "failed": [
+        {
+          "url": "/api/health",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
     },
-    "score": 0
+    "score": 43.4
   },
   {
     "path": "/docs/adapters/sdk",
@@ -828,14 +867,14 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
+        "frames": 256,
+        "worst": 267,
+        "p95": 16.8,
+        "over50": 1,
+        "fps": 57
       },
       "transition": {
-        "frames": 220,
+        "frames": 44,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -845,10 +884,40 @@
       "shifts": [],
       "failed": []
     },
-    "score": 0
+    "score": 43.4
   },
   {
     "path": "/docs/adapters/shield",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 254,
+        "worst": 267,
+        "p95": 16.7,
+        "over50": 1,
+        "fps": 57
+      },
+      "transition": {
+        "frames": 194,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 43.4
+  },
+  {
+    "path": "/docs/adapters/vault",
     "tag": "1440",
     "m": {
       "console": [],
@@ -865,9 +934,74 @@
         "fps": 60
       },
       "transition": {
-        "frames": 220,
-        "worst": 17,
+        "frames": 94,
+        "worst": 117,
         "p95": 16.8,
+        "over50": 1,
+        "fps": 56
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 13.4
+  },
+  {
+    "path": "/docs/adapters/web",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 173,
+        "worst": 117,
+        "p95": 16.7,
+        "over50": 1,
+        "fps": 58
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/api/health",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 23.4
+  },
+  {
+    "path": "/docs/concepts/hybrid-kem",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 263,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 40,
+        "worst": 17,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -878,7 +1012,7 @@
     "score": 0
   },
   {
-    "path": "/docs/adapters/vault",
+    "path": "/docs/concepts",
     "tag": "1440",
     "m": {
       "console": [],
@@ -908,96 +1042,6 @@
     "score": 0
   },
   {
-    "path": "/docs/adapters/web",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 0
-  },
-  {
-    "path": "/docs/concepts/hybrid-kem",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 0
-  },
-  {
-    "path": "/docs/concepts",
-    "tag": "1440",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 0
-  },
-  {
     "path": "/docs/concepts/key-rotation",
     "tag": "1440",
     "m": {
@@ -1008,16 +1052,16 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 263,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 222,
+        "frames": 221,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1045,9 +1089,9 @@
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 221,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1068,16 +1112,16 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 261,
+        "frames": 262,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 221,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1098,16 +1142,16 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 262,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 225,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1115,7 +1159,7 @@
       "shifts": [
         {
           "value": 0.0131,
-          "nodes": ["fieldset.mt-8", "::after."]
+          "nodes": ["fieldset.mt-8", "(text)"]
         }
       ],
       "failed": []
@@ -1131,7 +1175,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [80],
+      "longTasks": [67],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1140,9 +1184,9 @@
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 221,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1163,14 +1207,14 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 262,
+        "frames": 261,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 223,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -1198,16 +1242,16 @@
       "contextLost": 0,
       "longTasks": [],
       "scroll": {
-        "frames": 262,
+        "frames": 261,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 221,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1223,45 +1267,402 @@
     "score": 25
   },
   {
-    "path": "/",
-    "tag": "390",
+    "path": "/atlas/signin",
+    "tag": "1440",
     "m": {
       "console": [],
       "pageErrors": [],
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [150, 62, 60, 85, 318, 58],
+      "longTasks": [],
       "scroll": {
-        "frames": 278,
-        "worst": 50,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 59
-      },
-      "transition": {
-        "frames": 204,
-        "worst": 33,
+        "frames": 261,
+        "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
-      "cls": 0.0001,
-      "shifts": [],
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0102,
+      "shifts": [
+        {
+          "value": 0.0102,
+          "nodes": ["footer.border-t.border-line.py-24"]
+        }
+      ],
       "failed": []
     },
-    "score": 6
+    "score": 0
   },
   {
-    "path": "/platform",
-    "tag": "390",
+    "path": "/atlas/demo/detect",
+    "tag": "1440",
     "m": {
       "console": [],
       "pageErrors": [],
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [52, 56, 88, 205],
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 222,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.012,
+      "shifts": [
+        {
+          "value": 0.012,
+          "nodes": ["div.mt-2"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/atlas/demo/ledger?_rsc=2229zRO30Q_9pk_U",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/review?_rsc=2229zRO30Q_9pk_U",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 20
+  },
+  {
+    "path": "/atlas/demo/inventory",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.012,
+      "shifts": [
+        {
+          "value": 0.012,
+          "nodes": ["div.mt-2"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/atlas/demo/handshakes?_rsc=IcE9CRnQtdYi6G_8",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/qaoa?_rsc=IcE9CRnQtdYi6G_8",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/ledger?_rsc=IcE9CRnQtdYi6G_8",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 30
+  },
+  {
+    "path": "/atlas/demo/schedule",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.012,
+      "shifts": [
+        {
+          "value": 0.012,
+          "nodes": ["div.mt-2"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/atlas/demo/detect?_rsc=1e6dY6cbVIROLeSw",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/inventory?_rsc=1e6dY6cbVIROLeSw",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 20
+  },
+  {
+    "path": "/atlas/demo/handshakes",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.012,
+      "shifts": [
+        {
+          "value": 0.012,
+          "nodes": ["div.mt-2"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/atlas/demo/review?_rsc=DeOqnPaPOjE2tzrd",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/ledger?_rsc=DeOqnPaPOjE2tzrd",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 20
+  },
+  {
+    "path": "/atlas/demo/qaoa",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 223,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.012,
+      "shifts": [
+        {
+          "value": 0.012,
+          "nodes": ["div.mt-2"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/atlas/demo/schedule?_rsc=ErpK5vpoSibqY9ln",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/handshakes?_rsc=ErpK5vpoSibqY9ln",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/ledger?_rsc=ErpK5vpoSibqY9ln",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/review?_rsc=ErpK5vpoSibqY9ln",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 40
+  },
+  {
+    "path": "/atlas/demo/ledger",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 245,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.012,
+      "shifts": [
+        {
+          "value": 0.012,
+          "nodes": ["div.mt-2"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/diagnostics?ws=demo&_rsc=Al8eD0HdRpw42R0G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/schedule?_rsc=Al8eD0HdRpw42R0G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/handshakes?_rsc=Al8eD0HdRpw42R0G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/qaoa?_rsc=Al8eD0HdRpw42R0G",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/review?_rsc=Al8eD0HdRpw42R0G",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 50
+  },
+  {
+    "path": "/atlas/demo/review",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.1886,
+      "shifts": [
+        {
+          "value": 0.1886,
+          "nodes": ["div.mt-2", "footer.border-t.border-line.py-24"]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/diagnostics?ws=demo&_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/detect?_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/inventory?_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/schedule?_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/handshakes?_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/qaoa?_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        },
+        {
+          "url": "/atlas/demo/ledger?_rsc=SiYP3ixV7HPrBHVr",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 97.72
+  },
+  {
+    "path": "/diagnostics?ws=demo",
+    "tag": "1440",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1276,11 +1677,87 @@
         "over50": 0,
         "fps": 60
       },
+      "cls": 0.0021,
+      "shifts": [
+        {
+          "value": 0.0021,
+          "nodes": [
+            "div.border.border-line.bg-glass",
+            "span.absolute.-bottom-px.-left-px",
+            "span.absolute.-bottom-px.-right-px",
+            "span.absolute.-bottom-px.-left-px",
+            "span.absolute.-bottom-px.-right-px"
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "url": "/atlas/demo/detect?_rsc=5uLgBCEKVAcDC1CS",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 10
+  },
+  {
+    "path": "/",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [112, 67, 181],
+      "scroll": {
+        "frames": 273,
+        "worst": 33,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0.0008,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 3
+  },
+  {
+    "path": "/platform",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [76, 165],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
       "cls": 0,
       "shifts": [],
       "failed": []
     },
-    "score": 4
+    "score": 2
   },
   {
     "path": "/solutions",
@@ -1291,9 +1768,9 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [86, 89, 212],
+      "longTasks": [73, 165],
       "scroll": {
-        "frames": 268,
+        "frames": 261,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
@@ -1310,7 +1787,7 @@
       "shifts": [],
       "failed": []
     },
-    "score": 3
+    "score": 2
   },
   {
     "path": "/solutions/fintech",
@@ -1321,18 +1798,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [60, 91, 203],
+      "longTasks": [75, 74, 162],
       "scroll": {
-        "frames": 268,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
         "frames": 221,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1351,9 +1828,9 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [61, 92, 196],
+      "longTasks": [57, 77, 167],
       "scroll": {
-        "frames": 268,
+        "frames": 261,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -1381,18 +1858,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [62, 84, 195],
+      "longTasks": [51, 74, 183],
       "scroll": {
-        "frames": 270,
+        "frames": 262,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 222,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1411,9 +1888,9 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [60, 89, 201],
+      "longTasks": [75, 170],
       "scroll": {
-        "frames": 265,
+        "frames": 269,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -1430,7 +1907,7 @@
       "shifts": [],
       "failed": []
     },
-    "score": 3
+    "score": 2
   },
   {
     "path": "/diagnostics",
@@ -1441,11 +1918,11 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [61, 76, 215],
+      "longTasks": [52, 67, 188],
       "scroll": {
-        "frames": 264,
+        "frames": 263,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1456,11 +1933,17 @@
         "over50": 0,
         "fps": 60
       },
-      "cls": 0.0364,
+      "cls": 0.0367,
       "shifts": [
         {
-          "value": 0.0077,
-          "nodes": ["div.absolute.bottom-3.left-3", "dd.min-w-0.truncate.text-right"]
+          "value": 0.0134,
+          "nodes": [
+            "div.absolute.bottom-3.left-3",
+            "button.h-8.rounded-sm.border",
+            "button.h-8.rounded-sm.border",
+            "dd.min-w-0.truncate.text-right",
+            "dd.min-w-0.truncate.text-right"
+          ]
         },
         {
           "value": 0.0073,
@@ -1471,18 +1954,18 @@
           "nodes": ["button.h-8.rounded-sm.border", "(text)", "dd.min-w-0.truncate.text-right"]
         },
         {
-          "value": 0.0053,
-          "nodes": [
-            "button.h-8.rounded-sm.border",
-            "button.h-8.rounded-sm.border",
-            "dd.min-w-0.truncate.text-right",
-            "dd.min-w-0.truncate.text-right",
-            "dd.min-w-0.truncate.text-right"
-          ]
-        },
-        {
           "value": 0.0045,
           "nodes": ["div.flex.snap-x.snap-mandatory", "div.absolute.bottom-3.left-3"]
+        },
+        {
+          "value": 0.0021,
+          "nodes": [
+            "dd.min-w-0.truncate.text-right",
+            "dd.min-w-0.truncate.text-right",
+            "dd.min-w-0.truncate.text-right",
+            "dd.min-w-0.truncate.text-right",
+            "(text)"
+          ]
         }
       ],
       "failed": []
@@ -1498,7 +1981,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [88],
+      "longTasks": [51],
       "scroll": {
         "frames": 260,
         "worst": 33,
@@ -1507,7 +1990,7 @@
         "fps": 59
       },
       "transition": {
-        "frames": 136,
+        "frames": 134,
         "worst": 33,
         "p95": 33.4,
         "over50": 0,
@@ -1528,18 +2011,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [62, 91, 200],
+      "longTasks": [54, 76, 170],
       "scroll": {
-        "frames": 272,
+        "frames": 267,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
         "frames": 220,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1558,16 +2041,16 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [60, 74, 206],
+      "longTasks": [62, 73, 204],
       "scroll": {
-        "frames": 267,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 232,
+        "frames": 238,
         "worst": 17,
         "p95": 16.8,
         "over50": 0,
@@ -1588,18 +2071,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [64, 93, 269],
+      "longTasks": [53, 79, 169],
       "scroll": {
-        "frames": 265,
+        "frames": 268,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 231,
+        "frames": 229,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1618,22 +2101,22 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [60, 77, 209],
+      "longTasks": [63, 72, 212],
       "scroll": {
-        "frames": 269,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 230,
+        "frames": 238,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
-      "cls": 0.0099,
+      "cls": 0.0098,
       "shifts": [
         {
           "value": 0.0096,
@@ -1658,18 +2141,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [73, 79, 231],
+      "longTasks": [60, 69, 177],
       "scroll": {
-        "frames": 265,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
-        "frames": 639,
+        "frames": 640,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1688,7 +2171,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [61],
+      "longTasks": [82],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1697,28 +2180,20 @@
         "fps": 60
       },
       "transition": {
-        "frames": 309,
+        "frames": 308,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
-      "cls": 0.0234,
-      "shifts": [
-        {
-          "value": 0.0234,
-          "nodes": [
-            "textarea#scan-input.h-stage-sm.w-full.resize-y",
-            "div.inline-flex.flex-wrap.rounded-sm"
-          ]
-        }
-      ],
+      "cls": 0,
+      "shifts": [],
       "failed": []
     },
     "score": 1
   },
   {
-    "path": "/pricing",
+    "path": "/atlas",
     "tag": "390",
     "m": {
       "console": [],
@@ -1726,7 +2201,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [57],
+      "longTasks": [55],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1737,7 +2212,42 @@
       "transition": {
         "frames": 221,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/atlas/demo/detect?_rsc=bv_x9VAy-PHi0oAm",
+          "why": "net::ERR_ABORTED"
+        }
+      ]
+    },
+    "score": 11
+  },
+  {
+    "path": "/pricing",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [55],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
@@ -1756,9 +2266,9 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [57],
+      "longTasks": [53],
       "scroll": {
-        "frames": 262,
+        "frames": 261,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -1786,18 +2296,18 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [85, 88, 190],
+      "longTasks": [54, 78, 170],
       "scroll": {
-        "frames": 265,
+        "frames": 261,
         "worst": 17,
-        "p95": 16.7,
+        "p95": 16.8,
         "over50": 0,
         "fps": 60
       },
       "transition": {
         "frames": 220,
         "worst": 17,
-        "p95": 16.8,
+        "p95": 16.7,
         "over50": 0,
         "fps": 60
       },
@@ -1816,7 +2326,7 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [81],
+      "longTasks": [58],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1825,7 +2335,7 @@
         "fps": 60
       },
       "transition": {
-        "frames": 220,
+        "frames": 221,
         "worst": 17,
         "p95": 16.7,
         "over50": 0,
@@ -1846,7 +2356,37 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [57],
+      "longTasks": [54],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/privacy",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -1868,7 +2408,587 @@
     "score": 1
   },
   {
-    "path": "/privacy",
+    "path": "/terms",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [52],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/api",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/security-model",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [52],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/adapters/edge",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/adapters/sdk",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [77],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/adapters/shield",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [79],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/adapters/vault",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [55],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/adapters/web",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [81],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/concepts/hybrid-kem",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/concepts",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 221,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/concepts/key-rotation",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/concepts/sessions",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [52],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/docs/concepts/signatures",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/join",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/pitch",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [55],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/scan/www.irctc.co.in",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [53],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/this-page-does-not-exist",
+    "tag": "390",
+    "m": {
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [83],
+      "scroll": {
+        "frames": 262,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": [
+        {
+          "url": "/this-page-does-not-exist",
+          "why": "HTTP 404"
+        }
+      ]
+    },
+    "score": 26
+  },
+  {
+    "path": "/atlas/signin",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/atlas/demo/detect",
     "tag": "390",
     "m": {
       "console": [],
@@ -1898,427 +3018,7 @@
     "score": 1
   },
   {
-    "path": "/terms",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [90],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/api",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [58],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [58],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/security-model",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [58],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/adapters/edge",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [87],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 222,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/adapters/sdk",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [90],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 221,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/adapters/shield",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [87],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 221,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/adapters/vault",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [60],
-      "scroll": {
-        "frames": 262,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/adapters/web",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [59],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/concepts/hybrid-kem",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [57],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/concepts",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [61],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/concepts/key-rotation",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [61],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/concepts/sessions",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [62],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/docs/concepts/signatures",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [58],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/join",
+    "path": "/atlas/demo/inventory",
     "tag": "390",
     "m": {
       "console": [],
@@ -2337,6 +3037,36 @@
       "transition": {
         "frames": 220,
         "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/atlas/demo/schedule",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [56],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
         "p95": 16.8,
         "over50": 0,
         "fps": 60
@@ -2348,7 +3078,7 @@
     "score": 1
   },
   {
-    "path": "/pitch",
+    "path": "/atlas/demo/handshakes",
     "tag": "390",
     "m": {
       "console": [],
@@ -2356,7 +3086,127 @@
       "hydration": [],
       "webgl": [],
       "contextLost": 0,
-      "longTasks": [58],
+      "longTasks": [55],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/atlas/demo/qaoa",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/atlas/demo/ledger",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54, 66],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 239,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 2
+  },
+  {
+    "path": "/atlas/demo/review",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [55],
+      "scroll": {
+        "frames": 261,
+        "worst": 17,
+        "p95": 16.7,
+        "over50": 0,
+        "fps": 60
+      },
+      "transition": {
+        "frames": 220,
+        "worst": 17,
+        "p95": 16.8,
+        "over50": 0,
+        "fps": 60
+      },
+      "cls": 0,
+      "shifts": [],
+      "failed": []
+    },
+    "score": 1
+  },
+  {
+    "path": "/diagnostics?ws=demo",
+    "tag": "390",
+    "m": {
+      "console": [],
+      "pageErrors": [],
+      "hydration": [],
+      "webgl": [],
+      "contextLost": 0,
+      "longTasks": [54],
       "scroll": {
         "frames": 261,
         "worst": 17,
@@ -2376,75 +3226,5 @@
       "failed": []
     },
     "score": 1
-  },
-  {
-    "path": "/scan/www.irctc.co.in",
-    "tag": "390",
-    "m": {
-      "console": [],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [59],
-      "scroll": {
-        "frames": 262,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": []
-    },
-    "score": 1
-  },
-  {
-    "path": "/this-page-does-not-exist",
-    "tag": "390",
-    "m": {
-      "console": [
-        {
-          "type": "error",
-          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
-        }
-      ],
-      "pageErrors": [],
-      "hydration": [],
-      "webgl": [],
-      "contextLost": 0,
-      "longTasks": [57],
-      "scroll": {
-        "frames": 261,
-        "worst": 17,
-        "p95": 16.7,
-        "over50": 0,
-        "fps": 60
-      },
-      "transition": {
-        "frames": 220,
-        "worst": 17,
-        "p95": 16.8,
-        "over50": 0,
-        "fps": 60
-      },
-      "cls": 0,
-      "shifts": [],
-      "failed": [
-        {
-          "url": "/this-page-does-not-exist",
-          "why": "HTTP 404"
-        }
-      ]
-    },
-    "score": 26
   }
 ]
