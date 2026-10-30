@@ -25,3 +25,4 @@ docs/smooth/videos-*/
 
 # Lab route_check screenshots (regenerate with node tools/route_check.mjs)
 screenshots/lab/
+.data.bak-*/
