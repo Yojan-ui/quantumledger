@@ -65,13 +65,7 @@ export function ScheduleStep() {
         {<p className="text-body text-fg-2">Nothing to migrate: no RSA / ECC / DH found.</p>}
       </Part>
     );
-  const plans: [string, Plan][] = [
-    ["Optimised (QpiAI Opt MILP)", r.exposure],
-    ["First-come-first-served", r.baselines.fcfs],
-    ["Greedy (highest risk first)", r.baselines.greedy],
-  ];
   const scen = (r.exposure.per_scenario ?? []).map((s) => s.scenario);
-  const by = (p: Plan, sc: string) => p.per_scenario?.find((x) => x.scenario === sc);
   const av = (l: Avoided[], sc: string) => l.find((x) => x.scenario === sc);
   const first = scen[0]; // Atlas's Plan page opens on the first scenario
   const main =

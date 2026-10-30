@@ -109,6 +109,26 @@ export type ReviewItem = {
   } | null;
 };
 export type ReviewsResponse = { items: ReviewItem[]; read_only: boolean; can_decide: boolean };
+/** GET /workspaces/<ws>/progress: the plan files a run writes before results.json exists (read-only). */
+export type ProgressResponse = {
+  workspace: string;
+  schedule: {
+    assets: {
+      id: string;
+      name: string;
+      risk_weight: number;
+      planned_week: number | null;
+      algorithm: string;
+      status: string;
+    }[];
+    waves: { week: number; assets: string[] }[];
+  } | null;
+  tiebreak: Record<string, unknown> | null;
+  wave_status: {
+    waves?: { week: number; status: string; asset_status?: Record<string, string> }[];
+    asset_status?: Record<string, string>;
+  } | null;
+};
 export type BenchResponse = {
   workspace: string;
   bench: AtlasBench | null;
@@ -213,6 +233,8 @@ export const atlas = {
   workspace: (id: string, o: O = {}) => req<WorkspaceSummary>("GET", ws(id), undefined, o),
   results: (id: string, o: O = {}) =>
     req<ResultsResponse>("GET", `${ws(id)}/results`, undefined, o),
+  progress: (id: string, o: O = {}) =>
+    req<ProgressResponse>("GET", `${ws(id)}/progress`, undefined, o),
   inventory: (id: string, o: O = {}) =>
     req<Record<string, unknown>>("GET", `${ws(id)}/inventory`, undefined, o),
   ledger: (id: string, o: O = {}) => req<LedgerResponse>("GET", `${ws(id)}/ledger`, undefined, o),

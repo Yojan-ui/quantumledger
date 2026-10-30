@@ -567,6 +567,25 @@ def make_handler(app: App):
                     except (OSError, ValueError):
                         return {"available": False, "status_text": "not yet run"}
                 return self.send_json(200, app.cached(("inventory", ws.id), file_stamp(f), inv))
+            if name == "progress" and method == "GET" and len(sub) == 1:
+                # The plan files a run writes before results.json is assembled (read-only, never edited): the
+                # pipeline view shows batches flowing mid-run. Each file is only as fresh as its last step; the
+                # client uses a file only after that step's step_end in the run it is watching.
+                def part(n):
+                    f = ws.out / n
+                    try:
+                        return json.loads(f.read_text())
+                    except (OSError, ValueError):
+                        return None
+                sched = part("schedule.json")
+                keep = ("id", "name", "risk_weight", "planned_week", "algorithm", "status")
+                return self.send_json(200, {
+                    "workspace": ws.id,
+                    "schedule": {"assets": [{k: a.get(k) for k in keep} for a in sched.get("assets", [])],
+                                 "waves": [{k: w.get(k) for k in ("week", "assets")} for w in sched.get("waves", [])]} if sched else None,
+                    "tiebreak": part("tiebreak.json"),
+                    "wave_status": part("wave_status.json"),
+                })
             if name == "move" and method == "POST" and sub[1:] == ["fresh"]:  # optional: fresh lab handshake (127.0.0.1)
                 from .config import data_dir
                 from .move import fresh_handshake, fresh_status

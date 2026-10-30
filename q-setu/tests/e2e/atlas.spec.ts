@@ -127,6 +127,8 @@ test.describe("with Atlas on :8100", () => {
       (await (await page.request.get("/atlas-api/stages")).json()) as { stages: unknown[] }
     ).stages.length;
     await expect(stages).toHaveCount(n);
+    // the pipeline view (3D, or its static SVG on phones / reduced motion) with its station labels
+    await expect(page.getByRole("list", { name: "Stations" }).locator("li")).toHaveCount(n);
     await expect(page.getByRole("button", { name: /Run pipeline/ })).toBeDisabled(); // demo is read-only
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("heading", { level: 2, name: "Detect" })).toBeVisible();

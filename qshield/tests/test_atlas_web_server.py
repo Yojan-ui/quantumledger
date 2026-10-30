@@ -299,3 +299,24 @@ def test_runlog_replay_rejects_bad_ids(server):
     for rid in ("../../etc", "zzzz", "0123456789abcdef"):
         status, body = vic.get(f"/api/workspaces/demo/runs/{rid}/events")
         assert status == 404, rid
+
+
+def test_progress_serves_the_plan_files_as_they_appear(server):
+    """GET /workspaces/<ws>/progress: schedule / tiebreak / wave_status from out/ (read-only), null until written."""
+    from atlas_web import workspaces as wsmod
+
+    ws = wsmod.create(server.app.store, "prog", "Progress", "empty", "ada")
+    c = client(server, "vic")
+    status, body = c.get("/api/workspaces/prog/progress")
+    assert status == 200 and body == {"workspace": "prog", "schedule": None, "tiebreak": None, "wave_status": None}
+    ws.out.mkdir(parents=True, exist_ok=True)
+    (ws.out / "schedule.json").write_text(json.dumps({"assets": [{"id": "a", "name": "A", "risk_weight": 3, "planned_week": 1,
+                                                                   "algorithm": "ECC[kex]", "status": "planned", "evidence": ["x"]}],
+                                                       "waves": [{"week": 1, "assets": ["a"], "effort_days": 2}]}))
+    (ws.out / "tiebreak.json").write_text(json.dumps({"waves": []}))
+    status, body = c.get("/api/workspaces/prog/progress")
+    assert status == 200
+    assert body["schedule"]["assets"] == [{"id": "a", "name": "A", "risk_weight": 3, "planned_week": 1, "algorithm": "ECC[kex]", "status": "planned"}]
+    assert body["schedule"]["waves"] == [{"week": 1, "assets": ["a"]}]
+    assert body["tiebreak"] == {"waves": []} and body["wave_status"] is None
+    assert Client(server.server_address[1]).get("/api/workspaces/prog/progress")[0] == 401  # needs a session

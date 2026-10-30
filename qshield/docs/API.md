@@ -37,6 +37,7 @@ is served under `/api/`. The server binds 127.0.0.1.
 | GET | `/api/workspaces/<ws>/results` | `out/results.json` | viewer (public for `demo`) |
 | GET | `/api/workspaces/<ws>/scene` | the 3D scene derived from results (ETag) | viewer (public for `demo`) |
 | GET | `/api/workspaces/<ws>/inventory` | `out/inventory.json` (Detect graph) | viewer |
+| GET | `/api/workspaces/<ws>/progress` | the plan files a run writes before `results.json` (schedule assets/waves, tiebreak, wave_status), for the live pipeline view | viewer |
 | GET | `/api/workspaces/<ws>/ledger` | ledger entries and live verification | viewer (public for `demo`) |
 | GET | `/api/workspaces/<ws>/ledger/proof/<n>` | Merkle inclusion proof for entry n | viewer (public for `demo`) |
 | GET | `/api/workspaces/<ws>/report` | `out/report.html` (strict CSP) | viewer (public for `demo`) |

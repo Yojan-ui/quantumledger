@@ -11,7 +11,10 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePresent } from "@/lib/client/present";
 import { atlasRun, getAtlasRun, useAtlasRun, type StageStatus } from "@/lib/client/atlas-run";
-import { useAtlasMe } from "@/lib/client/useAtlas";
+import { atlas, type AtlasResults } from "@/lib/client/atlas";
+import { buildFlowModel } from "@/lib/client/atlas-flowviz";
+import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
+import { PipelineFlowView } from "./PipelineFlowView";
 import { HudPanel } from "./HudPanel";
 import { Terminal } from "./Terminal";
 
@@ -68,6 +71,59 @@ export function AtlasHud({ ws }: { ws: string }) {
   const s = useAtlasRun((x) => x);
   const me = useAtlasMe();
   const view = s.view >= 0 ? s.stages[s.view] : undefined;
+  // results.json for the view (public for the demo); refetched when a run ends
+  const res = useAtlas(`hud-results:${ws}:${s.result ?? ""}:${s.runId ?? ""}`, (signal) =>
+    atlas.results(ws, { signal }),
+  );
+  const ranOrReplaying = s.running || !!s.replay || s.status.some((x) => x !== "idle");
+  // Without a run on screen the view shows the recorded results: every stage present, or up to the stage
+  // picked with ← → (stepping through real data, never a timer).
+  const shown = ranOrReplaying
+    ? s.status
+    : s.stages.map((_, i) =>
+        res.data?.results ? (s.view < 0 || i <= s.view ? "done" : "idle") : "idle",
+      );
+  // During a live run or a replay, results.json does not exist yet (or is the previous run's): the batches
+  // come from the plan files the run writes (GET /progress), each used only once its own step has finished
+  // in the run on screen; refetched on every step_end.
+  const live = s.running || !!s.replay;
+  const doneIds = s.stages.filter((_, i) => s.status[i] === "done").map((x) => x.id);
+  const prog = useAtlas(
+    live && me.user ? `progress:${ws}:${s.runId}:${doneIds.join(",")}` : null,
+    (signal) => atlas.progress(ws, { signal }),
+  );
+  const led = useAtlas(
+    live && me.user && doneIds.includes("seal") ? `led:${ws}:${s.runId}` : null,
+    (signal) => atlas.ledger(ws, { signal }),
+  );
+  const p = prog.data;
+  const ws_ = doneIds.includes("gates") ? p?.wave_status : null;
+  const liveResults =
+    p?.schedule && doneIds.includes("schedule")
+      ? ({
+          assets: p.schedule.assets.map((a) => ({
+            ...a,
+            status: ws_?.asset_status?.[a.id] ?? a.status,
+          })),
+          waves: ws_?.waves ?? p.schedule.waves,
+          tiebreak: doneIds.includes("tiebreak") ? p.tiebreak : null,
+          ledger: led.data?.available ? { entry_count: led.data.entry_count } : null,
+          ledger_verification:
+            led.data?.available && led.data.live_verification
+              ? { ok: led.data.live_verification.ok }
+              : null,
+        } as unknown as AtlasResults)
+      : null;
+  const model = buildFlowModel(live ? liveResults : res.data?.results, s.stages, shown);
+  const caption = s.replay
+    ? `replay of recorded run ${s.replay} (gaps over 2 s shortened)`
+    : s.running
+      ? `live run ${s.runId ?? ""}`
+      : ranOrReplaying
+        ? `last run ${s.result ?? ""}`
+        : res.data?.results
+          ? `recorded results (results.json)${s.view >= 0 ? ` up to ${s.stages[s.view]?.label}` : ""}; ← → to step`
+          : "not yet run";
   const viewStatus = s.view >= 0 ? (s.status[s.view] ?? "idle") : "idle";
   const canRun = me.canOperate && ws !== "demo";
 
@@ -134,6 +190,7 @@ export function AtlasHud({ ws }: { ws: string }) {
       <div className="grid min-h-0 flex-1 gap-2 md:grid-cols-split">
         <HudPanel label="Stage" className="min-h-panel">
           <div className="flex h-full flex-col gap-3 overflow-y-auto p-4">
+            <PipelineFlowView model={model} caption={caption} />
             {view ? (
               <>
                 <p className={`font-mono text-micro uppercase ${TONE[viewStatus]}`}>
@@ -189,6 +246,16 @@ export function AtlasHud({ ws }: { ws: string }) {
           >
             Reset · R
           </button>
+          {me.user && (
+            <button
+              type="button"
+              onClick={() => void atlasRun.replayLast()}
+              disabled={s.running || !!s.replay}
+              className="h-8 rounded-sm border border-line px-3 font-mono text-micro uppercase text-fg-2 hover:text-fg disabled:opacity-40"
+            >
+              {s.replay ? "Replaying…" : "Replay recorded run"}
+            </button>
+          )}
           {!me.user && (
             <Link
               prefetch={false}

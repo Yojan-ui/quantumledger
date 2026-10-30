@@ -20,6 +20,8 @@ export type AtlasRunState = {
   result: "PASS" | "FAIL" | null;
   lines: LogLine[];
   error: string | null;
+  /** set while a recorded run's events are being replayed (not a live run) */
+  replay: string | null;
 };
 
 const MAX_LINES = 400;
@@ -33,6 +35,7 @@ let state: AtlasRunState = {
   result: null,
   lines: [],
   error: null,
+  replay: null,
 };
 const subs = new Set<() => void>();
 let close: (() => void) | null = null;
@@ -149,13 +152,61 @@ export const atlasRun = {
       set({ error: msg(e) });
     }
   },
+  /**
+   * Replays the workspace's latest finished run from its event log (Atlas keeps it), paced by the recorded
+   * timestamps; gaps longer than 2 s are shortened to 2 s (the HUD says "replay"). Needs a session.
+   */
+  async replayLast() {
+    if (state.running || !state.ws) return;
+    try {
+      const { runs } = await atlas.runs(state.ws);
+      const last = runs.find((r) => r.kind === "pipeline" && r.status !== "running" && r.finished);
+      if (!last) return set({ error: "No recorded pipeline run in this workspace yet." });
+      const evs: RunEvent[] = [];
+      await new Promise<void>((done) => {
+        const stop = atlas.runEvents(
+          state.ws,
+          last.id,
+          (ev) => {
+            evs.push(ev);
+            if (ev.type === "run_end") {
+              stop();
+              done();
+            }
+          },
+          () => {
+            stop();
+            done();
+          },
+        );
+      });
+      set({ replay: last.id, runId: last.id, error: null });
+      let prev = evs[0]?.ts ?? 0;
+      for (const ev of evs) {
+        await new Promise((r) => setTimeout(r, Math.min(2000, Math.max(0, (ev.ts - prev) * 1000))));
+        prev = ev.ts;
+        if (state.replay !== last.id) return; // reset or a live run took over
+        onEvent(ev);
+      }
+      set({ replay: null });
+    } catch (e) {
+      set({ error: msg(e), replay: null });
+    }
+  },
   view(i: number) {
     if (i >= 0 && i < state.stages.length) set({ view: i });
   },
   /** Clears what is on screen (not the server's results). */
   reset() {
     if (state.running) return;
-    set({ status: state.stages.map(() => "idle"), lines: [], result: null, error: null, view: -1 });
+    set({
+      replay: null,
+      status: state.stages.map(() => "idle"),
+      lines: [],
+      result: null,
+      error: null,
+      view: -1,
+    });
   },
   dispose() {
     close?.();
