@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { FLOW } from "@/lib/client/atlas-flow";
+import { stageFacts } from "@/lib/client/atlas-flowviz";
+import { useResults } from "./useResults";
 import { Details } from "./AtlasUI";
 
 const source = "https://github.com/Yojan-ui/quantumledger/blob/feat/atlas-integration/qshield/";
@@ -98,11 +100,29 @@ export function StageDetails({ href }: { href: string }) {
   const stage =
     FLOW.find((s) => s.href === href) ??
     (href === "ledger" ? FLOW.find((s) => s.id === "proof_verified") : undefined);
+  const { results } = useResults();
   if (!stage) return null;
+  const r = results as unknown as Record<string, unknown> & {
+    assets?: { planned_week?: number }[];
+  };
+  const fact = r
+    ? stageFacts(
+        r,
+        new Set((r.assets ?? []).map((a) => a.planned_week).filter((w) => w != null)).size,
+      )[stage.stages[0] ?? ""]
+    : undefined;
   return (
     <Details>
       <p>{stage.does}</p>
       <p>{stage.why}</p>
+      <h3 className="pt-2 text-body font-medium text-fg">The math behind it</h3>
+      <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-sm border border-line bg-inset p-3 font-mono text-small text-fg-2">
+        {stage.math}
+      </pre>
+      {fact && <p className="font-mono text-small text-fg">This workspace, recorded: {fact}</p>}
+      <p>
+        <strong className="font-medium text-fg">Why this is credible:</strong> {stage.credible}
+      </p>
       <p>
         Values come from this workspace’s Atlas results. Missing evidence stays unavailable. Risk,
         effort, capacity and secrecy lifetime are configuration assumptions; gate results apply only
