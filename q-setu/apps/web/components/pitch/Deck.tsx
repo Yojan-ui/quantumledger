@@ -122,8 +122,8 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
     body: (
       <>
         <Text className="max-w-text">
-          A bank, a payment company and a fintech to run QuantumLedger in shadow mode. No customers yet,
-          so no logos: just working code you can verify today.
+          A bank, a payment company and a fintech to run QuantumLedger in shadow mode. No customers
+          yet, so no logos: just working code you can verify today.
         </Text>
         <p className="font-mono text-label uppercase text-fg-3">
           Quantum-safe India before Q-Day · /contact
