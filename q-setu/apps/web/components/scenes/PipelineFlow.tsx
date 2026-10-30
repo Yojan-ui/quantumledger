@@ -24,17 +24,19 @@ const BOX = 0.26;
 const QUBITS = 4;
 const GATES = 12;
 
+/** A soft radial alpha falloff (white; the instance colour tints it), built from pixels. */
 function haloTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 64;
-  const g = c.getContext("2d")!;
-  const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  r.addColorStop(0, "rgba(255,255,255,0.9)");
-  r.addColorStop(0.35, "rgba(255,255,255,0.25)");
-  r.addColorStop(1, "rgba(255,255,255,0)");
-  g.fillStyle = r;
-  g.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
+  const N = 64;
+  const px = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++)
+    for (let x = 0; x < N; x++) {
+      const d = Math.min(1, Math.hypot(x - N / 2 + 0.5, y - N / 2 + 0.5) / (N / 2));
+      const a = d < 0.35 ? 0.9 - (d / 0.35) * 0.65 : 0.25 * (1 - (d - 0.35) / 0.65);
+      px.set([255, 255, 255, Math.round(255 * a)], (y * N + x) * 4);
+    }
+  const t = new THREE.DataTexture(px, N, N, THREE.RGBAFormat);
+  t.needsUpdate = true;
+  return t;
 }
 
 const ease = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
