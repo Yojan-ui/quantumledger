@@ -208,6 +208,63 @@ cd frontend && npm install && npm run dev             # http://127.0.0.1:5173
 Start the engine before the backend: the backend connects to it on startup and needs
 `engine/build/libaetherpqc` for signing.
 
+## Q-Shield pipeline
+
+The `/atlas` pages and the `/diagnostics?ws=<workspace>` HUD mode run
+[Q-Shield Atlas](qshield/README.md) (imported in `qshield/` with its history). Atlas finds RSA / ECC / DH in
+a codebase, plans the migration with a QpiAI Opt MILP, gates each wave on real TLS 1.3 handshakes, and
+signs every result into an ML-DSA-65 Proof Chain. The pages use Quantum Ledger's UI; the pipeline and its
+data are Atlas's.
+
+**Start both** (two terminals, or `pnpm dev` from `q-setu/`, which now also starts Atlas as `atlas`):
+
+```bash
+# once: conda env pqc (Python 3.12 + OpenSSL 3.6.5, see qshield/README.md), a user, the demo snapshot
+cd qshield && conda activate pqc && pip install -r requirements.txt
+python -m atlas_web create-user --role operator   # no default user
+./run_demo.sh --no-open                           # builds the public read-only `demo` workspace (local only)
+
+# terminal 1: Atlas backend on :8100
+cd q-setu && pnpm dev:atlas                       # = qshield/run.sh --no-browser
+
+# terminal 2: Quantum Ledger web on :3000
+cd q-setu && pnpm dev:web                         # or: pnpm build && pnpm start
+open http://localhost:3000/atlas
+```
+
+`ATLAS_URL` (default `http://127.0.0.1:8100`, see `apps/web/.env.example`) tells the proxy where Atlas runs.
+Atlas uses 8100 because AetherPool's backend owns 8000.
+
+**Architecture**
+
+```text
+browser ── same origin ──> Next.js (q-setu/apps/web)
+                              ├─ /atlas, /atlas/[ws]/*, /diagnostics?ws=   UI (Quantum Ledger components)
+                              └─ /atlas-api/*  route handler (lib/server/atlas-proxy.ts)
+                                     │  forwards Cookie, X-CSRF-Token, body; streams SSE; 503 atlas_down
+                                     v
+                         Atlas server :8100 (qshield/atlas_web: auth, CSRF, workspaces, runner)
+                                     │  one subprocess per step
+                                     v
+          detect → ledger → schedule → capture → gates → qaoa → ledger → contracts → report
+                                     │
+                                     v
+             workspace files (out/results.json, runs/) + ML-DSA-65 signed ledger
+```
+
+- The proxy refuses a browser Origin that is not this site (403 `bad_origin`), then sends Atlas its own
+  origin, so Atlas's origin check is unchanged. Session (HttpOnly) and CSRF cookies pass through as set.
+- Types for `results.json`, `bench.json` and ledger entries are generated from `qshield/contracts/*.schema.json`
+  (`pnpm gen:atlas-types`).
+- Pages: Detect (file:line findings), Inventory & drift, Plan (MILP vs FCFS vs greedy per Q-day scenario,
+  assumptions labelled), Handshake gates, Wave selection (QAOA rows as recorded), Proof Chain (live
+  verification, Merkle proof, tamper test on a copy), Review (signed decisions), and Atlas's own report.
+
+**Honesty rules (from `qshield/CLAUDE.md`, they apply here too):** every number comes from an Atlas run;
+missing data reads "not yet run". No quantum advantage is claimed: QAOA is a measured cross-check against the
+exact optimum. QpiAI platform and QCloud runs stay off (this UI offers no paid-run control and shows Atlas's
+blocker text); local QpiAI Opt solves and the QpiAI QSV-Local simulator are used instead.
+
 ## Project structure
 
 ```text
