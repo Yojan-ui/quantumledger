@@ -23,6 +23,13 @@ export type Me = {
   demo: boolean;
 };
 export type Stage = { id: string; label: string; plain: string; steps: string[] };
+export type EndpointsResponse = {
+  endpoints: { host: string; port: number }[];
+  probes: string[];
+  label: string;
+  assumption: string;
+};
+
 export type WorkspaceSummary = {
   id: string;
   name: string;
@@ -283,6 +290,9 @@ export const atlas = {
   quantumStatus: (o: O = {}) => req<QuantumStatus>("GET", "/quantum/status", undefined, o),
   quantumRun: (id: string, p: 1 | 2 | 3 = 1) =>
     req<Record<string, unknown>>("POST", "/quantum/run", { ws: id, p }),
+  /** Scan a live endpoint: Atlas checks every host is public, then the next run does one TLS handshake per host. */
+  endpoints: (id: string, hosts: string[]) =>
+    req<EndpointsResponse>("POST", `${ws(id)}/endpoints`, { hosts, authorised: true }),
   clone: (id: string, url: string, commit?: string) =>
     req<{ url: string; commit: string; files: number }>("POST", `${ws(id)}/clone`, { url, commit }),
   manifests: (id: string) => req<ManifestsResponse>("GET", `${ws(id)}/manifests`),

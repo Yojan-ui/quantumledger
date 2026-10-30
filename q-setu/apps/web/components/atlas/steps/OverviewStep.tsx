@@ -6,7 +6,7 @@
  */
 import Link from "next/link";
 import { PipelineRunPanel } from "../PipelineRunPanel";
-import { GitHubScan } from "../GitHubScan";
+import { EndpointScan } from "../EndpointScan";
 import { useAtlasRun } from "@/lib/client/atlas-run";
 import { atlas } from "@/lib/client/atlas";
 import { FLOW, flowFacts } from "@/lib/client/atlas-flow";
@@ -25,7 +25,7 @@ export function OverviewStep() {
   if (error)
     return (
       <>
-        <GitHubScan />
+        <EndpointScan />
         <PipelineRunPanel ws={ws} />
         <AtlasErrorPanel error={error} onRetry={reload} />
       </>
@@ -33,7 +33,7 @@ export function OverviewStep() {
   if (loading && results === undefined)
     return (
       <>
-        <GitHubScan />
+        <EndpointScan />
         <PipelineRunPanel ws={ws} />
         <Skeleton className="mt-10 h-console" />
       </>
@@ -41,12 +41,12 @@ export function OverviewStep() {
   if (!results || live || failed)
     return (
       <>
-        <GitHubScan />
+        <EndpointScan results={results} />
         <PipelineRunPanel ws={ws} results={results} />
         {!live && !failed && (
           <NotYetRun
             what="Pipeline"
-            hint="Clone a public repository above, or start this workspace’s pipeline."
+            hint="Scan a live endpoint above, or start this workspace’s pipeline."
           />
         )}
       </>
@@ -55,7 +55,7 @@ export function OverviewStep() {
   const v = results.ledger_verification as { ok?: boolean } | null;
   return (
     <>
-      <GitHubScan />
+      <EndpointScan results={results} />
       <PipelineRunPanel ws={ws} results={results} />
       <Part title="At a glance">
         <KeyStats

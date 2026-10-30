@@ -172,6 +172,8 @@ def pipeline_steps(ws: Workspace, probes: list[str], platform: bool = False, qcl
         detect += ["--lab-probe", lp]
     for p in probes:
         detect += ["--probe", p]
+    if live := ws.settings.get("live_endpoints"):  # Scan a live endpoint: checked public hosts, set by POST .../endpoints
+        detect += [x for p in live if p not in probes for x in ("--probe", p)] + ["--live-inventory"]
     steps = [
         ("detect", detect),
         ("ledger_open", [*py, "ledger", "ingest", "--only", "detect.run", *led]),  # Proof Chain: sign the Detect evidence first

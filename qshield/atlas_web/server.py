@@ -12,6 +12,7 @@ import hmac
 import json
 import posixpath
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -25,6 +26,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 from contracts.manifest import sha256_hex
 from contracts.stages import STAGES
+from detect import endpoint_scan
 
 from . import calibration, intake
 from . import workspaces as wsmod
@@ -33,6 +35,8 @@ from .config import REPO, STATIC, data_dir, limits
 from .config import settings
 from .runner import RunManager, bench_steps, parse_probes, pipeline_steps, preflight, reference_presets
 from .workspaces import WorkspaceError
+
+ENDPOINT_SCAN_INTERVAL_S = 10  # per user
 
 VIZ_VENDOR = REPO / "viz" / "vendor"
 ADDONS = STATIC / "vendor" / "three-addons"
@@ -109,6 +113,7 @@ class App:
         self.kiosk, self.demo = kiosk, demo
         self.tamper_lock = threading.Lock()
         self.tamper_last = 0.0
+        self.endpoint_scan_last: dict[str, float] = {}  # user -> monotonic time of their last live endpoint scan
         self.fresh_lock = threading.Lock()  # one fresh lab handshake at a time (lab services, ports)
         self.review_lock = threading.Lock()  # one signed review decision at a time
         self.cache: dict = {}
@@ -747,6 +752,36 @@ def make_handler(app: App):
                 wsmod.update_settings(app.store, ws, source={"kind": "git", "ref": res["url"], "commit": res["commit"],
                                                              "by": u["username"], "ts": time.time()}, lab_probes=[])
                 return self.send_json(200, res)
+            if name == "endpoints" and method == "POST":  # Scan a live endpoint: public hosts, one TLS handshake each at run time
+                u = self.need("operator")
+                wsmod.require_writable(ws)
+                self._no_active_run(ws)
+                b = self.body_json()
+                if not b.get("authorised"):
+                    raise ApiError(422, "not_authorised", "confirm that you own or are authorised to assess these hosts")
+                if any(ws.src.iterdir()) and (ws.settings.get("source") or {}).get("kind") != "live_tls":
+                    raise ApiError(409, "not_empty", "live endpoint scans need an empty workspace")
+                last = app.endpoint_scan_last.get(u["username"], -1e9)
+                if time.monotonic() - last < ENDPOINT_SCAN_INTERVAL_S:
+                    raise ApiError(429, "rate_limited", f"one live endpoint scan per {ENDPOINT_SCAN_INTERVAL_S} s")
+                try:
+                    hosts = endpoint_scan.parse(b.get("hosts") if isinstance(b.get("hosts"), list) else [])
+                    for h, port in hosts:
+                        endpoint_scan.resolve_public(h, port)
+                except endpoint_scan.EndpointError as e:
+                    raise ApiError(422, "bad_endpoint", str(e)) from None
+                app.endpoint_scan_last[u["username"]] = time.monotonic()
+                if ws.settings.get("live_endpoints"):  # a new scan replaces the previous endpoint list
+                    shutil.rmtree(ws.src)
+                    ws.src.mkdir()
+                probes = endpoint_scan.write_manifests(ws.src, hosts)
+                ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                wsmod.update_settings(app.store, ws, live_endpoints=probes, lab_probes=[], source={
+                    "kind": "live_tls", "ref": ", ".join(f"{h}:{p}" for h, p in hosts), "by": u["username"], "ts": ts,
+                    "authorisation": {"confirmed_by": u["username"], "ts": ts,
+                                      "statement": "I own or am authorised to assess these hosts"}})
+                return self.send_json(200, {"endpoints": [{"host": h, "port": p} for h, p in hosts], "probes": probes,
+                                            "label": f"Live TLS scan, {ts}", "assumption": endpoint_scan.ASSUMPTION_NOTE})
             if name == "runs":
                 if method == "GET" and len(sub) == 1:
                     with app.store.db() as c:

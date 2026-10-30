@@ -29,7 +29,8 @@
     "vpn": 6,
     "message_bus": 4,
     "batch_sftp": 3,
-    "cdn_edge": 2
+    "cdn_edge": 2,
+    "public_tls_endpoint": 3
   },
   "sensitivity": {
     "shelf_life_factors": [0.8, 1.0, 1.2],

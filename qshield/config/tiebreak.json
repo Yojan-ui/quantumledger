@@ -14,7 +14,7 @@
     "note": "z in Mosca's inequality x + y > z: years from the plan's start to the EARLIEST Q-day scenario in config/assumptions.json (the most conservative choice)."
   },
   "internet_facing_kinds": {
-    "kinds": ["cdn_edge", "tls_gateway", "vpn"],
+    "kinds": ["cdn_edge", "tls_gateway", "vpn", "public_tls_endpoint"],
     "note": "Asset kinds treated as reachable from the internet (the 'edge' layer of config/atlas_web.json presentation)."
   },
   "patches": {

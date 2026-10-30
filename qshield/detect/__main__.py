@@ -1,4 +1,4 @@
-"""python -m detect [--root DIR] [--probe SERVICE=HOST:PORT ...] [--lab-probe SERVICE=MODE ...]
+"""python -m detect [--root DIR] [--probe SERVICE=HOST:PORT ...] [--lab-probe SERVICE=MODE ...] [--live-inventory]
 
 --lab-probe starts a temporary local lab TLS service in MODE (legacy | transition | strict, see
 config/lab.json), probes it as SERVICE's live endpoint, and shuts it down.
@@ -14,24 +14,47 @@ from pathlib import Path
 
 from contracts.manifest import new_run_id, sha256_json, utc_now
 
+from . import endpoint_scan
 from .drift import compare
 from .inventory import build_inventory, owner, service_dirs
 from .live_probe import probe
-from .static_scan import scan
+from .static_scan import scan, summarize
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_ROOT = REPO / "detect" / "fixtures" / "mock_bank"
 
 
-def run(root: Path, probes: dict[str, tuple[str, int]], run_dir: Path, probe_timeout: float = 20) -> tuple[dict, dict]:
+def run(root: Path, probes: dict[str, tuple[str, int]], run_dir: Path, probe_timeout: float = 20,
+        live_inventory: bool = False) -> tuple[dict, dict]:
+    """live_inventory: the probes are a live TLS endpoint scan (detect.endpoint_scan): each host is re-checked as
+    public, probed at the checked address with its name as SNI, and its handshake becomes Detect evidence."""
     run_id = new_run_id()
     result = scan(root)
-    inventory = build_inventory(root, result)
     dirs = service_dirs(root)
     by_id = {json.loads((d / "atlas-service.json").read_text())["id"]: prefix for prefix, d in dirs.items()}
-    probe_records = []
+    lives = {}
     for sid, (host, port) in probes.items():
-        live = probe(host, port, transcript_dir=run_dir / run_id, label=sid, timeout=probe_timeout)
+        if live_inventory:
+            try:
+                addr = endpoint_scan.resolve_public(host, port)
+            except endpoint_scan.EndpointError as e:
+                lives[sid] = {"endpoint": f"{host}:{port}", "ts": utc_now(), "handshake_ok": False, "error": str(e)}
+                continue
+            addr = f"[{addr}]" if ":" in addr else addr
+            live = probe(addr, port, transcript_dir=run_dir / run_id, label=sid, timeout=probe_timeout, servername=host)
+            text = (run_dir / run_id / f"probe_{sid}.txt").read_text()
+            live["chain"] = endpoint_scan.chain(text)
+            result["findings"] += endpoint_scan.findings(sid, live, live["chain"])
+        else:
+            live = probe(host, port, transcript_dir=run_dir / run_id, label=sid, timeout=probe_timeout)
+        lives[sid] = live
+    if live_inventory:
+        result["summary"] = summarize(result["findings"])
+    inventory = build_inventory(root, result)
+    if live_inventory:
+        inventory["label"] = f"Live TLS scan, {utc_now()}: one TLS handshake per public host. {endpoint_scan.ASSUMPTION_NOTE}"
+    probe_records = []
+    for sid, live in lives.items():
         findings = [f for f in result["findings"] if owner(f["file"], dirs) == by_id.get(sid)]
         probe_records.append(compare(sid, findings, live))
     section = {
@@ -69,6 +92,8 @@ def main(argv=None):
     ap.add_argument("--lab-probe", action="append", default=[], metavar="SERVICE=MODE")
     ap.add_argument("--out-dir", type=Path, default=REPO / "out")
     ap.add_argument("--runs", type=Path, default=REPO / "runs")
+    ap.add_argument("--live-inventory", action="store_true",
+                    help="--probe endpoints are a live TLS endpoint scan: public hosts only, handshakes become inventory evidence")
     ap.add_argument("--probe-timeout", type=float, default=20, help="seconds per live probe; a timeout is recorded as probe_failed")
     args = ap.parse_args(argv)
 
@@ -82,7 +107,7 @@ def main(argv=None):
                 sid, _, mode = item.partition("=")
                 svc = stack.enter_context(managed_service(f"probe-{sid}", mode, lab))
                 probes[sid] = (svc.host, svc.port)
-        section, inventory = run(args.root, probes, args.runs, args.probe_timeout)
+        section, inventory = run(args.root, probes, args.runs, args.probe_timeout, args.live_inventory)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "detect.json").write_text(json.dumps(section, indent=1))
     (args.out_dir / "inventory.json").write_text(json.dumps(inventory, indent=1))

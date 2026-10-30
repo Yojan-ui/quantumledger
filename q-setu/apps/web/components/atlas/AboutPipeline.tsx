@@ -23,7 +23,7 @@ export function AboutPipeline({ ws }: { ws: string }) {
               ? "You are viewing the default fictional-bank demo: detect/fixtures/mock_bank, with real scanner output and local TLS lab evidence."
               : ws === "real-banks"
                 ? "This is the real-banks workspace. Migration is planned only; no bank has been changed."
-                : "This workspace uses its own uploaded or cloned source. Its scan results are not bank observations unless that source supplies them."}
+                : "This workspace uses its own source or a live TLS endpoint scan (one handshake per public host). Its results are not bank observations, and nothing is changed on a scanned host."}
           </p>
           <Link
             prefetch={false}
@@ -80,8 +80,8 @@ export function AboutPipeline({ ws }: { ws: string }) {
           </p>
           <h2 className="pt-2 text-body font-medium text-fg">Why we stand out</h2>
           <p>
-            Recorded public TLS observations and repository scan evidence; a tamper-evident ML-DSA
-            Proof Chain; quantum (QAOA) and classical results checked against the exact optimum;
+            Recorded public TLS observations and live endpoint scans; a tamper-evident ML-DSA Proof
+            Chain; quantum (QAOA) and classical results checked against the exact optimum;
             deterministic ML-KEM/ML-DSA patch ordering for tied batches.
           </p>
           <p>

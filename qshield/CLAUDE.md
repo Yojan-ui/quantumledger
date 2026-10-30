@@ -138,3 +138,10 @@ Report exposure-years avoided vs both baselines on the same data.
   HNDL-exposed; injected gate failure → rolled_back with config hash restored; corrupted snapshot →
   rollback_failed; no asset "applied" without gate evidence; no orphaned s_server; ledger tamper detected; schedule feasible and never worse than baselines); `./run_demo.sh` regenerates
   `results.json` and opens the viz; README states every assumption, limit and how to rerun.
+
+## Scan a live endpoint (2026-10-31; replaces the q-setu GitHub scan UI)
+- POST /api/workspaces/<id>/endpoints {hosts, authorised}: detect/endpoint_scan.py refuses localhost and private /
+  internal addresses, max 10 hosts, one port per host, 10 s per user. The run's detect gets --live-inventory: each
+  host is re-checked, one handshake at the checked address (SNI = name), evidence lines (host, field, value).
+- Scanned hosts are kind public_tls_endpoint (no lab stand-in -> not_verified_in_lab, never "applied").
+  Tests: tests/test_endpoint_scan.py with recorded handshakes in tests/fixtures/tls (no network).

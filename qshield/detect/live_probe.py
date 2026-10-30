@@ -104,19 +104,22 @@ def parse_transcript(text: str) -> dict:
 
 
 def probe(host: str, port: int, groups: str = CLIENT_GROUPS, transcript_dir: Path | None = None, label: str = "",
-          timeout: float = 20) -> dict:
+          timeout: float = 20, servername: str | None = None) -> dict:
+    """One ordinary TLS handshake. servername: connect to the address `host` but send this name as SNI and record it."""
     binary = openssl_binary()
     info = openssl_info(binary)
     if not info["ml_kem"]:
         groups = ":".join(g for g in groups.split(":") if g not in PQC_GROUPS)
-    cmd = [binary, "s_client", "-connect", f"{host}:{port}", "-groups", groups, "-showcerts"]
+    cmd = [binary, "s_client", "-connect", f"{host}:{port}", "-groups", groups, "-showcerts",
+           *(["-servername", servername] if servername else [])]
     try:
         proc = subprocess.run(cmd, input="", capture_output=True, text=True, timeout=timeout)
         text, ok = proc.stdout + proc.stderr, proc.returncode == 0
     except subprocess.TimeoutExpired:  # recorded as a failed probe (drift: probe_failed), never as a result
         text, ok = f"probe timed out after {timeout:g} s\n", False
     record = {
-        "endpoint": f"{host}:{port}",
+        "endpoint": f"{servername or host}:{port}",
+        **({"address": host} if servername else {}),
         "ts": utc_now(),
         "client_groups_offered": groups,
         "openssl": info["version"],

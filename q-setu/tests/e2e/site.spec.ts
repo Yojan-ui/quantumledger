@@ -67,7 +67,7 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   await expect(page.getByRole("link", { name: "Explore the pipeline" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Scan a GitHub repo" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Scan a live endpoint" })).toBeVisible();
   await expect(page.locator("#top [data-hud-stage]")).toBeVisible();
 });
 
