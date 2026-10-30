@@ -10,7 +10,7 @@ import { useState, type FormEvent } from "react";
 import { Label } from "@/components/ui/type";
 import { AtlasError, atlas } from "@/lib/client/atlas";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { AtlasErrorPanel, Chip, Honesty, Part, Skeleton } from "./AtlasUI";
+import { AtlasErrorPanel, Chip, Details, Honesty, Part, Skeleton } from "./AtlasUI";
 
 const field =
   "h-10 w-full rounded-sm border border-line bg-inset px-3 text-small text-fg focus:border-line-strong";
@@ -232,9 +232,11 @@ export function AtlasHome() {
             Sign in
           </Link>
         </div>
-        <p className="mt-4 text-small text-fg-3">
-          Accounts are created by an Atlas admin: python -m atlas_web create-user --role operator.
-        </p>
+        <Details summary="Getting an account">
+          <p>
+            Accounts are created by an Atlas admin: python -m atlas_web create-user --role operator.
+          </p>
+        </Details>
       </Part>
     );
   return (
@@ -298,16 +300,20 @@ export function AtlasHome() {
       )}
       <Part title="Paid QpiAI runs" label={me.isAdmin ? "admin" : undefined}>
         {qs.data?.fallback_reason ? (
-          <Honesty kind="blocked">{qs.data.fallback_reason}</Honesty>
+          <Honesty kind="blocked" short="QCloud jobs disabled">
+            {qs.data.fallback_reason}
+          </Honesty>
         ) : qs.error ? (
           <AtlasErrorPanel error={qs.error} onRetry={qs.reload} />
         ) : (
           <p className="text-small text-fg-3">Checking the QpiAI backend…</p>
         )}
-        <p className="mt-3 text-small text-fg-3">
-          Platform and QCloud runs stay off in this app; every pipeline run uses free local solvers
-          and simulators.
-        </p>
+        <Details>
+          <p>
+            Platform and QCloud runs stay off in this app; every pipeline run uses free local
+            solvers and simulators.
+          </p>
+        </Details>
       </Part>
     </>
   );

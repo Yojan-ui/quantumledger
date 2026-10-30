@@ -9,7 +9,7 @@
  */
 import { atlas } from "@/lib/client/atlas";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { Chip, Honesty, Part, Table } from "../AtlasUI";
+import { Chip, Details, Honesty, Part, Table } from "../AtlasUI";
 import { fmt } from "../useResults";
 
 type Scen = { scenario: string; year?: number; exposure_years?: number };
@@ -141,10 +141,7 @@ export function PlannerComparison({
             : "heuristic, none",
         ])}
       />
-      <p className="mt-2 text-small text-fg-3">
-        Best = lowest weighted exposure. Greedy’s avoided exposure is computed from Atlas’s
-        per-scenario exposures (FCFS − greedy).
-      </p>
+      <p className="mt-2 text-small text-fg-3">Best = lowest weighted exposure.</p>
 
       <h3 className="mb-3 mt-10 font-mono text-micro uppercase text-fg-3">
         One week&apos;s wave selection · week {fmt(q?.problem?.week)} ·{" "}
@@ -194,10 +191,7 @@ export function PlannerComparison({
       ) : (
         <p className="text-body text-fg-2">Wave selection: not yet run.</p>
       )}
-      <p className="mt-2 text-small text-fg-3">
-        Best QAOA = highest P(optimal set). The exact optimum is the reference every sampler is
-        scored against.
-      </p>
+      <p className="mt-2 text-small text-fg-3">Best QAOA = highest P(optimal set).</p>
 
       <h3 className="mb-3 mt-10 font-mono text-micro uppercase text-fg-3">
         Benchmark · same instances, every method{largest ? ` · ${largest} variables` : ""}
@@ -239,12 +233,28 @@ export function PlannerComparison({
       {me.user && atLargest.length > 0 && (
         <p className="mt-2 text-small text-fg-3">Best = fastest method with a proven optimum.</p>
       )}
+      <Details summary="How these numbers are computed">
+        <p>
+          Full schedule: weighted exposure, worst case and makespan are Atlas&apos;s own numbers.
+          Exposure-years avoided are measured against first-come-first-served: the MILP&apos;s value
+          is Atlas&apos;s results.avoided; greedy&apos;s is computed from Atlas&apos;s per-scenario
+          exposures (FCFS − greedy). The list schedulers record no solve time.
+        </p>
+        <p>
+          Wave selection: the exact optimum (brute force over every choice) is the reference every
+          sampler is scored against.
+        </p>
+        <p>
+          Benchmark: the same link-cutover instances solved by every method; the largest size is
+          shown.
+        </p>
+      </Details>
       <div className="mt-4 space-y-2">
-        <Honesty kind="simulation">
+        <Honesty kind="simulation" short="QAOA on simulators: a cross-check, no quantum advantage">
           QAOA runs on simulators; it is a measured cross-check against the exact optimum, not a
           claim of quantum advantage. At these sizes random sampling also finds the optimum.
         </Honesty>
-        <Honesty kind="assumption">
+        <Honesty kind="assumption" short="risk, shelf-life and Q-day weights">
           Weighted exposure uses the risk weights, shelf lives and Q-day scenario weights in
           config/assumptions.json.
         </Honesty>

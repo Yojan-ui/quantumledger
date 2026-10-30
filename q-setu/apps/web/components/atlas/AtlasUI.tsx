@@ -161,21 +161,39 @@ export function Part({
   );
 }
 
-/** "assumption" / "simulation" / "blocked": honesty labels stay visible, never hidden in a tooltip. */
+const HONEST_SHORT = {
+  assumption: "values from config, not measured",
+  simulation: "simulated, not a real system",
+  blocked: "not available on this account",
+  recorded: "replay of recorded data",
+} as const;
+
+/**
+ * "assumption" / "simulation" / "blocked" / "recorded": the label and a few words stay visible; the full
+ * explanation is one click away (closed by default), so the page stays short without hiding the caveat.
+ */
 export function Honesty({
   kind,
+  short,
   children,
 }: {
-  kind: "assumption" | "simulation" | "blocked" | "recorded";
+  kind: keyof typeof HONEST_SHORT;
+  short?: string;
   children: ReactNode;
 }) {
   return (
-    <p className="text-small text-fg-3">
-      <span className="mr-2 inline-block rounded-sm border border-warn px-1 font-mono text-micro uppercase text-warn">
-        {kind}
-      </span>
-      {children}
-    </p>
+    <details className="group text-small text-fg-3">
+      <summary className="inline-flex cursor-pointer list-none items-center gap-2 hover:text-fg">
+        <span className="inline-block rounded-sm border border-warn px-1 font-mono text-micro uppercase text-warn">
+          {kind}
+        </span>
+        <span>{short ?? HONEST_SHORT[kind]}</span>
+        <span aria-hidden className="transition-transform duration-150 group-open:rotate-180">
+          ▾
+        </span>
+      </summary>
+      <p className="mt-2 max-w-text">{children}</p>
+    </details>
   );
 }
 

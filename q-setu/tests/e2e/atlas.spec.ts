@@ -94,7 +94,7 @@ test.describe("with Atlas on :8100", () => {
     await expect(table.locator("tbody tr")).toHaveCount(demo!.qaoa!.table.length);
     const notOk = demo!.qaoa!.table.find((r) => r.status !== "ok");
     if (notOk?.status_text) await expect(table.getByText(notOk.status_text).first()).toBeVisible();
-    await expect(page.getByText("No quantum advantage is claimed", { exact: false })).toBeVisible();
+    await expect(page.getByText(/no quantum advantage/i).first()).toBeVisible(); // short label; the sentence is in its dropdown
     expect(errors).toEqual([]);
   });
 

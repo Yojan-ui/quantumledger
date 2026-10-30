@@ -10,6 +10,7 @@ import { rowsOf } from "@/lib/client/atlas-flow";
 import {
   AtlasErrorPanel,
   Chip,
+  Details,
   Honesty,
   KeyStats,
   NotYetRun,
@@ -128,7 +129,7 @@ export function HandshakesStep() {
           />
         </div>
         <div className="mt-4">
-          <Honesty kind="simulation">
+          <Honesty kind="simulation" short="lab stand-ins on 127.0.0.1">
             Waves are verified on lab stand-ins on 127.0.0.1 only; systems with no lab service stay
             “not verified in lab”.
           </Honesty>
@@ -155,7 +156,11 @@ export function HandshakesStep() {
           ])}
         />
         {labRows.some((x) => x.classical) && <p className="mt-3 text-small text-danger">{HNDL}</p>}
-        {he.note && <p className="mt-2 text-small text-fg-3">{he.note}</p>}
+        {he.note && (
+          <Details summary="About this evidence">
+            <p>{he.note}</p>
+          </Details>
+        )}
       </Part>
       <Part title="Compatibility" label="modes by client">
         {clients.length ? (

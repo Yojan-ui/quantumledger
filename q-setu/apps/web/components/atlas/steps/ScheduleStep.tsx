@@ -8,6 +8,7 @@ import { MiniStat } from "@/components/ui/Stat";
 import {
   AtlasErrorPanel,
   Chip,
+  Details,
   Honesty,
   KeyStats,
   NotYetRun,
@@ -142,11 +143,16 @@ export function ScheduleStep() {
           <p className="text-body text-fg-2">No solver run recorded.</p>
         )}
         {main?.job_id_reason && (
-          <p className="mt-4 text-small text-fg-3">job_id null: {main.job_id_reason}</p>
+          <Details summary="Why job id is null">
+            <p>{main.job_id_reason}</p>
+          </Details>
         )}
       </Part>
       <Part title="Assumptions" label="config/assumptions.json">
-        <Honesty kind="assumption">
+        <Honesty
+          kind="assumption"
+          short={`capacity ${fmt(r.assumptions.capacity_days_per_week)} engineer-days/week, Q-day ${(r.assumptions.scenarios ?? []).map((s) => s.year).join(" / ")}`}
+        >
           Start {fmt(r.assumptions.start_year)}, capacity{" "}
           {fmt(r.assumptions.capacity_days_per_week)} engineer-days per week, horizon{" "}
           {fmt(r.assumptions.horizon_weeks)} weeks. Q-day scenarios:{" "}

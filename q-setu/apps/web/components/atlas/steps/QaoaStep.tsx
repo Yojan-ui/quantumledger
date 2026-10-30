@@ -42,7 +42,11 @@ function QuantumStatusPanel({ ws }: { ws: string }) {
           ? `ok, ${s.cloud.devices.filter((d) => d.status === "active").length} devices active`
           : `failed: ${s.cloud.error ?? "unknown"}`}
       </p>
-      {s.fallback_reason && <Honesty kind="blocked">{s.fallback_reason}</Honesty>}
+      {s.fallback_reason && (
+        <Honesty kind="blocked" short="QCloud jobs disabled">
+          {s.fallback_reason}
+        </Honesty>
+      )}
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -176,7 +180,7 @@ export function QaoaStep() {
           </>
         )}
         <div className="mt-4">
-          <Honesty kind="simulation">
+          <Honesty kind="simulation" short="simulators; a cross-check, no quantum advantage">
             QAOA runs on simulators (plus any recorded IBM hardware rows); it is a measured
             cross-check against the exact optimum. No quantum advantage is claimed.
           </Honesty>

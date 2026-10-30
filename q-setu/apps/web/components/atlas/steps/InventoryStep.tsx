@@ -75,7 +75,7 @@ export function InventoryStep() {
           />
         )}
         <div className="mt-4">
-          <Honesty kind="assumption">
+          <Honesty kind="assumption" short="risk weight, effort, shelf life">
             Risk weight, effort and shelf life come from config/assumptions.json, not from
             measurement.
           </Honesty>

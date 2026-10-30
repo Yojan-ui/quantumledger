@@ -12,7 +12,16 @@ import { useEffect, useState } from "react";
 import { LazyView } from "@/components/scenes/LazyView";
 import { AtlasError, atlas } from "@/lib/client/atlas";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { AtlasErrorPanel, Chip, KeyStats, NotYetRun, Part, Skeleton, Table } from "../AtlasUI";
+import {
+  AtlasErrorPanel,
+  Chip,
+  Details,
+  KeyStats,
+  NotYetRun,
+  Part,
+  Skeleton,
+  Table,
+} from "../AtlasUI";
 import { fmt, useResults } from "../useResults";
 
 const LedgerChain = dynamic(() => import("@/components/scenes/LedgerChain"), { ssr: false });
@@ -120,11 +129,19 @@ export function LedgerStep() {
           title="2 · Proof: findings signed"
           aside={<Chip status={e0 ? "PASS" : "pending"}>{e0 ? "signed" : "not yet run"}</Chip>}
         >
-          <p className="max-w-text text-body text-fg-2">
+          <p className="text-body text-fg-2">
             {e0
-              ? `The RSA / ECC / DH findings (detect.run) were signed with ML-DSA-65 as entry #${e0.index} at ${e0.ts}, before planning; the existing chain was verified first.`
+              ? `Detect findings signed as entry #${e0.index}, before planning.`
               : "not yet run: no detect.run entry in this ledger"}
           </p>
+          {e0 && (
+            <Details>
+              <p>
+                The RSA / ECC / DH findings (detect.run) were signed with ML-DSA-65 as entry #
+                {e0.index} at {e0.ts}, before planning; the existing chain was verified first.
+              </p>
+            </Details>
+          )}
         </Part>
       </section>
       <section id="section-6" className="scroll-mt-20">
@@ -136,15 +153,24 @@ export function LedgerStep() {
             </Chip>
           }
         >
-          <p className="max-w-text text-body text-fg-2">
+          <p className="text-body text-fg-2">
             {okLive
-              ? pq.length
-                ? `Every entry's ML-DSA-65 signature verified across the chain (${checked} entries); ML-KEM evidence signed: ${pq.map((x) => `${x.service_id} negotiated ${x.negotiated_group}`).join(", ")}.`
-                : `Signatures verified (${checked} entries); no post-quantum handshake recorded.`
+              ? `${checked} signatures verified${pq.length ? `; ML-KEM evidence signed (${pq.length})` : ""}.`
               : live?.ok === false
                 ? `Verification fails at #${String((live as { first_failure?: { index?: number } }).first_failure?.index ?? "?")}.`
                 : `not verified: ${live && live.ok === null ? live.status_text : "no check"}`}
           </p>
+          <Details>
+            <p>
+              {okLive
+                ? pq.length
+                  ? `Every entry's ML-DSA-65 signature verified across the chain (${checked} entries); ML-KEM evidence signed: ${pq.map((x) => `${x.service_id} negotiated ${x.negotiated_group}`).join(", ")}.`
+                  : `Signatures verified (${checked} entries); no post-quantum handshake recorded.`
+                : live?.ok === false
+                  ? `Verification fails at #${String((live as { first_failure?: { index?: number } }).first_failure?.index ?? "?")}.`
+                  : `not verified: ${live && live.ok === null ? live.status_text : "no check"}`}
+            </p>
+          </Details>
         </Part>
       </section>
       <Part

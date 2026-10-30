@@ -18,7 +18,7 @@ export default function AtlasPage() {
       <PageHero
         label="Q-Shield pipeline"
         title="Find quantum-breakable crypto, fix it in order, prove it."
-        lead="Detect → Proof Chain → Plan → Handshake gates → Wave selection → Proof verified → Review. Every number on these pages comes from a logged Atlas run."
+        lead="Every number on these pages comes from a logged Atlas run."
       />
       <Container className="pb-24">
         <AtlasHome />
