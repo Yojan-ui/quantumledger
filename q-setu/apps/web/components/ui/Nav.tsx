@@ -10,6 +10,7 @@ import { Container } from "./layout";
 import { Logo } from "./Logo";
 
 export const NAV_LINKS = [
+  { href: "/#scan", label: "Scan" },
   { href: "/atlas/demo", label: "Pipeline" },
   { href: "/platform", label: "Platform" },
   { href: "/solutions", label: "Solutions" },

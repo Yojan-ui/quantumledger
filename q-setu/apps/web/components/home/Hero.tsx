@@ -5,7 +5,6 @@ import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
 import { ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
-import { PipelinePreview } from "@/components/atlas/PipelinePreview";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { HERO } from "./chapters";
@@ -43,7 +42,7 @@ export function Hero() {
   return (
     <section ref={ref} id="top" className="relative flex flex-col" aria-label="QuantumLedger">
       <LiveStrip />
-      <Container className="pb-16 pt-10 md:pt-10">
+      <Container className="pb-4 pt-10 md:pt-10">
         <div data-hero className="grid grid-cols-12 items-end gap-x-6 gap-y-6">
           <h1 className="col-span-12 text-h1-sm font-medium text-fg md:col-span-7 md:text-h1">
             <span className="sr-only">{HERO.title.replace(/‑/g, "-")}</span>
@@ -71,16 +70,12 @@ export function Hero() {
               <Copy simple={HERO.body} technical={HERO.technical} />
             </Text>
             <div className="mt-6 flex flex-wrap gap-3">
-              <ButtonLink href="/atlas/demo">Explore the pipeline</ButtonLink>
-              <ButtonLink href="/#scan" variant="secondary">
-                Scan a live endpoint
+              <ButtonLink href="#scan">Scan a site</ButtonLink>
+              <ButtonLink href="/atlas/demo" variant="secondary">
+                Explore the pipeline
               </ButtonLink>
             </div>
           </div>
-        </div>
-        {/* The diagnostics HUD, compact: enter any domain, or watch the labelled cached example. */}
-        <div className="mt-8 animate-reveal" style={{ animationDelay: "640ms" }}>
-          <PipelinePreview ws="demo" />
         </div>
       </Container>
     </section>

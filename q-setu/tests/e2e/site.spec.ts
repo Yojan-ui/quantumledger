@@ -67,8 +67,11 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   await expect(page.getByRole("link", { name: "Explore the pipeline" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Scan a live endpoint" })).toBeVisible();
-  await expect(page.locator("#top [data-hud-stage]")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Scan a site" })).toBeVisible();
+  await expect(page.locator("#pipeline [data-hud-stage]")).toBeVisible();
+  // the live scan comes first, the pipeline second
+  const top = (id: string) => page.locator(id).evaluate((e) => e.getBoundingClientRect().top);
+  expect(await top("#scan")).toBeLessThan(await top("#pipeline"));
 });
 
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {
