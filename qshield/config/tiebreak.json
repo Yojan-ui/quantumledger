@@ -1,0 +1,26 @@
+{
+  "label": "assumption",
+  "note": "Tie-break priority stage (python -m tiebreak). Policy, not measurements: every value here is an assumption, shown as such in the UI. No weights: the keys are compared lexicographically, in this order.",
+  "keys": [
+    "mosca_margin_years",
+    "hndl_exposed",
+    "internet_facing",
+    "dependents",
+    "effort_days",
+    "id"
+  ],
+  "threat_scenario": {
+    "rule": "earliest",
+    "note": "z in Mosca's inequality x + y > z: years from the plan's start to the EARLIEST Q-day scenario in config/assumptions.json (the most conservative choice)."
+  },
+  "internet_facing_kinds": {
+    "kinds": ["cdn_edge", "tls_gateway", "vpn"],
+    "note": "Asset kinds treated as reachable from the internet (the 'edge' layer of config/atlas_web.json presentation)."
+  },
+  "patches": {
+    "kex": "ML-KEM-768 (X25519MLKEM768 hybrid key exchange)",
+    "sig": "ML-DSA-65 (signatures)",
+    "order": ["kex", "sig"],
+    "note": "When a system uses both, ML-KEM comes first: traffic recorded today with classical key exchange can be read after Q-day (harvest now, decrypt later); a classical signature can only be forged by a quantum computer that exists at the time of the attack."
+  }
+}

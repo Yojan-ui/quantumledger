@@ -11,7 +11,7 @@ from . import validate
 from .manifest import utc_now
 
 OUT = Path(__file__).resolve().parent.parent / "out"
-LATER_SECTIONS = ("detect", "handshake_evidence", "gates", "qaoa")
+LATER_SECTIONS = ("detect", "tiebreak", "handshake_evidence", "gates", "qaoa")
 
 
 def assemble(out_dir: Path = OUT) -> dict:

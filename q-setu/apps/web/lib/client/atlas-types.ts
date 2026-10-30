@@ -136,6 +136,10 @@ export interface AtlasResults {
       payload_ref: string;
     }[];
   };
+  /**
+   * Tie-break priority stage (python -m tiebreak): order of equal-score batches inside each wave and the ML-KEM / ML-DSA patches per batch. Optional: absent in results from before this stage.
+   */
+  tiebreak?: null | Tiebreak;
 }
 export interface PlanSummary {
   method: string;
@@ -363,6 +367,55 @@ export interface QaoaMetrics {
   energy_ratio: number | null;
   p_optimal: number;
   p_optimal_assets: number;
+  [k: string]: unknown;
+}
+export interface Tiebreak {
+  run_id: string;
+  ts: string;
+  schedule_sha256: Sha256;
+  config_sha256: Sha256;
+  output_sha256: Sha256;
+  label?: string;
+  method: string;
+  keys: {
+    key: string;
+    label: string;
+    [k: string]: unknown;
+  }[];
+  threat: {
+    [k: string]: unknown;
+  };
+  patch_rule: {
+    [k: string]: unknown;
+  };
+  assumptions_label: "assumption";
+  tie_groups: number;
+  dependency_cycles: number;
+  waves: {
+    week: number;
+    batches: {
+      rank: number;
+      id: string;
+      name?: string;
+      week: number;
+      score: number;
+      uses: ("kex" | "sig")[];
+      patches: string[];
+      mosca: {
+        [k: string]: unknown;
+      };
+      keys: {
+        [k: string]: unknown;
+      };
+      decided_by: string;
+      why: string;
+      tie: null | {
+        [k: string]: unknown;
+      };
+      [k: string]: unknown;
+    }[];
+    [k: string]: unknown;
+  }[];
   [k: string]: unknown;
 }
 

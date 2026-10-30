@@ -6,23 +6,68 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version", "generated_at", "assumptions", "scenarios", "assets", "waves",
-    "exposure", "baselines", "avoided", "solver_runs",
-    "detect", "handshake_evidence", "gates", "qaoa", "ledger_root", "ledger", "ledger_verification"
+    "schema_version",
+    "generated_at",
+    "assumptions",
+    "scenarios",
+    "assets",
+    "waves",
+    "exposure",
+    "baselines",
+    "avoided",
+    "solver_runs",
+    "detect",
+    "handshake_evidence",
+    "gates",
+    "qaoa",
+    "ledger_root",
+    "ledger",
+    "ledger_verification"
   ],
-  "if": {"required": ["nothing_to_migrate"]},
-  "then": {"properties": {"assets": {"maxItems": 0}, "solver_runs": {"maxItems": 0}}},
-  "else": {"properties": {"solver_runs": {"minItems": 1}}},
+  "if": {
+    "required": [
+      "nothing_to_migrate"
+    ]
+  },
+  "then": {
+    "properties": {
+      "assets": {
+        "maxItems": 0
+      },
+      "solver_runs": {
+        "maxItems": 0
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "solver_runs": {
+        "minItems": 1
+      }
+    }
+  },
   "properties": {
-    "schema_version": {"const": "1.0"},
-    "generated_at": {"type": "string", "format": "date-time"},
+    "schema_version": {
+      "const": "1.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "assumptions": {
       "type": "object",
       "description": "Copy of the assumption config used (shelf lives, risk weights, effort, capacity, scenarios). These are assumptions, not measurements.",
-      "required": ["label", "sha256"],
+      "required": [
+        "label",
+        "sha256"
+      ],
       "properties": {
-        "label": {"type": "string"},
-        "sha256": {"$ref": "#/$defs/sha256"}
+        "label": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
       }
     },
     "scenarios": {
@@ -31,11 +76,22 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "year", "weight"],
+        "required": [
+          "name",
+          "year",
+          "weight"
+        ],
         "properties": {
-          "name": {"type": "string"},
-          "year": {"type": "number"},
-          "weight": {"type": "number", "minimum": 0}
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0
+          }
         }
       }
     },
@@ -44,120 +100,377 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "name", "algorithm", "shelf_life_years", "effort_days", "risk_weight", "depends_on", "status", "planned_week"],
+        "required": [
+          "id",
+          "name",
+          "algorithm",
+          "shelf_life_years",
+          "effort_days",
+          "risk_weight",
+          "depends_on",
+          "status",
+          "planned_week"
+        ],
         "properties": {
-          "id": {"type": "string"},
-          "name": {"type": "string"},
-          "kind": {"type": "string"},
-          "data_class": {"type": "string"},
-          "algorithm": {"type": "string"},
-          "shelf_life_years": {"type": "number", "minimum": 0},
-          "effort_days": {"type": "number", "exclusiveMinimum": 0},
-          "risk_weight": {"type": "number", "minimum": 0},
-          "depends_on": {"type": "array", "items": {"type": "string"}},
-          "status": {"$ref": "#/$defs/status"},
-          "planned_week": {"type": "integer", "minimum": 1},
-          "evidence": {"type": "array"}
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "data_class": {
+            "type": "string"
+          },
+          "algorithm": {
+            "type": "string"
+          },
+          "shelf_life_years": {
+            "type": "number",
+            "minimum": 0
+          },
+          "effort_days": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "risk_weight": {
+            "type": "number",
+            "minimum": 0
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "$ref": "#/$defs/status"
+          },
+          "planned_week": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "evidence": {
+            "type": "array"
+          }
         }
       }
     },
-    "waves": {"$ref": "#/$defs/waves"},
-    "exposure": {"$ref": "#/$defs/plan_summary"},
+    "waves": {
+      "$ref": "#/$defs/waves"
+    },
+    "exposure": {
+      "$ref": "#/$defs/plan_summary"
+    },
     "baselines": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["fcfs", "greedy"],
+      "required": [
+        "fcfs",
+        "greedy"
+      ],
       "properties": {
-        "fcfs": {"$ref": "#/$defs/plan_summary"},
-        "greedy": {"$ref": "#/$defs/plan_summary"}
+        "fcfs": {
+          "$ref": "#/$defs/plan_summary"
+        },
+        "greedy": {
+          "$ref": "#/$defs/plan_summary"
+        }
       }
     },
     "avoided": {
       "type": "object",
       "description": "Baseline minus optimized, per scenario, on the same data.",
       "additionalProperties": false,
-      "required": ["vs_fcfs", "vs_greedy"],
+      "required": [
+        "vs_fcfs",
+        "vs_greedy"
+      ],
       "properties": {
-        "vs_fcfs": {"$ref": "#/$defs/avoided_list"},
-        "vs_greedy": {"$ref": "#/$defs/avoided_list"}
+        "vs_fcfs": {
+          "$ref": "#/$defs/avoided_list"
+        },
+        "vs_greedy": {
+          "$ref": "#/$defs/avoided_list"
+        }
       }
     },
-    "solver_runs": {"type": "array", "items": {"$ref": "#/$defs/solver_run"}},
-    "nothing_to_migrate": {"const": true, "description": "detect found no quantum-vulnerable assets; the plan is empty and no solver ran"},
-    "sensitivity": {"type": ["array", "null"]},
-    "detect": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/detect"}]},
-    "handshake_evidence": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/handshake_evidence"}]},
-    "gates": {"type": ["object", "null"]},
-    "qaoa": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/qaoa"}]},
-    "ledger_root": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+    "solver_runs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/solver_run"
+      }
+    },
+    "nothing_to_migrate": {
+      "const": true,
+      "description": "detect found no quantum-vulnerable assets; the plan is empty and no solver ran"
+    },
+    "sensitivity": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "detect": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/detect"
+        }
+      ]
+    },
+    "handshake_evidence": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/handshake_evidence"
+        }
+      ]
+    },
+    "gates": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "qaoa": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/qaoa"
+        }
+      ]
+    },
+    "ledger_root": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/sha256"
+        }
+      ]
+    },
     "ledger_verification": {
       "description": "Result of the last `python -m ledger verify`; cleared by ingest. Valid for the anchored root only if root and entries_checked match `ledger`.",
       "oneOf": [
-        {"type": "null"},
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["ok", "ts", "entries_checked", "root", "verifying_pubkey_fp", "first_failure"],
+          "required": [
+            "ok",
+            "ts",
+            "entries_checked",
+            "root",
+            "verifying_pubkey_fp",
+            "first_failure"
+          ],
           "properties": {
-            "ok": {"type": "boolean"},
-            "ts": {"type": "string", "format": "date-time"},
-            "entries_checked": {"type": "integer", "minimum": 0},
-            "root": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
-            "verifying_pubkey_fp": {"$ref": "#/$defs/sha256"},
-            "first_failure": {"type": ["object", "null"]}
+            "ok": {
+              "type": "boolean"
+            },
+            "ts": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "entries_checked": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "root": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/sha256"
+                }
+              ]
+            },
+            "verifying_pubkey_fp": {
+              "$ref": "#/$defs/sha256"
+            },
+            "first_failure": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
           }
         }
       ]
     },
     "ledger": {
       "oneOf": [
-        {"type": "null"},
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["root", "entry_count", "pubkey_fp", "alg", "backend", "ledger_ref"],
+          "required": [
+            "root",
+            "entry_count",
+            "pubkey_fp",
+            "alg",
+            "backend",
+            "ledger_ref"
+          ],
           "properties": {
-            "root": {"$ref": "#/$defs/sha256"},
-            "entry_count": {"type": "integer", "minimum": 0},
-            "pubkey_fp": {"$ref": "#/$defs/sha256"},
-            "alg": {"const": "ML-DSA-65"},
-            "backend": {"type": "string"},
-            "ledger_ref": {"type": "string"},
+            "root": {
+              "$ref": "#/$defs/sha256"
+            },
+            "entry_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pubkey_fp": {
+              "$ref": "#/$defs/sha256"
+            },
+            "alg": {
+              "const": "ML-DSA-65"
+            },
+            "backend": {
+              "type": "string"
+            },
+            "ledger_ref": {
+              "type": "string"
+            },
             "entries": {
               "type": "array",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["index", "type", "payload_ref"],
-                "properties": {"index": {"type": "integer", "minimum": 0}, "type": {"type": "string"}, "payload_ref": {"type": "string"}}
+                "required": [
+                  "index",
+                  "type",
+                  "payload_ref"
+                ],
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "payload_ref": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
         }
       ]
+    },
+    "tiebreak": {
+      "description": "Tie-break priority stage (python -m tiebreak): order of equal-score batches inside each wave and the ML-KEM / ML-DSA patches per batch. Optional: absent in results from before this stage.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/tiebreak"
+        }
+      ]
     }
   },
   "$defs": {
-    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
     "qaoa_metrics": {
       "type": "object",
-      "required": ["shots", "feasible_fraction", "best_feasible_objective", "approximation_ratio", "mean_energy", "energy_ratio", "p_optimal", "p_optimal_assets"],
+      "required": [
+        "shots",
+        "feasible_fraction",
+        "best_feasible_objective",
+        "approximation_ratio",
+        "mean_energy",
+        "energy_ratio",
+        "p_optimal",
+        "p_optimal_assets"
+      ],
       "properties": {
-        "shots": {"type": "integer", "minimum": 1},
-        "feasible_fraction": {"type": "number", "minimum": 0, "maximum": 1},
-        "best_feasible_objective": {"type": ["number", "null"]},
-        "approximation_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1.000001},
-        "mean_energy": {"type": "number"},
-        "energy_ratio": {"type": ["number", "null"]},
-        "p_optimal": {"type": "number", "minimum": 0, "maximum": 1},
-        "p_optimal_assets": {"type": "number", "minimum": 0, "maximum": 1}
+        "shots": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "feasible_fraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "best_feasible_objective": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "approximation_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1.000001
+        },
+        "mean_energy": {
+          "type": "number"
+        },
+        "energy_ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "p_optimal": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "p_optimal_assets": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
     "qaoa": {
       "type": "object",
-      "required": ["label", "run_id", "ts", "problem", "exact", "runs", "comparisons", "qcloud", "table", "ledger_index"],
+      "required": [
+        "label",
+        "run_id",
+        "ts",
+        "problem",
+        "exact",
+        "runs",
+        "comparisons",
+        "qcloud",
+        "table",
+        "ledger_index"
+      ],
       "properties": {
-        "ledger_index": {"type": ["integer", "null"], "minimum": 0},
+        "ledger_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
         "table": {
           "description": "One row per (p, source) for display. Non-ok rows have metrics null and a status_text; never blanks or zeros.",
           "type": "array",
@@ -165,114 +478,516 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["p", "source", "status", "status_text", "backend", "shots", "job_ids", "metrics"],
+            "required": [
+              "p",
+              "source",
+              "status",
+              "status_text",
+              "backend",
+              "shots",
+              "job_ids",
+              "metrics"
+            ],
             "properties": {
-              "p": {"type": ["integer", "null"]},
-              "source": {"enum": ["local", "qpiai_local", "qcloud", "ibm", "random"]},
-              "status": {"enum": ["ok", "failed", "skipped", "not_requested", "queued"]},
-              "status_text": {"type": ["string", "null"]},
-              "backend": {"type": "string"},
-              "shots": {"type": ["integer", "null"]},
-              "job_ids": {"type": "array", "items": {"type": "string"}},
-              "metrics": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/qaoa_metrics"}]},
-              "job_id": {"type": "null"},
-              "job_id_reason": {"type": "string", "minLength": 1},
-              "comparison": {"oneOf": [{"type": "null"}, {"type": "object", "required": ["z_scores", "sigma_threshold", "differs"]}]},
+              "p": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "source": {
+                "enum": [
+                  "local",
+                  "qpiai_local",
+                  "qcloud",
+                  "ibm",
+                  "random"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "ok",
+                  "failed",
+                  "skipped",
+                  "not_requested",
+                  "queued"
+                ]
+              },
+              "status_text": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "backend": {
+                "type": "string"
+              },
+              "shots": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "job_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "metrics": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/$defs/qaoa_metrics"
+                  }
+                ]
+              },
+              "job_id": {
+                "type": "null"
+              },
+              "job_id_reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "comparison": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "z_scores",
+                      "sigma_threshold",
+                      "differs"
+                    ]
+                  }
+                ]
+              },
               "hardware": {
                 "type": "object",
                 "description": "Real QPU run (IBM). Transpiled depth and 2-qubit gate count of the circuit actually sent.",
-                "required": ["backend", "job_id", "qpu_seconds", "transpiled_depth", "two_qubit_gates"],
-                "properties": {"job_id": {"type": "string", "minLength": 1}, "transpiled_depth": {"type": "integer"},
-                               "two_qubit_gates": {"type": "integer"}, "qpu_seconds": {"type": ["number", "null"]}}
+                "required": [
+                  "backend",
+                  "job_id",
+                  "qpu_seconds",
+                  "transpiled_depth",
+                  "two_qubit_gates"
+                ],
+                "properties": {
+                  "job_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "transpiled_depth": {
+                    "type": "integer"
+                  },
+                  "two_qubit_gates": {
+                    "type": "integer"
+                  },
+                  "qpu_seconds": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
               }
             },
             "allOf": [
-              {"if": {"properties": {"source": {"const": "qpiai_local"}}, "required": ["source"]},
-               "then": {"required": ["job_id", "job_id_reason"], "properties": {"job_ids": {"maxItems": 0}}}},
-              {"if": {"properties": {"status": {"const": "ok"}}},
-               "then": {"properties": {"metrics": {"type": "object"}, "status_text": {"type": "null"}}},
-               "else": {"properties": {"metrics": {"type": "null"}, "status_text": {"type": "string", "minLength": 1}}}},
-              {"if": {"properties": {"source": {"const": "qcloud"}, "status": {"const": "ok"}}, "required": ["source", "status"]},
-               "then": {"properties": {"job_ids": {"minItems": 1}}}},
-              {"if": {"properties": {"source": {"const": "ibm"}, "status": {"const": "ok"}}, "required": ["source", "status"]},
-               "then": {"required": ["hardware"], "properties": {"job_ids": {"minItems": 1}}}}
+              {
+                "if": {
+                  "properties": {
+                    "source": {
+                      "const": "qpiai_local"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "job_id",
+                    "job_id_reason"
+                  ],
+                  "properties": {
+                    "job_ids": {
+                      "maxItems": 0
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "ok"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "metrics": {
+                      "type": "object"
+                    },
+                    "status_text": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "metrics": {
+                      "type": "null"
+                    },
+                    "status_text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "source": {
+                      "const": "qcloud"
+                    },
+                    "status": {
+                      "const": "ok"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "status"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "job_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "source": {
+                      "const": "ibm"
+                    },
+                    "status": {
+                      "const": "ok"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "status"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "hardware"
+                  ],
+                  "properties": {
+                    "job_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              }
             ]
           }
         },
-        "label": {"type": "string", "pattern": "No quantum advantage claimed"},
-        "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "label": {
+          "type": "string",
+          "pattern": "No quantum advantage claimed"
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
         "problem": {
           "type": "object",
-          "required": ["week", "assets", "n_variables", "slack_bits", "A", "B", "bit_order", "shrink_log"],
-          "properties": {"n_variables": {"type": "integer", "maximum": 16}}
+          "required": [
+            "week",
+            "assets",
+            "n_variables",
+            "slack_bits",
+            "A",
+            "B",
+            "bit_order",
+            "shrink_log"
+          ],
+          "properties": {
+            "n_variables": {
+              "type": "integer",
+              "maximum": 16
+            }
+          }
         },
         "exact": {
           "type": "object",
-          "required": ["objective", "assets", "bitstring", "method", "run_id"],
-          "properties": {"bitstring": {"type": "string", "pattern": "^[01]+$"}}
+          "required": [
+            "objective",
+            "assets",
+            "bitstring",
+            "method",
+            "run_id"
+          ],
+          "properties": {
+            "bitstring": {
+              "type": "string",
+              "pattern": "^[01]+$"
+            }
+          }
         },
         "runs": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["p", "source", "backend", "shots", "angles", "job_ids", "metrics"],
+            "required": [
+              "p",
+              "source",
+              "backend",
+              "shots",
+              "angles",
+              "job_ids",
+              "metrics"
+            ],
             "properties": {
-              "p": {"type": ["integer", "null"], "minimum": 1},
-              "source": {"enum": ["local", "qpiai_local", "qcloud", "ibm", "random"]},
-              "backend": {"type": "string"},
-              "shots": {"type": "integer", "minimum": 1},
-              "angles": {
-                "oneOf": [
-                  {"type": "null"},
-                  {"type": "object", "required": ["gammas", "betas"],
-                   "properties": {"gammas": {"type": "array", "items": {"type": "number"}}, "betas": {"type": "array", "items": {"type": "number"}}}}
+              "p": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "source": {
+                "enum": [
+                  "local",
+                  "qpiai_local",
+                  "qcloud",
+                  "ibm",
+                  "random"
                 ]
               },
-              "job_ids": {"type": "array", "items": {"type": "string"}},
-              "metrics": {"$ref": "#/$defs/qaoa_metrics"}
+              "backend": {
+                "type": "string"
+              },
+              "shots": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "angles": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "gammas",
+                      "betas"
+                    ],
+                    "properties": {
+                      "gammas": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      },
+                      "betas": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "job_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "metrics": {
+                "$ref": "#/$defs/qaoa_metrics"
+              }
             },
             "allOf": [
-              {"if": {"properties": {"source": {"const": "qcloud"}}}, "then": {"properties": {"job_ids": {"minItems": 1}}}},
-              {"if": {"properties": {"source": {"const": "ibm"}}, "required": ["source"]},
-               "then": {"required": ["qpu_seconds", "transpiled_depth", "two_qubit_gates"], "properties": {"job_ids": {"minItems": 1}}}},
-              {"if": {"properties": {"source": {"const": "qpiai_local"}}, "required": ["source"]},
-               "then": {"required": ["job_id", "job_id_reason", "sdk_version", "inputs_sha256", "outputs_sha256"],
-                        "properties": {"job_id": {"type": "null"}, "job_ids": {"maxItems": 0}}}}
+              {
+                "if": {
+                  "properties": {
+                    "source": {
+                      "const": "qcloud"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "job_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "source": {
+                      "const": "ibm"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "qpu_seconds",
+                    "transpiled_depth",
+                    "two_qubit_gates"
+                  ],
+                  "properties": {
+                    "job_ids": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "source": {
+                      "const": "qpiai_local"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "job_id",
+                    "job_id_reason",
+                    "sdk_version",
+                    "inputs_sha256",
+                    "outputs_sha256"
+                  ],
+                  "properties": {
+                    "job_id": {
+                      "type": "null"
+                    },
+                    "job_ids": {
+                      "maxItems": 0
+                    }
+                  }
+                }
+              }
             ]
           }
         },
-        "comparisons": {"type": "array"},
-        "qcloud": {"type": "object", "required": ["requested"]},
-        "ibm": {"type": "object", "required": ["requested"]}
+        "comparisons": {
+          "type": "array"
+        },
+        "qcloud": {
+          "type": "object",
+          "required": [
+            "requested"
+          ]
+        },
+        "ibm": {
+          "type": "object",
+          "required": [
+            "requested"
+          ]
+        }
       }
     },
     "handshake_evidence": {
       "type": "object",
       "description": "Real TLS 1.3 handshake metadata from capture/. No decryption is performed or claimed.",
       "additionalProperties": false,
-      "required": ["run_id", "ts", "capture_sha256", "openssl_version", "sessions", "note"],
+      "required": [
+        "run_id",
+        "ts",
+        "capture_sha256",
+        "openssl_version",
+        "sessions",
+        "note"
+      ],
       "properties": {
-        "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
-        "ts": {"type": "string", "format": "date-time"},
-        "capture_sha256": {"$ref": "#/$defs/sha256"},
-        "openssl_version": {"type": "string"},
-        "note": {"type": "string"},
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "capture_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "openssl_version": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
         "sessions": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["service_id", "negotiated_group", "kex_class", "hndl_exposed", "label", "transcript_sha256"],
+            "required": [
+              "service_id",
+              "negotiated_group",
+              "kex_class",
+              "hndl_exposed",
+              "label",
+              "transcript_sha256"
+            ],
             "properties": {
-              "service_id": {"type": "string"},
-              "negotiated_group": {"type": "string"},
-              "kex_class": {"enum": ["classical", "hybrid-pq"]},
-              "hndl_exposed": {"type": "boolean"},
-              "label": {"type": ["string", "null"]},
-              "transcript_sha256": {"$ref": "#/$defs/sha256"},
-              "auth_alg": {"type": "string"},
-              "auth_class": {"enum": ["pq", "classical"]}
+              "service_id": {
+                "type": "string"
+              },
+              "negotiated_group": {
+                "type": "string"
+              },
+              "kex_class": {
+                "enum": [
+                  "classical",
+                  "hybrid-pq"
+                ]
+              },
+              "hndl_exposed": {
+                "type": "boolean"
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "transcript_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "auth_alg": {
+                "type": "string"
+              },
+              "auth_class": {
+                "enum": [
+                  "pq",
+                  "classical"
+                ]
+              }
             }
           }
         }
@@ -280,22 +995,75 @@
     },
     "detect": {
       "type": "object",
-      "required": ["run_id", "ts", "scanned_root", "tree_sha256", "files_scanned", "summary", "findings", "probes", "drift_count", "inventory"],
+      "required": [
+        "run_id",
+        "ts",
+        "scanned_root",
+        "tree_sha256",
+        "files_scanned",
+        "summary",
+        "findings",
+        "probes",
+        "drift_count",
+        "inventory"
+      ],
       "properties": {
-        "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
-        "tree_sha256": {"$ref": "#/$defs/sha256"},
-        "files_scanned": {"type": "integer", "minimum": 0},
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "files_scanned": {
+          "type": "integer",
+          "minimum": 0
+        },
         "findings": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["file", "line", "rule", "family", "use", "confidence", "snippet"],
+            "required": [
+              "file",
+              "line",
+              "rule",
+              "family",
+              "use",
+              "confidence",
+              "snippet"
+            ],
             "properties": {
-              "file": {"type": "string"},
-              "line": {"type": "integer", "minimum": 1},
-              "family": {"enum": ["RSA", "ECC", "DH", "DSA", "PQC", "UNKNOWN"]},
-              "use": {"enum": ["kex", "sig", "both"]},
-              "confidence": {"enum": ["high", "medium", "low"]}
+              "file": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "family": {
+                "enum": [
+                  "RSA",
+                  "ECC",
+                  "DH",
+                  "DSA",
+                  "PQC",
+                  "UNKNOWN"
+                ]
+              },
+              "use": {
+                "enum": [
+                  "kex",
+                  "sig",
+                  "both"
+                ]
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
             }
           }
         },
@@ -303,50 +1071,125 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["service", "endpoint", "live", "drift"],
+            "required": [
+              "service",
+              "endpoint",
+              "live",
+              "drift"
+            ],
             "properties": {
               "drift": {
                 "type": "array",
-                "items": {"type": "object", "required": ["kind", "severity", "detail"]}
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "kind",
+                    "severity",
+                    "detail"
+                  ]
+                }
               }
             }
           }
         },
-        "drift_count": {"type": "integer", "minimum": 0}
+        "drift_count": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "status": {
       "description": "planned until the wave runner has run; applied only when every gate passed on a lab stand-in.",
-      "enum": ["planned", "applied", "partially_verified", "rolled_back", "rollback_failed", "not_verified_in_lab"]
+      "enum": [
+        "planned",
+        "applied",
+        "partially_verified",
+        "rolled_back",
+        "rollback_failed",
+        "not_verified_in_lab"
+      ]
     },
     "waves": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["week", "assets", "effort_days", "status"],
+        "required": [
+          "week",
+          "assets",
+          "effort_days",
+          "status"
+        ],
         "properties": {
-          "week": {"type": "integer", "minimum": 1},
-          "assets": {"type": "array", "items": {"type": "string"}, "minItems": 1},
-          "effort_days": {"type": "number", "minimum": 0},
-          "status": {"$ref": "#/$defs/status"},
-          "asset_status": {"type": "object", "additionalProperties": {"$ref": "#/$defs/status"}},
+          "week": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "effort_days": {
+            "type": "number",
+            "minimum": 0
+          },
+          "status": {
+            "$ref": "#/$defs/status"
+          },
+          "asset_status": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/$defs/status"
+            }
+          },
           "evidence": {
             "type": "object",
-            "required": ["run_id", "ts", "lab_services"],
+            "required": [
+              "run_id",
+              "ts",
+              "lab_services"
+            ],
             "properties": {
-              "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
-              "ts": {"type": "string", "format": "date-time"},
+              "run_id": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{32}$"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
               "lab_services": {
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["lab_service", "assets", "status", "snapshot_sha256", "applied_config_sha256", "gates"],
+                  "required": [
+                    "lab_service",
+                    "assets",
+                    "status",
+                    "snapshot_sha256",
+                    "applied_config_sha256",
+                    "gates"
+                  ],
                   "properties": {
-                    "status": {"enum": ["applied", "rolled_back", "rollback_failed"]},
-                    "snapshot_sha256": {"$ref": "#/$defs/sha256"},
-                    "applied_config_sha256": {"$ref": "#/$defs/sha256"},
-                    "restored_config_sha256": {"$ref": "#/$defs/sha256"}
+                    "status": {
+                      "enum": [
+                        "applied",
+                        "rolled_back",
+                        "rollback_failed"
+                      ]
+                    },
+                    "snapshot_sha256": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "applied_config_sha256": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "restored_config_sha256": {
+                      "$ref": "#/$defs/sha256"
+                    }
                   }
                 }
               }
@@ -355,8 +1198,24 @@
         },
         "allOf": [
           {
-            "if": {"properties": {"status": {"enum": ["applied", "partially_verified", "rolled_back", "rollback_failed"]}}},
-            "then": {"required": ["asset_status", "evidence"]}
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "applied",
+                    "partially_verified",
+                    "rolled_back",
+                    "rollback_failed"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "asset_status",
+                "evidence"
+              ]
+            }
           }
         ]
       }
@@ -364,43 +1223,115 @@
     "scenario_exposure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["scenario", "year", "exposure_years", "weighted_exposure"],
+      "required": [
+        "scenario",
+        "year",
+        "exposure_years",
+        "weighted_exposure"
+      ],
       "properties": {
-        "scenario": {"type": "string"},
-        "year": {"type": "number"},
-        "exposure_years": {"type": "number", "minimum": 0},
-        "weighted_exposure": {"type": "number", "minimum": 0}
+        "scenario": {
+          "type": "string"
+        },
+        "year": {
+          "type": "number"
+        },
+        "exposure_years": {
+          "type": "number",
+          "minimum": 0
+        },
+        "weighted_exposure": {
+          "type": "number",
+          "minimum": 0
+        }
       }
     },
     "plan_summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["method", "completion_week", "per_scenario", "expected_weighted", "worst_case_weighted", "makespan_weeks", "produced_by"],
+      "required": [
+        "method",
+        "completion_week",
+        "per_scenario",
+        "expected_weighted",
+        "worst_case_weighted",
+        "makespan_weeks",
+        "produced_by"
+      ],
       "properties": {
-        "method": {"type": "string"},
-        "objective": {"enum": ["expected", "robust"]},
-        "completion_week": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
-        "waves": {"$ref": "#/$defs/waves"},
-        "per_scenario": {"type": "array", "items": {"$ref": "#/$defs/scenario_exposure"}},
-        "expected_weighted": {"type": "number", "minimum": 0},
-        "worst_case_weighted": {"type": "number", "minimum": 0},
-        "makespan_weeks": {"type": "integer", "minimum": 0},
+        "method": {
+          "type": "string"
+        },
+        "objective": {
+          "enum": [
+            "expected",
+            "robust"
+          ]
+        },
+        "completion_week": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "waves": {
+          "$ref": "#/$defs/waves"
+        },
+        "per_scenario": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scenario_exposure"
+          }
+        },
+        "expected_weighted": {
+          "type": "number",
+          "minimum": 0
+        },
+        "worst_case_weighted": {
+          "type": "number",
+          "minimum": 0
+        },
+        "makespan_weeks": {
+          "type": "integer",
+          "minimum": 0
+        },
         "remaining_by_week": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["scenario", "year", "points"],
+            "required": [
+              "scenario",
+              "year",
+              "points"
+            ],
             "properties": {
-              "scenario": {"type": "string"},
-              "year": {"type": "number"},
+              "scenario": {
+                "type": "string"
+              },
+              "year": {
+                "type": "number"
+              },
               "points": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["week", "exposure_years"],
-                  "properties": {"week": {"type": "integer", "minimum": 0}, "exposure_years": {"type": "number", "minimum": 0}}
+                  "required": [
+                    "week",
+                    "exposure_years"
+                  ],
+                  "properties": {
+                    "week": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "exposure_years": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -409,11 +1340,31 @@
         "produced_by": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["solver", "run_ids", "job_ids"],
+          "required": [
+            "solver",
+            "run_ids",
+            "job_ids"
+          ],
           "properties": {
-            "solver": {"type": "string", "minLength": 1},
-            "run_ids": {"type": "array", "items": {"type": "string"}},
-            "job_ids": {"type": "array", "items": {"type": ["string", "null"]}}
+            "solver": {
+              "type": "string",
+              "minLength": 1
+            },
+            "run_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "job_ids": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
           }
         }
       }
@@ -423,58 +1374,373 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["scenario", "exposure_years_avoided", "weighted_avoided"],
+        "required": [
+          "scenario",
+          "exposure_years_avoided",
+          "weighted_avoided"
+        ],
         "properties": {
-          "scenario": {"type": "string"},
-          "exposure_years_avoided": {"type": "number"},
-          "weighted_avoided": {"type": "number"}
+          "scenario": {
+            "type": "string"
+          },
+          "exposure_years_avoided": {
+            "type": "number"
+          },
+          "weighted_avoided": {
+            "type": "number"
+          }
         }
       }
     },
     "solver_run": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["run_id", "ts", "stage", "solver", "provider", "package_version", "mode", "job_id", "job_id_reason", "status", "inputs_sha256", "output_sha256"],
+      "required": [
+        "run_id",
+        "ts",
+        "stage",
+        "solver",
+        "provider",
+        "package_version",
+        "mode",
+        "job_id",
+        "job_id_reason",
+        "status",
+        "inputs_sha256",
+        "output_sha256"
+      ],
       "properties": {
-        "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
-        "ts": {"type": "string", "format": "date-time"},
-        "stage": {"type": "string"},
-        "provider": {"type": "string"},
-        "package_version": {"type": "string"},
-        "mode": {"enum": ["local", "platform"]},
-        "device": {"type": ["string", "null"]},
-        "job_id": {"type": ["string", "null"]},
-        "job_id_reason": {"type": ["string", "null"]},
-        "solver": {"type": "string", "minLength": 1, "description": "Which solver produced this run's numbers, e.g. 'qpiai-opt platform' or 'qpiai-opt local'."},
-        "problem_id": {"type": ["string", "null"]},
-        "fallback_reason": {"type": ["string", "null"]},
-        "local_output_sha256": {"$ref": "#/$defs/sha256"},
+        "run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "package_version": {
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "local",
+            "platform"
+          ]
+        },
+        "device": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "job_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "job_id_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "solver": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Which solver produced this run's numbers, e.g. 'qpiai-opt platform' or 'qpiai-opt local'."
+        },
+        "problem_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fallback_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "local_output_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
         "comparison": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "description": "Platform vs local objective on the identical input; both kept, never silently merged.",
           "additionalProperties": false,
-          "required": ["platform_objective", "local_objective", "abs_diff", "match"],
+          "required": [
+            "platform_objective",
+            "local_objective",
+            "abs_diff",
+            "match"
+          ],
           "properties": {
-            "platform_objective": {"type": "number"},
-            "local_objective": {"type": "number"},
-            "abs_diff": {"type": "number", "minimum": 0},
-            "match": {"type": "boolean"}
+            "platform_objective": {
+              "type": "number"
+            },
+            "local_objective": {
+              "type": "number"
+            },
+            "abs_diff": {
+              "type": "number",
+              "minimum": 0
+            },
+            "match": {
+              "type": "boolean"
+            }
           }
         },
-        "status": {"type": "string"},
-        "termination": {"type": ["string", "null"]},
-        "guarantee": {"type": ["string", "null"]},
-        "objective": {"type": ["number", "null"]},
-        "solver_time_s": {"type": ["number", "null"]},
-        "inputs_sha256": {"$ref": "#/$defs/sha256"},
-        "output_sha256": {"$ref": "#/$defs/sha256"}
+        "status": {
+          "type": "string"
+        },
+        "termination": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "guarantee": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "objective": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "solver_time_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "inputs_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "output_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
       },
       "allOf": [
         {
-          "if": {"properties": {"job_id": {"type": "null"}}},
-          "then": {"properties": {"job_id_reason": {"type": "string", "minLength": 10}}}
+          "if": {
+            "properties": {
+              "job_id": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "job_id_reason": {
+                "type": "string",
+                "minLength": 10
+              }
+            }
+          }
         }
       ]
+    },
+    "tiebreak": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "ts",
+        "schedule_sha256",
+        "config_sha256",
+        "output_sha256",
+        "method",
+        "keys",
+        "threat",
+        "patch_rule",
+        "assumptions_label",
+        "tie_groups",
+        "dependency_cycles",
+        "waves"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        },
+        "schedule_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "config_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "output_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "label": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "label"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "threat": {
+          "type": "object",
+          "required": [
+            "scenario",
+            "z_years_to_qday",
+            "rule"
+          ]
+        },
+        "patch_rule": {
+          "type": "object",
+          "required": [
+            "order",
+            "names",
+            "note"
+          ]
+        },
+        "assumptions_label": {
+          "const": "assumption"
+        },
+        "tie_groups": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dependency_cycles": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "waves": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "week",
+              "batches"
+            ],
+            "properties": {
+              "week": {
+                "type": "integer"
+              },
+              "batches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "rank",
+                    "id",
+                    "week",
+                    "score",
+                    "uses",
+                    "patches",
+                    "mosca",
+                    "keys",
+                    "decided_by",
+                    "why",
+                    "tie"
+                  ],
+                  "properties": {
+                    "rank": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "week": {
+                      "type": "integer"
+                    },
+                    "score": {
+                      "type": "number"
+                    },
+                    "uses": {
+                      "type": "array",
+                      "items": {
+                        "enum": [
+                          "kex",
+                          "sig"
+                        ]
+                      }
+                    },
+                    "patches": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "mosca": {
+                      "type": "object",
+                      "required": [
+                        "x_shelf_life_years",
+                        "y_migration_years",
+                        "z_years_to_qday",
+                        "exposed"
+                      ]
+                    },
+                    "keys": {
+                      "type": "object"
+                    },
+                    "decided_by": {
+                      "type": "string"
+                    },
+                    "why": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "tie": {
+                      "oneOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "size",
+                            "position",
+                            "with",
+                            "dependency_cycle"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

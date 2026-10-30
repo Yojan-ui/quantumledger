@@ -42,6 +42,15 @@ export const FLOW: FlowStep[] = [
     hands: "The wave plan (week per system)",
     does: "Plans the migration in weekly waves (QpiAI Opt MILP) within team capacity and dependencies, compared with simple orders.",
   },
+  // Added in Quantum Ledger (not in the original Atlas sidebar): python -m tiebreak, right after the plan.
+  {
+    id: "tiebreak",
+    href: "tiebreak",
+    label: "Tie-break priority",
+    stages: ["tiebreak"],
+    hands: "The patch order inside each wave",
+    does: "When batches in a wave have the same vulnerability score, decides which one gets its ML-KEM / ML-DSA patch first (Mosca margin, harvest-now exposure, internet exposure, dependents, effort, id).",
+  },
   {
     id: "gates",
     href: "handshakes",
@@ -122,6 +131,15 @@ export function flowFacts(
       mean: `to migrate everything in ${pl(r.waves.length, "wave", "waves")} at the assumed capacity`,
       backend: solverLabel(results),
     };
+  if (r.tiebreak) {
+    const t = r.tiebreak as Any;
+    const n = ((t.waves ?? []) as Any[]).reduce((k, w) => k + (w.batches ?? []).length, 0);
+    f.tiebreak = {
+      num: pl(t.tie_groups, "tie", "ties"),
+      mean: `resolved across ${pl(n, "batch", "batches")}; Q-day ${t.threat.scenario} used for Mosca's margin`,
+      backend: "deterministic keys · config/tiebreak.json (assumption)",
+    };
+  }
   if (r.qaoa) {
     const top = ((r.qaoa.runs ?? []) as Any[])
       .filter((x) => x.source === "local" && x.metrics)

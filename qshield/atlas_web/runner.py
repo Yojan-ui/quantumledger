@@ -178,6 +178,7 @@ def pipeline_steps(ws: Workspace, probes: list[str], platform: bool = False, qcl
         ("schedule", [*py, "schedule", "--inventory", str(ws.out / "inventory.json"), "--assumptions", str(ws.assumptions),
                       "--out", str(ws.out / "schedule.json"), "--runs", runs, "--platform-log", str(PLATFORM_LOG),
                       *(["--platform"] if platform else [])]),
+        ("tiebreak", [*py, "tiebreak", "--schedule", str(ws.out / "schedule.json"), "--out-dir", out, "--runs", runs]),
         ("capture", [*py, "capture", "--out-dir", out, "--runs", runs]),
         ("gates", [*py, "gates", "--schedule", str(ws.out / "schedule.json"), "--out-dir", out, "--runs", runs]),
         ("qaoa", [*py, "qaoa", "--qpiai-local", "--schedule", str(ws.out / "schedule.json"), "--out-dir", out, "--runs", runs,

@@ -195,3 +195,26 @@ export function KeyStats({ items }: { items: KeyStat[] }) {
     </ul>
   );
 }
+
+/** Long explanations, notes and caveats: a native disclosure, closed by default (keyboard and screen-reader ready). */
+export function Details({
+  summary = "Details",
+  children,
+}: {
+  summary?: string;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group mt-4 rounded-lg border border-line">
+      <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 font-mono text-micro uppercase text-fg-2 hover:text-fg">
+        {summary}
+        <span aria-hidden className="transition-transform duration-150 group-open:rotate-180">
+          ▾
+        </span>
+      </summary>
+      <div className="space-y-3 border-t border-line px-4 py-4 text-small text-fg-2">
+        {children}
+      </div>
+    </details>
+  );
+}

@@ -3,6 +3,7 @@
 Payloads are the immutable per-run files under runs/<run_id>/:
   schedule.solver_run  runs/<id>/manifest.json   job_id, problem_id, solver, input/output hashes
   detect.run           runs/<id>/manifest.json   tree hash, inventory hash
+  tiebreak.run         runs/<id>/manifest.json   tie-break order, keys, patches, schedule/config hashes
   capture.run          runs/<id>/manifest.json   full capture.json (transcript hashes) + gate results
   gates.run            runs/<id>/manifest.json   compat matrix summary, wave counts
   gates.wave_run       runs/<id>/wave_runner.json per-wave status, config and transcript hashes
@@ -31,6 +32,8 @@ def run_manifests(out_dir: Path, runs_dir: Path) -> list[tuple[str, Path]]:
         items += [("schedule.solver_run", runs_dir / r["run_id"] / "manifest.json") for r in schedule["solver_runs"]]
     if detect := load("detect.json"):
         items.append(("detect.run", runs_dir / detect["run_id"] / "manifest.json"))
+    if tiebreak := load("tiebreak.json"):
+        items.append(("tiebreak.run", runs_dir / tiebreak["run_id"] / "manifest.json"))
     if capture := load("capture.json"):
         items.append(("capture.run", runs_dir / capture["run_id"] / "manifest.json"))
     if gates := load("gates.json"):

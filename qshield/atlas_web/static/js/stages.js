@@ -25,6 +25,14 @@ export const STAGES = [
   ]
  },
  {
+  "id": "tiebreak",
+  "label": "Tie-break",
+  "plain": "Order equal-score batches inside each wave (Mosca margin, harvest-now exposure, internet exposure, dependents, effort, id) and choose ML-KEM / ML-DSA per batch",
+  "steps": [
+   "tiebreak"
+  ]
+ },
+ {
   "id": "capture",
   "label": "Handshakes",
   "plain": "Record real TLS 1.3 handshakes from the lab services",
@@ -97,7 +105,8 @@ export const FLOW = [
   "does": "Plans the migration in weekly waves that cut exposure fastest, within team capacity and dependencies.",
   "hands": "The wave plan (week per system)",
   "stages": [
-   "schedule"
+   "schedule",
+   "tiebreak"
   ]
  },
  {

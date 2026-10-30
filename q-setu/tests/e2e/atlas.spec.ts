@@ -123,7 +123,10 @@ test.describe("with Atlas on :8100", () => {
     const errors = trackErrors(page);
     await page.goto("/diagnostics?ws=demo");
     const stages = page.getByRole("list", { name: "Q-Shield pipeline stages" }).locator("li");
-    await expect(stages).toHaveCount(8);
+    const n = (
+      (await (await page.request.get("/atlas-api/stages")).json()) as { stages: unknown[] }
+    ).stages.length;
+    await expect(stages).toHaveCount(n);
     await expect(page.getByRole("button", { name: /Run pipeline/ })).toBeDisabled(); // demo is read-only
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("heading", { level: 2, name: "Detect" })).toBeVisible();

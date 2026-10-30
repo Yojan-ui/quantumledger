@@ -10,7 +10,7 @@ REPO = Path(__file__).resolve().parent.parent
 
 
 def test_order_is_detect_then_proof_chain_then_the_rest():
-    assert [s["id"] for s in STAGES] == ["detect", "ledger", "schedule", "capture", "gates", "qaoa", "seal", "report"]
+    assert [s["id"] for s in STAGES] == ["detect", "ledger", "schedule", "tiebreak", "capture", "gates", "qaoa", "seal", "report"]
     assert STAGES[1]["label"] == "Proof Chain"  # UI name only; code and API keep "ledger"
     assert STEPS[:3] == ("detect", "ledger_open", "schedule")
     assert all(s["plain"] and s["label"] and s["steps"] for s in STAGES)

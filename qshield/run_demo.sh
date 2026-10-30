@@ -138,6 +138,7 @@ summary() {
 step detect          "$PY" -m detect --lab-probe web-gw=legacy
 step ledger_open     "$PY" -m ledger ingest --only detect.run
 step schedule        "$PY" -m schedule --inventory out/inventory.json ${PLATFORM_ARGS[@]+"${PLATFORM_ARGS[@]}"} ${ALLOW_MORE[@]+"${ALLOW_MORE[@]}"}
+step tiebreak        "$PY" -m tiebreak
 step capture         "$PY" -m capture
 step gates           "$PY" -m gates
 step qaoa            "$PY" -m qaoa --qpiai-local ${QCLOUD_ARGS[@]+"${QCLOUD_ARGS[@]}"} ${ALLOW_MORE[@]+"${ALLOW_MORE[@]}"}

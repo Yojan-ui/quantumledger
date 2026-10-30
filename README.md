@@ -256,6 +256,8 @@ browser ── same origin ──> Next.js (q-setu/apps/web)
   origin, so Atlas's origin check is unchanged. Session (HttpOnly) and CSRF cookies pass through as set.
 - Types for `results.json`, `bench.json` and ledger entries are generated from `qshield/contracts/*.schema.json`
   (`pnpm gen:atlas-types`).
+- A tie-break priority stage (`qshield/tiebreak/`, after Plan) orders equal-score batches inside each wave
+  and picks ML-KEM / ML-DSA per batch; the algorithm and its assumptions: `qshield/docs/TIEBREAK.md`.
 - Pages: Detect (file:line findings), Inventory & drift, Plan (MILP vs FCFS vs greedy per Q-day scenario,
   assumptions labelled), Handshake gates, Wave selection (QAOA rows as recorded), Proof Chain (live
   verification, Merkle proof, tamper test on a copy), Review (signed decisions), and Atlas's own report.

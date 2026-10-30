@@ -64,7 +64,7 @@ import { ROUTES } from "../static/js/routes.js";
 test("display order follows the backend run order; every backend stage lights exactly one step", () => {
   assert.deepEqual(FLOW.map((f) => f.label), ["Detect", "Proof: findings signed", "Plan", "Handshake gates", "Wave selection", "Proof: post-quantum verified", "Review"]);
   const order = STEPS.map((st) => STAGE_OF[st].id).filter((id, i, a) => a.indexOf(id) === i && id !== "report");
-  assert.deepEqual(FLOW.flatMap((f) => f.stages), order);  // detect, ledger, schedule, capture, gates, qaoa, seal
+  assert.deepEqual(FLOW.flatMap((f) => f.stages), order);  // detect, ledger, schedule, tiebreak, capture, gates, qaoa, seal
   const byStep = ROUTES.filter((r) => r.step).sort((a, b) => a.step - b.step || a.rail - b.rail).map((r) => r.name);
   assert.deepEqual(byStep, ["detect", "ledger", "schedule", "handshakes", "qaoa", "review"]);
 });

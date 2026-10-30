@@ -29,7 +29,7 @@ const MARK: Record<StageStatus, string> = { idle: "·", running: "…", done: "�
 function Stepper() {
   const s = useAtlasRun((x) => x);
   return (
-    <ol className="grid grid-cols-4 md:grid-cols-8" aria-label="Q-Shield pipeline stages">
+    <ol className="grid grid-cols-3 md:flex" aria-label="Q-Shield pipeline stages">
       {s.stages.map((st, i) => {
         const status = s.status[i] ?? "idle";
         return (
@@ -37,7 +37,7 @@ function Stepper() {
             key={st.id}
             data-stage={st.id}
             data-status={status}
-            className="relative border-r border-t border-line last:border-r-0"
+            className="relative min-w-0 border-r border-t border-line last:border-r-0 md:flex-1"
           >
             <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-line">
               <span

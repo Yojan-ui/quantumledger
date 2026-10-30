@@ -115,7 +115,7 @@ Report exposure-years avoided vs both baselines on the same data.
   Verify with pytest, `node --test atlas_web/jstests/*.test.mjs`, `python tools/route_check.py`, `tools/bench_api.py`.
 
 ## Mentor pass (user, 2026-10-29)
-- Stages live in contracts/stages.json (Detect -> Proof Chain -> Plan -> Handshakes -> Gates -> QAOA -> Seal -> Report);
+- Stages live in contracts/stages.json (Detect -> Proof Chain -> Plan -> Tie-break -> Handshakes -> Gates -> QAOA -> Seal -> Report; tie-break: docs/TIEBREAK.md);
   after editing it run `python -m contracts.stages --write-js`. "Proof Chain" is the UI name only; code/API keep `ledger`.
 - Solvers: solvers.solve(); QAOA's subproblem is "link cutover selection" (one asset's TLS endpoint per variable; no
   network-transmission model). MILP for the full schedule. Benchmark: python -m bench (signed as bench.run).
