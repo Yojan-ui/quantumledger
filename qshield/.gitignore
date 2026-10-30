@@ -1,0 +1,15 @@
+.env.sh
+*.bak
+*.backup
+*_backup_*.py
+__pycache__/
+.pytest_cache/
+out/
+runs/
+.cache/
+keys/
+atlas_web/data/
+atlas_web/dist/
+atlas_web/screenshots/**/*.png
+quantum-sdk/
+logs/

@@ -1,0 +1,89 @@
+{
+  "label": "atlas_web settings. Policy, not measurements.",
+  "platform": {
+    "note": "Paid QpiAI runs from the web UI: admin-only, confirm dialog, same platform_guard (daily cap, logging, QpiAI-Indus-1 refused). Both stay disabled until the user flips the switch below after the account is fixed.",
+    "opt_enabled": false,
+    "opt_blocked_reason": "QpiAI Opt platform submissions were rejected by the server: \"no active storage quota found for organization\" (2026-10-28). No platform job was created. Disabled until the account has a storage quota.",
+    "qcloud_enabled": false,
+    "qcloud_blocked_reason": "QCloud job creation was rejected: \"an active subscription is required to run jobs\" (2026-10-28T15:29:50Z, run a7985b93f3a5490aaa3636c969dcc1c3). No QCloud job was created. Disabled until the account has a subscription."
+  },
+  "fresh_handshake": {
+    "note": "Move page 'Run fresh handshake now' (operators): starts the lab TLS services on 127.0.0.1 via capture/, one handshake per service and client, then stops them. Never an external host. Logged under atlas_web/data/fresh_handshakes/ (git-ignored); not part of results.json, not signed. Enabled by the user on 2026-10-29.",
+    "enabled": true,
+    "disabled_reason": "off: an admin can enable fresh_handshake in config/atlas_web.json"
+  },
+  "limits": {
+    "upload_max_bytes": 209715200,
+    "unzipped_max_bytes": 1073741824,
+    "unzipped_max_files": 20000,
+    "max_compression_ratio": 200,
+    "clone_timeout_s": 120,
+    "probe_timeout_s": 10,
+    "step_timeout_s": 900,
+    "session_hours": 8,
+    "login_failures": 5,
+    "login_window_s": 300
+  },
+  "presentation": {
+    "note": "Layout of THE LATTICE only (where a service sits), not data: layer by asset kind, front to back.",
+    "layers": [
+      {
+        "id": "edge",
+        "label": "edge",
+        "kinds": [
+          "cdn_edge",
+          "tls_gateway",
+          "vpn"
+        ]
+      },
+      {
+        "id": "app",
+        "label": "application",
+        "kinds": [
+          "service_mtls",
+          "message_bus",
+          "batch_sftp"
+        ]
+      },
+      {
+        "id": "data",
+        "label": "data",
+        "kinds": [
+          "database_tls"
+        ]
+      },
+      {
+        "id": "trust",
+        "label": "root of trust",
+        "kinds": [
+          "root_ca",
+          "hsm"
+        ]
+      }
+    ],
+    "layer_spacing": 4.0,
+    "cell": 2.0
+  },
+  "reference_endpoints": {
+    "label": "public reference servers: one standard TLS handshake each, no scanning",
+    "verified": "2026-10-29 with OpenSSL 3.6.5: a client offering only X25519MLKEM768 was accepted by pq.cloudflareresearch.com and refused (handshake failure) by www.gnu.org; the standard probe then negotiated X25519MLKEM768 and X25519 respectively.",
+    "endpoints": [
+      {
+        "id": "cloudflare-pq",
+        "service": "ref-cloudflare-pq",
+        "host": "pq.cloudflareresearch.com",
+        "port": 443,
+        "expect": "hybrid X25519MLKEM768",
+        "operator": "Cloudflare Research (public PQ test server)"
+      },
+      {
+        "id": "gnu-classical",
+        "service": "ref-gnu-classical",
+        "host": "www.gnu.org",
+        "port": 443,
+        "expect": "classical (refuses an X25519MLKEM768-only offer)",
+        "operator": "GNU Project (public website)"
+      }
+    ]
+  }
+}

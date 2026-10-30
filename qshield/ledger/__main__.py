@@ -1,0 +1,149 @@
+"""python -m ledger keygen | ingest | verify | proof INDEX
+
+keygen  create the ML-DSA-65 signing key in keys/ (0600) and write the public key + fingerprint;
+        refuses to overwrite an existing key
+
+ingest  append ML-DSA-65-signed run manifests to out/ledger.jsonl, write out/ledger.json and
+        re-assemble out/results.json (ledger_root, entry_count, pubkey_fp anchored there)
+verify  re-hash payloads, check chain, signatures and the root anchored in results.json
+proof   print and check an RFC 6962 inclusion proof for one entry
+append  sign one payload file (under --root) as entry --type, then re-anchor results.json
+
+Path flags (defaults = the repo layout): --root is the directory payload_ref / ledger_ref are
+relative to (it must contain --runs and the ledger), --keys-dir holds the signing key pair.
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from contracts.assemble import assemble
+
+from .backend import detect
+from .ingest import ingest
+from .log import Ledger, canonical, read_entries
+from .merkle import MerkleTree, verify_proof
+from .verify import status_record, verify
+
+REPO = Path(__file__).resolve().parent.parent
+PRIVATE_KEY = REPO / "keys" / "ledger_mldsa65.key"
+LOCAL_PUBLIC_KEY = REPO / "keys" / "ledger_mldsa65.pub.pem"  # written by keygen; git-ignored
+PROJECT_PUBLIC_KEY = REPO / "ledger" / "pubkey" / "ledger_mldsa65.pub.pem"  # committed project key
+LEDGER = REPO / "out" / "ledger.jsonl"
+
+
+def default_public_key(keys_dir: Path | None = None) -> Path:
+    """The key generated on this machine (in keys_dir) if any, else the committed project key."""
+    local = LOCAL_PUBLIC_KEY if keys_dir is None else Path(keys_dir) / LOCAL_PUBLIC_KEY.name
+    return local if local.exists() else PROJECT_PUBLIC_KEY
+
+
+def check_chain_before_append(ledger_path: Path, public_key: Path, backend, root: Path) -> None:
+    """Verify the existing chain (hashes, links, signatures) before anything new is signed onto it.
+    A missing or empty ledger is fine (first append). Any failure stops the caller: nothing is appended."""
+    if not ledger_path.exists() or not ledger_path.read_text().strip():
+        print("chain empty: nothing to verify before the first append")
+        return
+    rep = verify(ledger_path, public_key, backend, root, None)  # no root anchor: results.json can lag after a failed run
+    if not rep["ok"]:
+        f = rep.get("first_failure") or {}
+        sys.exit(f"Proof Chain verification FAILED at #{f.get('index')}: {f.get('reason')}. Refusing to append; nothing was signed. "
+                 "Restore the ledger from a good copy or start a new workspace.")
+    print(f"chain verified ({rep['entries_checked']} entries) before append")
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("command", choices=["keygen", "ingest", "verify", "proof", "append"])
+    ap.add_argument("index", nargs="?", help="proof: entry index; append: payload file")
+    ap.add_argument("--type", help="append: entry type, e.g. calibration.apply")
+    ap.add_argument("--ledger", type=Path, default=LEDGER)
+    ap.add_argument("--public-key", type=Path, default=None, help="default: keys/ledger_mldsa65.pub.pem, else the committed key")
+    ap.add_argument("--out-dir", type=Path, default=REPO / "out")
+    ap.add_argument("--runs", type=Path, default=REPO / "runs")
+    ap.add_argument("--root", type=Path, default=REPO, help="directory payload_ref and ledger_ref are relative to")
+    ap.add_argument("--keys-dir", type=Path, default=PRIVATE_KEY.parent)
+    ap.add_argument("--only", help="ingest: comma-separated entry types to sign now (e.g. detect.run); results.json is not reassembled")
+    args = ap.parse_args(argv)
+    backend = detect()
+    private_key = args.keys_dir / PRIVATE_KEY.name
+    local_public_key = args.keys_dir / LOCAL_PUBLIC_KEY.name
+
+    if args.command == "keygen":
+        if private_key.exists():
+            sys.exit(f"{private_key} already exists; not overwriting")
+        args.keys_dir.mkdir(parents=True, exist_ok=True)
+        # the public key goes next to the private key (git-ignored): committed files are never rewritten
+        backend.generate(private_key, local_public_key)
+        fp = backend.fingerprint(local_public_key)
+        local_public_key.with_suffix(".sha256").write_text(fp + "\n")
+        print(f"ML-DSA-65 key pair created in {args.keys_dir.name}/ (git-ignored; private key 0600); pubkey_fp {fp}")
+        return 0
+    if args.public_key is None:
+        args.public_key = default_public_key(args.keys_dir)
+
+    if args.command == "append":
+        if not private_key.exists():
+            sys.exit(f"no signing key at {private_key}; generate one (see README) - keys are never committed")
+        if not args.type or not args.index:
+            sys.exit("usage: python -m ledger append PAYLOAD --type TYPE")
+        from .ingest import ledger_summary
+
+        check_chain_before_append(args.ledger, args.public_key, backend, args.root)
+        ledger = Ledger(args.ledger, backend, private_key, args.public_key, args.root)
+        entry = ledger.append(args.type, Path(args.index).resolve())
+        (args.out_dir / "ledger.json").write_text(json.dumps(ledger_summary(ledger, args.root), indent=1))
+        (args.out_dir / "ledger_verify.json").unlink(missing_ok=True)  # any earlier verification is stale now
+        (args.out_dir / "results.json").write_text(json.dumps(assemble(args.out_dir), indent=1))
+        print(f"appended #{entry['index']} {entry['type']} {entry['payload_ref']} payload {entry['payload_hash'][:16]}")
+        return 0
+
+    if args.command == "ingest":
+        if not private_key.exists():
+            sys.exit(f"no signing key at {private_key}; generate one (see README) - keys are never committed")
+        check_chain_before_append(args.ledger, args.public_key, backend, args.root)
+        ledger = Ledger(args.ledger, backend, private_key, args.public_key, args.root)
+        only = set(args.only.split(",")) if args.only else None
+        appended, summary = ingest(ledger, args.out_dir, args.runs, only)
+        (args.out_dir / "ledger_verify.json").unlink(missing_ok=True)  # any earlier verification is stale now
+        if only is None:  # a partial ingest runs before schedule.json exists; the final ingest reassembles
+            (args.out_dir / "results.json").write_text(json.dumps(assemble(args.out_dir), indent=1))
+        print(f"backend {backend.label}, alg ML-DSA-65, pubkey_fp {summary['pubkey_fp']}")
+        for e in appended:
+            print(f"  appended #{e['index']:<3} {e['type']:20} {e['payload_ref']}  payload {e['payload_hash'][:16]}")
+        print(f"entries {summary['entry_count']} (+{len(appended)}), root {summary['root']}" + (" -> results.json" if only is None else f" (only {args.only})"))
+        return 0
+
+    if args.command == "verify":
+        results = json.loads((args.out_dir / "results.json").read_text())
+        report = verify(args.ledger, args.public_key, backend, args.root, results.get("ledger"))
+        anchored = results.get("ledger") and args.ledger.resolve() == (args.root / results["ledger"]["ledger_ref"]).resolve()
+        if anchored:  # only the anchored ledger's result is recorded; checking a copy never touches out/
+            status = status_record(report, backend.fingerprint(args.public_key))
+            (args.out_dir / "ledger_verify.json").write_text(json.dumps(status, indent=1))
+            (args.out_dir / "results.json").write_text(json.dumps(assemble(args.out_dir), indent=1))
+        else:
+            print(f"(checking {args.ledger}, not the anchored ledger: result not recorded)")
+        if report["ok"]:
+            print(f"OK: {report['entries_checked']} entries; chain, ML-DSA-65 signatures and payload hashes verified; "
+                  f"root {report['root']} matches results.json")
+            return 0
+        f = report["first_failure"]
+        print(f"FAIL at index {f['index']}: {f['reason']}")
+        return 1
+
+    entries = read_entries(args.ledger)
+    items = [canonical(e) for e in entries]
+    tree = MerkleTree(items)
+    i = int(args.index) if args.index is not None else len(entries) - 1
+    proof = tree.inclusion_proof(i)
+    ok = verify_proof(items[i], i, len(items), proof, tree.root())
+    print(json.dumps({"index": i, "type": entries[i]["type"], "tree_size": len(items), "root": tree.root(),
+                      "leaf_hash": __import__("hashlib").sha256(b"\x00" + items[i]).hexdigest(),
+                      "proof": proof, "verified": ok}, indent=1))
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,131 @@
+"""python -m schedule [--platform [--allow-more]]  ->  out/schedule.json + runs/<run_id>/.
+
+Default is local QpiAI Opt solves. --platform submits the main-plan stages as paid platform jobs.
+"""
+
+import argparse
+import json
+import os
+from pathlib import Path
+
+from qpiai_opt.opt_solvers import Client
+
+import solvers
+from contracts.manifest import sha256_json
+
+from .baselines import run_baselines
+from .milp import STAGES
+from .platform_guard import DAILY_LIMIT, PlatformBudget
+from .problem import DEFAULT_ASSUMPTIONS, DEFAULT_INVENTORY, REPO, load_problem, remaining_series
+from .sensitivity import horizon_for, run_sensitivity
+
+
+def avoided(baseline: dict, optimized: dict) -> list[dict]:
+    return [
+        {
+            "scenario": b["scenario"],
+            "exposure_years_avoided": b["exposure_years"] - o["exposure_years"],
+            "weighted_avoided": b["weighted_exposure"] - o["weighted_exposure"],
+        }
+        for b, o in zip(baseline["per_scenario"], optimized["per_scenario"])
+    ]
+
+
+NO_ASSETS = "none: the inventory has no quantum-vulnerable assets, so there is nothing to schedule"
+
+
+def empty_section(problem) -> dict:
+    """A real result, not an error: detect found nothing to migrate. No solver runs (nothing was solved)."""
+    plan = lambda method: {  # noqa: E731
+        "method": method, "completion_week": {}, "waves": [], "expected_weighted": 0.0, "worst_case_weighted": 0.0,
+        "makespan_weeks": 0, "per_scenario": [{"scenario": s.name, "year": s.year, "exposure_years": 0.0, "weighted_exposure": 0.0}
+                                              for s in problem.scenarios],
+        "remaining_by_week": [{"scenario": s.name, "year": s.year, "points": [{"week": 0, "exposure_years": 0.0}]} for s in problem.scenarios],
+        "produced_by": {"solver": NO_ASSETS, "run_ids": [], "job_ids": []},
+    }
+    optimized = {**plan("qpiai-opt-milp-" + problem.objective), "objective": problem.objective}
+    baselines = {"fcfs": plan("fcfs"), "greedy": plan("greedy")}
+    return {"assumptions": {**problem.raw_assumptions, "sha256": sha256_json(problem.raw_assumptions)},
+            "scenarios": [{"name": s.name, "year": s.year, "weight": s.weight} for s in problem.scenarios],
+            "assets": [], "waves": [], "exposure": optimized, "baselines": baselines,
+            "avoided": {"vs_fcfs": avoided(baselines["fcfs"], optimized), "vs_greedy": avoided(baselines["greedy"], optimized)},
+            "solver_runs": [], "sensitivity": None, "nothing_to_migrate": True}
+
+
+def build_section(problem, client, run_dir, with_sensitivity=True, mode="local", budget=None) -> dict:
+    if not problem.assets:
+        return empty_section(problem)
+    baselines = run_baselines(problem)
+    sol = solvers.solve("migration_schedule", {"problem": problem, "client": client, "horizon": horizon_for(problem, baselines),
+                                               "run_dir": run_dir, "mode": mode, "budget": budget})  # config/solvers.json: milp
+    optimized, runs = sol.record
+    weeks = optimized["completion_week"]
+    horizon = max(p["makespan_weeks"] for p in (optimized, *baselines.values()))
+    for plan in (optimized, *baselines.values()):  # common week axis for all plans
+        plan["remaining_by_week"] = remaining_series(problem, plan["completion_week"], horizon)
+    return {
+        "assumptions": {**problem.raw_assumptions, "sha256": sha256_json(problem.raw_assumptions)},
+        "scenarios": [{"name": s.name, "year": s.year, "weight": s.weight} for s in problem.scenarios],
+        "assets": [
+            {
+                "id": a.id,
+                "name": a.name,
+                "kind": a.kind,
+                "data_class": a.data_class,
+                "algorithm": a.algorithm,
+                "shelf_life_years": a.shelf_life_years,
+                "effort_days": a.effort_days,
+                "risk_weight": a.risk_weight,
+                "depends_on": list(a.depends_on),
+                "status": "planned",
+                "planned_week": weeks[a.id],
+                "evidence": list(a.evidence),
+            }
+            for a in problem.assets
+        ],
+        "waves": optimized["waves"],
+        "exposure": optimized,
+        "baselines": baselines,
+        "avoided": {"vs_fcfs": avoided(baselines["fcfs"], optimized), "vs_greedy": avoided(baselines["greedy"], optimized)},
+        "solver_runs": runs,
+        "sensitivity": run_sensitivity(problem, client, run_dir) if with_sensitivity else None,
+    }
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--assumptions", default=DEFAULT_ASSUMPTIONS)
+    ap.add_argument("--inventory", default=DEFAULT_INVENTORY)
+    ap.add_argument("--out", default=REPO / "out" / "schedule.json")
+    ap.add_argument("--runs", default=REPO / "runs")
+    ap.add_argument("--no-sensitivity", action="store_true")
+    ap.add_argument("--platform", action="store_true", help="opt-in: submit the main-plan MILP stages as paid QpiAI platform jobs")
+    ap.add_argument("--allow-more", action="store_true", help=f"allow more than {DAILY_LIMIT} platform jobs per UTC day")
+    ap.add_argument("--platform-log", type=Path, default=None,
+                    help="shared daily-cap log (default RUNS/platform_jobs.log); point every workspace at one file")
+    args = ap.parse_args(argv)
+
+    problem = load_problem(args.assumptions, args.inventory)
+    mode, budget = "local", None
+    if args.platform:
+        mode = "platform"
+        budget = PlatformBudget(Path(args.platform_log or Path(args.runs) / "platform_jobs.log"), allow_more=args.allow_more)
+        budget.check(len(STAGES[problem.objective]))  # refuse up front rather than after a partial run
+    client = Client(api_key=os.environ["QPIAI_OPT_API_KEY"])
+    section = build_section(problem, client, Path(args.runs), not args.no_sensitivity, mode, budget)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(section, indent=1))
+    print(f"wrote {out}")
+    for r in section["solver_runs"]:
+        print(f"  {r['stage']}: solver={r['solver']} job_id={r['job_id']} problem_id={r['problem_id']} run_id={r['run_id']}")
+        if r["comparison"]:
+            c = r["comparison"]
+            print(f"    objective platform={c['platform_objective']!r} local={c['local_objective']!r} match={c['match']}")
+    for name in ("fcfs", "greedy"):
+        for row in section["avoided"][f"vs_{name}"]:
+            print(f"  vs {name:6} {row['scenario']}: {row['exposure_years_avoided']:.3f} exposure-years avoided")
+
+
+if __name__ == "__main__":
+    main()
