@@ -122,7 +122,7 @@ export function PlannerComparison({
           "Weighted exposure (cost)",
           "Worst case",
           "Makespan",
-          ...scen.map((s) => `Avoided vs FCFS · ${yearOf(s)}`),
+          `Avoided vs FCFS (${scen.map((s) => yearOf(s)).join(" · ")})`,
           "Solve time",
           "Guarantee",
         ]}
@@ -134,7 +134,9 @@ export function PlannerComparison({
           fmt(p.expected_weighted, 2),
           fmt(p.worst_case_weighted, 2),
           `${fmt(p.makespan_weeks)} wk`,
-          ...scen.map((s) => fmt(avoided(p, s), 3)),
+          <span key="av" className="whitespace-nowrap tabular">
+            {scen.map((s) => fmt(avoided(p, s), 3)).join(" · ")}
+          </span>,
           t,
           name.startsWith("QpiAI")
             ? `${main?.termination ?? "–"} · ${main?.guarantee?.replaceAll("_", " ") ?? "–"}`

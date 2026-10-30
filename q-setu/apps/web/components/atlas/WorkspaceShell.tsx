@@ -84,7 +84,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         aria-label="Pipeline steps"
         className="mt-8 max-w-full overflow-x-auto border-b border-line"
       >
-        <ol className="flex min-w-max gap-1">
+        <ol className="flex min-w-max gap-1 lg:min-w-0 lg:flex-wrap">
           {TABS.map((t) => {
             const [page, query] = t.href.split("?");
             const href = `/atlas/${encodeURIComponent(ws)}${page ? `/${page}` : ""}${query ? `?${query}` : ""}`;
