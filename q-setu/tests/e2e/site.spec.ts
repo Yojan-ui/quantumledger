@@ -13,7 +13,6 @@ const PAGES: [string, RegExp][] = [
   ["/solutions", /most sensitive rails/],
   ["/solutions/fintech", /Payment and banking traffic/],
   ["/demos", /Real crypto\. No slides\./],
-  ["/pricing", /Start free/],
   ["/security", /What we protect/],
   ["/about", /Quantum-safe India before Q-Day/],
   ["/changelog", /release by release/],
@@ -124,9 +123,9 @@ test("⌘K jumps to any page", async ({ page }) => {
     await page.keyboard.press("ControlOrMeta+k");
     await expect(page.getByPlaceholder(/Search pages/)).toBeVisible({ timeout: 1000 });
   }).toPass();
-  await page.getByPlaceholder(/Search pages/).fill("pricing");
+  await page.getByPlaceholder(/Search pages/).fill("contact");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/pricing$/);
+  await expect(page).toHaveURL(/\/contact$/);
 });
 
 test("presenter mode: keyboard drives the demos, R resets everything", async ({ page }) => {

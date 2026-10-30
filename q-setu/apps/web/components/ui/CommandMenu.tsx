@@ -17,7 +17,6 @@ const GROUPS: { heading: string; items: [string, string][] }[] = [
       ["Platform", "/platform"],
       ["Solutions", "/solutions"],
       ["Fintech", "/solutions/fintech"],
-      ["Pricing", "/pricing"],
       ["Security", "/security"],
       ["About", "/about"],
       ["Changelog", "/changelog"],

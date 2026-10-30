@@ -19,7 +19,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/demo/ledger",
     "/demo/scanner",
     "/atlas",
-    "/pricing",
     "/security",
     "/about",
     "/changelog",

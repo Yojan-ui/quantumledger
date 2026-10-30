@@ -14,7 +14,7 @@ const RELEASES: { version: string; date: string; items: string[] }[] = [
     items: [
       "“Is your bank quantum-safe?”: live URL scans with a score, plain-language findings and shareable results",
       "Drizzle persistence: SQLite locally, Postgres in production; KMS keys stored with the ledger",
-      "Developer docs, pricing, security and company pages; ⌘K command menu; presenter and offline modes",
+      "Developer docs, security and company pages; ⌘K command menu; presenter and offline modes",
     ],
   },
   {
