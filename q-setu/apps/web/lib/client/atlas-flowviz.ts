@@ -27,6 +27,10 @@ export type FlowModel = {
   batches: FlowBatch[];
   waves: number;
   ledger: { entries: number; verified: boolean };
+  /** One key number per station id, from Atlas JSON only (shown on hover and in the replay line). */
+  facts: Record<string, string>;
+  /** A real tied pair (tie-break tie group of size >= 2, same wave): batch indexes in final order. */
+  tiePair: [number, number] | null;
 };
 
 type Any = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -53,7 +57,15 @@ export function buildFlowModel(
     plain: s.plain,
     status: status[i] ?? "idle",
   }));
-  if (!results) return { stations, batches: [], waves: 0, ledger: { entries: 0, verified: false } };
+  if (!results)
+    return {
+      stations,
+      batches: [],
+      waves: 0,
+      ledger: { entries: 0, verified: false },
+      facts: {},
+      tiePair: null,
+    };
   const r = results as unknown as Any;
   const assets = (r.assets ?? []) as Any[];
   const maxRisk = Math.max(1e-9, ...assets.map((a) => Number(a.risk_weight) || 0));
@@ -102,12 +114,53 @@ export function buildFlowModel(
       applied: false,
     });
   const L = r.ledger as Any | null;
+  const tied = new Map<string, number>();
+  for (const w of (r.tiebreak?.waves ?? []) as Any[])
+    for (const b of w.batches ?? []) if ((b.tie?.size ?? 0) >= 2) tied.set(b.id, w.week);
+  const ti = batches.map((b, i) => [b, i] as const).filter(([b]) => tied.has(b.id));
+  const pair = ti.find(([b], k) => k + 1 < ti.length && ti[k + 1]![0].wave === b.wave);
+  const pairIdx = pair ? ti.indexOf(pair) : -1;
   return {
     stations,
     batches,
     waves: weeks.length,
     ledger: { entries: L?.entry_count ?? 0, verified: !!(r.ledger_verification as Any | null)?.ok },
+    facts: stageFacts(r, weeks.length),
+    tiePair: pair ? [pair[1], ti[pairIdx + 1]![1]] : null,
   };
+}
+
+const n1 = (x: unknown) => (typeof x === "number" ? x.toFixed(1) : "–");
+
+/** The key number per stage, read from results.json; a missing section gives no fact. */
+export function stageFacts(r: Any, waves: number): Record<string, string> {
+  const f: Record<string, string> = {};
+  if (r.detect) f.detect = `${(r.detect.findings ?? []).length} findings`;
+  if (r.ledger) f.ledger = `${r.ledger.entry_count ?? 0} signed entries (ML-DSA-65)`;
+  if (r.exposure)
+    f.schedule = `${r.exposure.makespan_weeks} weeks, ${waves} waves · weighted exposure ${n1(r.exposure.expected_weighted)} vs FCFS ${n1(r.baselines?.fcfs?.expected_weighted)}, greedy ${n1(r.baselines?.greedy?.expected_weighted)}`;
+  if (r.tiebreak) {
+    const g = r.tiebreak.tie_groups ?? 0;
+    f.tiebreak = g ? `${g} tie group${g === 1 ? "" : "s"} ordered` : "0 tie groups: no swap needed";
+  }
+  if (r.handshake_evidence)
+    f.capture = `${(r.handshake_evidence.sessions ?? []).length} TLS 1.3 lab sessions`;
+  if (r.gates && Array.isArray(r.waves))
+    f.gates = `${r.waves.filter((w: Any) => w.status === "applied").length}/${r.waves.length} waves applied in the lab`;
+  const ok = ((r.qaoa?.table ?? []) as Any[]).filter(
+    (x) => x.status === "ok" && typeof x.metrics?.approximation_ratio === "number",
+  );
+  if (ok.length) {
+    const best = ok.reduce((a, b) =>
+      b.metrics.approximation_ratio > a.metrics.approximation_ratio ? b : a,
+    );
+    f.qaoa = `approximation ratio ${best.metrics.approximation_ratio.toFixed(2)} at p=${best.p} (${best.source === "ibm" ? "IBM hardware" : "simulated"})`;
+  }
+  if (r.ledger_verification)
+    f.seal = `${r.ledger?.entry_count ?? 0} entries · chain ${r.ledger_verification.ok ? "verified" : "NOT verified"}`;
+  if ((r.ledger?.entries ?? []).some((e: Any) => e.type === "report.html"))
+    f.report = "report.html signed into the ledger";
+  return f;
 }
 
 /** Where the batches are: the last stage that has started (running, done or failed); -1 before a run. */

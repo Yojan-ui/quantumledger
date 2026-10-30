@@ -178,3 +178,40 @@ describe("nowLine", () => {
     );
   });
 });
+
+describe("stage facts and the tied pair come only from results.json", () => {
+  it("no tie group: no swap; a tie group of two in one wave: that pair", () => {
+    const m = buildFlowModel(
+      results,
+      stages,
+      stages.map(() => "done"),
+    );
+    expect(m.tiePair).toBeNull();
+    expect(m.facts.ledger).toBe("7 signed entries (ML-DSA-65)");
+    expect(m.facts.seal).toBe("7 entries · chain verified");
+    expect(m.facts.detect).toBeUndefined(); // no detect section: no fact
+    const tied = {
+      ...results,
+      tiebreak: {
+        tie_groups: 1,
+        waves: [
+          {
+            week: 1,
+            batches: [
+              { id: "a", rank: 1, tie: { size: 2 } },
+              { id: "b", rank: 2, tie: { size: 2 } },
+            ],
+          },
+          { week: 2, batches: [{ id: "c", rank: 3 }] },
+        ],
+      },
+    } as unknown as AtlasResults;
+    const t = buildFlowModel(
+      tied,
+      stages,
+      stages.map(() => "done"),
+    );
+    expect(t.tiePair).toEqual([0, 1]);
+    expect(t.facts.tiebreak).toBe("1 tie group ordered");
+  });
+});

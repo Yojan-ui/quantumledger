@@ -99,10 +99,38 @@ function Flow2D({ m }: { m: FlowModel }) {
   );
 }
 
+/** Seconds each recorded stage stays in focus during the replay. */
+const REPLAY_S = 3.5;
+
+/**
+ * Which stage the 3D view focuses: during a live run the stage the SSE events say is running (or the last
+ * reached); otherwise a replay that steps through the stages the recorded results contain, labelled as such.
+ */
+function useFocus(m: FlowModel, still: boolean) {
+  const live = m.stations.some((s) => s.status === "running");
+  const reached = m.stations.flatMap((s, i) => (s.status === "idle" ? [] : [i]));
+  const [k, setK] = useState(0);
+  const replay = !live && !still && reached.length > 1;
+  useEffect(() => {
+    if (!replay) return;
+    const id = setInterval(() => setK((x) => x + 1), REPLAY_S * 1000);
+    return () => clearInterval(id);
+  }, [replay]);
+  if (!replay) return { focus: frontier(m), replay: false };
+  return { focus: reached[k % reached.length]!, replay: true };
+}
+
 export function PipelineFlowView({ model, caption }: { model: FlowModel; caption: string }) {
   const still = useStatic();
   const n = Math.max(1, model.stations.length);
-  const now = nowLine(model);
+  const { focus, replay } = useFocus(model, still);
+  const [hover, setHover] = useState<number | null>(null);
+  const fs = model.stations[focus];
+  const now =
+    replay && fs
+      ? `Replay of the recorded run · ${fs.label}: ${model.facts[fs.id] ?? fs.plain}`
+      : nowLine(model);
+  const hs = hover !== null ? model.stations[hover] : undefined;
   const label = `${caption}. ${now ? `${now} ` : ""}${model.batches.length} batches; ${model.stations.map((s) => `${s.label} ${s.status}`).join(", ")}.`;
   return (
     <figure className="flex flex-col gap-2">
@@ -117,7 +145,7 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
           </div>
         ) : (
           <LazyView className="h-full w-full" label={label}>
-            {(on) => <PipelineFlow model={model} active={on} />}
+            {(on) => <PipelineFlow model={model} active={on} focus={focus} onHover={setHover} />}
           </LazyView>
         )}
         {now && (
@@ -126,6 +154,16 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
             className="pointer-events-none absolute left-3 right-3 top-2 truncate font-mono text-micro text-fg-2"
           >
             {now}
+          </p>
+        )}
+        {hs && (
+          <p
+            role="status"
+            className="pointer-events-none absolute right-3 top-8 max-w-sm rounded-sm border border-line bg-base px-3 py-2 text-small text-fg"
+          >
+            <strong className="font-medium">{hs.label}</strong>
+            {": "}
+            {model.facts[hs.id] ?? "no recorded result"}
           </p>
         )}
         {model.batches.length > 0 && (
@@ -159,7 +197,7 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
           <li
             key={s.id}
             className={`truncate text-center ${s.status === "done" ? "text-ok" : s.status === "running" ? "text-warn" : s.status === "failed" ? "text-danger" : "text-fg-3"}`}
-            title={s.label}
+            title={model.facts[s.id] ? `${s.label}: ${model.facts[s.id]}` : s.label}
           >
             {s.label}
           </li>
