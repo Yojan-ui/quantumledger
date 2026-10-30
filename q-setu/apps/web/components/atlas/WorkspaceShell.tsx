@@ -14,6 +14,7 @@ import { atlas } from "@/lib/client/atlas";
 import { FLOW } from "@/lib/client/atlas-flow";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
 import { AboutPipeline, StageDetails } from "./AboutPipeline";
+import { WhyBanks } from "./WhyBanks";
 import { AtlasErrorPanel } from "./AtlasUI";
 
 /**
@@ -80,6 +81,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           )}
         </div>
       </div>
+      <WhyBanks />
       <AboutPipeline ws={ws} />
       <nav aria-label="Pipeline steps" className="mt-6 max-w-full border-b border-line">
         <ol className="grid grid-cols-2 gap-1 md:grid-cols-5">
