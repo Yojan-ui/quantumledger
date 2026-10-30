@@ -13,6 +13,7 @@ export const NAV_LINKS = [
   { href: "/platform", label: "Platform" },
   { href: "/solutions", label: "Solutions" },
   { href: "/demos", label: "Demos" },
+  { href: "/atlas", label: "Q-Shield" },
   { href: "/docs", label: "Docs" },
   { href: "/pricing", label: "Pricing" },
 ];

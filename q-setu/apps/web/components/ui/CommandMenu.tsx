@@ -35,6 +35,8 @@ const GROUPS: { heading: string; items: [string, string][] }[] = [
       ["Demo 3 · Q-Day time machine", "/demo/qday"],
       ["Demo 4 · Proof Chain", "/demo/ledger"],
       ["Readiness scanner", "/demo/scanner"],
+      ["Q-Shield pipeline", "/atlas"],
+      ["Q-Shield demo workspace", "/atlas/demo/detect"],
       ["Pitch (7 slides)", "/pitch"],
     ],
   },

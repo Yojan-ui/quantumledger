@@ -91,7 +91,23 @@ export type RunEvent = {
   ts: number;
   [k: string]: unknown;
 };
-export type ReviewItem = { id: string; [k: string]: unknown };
+/** One item awaiting review (qshield/atlas_web/review.py listing()). */
+export type ReviewItem = {
+  id: string;
+  kind: string;
+  title: string;
+  summary: string;
+  run_id: string;
+  evidence_sha256: string;
+  status: "pending" | "approved" | "rejected";
+  decision: {
+    decision: "approve" | "reject";
+    reason: string;
+    by: string;
+    ts: string;
+    ledger_index?: number;
+  } | null;
+};
 export type ReviewsResponse = { items: ReviewItem[]; read_only: boolean; can_decide: boolean };
 export type BenchResponse = {
   workspace: string;

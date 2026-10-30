@@ -10,6 +10,7 @@ import { useLiveEvents } from "@/lib/client/live";
 import { usePipeline } from "@/lib/client/pipeline";
 import { ms } from "@/lib/format";
 import type { OpEvent } from "@/lib/live/types";
+import type { LogLine } from "@/lib/client/atlas-run";
 import { sfx } from "@/lib/client/sfx";
 import { HudPanel } from "./HudPanel";
 
@@ -32,8 +33,17 @@ const OP_TONE: Partial<Record<OpEvent["op"], string>> = {
 
 const clock = (at: number) => new Date(at).toTimeString().slice(0, 8);
 
-export function Terminal({ className = "" }: { className?: string }) {
-  const lines = useLiveEvents(relevant, 80);
+/** `atlas`: a Q-Shield run's own log (diagnostics ?ws= mode) instead of the live bus. */
+export function Terminal({
+  className = "",
+  atlas,
+}: {
+  className?: string;
+  atlas?: { lines: LogLine[]; step: string | null };
+}) {
+  const bus = useLiveEvents(relevant, 80);
+  const lines = atlas ? [] : bus;
+  const count = atlas ? atlas.lines.length : lines.length;
   const stage = usePipeline((s) => s.stage);
   const box = useRef<HTMLDivElement>(null);
   const lastTick = useRef(0);
@@ -42,15 +52,19 @@ export function Terminal({ className = "" }: { className?: string }) {
     if (el) el.scrollTop = el.scrollHeight;
     // A soft tick per new line (SFX on only), at most one every 80 ms.
     const now = performance.now();
-    if (lines.length && now - lastTick.current > 80) {
+    if (count && now - lastTick.current > 80) {
       lastTick.current = now;
       sfx.tick();
     }
-  }, [lines.length]);
+  }, [count]);
   return (
     <HudPanel
       label="Terminal"
-      right={<span className="font-mono text-micro uppercase text-fg-3">zsh · live bus</span>}
+      right={
+        <span className="font-mono text-micro uppercase text-fg-3">
+          {atlas ? "q-shield · run log" : "zsh · live bus"}
+        </span>
+      }
       className={className}
     >
       <div
@@ -59,6 +73,17 @@ export function Terminal({ className = "" }: { className?: string }) {
         aria-label="Pipeline terminal"
         className="h-full overflow-y-auto px-3 py-2 font-mono text-micro leading-5"
       >
+        {atlas?.lines.map((l) => (
+          <p
+            key={l.seq}
+            className={`whitespace-pre-wrap break-all ${l.step === atlas.step ? "bg-raised text-fg" : "text-fg-2"}`}
+            data-term-stage={l.step}
+          >
+            <span className="text-ok">➜ </span>
+            <span className="text-fg-3">{l.step.padEnd(14)}</span>
+            {l.text}
+          </p>
+        ))}
         {lines.map((e) => {
           const mine = e.site === `pipeline-${stage}`;
           return (
