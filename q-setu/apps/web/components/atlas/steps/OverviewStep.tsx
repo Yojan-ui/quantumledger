@@ -46,7 +46,7 @@ export function OverviewStep() {
         {!live && !failed && (
           <NotYetRun
             what="Pipeline"
-            hint="Scan a live endpoint above, or start this workspace’s pipeline."
+            hint="Scan a public site from the home page and send it here, or start this workspace’s pipeline."
           />
         )}
       </>

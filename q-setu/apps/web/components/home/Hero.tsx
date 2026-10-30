@@ -72,7 +72,7 @@ export function Hero() {
             </Text>
             <div className="mt-6 flex flex-wrap gap-3">
               <ButtonLink href="/atlas/demo">Explore the pipeline</ButtonLink>
-              <ButtonLink href="/atlas/demo#endpoint" variant="secondary">
+              <ButtonLink href="/#scan" variant="secondary">
                 Scan a live endpoint
               </ButtonLink>
             </div>

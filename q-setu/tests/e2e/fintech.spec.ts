@@ -25,23 +25,29 @@ test("removed sectors return 404 and are absent from the sitemap", async ({ requ
   }
 });
 
-test("live endpoint scan refuses internal hosts without calling Atlas", async ({ page }) => {
-  let writes = 0;
-  page.on("request", (r) => {
-    if (r.method() === "POST" && r.url().includes("atlas-api")) writes++;
-  });
-  await page.goto("/atlas/demo");
-  const scan = page.locator("#endpoint");
-  await expect(scan.getByRole("heading", { name: "Scan a live endpoint" })).toBeVisible();
-  await expect(scan).toContainText("Scan only hosts you own or are authorised to assess.");
-  await scan.getByRole("textbox", { name: "Public hostnames" }).fill("localhost, 10.0.0.1");
-  await scan.getByRole("button", { name: "Scan and run" }).click();
-  await expect(scan.getByRole("alert")).toContainText("only public hosts");
-  expect(writes).toBe(0);
+async function scanSuggested(page: import("@playwright/test").Page) {
+  await page.goto("/#scan");
+  await page.locator("#scan").getByRole("button", { name: "npci.org.in" }).click();
+  await expect(page.getByText("What a quantum computer breaks here")).toBeVisible();
+}
+
+test("one scanner: handshake cards, what breaks, fixes, formula closed, send needs consent", async ({
+  page,
+}) => {
+  await scanSuggested(page);
+  const scan = page.locator("#scan");
+  for (const label of ["TLS version", "Key exchange", "Certificate", "Expires"])
+    await expect(scan.getByText(label, { exact: true }).first()).toBeVisible();
+  await expect(scan.getByText("Recommended fixes")).toBeVisible();
+  const formula = scan.locator("details").filter({ hasText: "How the score is computed" });
+  await expect(formula).not.toHaveAttribute("open", "");
+  await scan.getByRole("button", { name: "Send to pipeline" }).click();
+  await expect(scan.getByRole("alert").first()).toContainText("Confirm that you own");
+  await expect(page.locator("#endpoint")).toHaveCount(0); // no second scanner on the home page
 });
 
 // Error fixtures are test-only; the shipped UI always calls Atlas through the proxy.
-test("live endpoint scan: Atlas refusal and outage are actionable", async ({ page }) => {
+test("send to pipeline: Atlas refusal is shown with the recorded fallback", async ({ page }) => {
   await page.route("**/atlas-api/me", (r) =>
     r.fulfill({
       json: { user: { username: "test", role: "operator" }, kiosk: false, demo: false },
@@ -54,24 +60,17 @@ test("live endpoint scan: Atlas refusal and outage are actionable", async ({ pag
     r.fulfill({
       status: 422,
       json: {
-        error: {
-          code: "bad_endpoint",
-          message: "intranet.example.com: resolves to a private or internal address (10.0.0.7)",
-        },
+        error: { code: "bad_endpoint", message: "resolves to a private or internal address" },
       },
     }),
   );
-  await page.goto("/atlas/demo");
-  const scan = page.locator("#endpoint");
-  await scan.getByRole("textbox", { name: "Public hostnames" }).fill("intranet.example.com");
-  await scan.getByRole("button", { name: "Scan and run" }).click();
-  await expect(scan.getByRole("alert")).toContainText("Confirm that you own");
-  await scan.getByRole("checkbox").check();
-  await scan.getByRole("button", { name: "Scan and run" }).click();
-  await expect(scan.getByRole("alert")).toContainText("private or internal address");
-  await page.route("**/atlas-api/workspaces", (r) =>
-    r.fulfill({ status: 503, json: { error: { code: "atlas_down", message: "down" } } }),
+  await scanSuggested(page);
+  const send = page.locator("[data-send-pipeline]");
+  await send.getByRole("checkbox").check();
+  await send.getByRole("button", { name: "Send to pipeline" }).click();
+  await expect(send.getByRole("alert")).toContainText("private or internal address");
+  await expect(send.getByRole("link", { name: /recorded live scan/ })).toHaveAttribute(
+    "href",
+    "/atlas/tls-check3",
   );
-  await scan.getByRole("button", { name: "Scan and run" }).click();
-  await expect(scan.getByRole("alert")).toContainText("Atlas is unavailable");
 });
