@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/type";
 import { atlas } from "@/lib/client/atlas";
 import { FLOW } from "@/lib/client/atlas-flow";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
+import { AboutPipeline, StageDetails } from "./AboutPipeline";
 import { AtlasErrorPanel } from "./AtlasUI";
 
 /**
@@ -79,6 +80,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           )}
         </div>
       </div>
+      <AboutPipeline ws={ws} />
       <nav
         aria-label="Pipeline steps"
         className="mt-8 max-w-full overflow-x-auto border-b border-line"
@@ -112,7 +114,12 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           <AtlasErrorPanel error={info.error} onRetry={info.reload} />
         </div>
       ) : (
-        <div className="mt-2">{children}</div>
+        <div className="mt-2">
+          <StageDetails
+            href={`${path.split("/").slice(3).join("/")}${section ? `?section=${section}` : ""}`}
+          />
+          {children}
+        </div>
       )}
     </Container>
   );

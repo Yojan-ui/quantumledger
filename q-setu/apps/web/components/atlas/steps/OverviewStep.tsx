@@ -9,7 +9,7 @@ import { PipelinePreview } from "../PipelinePreview";
 import { atlas } from "@/lib/client/atlas";
 import { FLOW, flowFacts } from "@/lib/client/atlas-flow";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
-import { AtlasErrorPanel, KeyStats, NotYetRun, Part, Skeleton } from "../AtlasUI";
+import { AtlasErrorPanel, Details, KeyStats, NotYetRun, Part, Skeleton } from "../AtlasUI";
 import { fmt, useResults } from "../useResults";
 
 export function OverviewStep() {
@@ -58,11 +58,14 @@ export function OverviewStep() {
           {FLOW.map((s, i) => {
             const f = facts[s.id];
             return (
-              <li key={s.id} className="h-full">
+              <li
+                key={s.id}
+                className="flex h-full min-w-0 flex-col rounded-lg border border-line p-4"
+              >
                 <Link
                   prefetch={false}
                   href={`/atlas/${encodeURIComponent(ws)}/${s.href}`}
-                  className="flex h-full flex-col gap-2 rounded-lg border border-line p-4 hover:border-line-strong"
+                  className="flex flex-1 flex-col gap-2 hover:text-fg"
                 >
                   <span className="font-mono text-micro uppercase text-fg-3">
                     {i + 1} · {s.label}
@@ -72,6 +75,10 @@ export function OverviewStep() {
                   </span>
                   <span className="text-small text-fg-2">{f ? f.mean : s.hands}</span>
                 </Link>
+                <Details>
+                  <p>{s.does}</p>
+                  {f && <p>{f.backend}</p>}
+                </Details>
               </li>
             );
           })}
