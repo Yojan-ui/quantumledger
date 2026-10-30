@@ -71,14 +71,18 @@ test.describe("with Atlas on :8100", () => {
       .click();
     const f = demo!.detect!.findings[0]!;
     await expect(page.getByText(`${f.file}:${f.line}`).first()).toBeVisible();
-    await expect(page.getByText(`${demo!.detect!.findings.length} findings`)).toBeVisible();
+    await expect(
+      page.getByText(`${demo!.detect!.findings.length} findings`).filter({ visible: true }).first(),
+    ).toBeVisible();
     expect(errors).toEqual([]);
   });
 
   test("Plan compares MILP with FCFS and greedy, assumptions labelled", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/atlas/demo/schedule");
-    await expect(page.getByText(`${demo!.exposure.makespan_weeks} weeks`).first()).toBeVisible();
+    await expect(
+      page.getByText(`${demo!.exposure.makespan_weeks} weeks`).filter({ visible: true }).first(),
+    ).toBeVisible();
     for (const p of [
       "QpiAI Opt MILP best",
       "First-come-first-served",

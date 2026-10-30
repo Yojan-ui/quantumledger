@@ -42,15 +42,16 @@ for (const [path, h1] of PAGES) {
   });
 }
 
-test("home: ten sections in order for a first-time visitor", async ({ page }) => {
+test("home: live scan first, pipeline second, then the story", async ({ page }) => {
   await page.goto("/");
   const ids = await page.locator("main > section[id]").evaluateAll((s) => s.map((x) => x.id));
   expect(ids).toEqual([
     "top",
+    "scan",
+    "pipeline",
     "join-live",
     "analogy",
     "index",
-    "scan",
     "how-it-works",
     "adapters",
     "solutions",
@@ -66,7 +67,9 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   await expect(page.getByRole("link", { name: "Explore the pipeline" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Scan a site" })).toBeVisible();
+  await expect(
+    page.locator("#top").getByRole("link", { name: "Scan a site", exact: true }),
+  ).toBeVisible();
   await expect(page.locator("#pipeline [data-hud-stage]")).toBeVisible();
   // the live scan comes first, the pipeline second
   const top = (id: string) => page.locator(id).evaluate((e) => e.getBoundingClientRect().top);
