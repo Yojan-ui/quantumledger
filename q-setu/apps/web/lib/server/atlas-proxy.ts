@@ -58,6 +58,9 @@ export async function proxy(request: Request, ctx: Ctx): Promise<Response> {
   const target = `${base}/api/${path.map(encodeURIComponent).join("/")}${new URL(request.url).search}`;
 
   const headers = new Headers();
+  // Some Atlas actions return without consuming their body. Do not reuse that HTTP/1.1
+  // connection: leftover JSON could otherwise prefix the next request method (501).
+  headers.set("connection", "close");
   for (const k of UP) {
     const v = request.headers.get(k);
     if (v) headers.set(k, v);

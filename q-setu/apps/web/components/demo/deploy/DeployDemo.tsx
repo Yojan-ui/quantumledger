@@ -1,7 +1,6 @@
 "use client";
 
 import type { SectorId } from "@qsetu/sim";
-import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";

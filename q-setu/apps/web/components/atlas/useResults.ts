@@ -2,12 +2,14 @@
 
 import { useParams } from "next/navigation";
 import { atlas, type AtlasResults } from "@/lib/client/atlas";
+import { useAtlasRun } from "@/lib/client/atlas-run";
 import { useAtlas } from "@/lib/client/useAtlas";
 
 /** This page's workspace id and its results.json (null when not yet run). Public for `demo`. */
 export function useResults() {
   const { ws } = useParams<{ ws: string }>();
-  const q = useAtlas(`results:${ws}`, (signal) => atlas.results(ws, { signal }));
+  const finished = useAtlasRun((s) => (s.ws === ws && s.result ? `${s.runId}:${s.result}` : ""));
+  const q = useAtlas(`results:${ws}:${finished}`, (signal) => atlas.results(ws, { signal }));
   const results: AtlasResults | null | undefined = q.data ? q.data.results : undefined;
   return {
     ws,

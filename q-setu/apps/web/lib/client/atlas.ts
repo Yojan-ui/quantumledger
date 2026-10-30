@@ -84,6 +84,24 @@ export type RunRow = {
   status: string;
   detail: Record<string, unknown>;
 };
+export type ManifestsResponse = {
+  services: {
+    dir: string;
+    manifest: {
+      id: string;
+      name: string;
+      kind: string;
+      data_class: string;
+      depends_on: string[];
+      suggested?: unknown;
+    } | null;
+    error: string | null;
+  }[];
+  candidate_dirs: string[];
+  kinds: string[];
+  data_classes: string[];
+  label: string;
+};
 export type RunsResponse = { runs: RunRow[]; active: string | null };
 export type RunEvent = {
   seq: number;
@@ -267,6 +285,11 @@ export const atlas = {
     req<Record<string, unknown>>("POST", "/quantum/run", { ws: id, p }),
   clone: (id: string, url: string, commit?: string) =>
     req<{ url: string; commit: string; files: number }>("POST", `${ws(id)}/clone`, { url, commit }),
+  manifests: (id: string) => req<ManifestsResponse>("GET", `${ws(id)}/manifests`),
+  suggestManifests: (id: string) =>
+    req<ManifestsResponse>("POST", `${ws(id)}/manifests/suggest`, {}),
+  confirmManifests: (id: string) =>
+    req<ManifestsResponse>("POST", `${ws(id)}/manifests/confirm`, {}),
   upload: (id: string, zip: Blob) =>
     req<Record<string, unknown>>("POST", `${ws(id)}/upload`, undefined, {
       raw: zip,

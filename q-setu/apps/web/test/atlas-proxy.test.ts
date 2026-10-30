@@ -89,6 +89,7 @@ describe("/atlas-api proxy", () => {
     expect(new URL(seen.headers?.origin as string).host).toBe(seen.headers?.host); // Atlas's check_origin() passes
     expect(seen.headers?.["content-length"]).toBe(String(JSON.stringify({ probes: [] }).length)); // buffered, not chunked
     expect(seen.body).toBe(JSON.stringify({ probes: [] }));
+    expect(seen.headers?.connection).toBe("close"); // no unread body can poison the next request
   });
 
   it("passes every Set-Cookie and the upstream status back", async () => {

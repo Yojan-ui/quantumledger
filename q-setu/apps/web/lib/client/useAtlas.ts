@@ -18,7 +18,13 @@ export function useAtlas<T>(
   key: string | null,
   load: (signal: AbortSignal) => Promise<T>,
 ): Loaded<T> {
-  const [state, setState] = useState<{ data?: T; error?: AtlasError; loading: boolean }>({
+  const [state, setState] = useState<{
+    key: string | null;
+    data?: T;
+    error?: AtlasError;
+    loading: boolean;
+  }>({
+    key,
     loading: key !== null,
   });
   const [tick, setTick] = useState(0);
@@ -26,23 +32,25 @@ export function useAtlas<T>(
   useEffect(() => {
     if (key === null) return;
     const ac = new AbortController();
-    setState((s) => ({ data: s.data, loading: true }));
+    setState((s) => ({ key, data: s.key === key ? s.data : undefined, loading: true }));
     load(ac.signal).then(
-      (data) => !ac.signal.aborted && setState({ data, loading: false }),
+      (data) => !ac.signal.aborted && setState({ key, data, loading: false }),
       (err: unknown) => {
         if (ac.signal.aborted) return;
         const e =
           err instanceof AtlasError
             ? err
             : new AtlasError(0, "network", "Couldn't reach the Q-Shield proxy");
-        setState({ error: e, loading: false });
+        setState({ key, error: e, loading: false });
       },
     );
     return () => ac.abort();
     // `load` is keyed by `key`; callers pass inline closures.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, tick]);
-  return { data: state.data, error: state.error, loading: state.loading, reload };
+  return state.key === key && key !== null
+    ? { data: state.data, error: state.error, loading: state.loading, reload }
+    : { data: undefined, error: undefined, loading: key !== null, reload };
 }
 
 /** The signed-in Atlas user (or null) and what they may do. Viewer < operator < admin. */

@@ -39,6 +39,7 @@ let state: AtlasRunState = {
 };
 const subs = new Set<() => void>();
 let close: (() => void) | null = null;
+let generation = 0;
 
 function set(p: Partial<AtlasRunState>) {
   state = { ...state, ...p };
@@ -123,33 +124,52 @@ function follow(ws: string, runId: string) {
 export const atlasRun = {
   /** Loads the stages and, if a run is in progress in this workspace, follows it. */
   async init(ws: string, signedIn: boolean) {
+    const gen = ++generation;
     if (state.ws !== ws) {
       close?.();
       close = null;
-      set({ ws, runId: null, running: false, result: null, lines: [], error: null, view: -1 });
+      set({
+        ws,
+        status: [],
+        runId: null,
+        running: false,
+        result: null,
+        lines: [],
+        error: null,
+        view: -1,
+      });
     }
     try {
       const { stages } = state.stages.length ? { stages: state.stages } : await atlas.stages();
+      if (gen !== generation) return;
       set({
         stages,
         status: state.status.length === stages.length ? state.status : stages.map(() => "idle"),
       });
       // GET /runs needs a session: signed out there is nothing to follow (and no 401 in the console).
       const runs = signedIn ? await atlas.runs(ws).catch(() => null) : null;
+      if (gen !== generation) return;
       if (runs?.active) follow(ws, runs.active);
     } catch (e) {
       set({ error: msg(e) });
     }
   },
+  follow,
   /** POST /workspaces/<ws>/runs, then follow its events. */
   async start() {
     if (state.running || !state.ws) return;
-    set({ error: null, result: null, status: state.stages.map(() => "idle"), lines: [] });
+    set({
+      running: true,
+      error: null,
+      result: null,
+      status: state.stages.map(() => "idle"),
+      lines: [],
+    });
     try {
       const { run_id } = await atlas.startRun(state.ws);
       follow(state.ws, run_id);
     } catch (e) {
-      set({ error: msg(e) });
+      set({ running: false, error: msg(e) });
     }
   },
   /**
@@ -209,6 +229,7 @@ export const atlasRun = {
     });
   },
   dispose() {
+    generation++;
     close?.();
     close = null;
   },
