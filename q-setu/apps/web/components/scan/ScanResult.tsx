@@ -13,8 +13,8 @@ function Card({ label, value, note }: { label: string; value: string; note?: str
   return (
     <li className="flex h-full min-w-0 flex-col gap-1 rounded-lg border border-line p-4">
       <span className="font-mono text-micro uppercase text-fg-3">{label}</span>
-      <span className="break-words text-body font-medium text-fg">{value || "–"}</span>
-      {note && <span className="text-small text-fg-2">{note}</span>}
+      <span className="break-all text-body font-medium text-fg">{value || "–"}</span>
+      {note && <span className="break-all text-small text-fg-2">{note}</span>}
     </li>
   );
 }
@@ -82,7 +82,7 @@ export function ScanResult({ r, compact = false }: { r: ScanView; compact?: bool
           )}
         </div>
       </div>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Handshake">
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Handshake">
         <Card label="TLS version" value={r.probe.protocol ?? ""} note={r.probe.cipher} />
         <Card
           label="Key exchange"
@@ -98,7 +98,7 @@ export function ScanResult({ r, compact = false }: { r: ScanView; compact?: bool
           note={r.probe.issuer || undefined}
         />
       </ul>
-      <div className="grid grid-cols-1 gap-6 border-t border-line pt-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 border-t border-line pt-6">
         <section className="space-y-3">
           <h3 className="text-body font-medium text-fg">What a quantum computer breaks here</h3>
           <ul className="space-y-2">
