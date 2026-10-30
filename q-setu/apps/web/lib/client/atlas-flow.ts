@@ -15,6 +15,8 @@ export type FlowStep = {
   stages: string[];
   hands: string;
   does: string;
+  /** Why the step matters, shown in its closed Details dropdown. */
+  why: string;
 };
 
 export const FLOW: FlowStep[] = [
@@ -25,6 +27,7 @@ export const FLOW: FlowStep[] = [
     stages: ["detect"],
     hands: "Findings with file:line evidence",
     does: "Finds RSA, ECC and DH in code, configs, certificates and live TLS, and groups the findings into systems (inventory and drift).",
+    why: "You can only migrate what you can find: RSA / ECC key exchange recorded today is harvest-now-decrypt-later exposure.",
   },
   {
     id: "inventory",
@@ -33,6 +36,7 @@ export const FLOW: FlowStep[] = [
     stages: ["detect"],
     hands: "Systems and drift from scan evidence",
     does: "Groups findings into systems and compares configured cryptography with recorded TLS observations.",
+    why: "Findings become systems with owners, dependencies and shelf life, the units the plan schedules.",
   },
   {
     id: "proof_open",
@@ -41,6 +45,7 @@ export const FLOW: FlowStep[] = [
     stages: ["ledger"],
     hands: "The Detect evidence, signed first",
     does: "The RSA / ECC / DH findings are signed with ML-DSA-65 before planning (detect.run), after the existing chain is verified.",
+    why: "Signing the evidence before planning means the plan cannot quietly change what was found.",
   },
   {
     id: "schedule",
@@ -49,6 +54,7 @@ export const FLOW: FlowStep[] = [
     stages: ["schedule"],
     hands: "The wave plan (week per system)",
     does: "Plans the migration in weekly waves (QpiAI Opt MILP) within team capacity and dependencies, compared with simple orders.",
+    why: "Mosca: if secrecy lifetime plus migration time exceeds time to a quantum threat (x + y > z), data is exposed; the plan minimises that exposure.",
   },
   // Added in Quantum Ledger (not in the original Atlas sidebar): python -m tiebreak, right after the plan.
   {
@@ -58,6 +64,7 @@ export const FLOW: FlowStep[] = [
     stages: ["tiebreak"],
     hands: "The patch order inside each wave",
     does: "When batches in a wave have the same vulnerability score, decides which one gets its ML-KEM / ML-DSA patch first (Mosca margin, harvest-now exposure, internet exposure, dependents, effort, id).",
+    why: "Ties are common; a fixed, explained order makes the patch sequence reproducible and auditable.",
   },
   {
     id: "waves",
@@ -66,6 +73,7 @@ export const FLOW: FlowStep[] = [
     stages: ["qaoa"],
     hands: "A checked wave selection",
     does: "Cross-checks one week's choice of systems with QAOA on a simulator against the exact answer.",
+    why: "An independent check that the planner's choice is optimal on a small instance. No quantum advantage is claimed.",
   },
   {
     id: "gates",
@@ -74,6 +82,7 @@ export const FLOW: FlowStep[] = [
     stages: ["capture", "gates"],
     hands: "Gate results per wave",
     does: "Tests every wave on real TLS 1.3 lab services: post-quantum handshake, no silent downgrade, compatibility, rollback.",
+    why: "A wave counts as migrated only with handshake evidence, not because a config file changed.",
   },
   {
     id: "proof_verified",
@@ -82,6 +91,7 @@ export const FLOW: FlowStep[] = [
     stages: ["seal"],
     hands: "Every result signed, the whole chain re-verified",
     does: "The ML-KEM (X25519MLKEM768) handshake and gate evidence is signed, and every entry's ML-DSA-65 signature is verified across the chain.",
+    why: "Anyone can re-verify every result later, with signatures that stay secure against quantum attacks.",
   },
   {
     id: "review",
@@ -90,6 +100,7 @@ export const FLOW: FlowStep[] = [
     stages: [],
     hands: "Approved migration steps",
     does: "A person approves or rejects each result with a reason; the decision is signed too.",
+    why: "Automation proposes; an accountable person decides, and that decision is evidence too.",
   },
 ];
 

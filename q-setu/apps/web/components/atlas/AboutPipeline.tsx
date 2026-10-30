@@ -102,6 +102,7 @@ export function StageDetails({ href }: { href: string }) {
   return (
     <Details>
       <p>{stage.does}</p>
+      <p>{stage.why}</p>
       <p>
         Values come from this workspace’s Atlas results. Missing evidence stays unavailable. Risk,
         effort, capacity and secrecy lifetime are configuration assumptions; gate results apply only
