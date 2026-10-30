@@ -441,7 +441,9 @@ const addSamples = async (page, n = 3) => {
   await ctx.addInitScript(() => {
     try {
       localStorage.setItem("qlab.theme", "light");
-    } catch {}
+    } catch {
+      // storage blocked: the page falls back to its default theme
+    }
   });
   const page = await ctx.newPage();
   let where = "";
