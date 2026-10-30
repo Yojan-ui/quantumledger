@@ -151,8 +151,7 @@ export function Part({
 }) {
   if (disclosure)
     return (
-      <Details summary={title}>
-        {label && <Label>{label}</Label>}
+      <Details summary={label ? `${title} · ${label}` : title}>
         {aside}
         {children}
       </Details>
