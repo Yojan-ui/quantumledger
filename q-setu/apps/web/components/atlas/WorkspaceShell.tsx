@@ -20,11 +20,8 @@ import { AtlasErrorPanel } from "./AtlasUI";
  * drift sub-page; the Proof Chain appears twice, as step 2 and step 6, like Atlas's ?section=2 / ?section=6).
  */
 const TABS: { href: string; label: string; n?: number }[] = [
-  { href: "", label: "Overview" },
-  ...FLOW.flatMap((f, i) => [
-    { href: f.href, label: f.label, n: i + 1 },
-    ...(f.id === "detect" ? [{ href: "inventory", label: "Inventory & drift" }] : []),
-  ]),
+  { href: "", label: "Pipeline" },
+  ...FLOW.map((f, i) => ({ href: f.href, label: f.label, n: i + 1 })),
 ];
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
@@ -37,7 +34,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
     atlas.workspace(ws, { signal }),
   );
   return (
-    <Container className="py-12 md:py-16">
+    <Container className="py-8 md:py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Label>
@@ -46,9 +43,11 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
             </Link>{" "}
             / workspace
           </Label>
-          <h1 className="mt-2 text-h1-sm font-medium text-fg">{info.data?.name ?? ws}</h1>
+          <h1 className="mt-2 text-h1-sm font-medium text-fg">
+            {ws === "demo" ? "Bank migration pipeline" : (info.data?.name ?? ws)}
+          </h1>
           <p className="mt-1 font-mono text-micro uppercase text-fg-3">
-            {ws}
+            {ws === "demo" ? "Fictional bank · real local scan and TLS lab evidence" : ws}
             {info.data?.read_only ? " · read-only snapshot" : ""}
             {me.user ? ` · ${me.user.username} (${me.user.role})` : " · not signed in"}
           </p>

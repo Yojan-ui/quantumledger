@@ -1,13 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { Fragment, useEffect, useRef } from "react";
 import { LiveStrip } from "@/components/live/LiveStrip";
 import { RoomFeed } from "@/components/room/RoomFeed";
-import { ButtonLink, Container, Legend, SectionLabel, Text, buttonClass } from "@/components/ui";
-import { DiagnosticsApp } from "@/components/hud/DiagnosticsApp";
-import { startTour } from "@/components/tour/Tour";
+import { ButtonLink, Container, Legend, SectionLabel, Text } from "@/components/ui";
+import { PipelinePreview } from "@/components/atlas/PipelinePreview";
 import { Copy } from "@/components/ui/Copy";
 import { world } from "@/components/world/store";
 import { HERO } from "./chapters";
@@ -45,9 +43,9 @@ export function Hero() {
   return (
     <section ref={ref} id="top" className="relative flex flex-col" aria-label="QuantumLedger">
       <LiveStrip />
-      <Container className="pb-16 pt-10 md:pt-16">
+      <Container className="pb-16 pt-10 md:pt-10">
         <div data-hero className="grid grid-cols-12 items-end gap-x-6 gap-y-6">
-          <h1 className="col-span-12 text-display-sm font-medium text-fg md:col-span-7 md:text-display">
+          <h1 className="col-span-12 text-h1-sm font-medium text-fg md:col-span-7 md:text-h1">
             <span className="sr-only">{HERO.title.replace(/‑/g, "-")}</span>
             <span aria-hidden>
               {words.map((w, i) => (
@@ -73,31 +71,16 @@ export function Hero() {
               <Copy simple={HERO.body} technical={HERO.technical} />
             </Text>
             <div className="mt-6 flex flex-wrap gap-3">
-              {/* A real link to ?tour=1, so a click before hydration still starts the tour (the Tour
-                  starts from ?tour=1 on mount); once hydrated it starts in place without reloading. */}
-              <Link
-                href="/?tour=1"
-                role="button"
-                data-tour-start
-                data-magnetic=""
-                data-shimmer=""
-                className={buttonClass("primary")}
-                onClick={(e) => {
-                  e.preventDefault();
-                  startTour();
-                }}
-              >
-                Take the 3-minute tour
-              </Link>
-              <ButtonLink href="/diagnostics" variant="secondary">
-                Open full diagnostics
+              <ButtonLink href="/atlas/demo">Explore the pipeline</ButtonLink>
+              <ButtonLink href="/atlas/demo#github" variant="secondary">
+                Scan a GitHub repo
               </ButtonLink>
             </div>
           </div>
         </div>
         {/* The diagnostics HUD, compact: enter any domain, or watch the labelled cached example. */}
-        <div className="mt-10 animate-reveal md:h-hud-compact" style={{ animationDelay: "640ms" }}>
-          <DiagnosticsApp compact />
+        <div className="mt-8 animate-reveal" style={{ animationDelay: "640ms" }}>
+          <PipelinePreview ws="demo" />
         </div>
       </Container>
     </section>

@@ -27,9 +27,17 @@ export const FLOW: FlowStep[] = [
     does: "Finds RSA, ECC and DH in code, configs, certificates and live TLS, and groups the findings into systems (inventory and drift).",
   },
   {
+    id: "inventory",
+    href: "inventory",
+    label: "Inventory",
+    stages: ["detect"],
+    hands: "Systems and drift from scan evidence",
+    does: "Groups findings into systems and compares configured cryptography with recorded TLS observations.",
+  },
+  {
     id: "proof_open",
     href: "ledger?section=2",
-    label: "Proof: findings signed",
+    label: "Sign findings",
     stages: ["ledger"],
     hands: "The Detect evidence, signed first",
     does: "The RSA / ECC / DH findings are signed with ML-DSA-65 before planning (detect.run), after the existing chain is verified.",
@@ -46,10 +54,18 @@ export const FLOW: FlowStep[] = [
   {
     id: "tiebreak",
     href: "tiebreak",
-    label: "Tie-break priority",
+    label: "Tie-break",
     stages: ["tiebreak"],
     hands: "The patch order inside each wave",
     does: "When batches in a wave have the same vulnerability score, decides which one gets its ML-KEM / ML-DSA patch first (Mosca margin, harvest-now exposure, internet exposure, dependents, effort, id).",
+  },
+  {
+    id: "waves",
+    href: "qaoa",
+    label: "QAOA",
+    stages: ["qaoa"],
+    hands: "A checked wave selection",
+    does: "Cross-checks one week's choice of systems with QAOA on a simulator against the exact answer.",
   },
   {
     id: "gates",
@@ -60,17 +76,9 @@ export const FLOW: FlowStep[] = [
     does: "Tests every wave on real TLS 1.3 lab services: post-quantum handshake, no silent downgrade, compatibility, rollback.",
   },
   {
-    id: "waves",
-    href: "qaoa",
-    label: "Wave selection",
-    stages: ["qaoa"],
-    hands: "A checked wave selection",
-    does: "Cross-checks one week's choice of systems with QAOA on a simulator against the exact answer.",
-  },
-  {
     id: "proof_verified",
     href: "ledger?section=6",
-    label: "Proof: post-quantum verified",
+    label: "Seal ledger",
     stages: ["seal"],
     hands: "Every result signed, the whole chain re-verified",
     does: "The ML-KEM (X25519MLKEM768) handshake and gate evidence is signed, and every entry's ML-DSA-65 signature is verified across the chain.",
@@ -125,6 +133,12 @@ export function flowFacts(
       backend: "static scan + OpenSSL 3.6.5 live probes",
     };
   }
+  if (r.detect)
+    f.inventory = {
+      num: pl(r.assets.length, "system", "systems"),
+      mean: "with cryptography to migrate",
+      backend: "Detect inventory · risk and effort are assumptions",
+    };
   if (r.exposure)
     f.schedule = {
       num: `${r.exposure.makespan_weeks} wk`,

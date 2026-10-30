@@ -1,7 +1,12 @@
 /** The pipeline view's model (lib/client/atlas-flowviz): only Atlas JSON in, nothing invented. */
 import { describe, expect, it } from "vitest";
 import type { AtlasResults, Stage } from "@/lib/client/atlas";
-import { buildFlowModel, frontier, stationDone } from "@/lib/client/atlas-flowviz";
+import {
+  buildFlowModel,
+  frontier,
+  stationDone,
+  recordedStatuses,
+} from "@/lib/client/atlas-flowviz";
 
 const stages: Stage[] = [
   "detect",
@@ -124,5 +129,27 @@ describe("buildFlowModel", () => {
     expect(m.batches).toEqual([]);
     expect(m.ledger).toEqual({ entries: 0, verified: false });
     expect(m.stations).toHaveLength(9);
+  });
+});
+
+describe("recorded stage status", () => {
+  it("does not mark missing or unverified evidence complete", () => {
+    const partial = {
+      detect: {},
+      ledger: { entries: [] },
+      ledger_verification: { ok: false },
+    } as unknown as AtlasResults;
+    expect(recordedStatuses(partial, stages)).toEqual([
+      "done",
+      "done",
+      "idle",
+      "idle",
+      "idle",
+      "idle",
+      "idle",
+      "idle",
+      "idle",
+    ]);
+    expect(recordedStatuses(null, stages).every((s) => s === "idle")).toBe(true);
   });
 });

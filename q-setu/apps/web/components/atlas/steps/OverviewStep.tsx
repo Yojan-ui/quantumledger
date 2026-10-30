@@ -5,6 +5,7 @@
  * the original Atlas Overview shows (lib/client/atlas-flow flowFacts). No fact = "not yet run".
  */
 import Link from "next/link";
+import { PipelinePreview } from "../PipelinePreview";
 import { atlas } from "@/lib/client/atlas";
 import { FLOW, flowFacts } from "@/lib/client/atlas-flow";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
@@ -24,6 +25,9 @@ export function OverviewStep() {
   const v = results.ledger_verification as { ok?: boolean } | null;
   return (
     <>
+      <div className="py-6">
+        <PipelinePreview ws={ws} />
+      </div>
       <Part title="At a glance">
         <KeyStats
           items={[
@@ -49,8 +53,8 @@ export function OverviewStep() {
           ]}
         />
       </Part>
-      <Part title="The seven steps">
-        <ol className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <Part title="Follow the pipeline">
+        <ol className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {FLOW.map((s, i) => {
             const f = facts[s.id];
             return (
@@ -67,7 +71,6 @@ export function OverviewStep() {
                     {f ? f.num : "not yet run"}
                   </span>
                   <span className="text-small text-fg-2">{f ? f.mean : s.hands}</span>
-                  {f && <span className="mt-auto font-mono text-micro text-fg-3">{f.backend}</span>}
                 </Link>
               </li>
             );

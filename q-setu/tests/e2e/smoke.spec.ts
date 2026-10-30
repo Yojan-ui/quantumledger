@@ -11,7 +11,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "See your quantum risk. Fix it. Prove it.",
+    "Bank migration, backed by evidence.",
   );
   await expect(page.locator("[data-room-qr] svg")).toBeVisible();
   await expect(page.locator("#fact-1")).toContainText("as of");

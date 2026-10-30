@@ -10,10 +10,10 @@ import { Container } from "./layout";
 import { Logo } from "./Logo";
 
 export const NAV_LINKS = [
+  { href: "/atlas/demo", label: "Pipeline" },
   { href: "/platform", label: "Platform" },
   { href: "/solutions", label: "Solutions" },
   { href: "/demos", label: "Demos" },
-  { href: "/atlas", label: "Q-Shield" },
   { href: "/docs", label: "Docs" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -128,8 +128,8 @@ export function Nav() {
               aria-hidden={heroVisible}
               inert={heroVisible || undefined}
             >
-              <ButtonLink href="/#early-access" className="hidden md:inline-flex">
-                Get early access
+              <ButtonLink href="/atlas/demo" className="hidden md:inline-flex">
+                Open pipeline
               </ButtonLink>
             </div>
             <button
@@ -157,7 +157,7 @@ export function Nav() {
               ))}
               <div className="flex flex-wrap items-center gap-3 pt-3">
                 <CopyToggle />
-                <ButtonLink href="/#early-access">Get early access</ButtonLink>
+                <ButtonLink href="/atlas/demo">Open pipeline</ButtonLink>
               </div>
             </Container>
           </nav>

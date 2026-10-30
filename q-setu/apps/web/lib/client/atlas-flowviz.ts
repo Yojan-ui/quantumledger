@@ -116,3 +116,23 @@ export function frontier(m: FlowModel): number {
 }
 export const stationDone = (m: FlowModel, id: string) =>
   m.stations.find((s) => s.id === id)?.status === "done";
+
+/** A stored result is evidence only for its own stage; missing sections never imply success. */
+export function recordedStatuses(
+  results: AtlasResults | null | undefined,
+  stages: Stage[],
+): StageStatus[] {
+  const r = results as unknown as Any | null | undefined;
+  const present: Record<string, boolean> = {
+    detect: !!r?.detect,
+    ledger: !!r?.ledger,
+    schedule: !!r?.exposure,
+    tiebreak: !!r?.tiebreak,
+    capture: !!r?.handshake_evidence,
+    gates: !!r?.gates,
+    qaoa: !!r?.qaoa,
+    seal: r?.ledger_verification?.ok === true,
+    report: (r?.ledger?.entries ?? []).some((e: { type: string }) => e.type === "report.html"),
+  };
+  return stages.map((s) => (present[s.id] ? "done" : "idle"));
+}

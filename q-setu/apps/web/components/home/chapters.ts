@@ -11,11 +11,11 @@ export interface Chapter {
 }
 
 export const HERO = {
-  title: "See your quantum risk. Fix it. Prove it.",
+  title: "Bank migration, backed by evidence.",
   /** The brief's subline, shown in both copy modes (its one acronym, NIST, is deliberate). */
-  body: "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography.",
+  body: "Find vulnerable cryptography, compare migration plans and verify the evidence. Follow the banking pipeline from scan to signed review.",
   technical:
-    "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography.",
+    "Find vulnerable cryptography, compare migration plans and verify the evidence. Follow the banking pipeline from scan to signed review.",
 };
 
 /** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */

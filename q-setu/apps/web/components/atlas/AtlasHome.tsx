@@ -221,7 +221,7 @@ export function AtlasHome() {
     return (
       <Part title="Start with the public demo" label="read-only snapshot">
         <div className="flex flex-wrap gap-3">
-          <Link prefetch={false} href="/atlas/demo/detect" className={btn}>
+          <Link prefetch={false} href="/atlas/demo" className={btn}>
             Open the demo workspace
           </Link>
           <Link
@@ -264,7 +264,7 @@ export function AtlasHome() {
               <li key={w.id}>
                 <Link
                   prefetch={false}
-                  href={`/atlas/${encodeURIComponent(w.id)}/detect`}
+                  href={`/atlas/${encodeURIComponent(w.id)}`}
                   className="block rounded-lg border border-line p-4 hover:border-line-strong"
                 >
                   <span className="text-body text-fg">{w.name}</span>
