@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Details } from "@/components/atlas/AtlasUI";
 import { LazyView } from "@/components/scenes/LazyView";
-import { frontier, stationDone, type FlowModel } from "@/lib/client/atlas-flowviz";
+import { frontier, nowLine, stationDone, type FlowModel } from "@/lib/client/atlas-flowviz";
 
 const PipelineFlow = dynamic(() => import("@/components/scenes/PipelineFlow"), { ssr: false });
 
@@ -39,6 +39,7 @@ function Flow2D({ m }: { m: FlowModel }) {
     xOf = (i: number) => 40 + (i * (W - 80)) / Math.max(1, n - 1);
   const f = Math.max(0, frontier(m)),
     planned = stationDone(m, "schedule"),
+    tied = stationDone(m, "tiebreak"),
     gated = stationDone(m, "gates"),
     sealed = stationDone(m, "seal");
   const rows = Math.max(1, m.waves),
@@ -70,14 +71,14 @@ function Flow2D({ m }: { m: FlowModel }) {
               className="fill-danger"
               opacity={0.2 + 0.8 * b.risk}
             />
-            {gated &&
-              b.applied &&
+            {tied &&
               b.patches.map((p, j) => (
                 <circle
                   key={p}
                   cx={x + (j ? 6 : -6)}
                   cy={y - 7}
-                  r={2.5}
+                  r={gated && b.applied ? 2.5 : 1.8}
+                  opacity={gated && b.applied ? 1 : 0.45}
                   className={p === "kem" ? "fill-kem" : "fill-sig"}
                 />
               ))}
@@ -101,7 +102,8 @@ function Flow2D({ m }: { m: FlowModel }) {
 export function PipelineFlowView({ model, caption }: { model: FlowModel; caption: string }) {
   const still = useStatic();
   const n = Math.max(1, model.stations.length);
-  const label = `${caption}. ${model.batches.length} batches; ${model.stations.map((s) => `${s.label} ${s.status}`).join(", ")}.`;
+  const now = nowLine(model);
+  const label = `${caption}. ${now ? `${now} ` : ""}${model.batches.length} batches; ${model.stations.map((s) => `${s.label} ${s.status}`).join(", ")}.`;
   return (
     <figure className="flex flex-col gap-2">
       {/* data-hud-stage: tells the site's single WebGL canvas to start at once (as the domain HUD does) */}
@@ -117,6 +119,35 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
           <LazyView className="h-full w-full" label={label}>
             {(on) => <PipelineFlow model={model} active={on} />}
           </LazyView>
+        )}
+        {now && (
+          <p
+            aria-live="polite"
+            className="pointer-events-none absolute left-3 right-3 top-2 truncate font-mono text-micro text-fg-2"
+          >
+            {now}
+          </p>
+        )}
+        {model.batches.length > 0 && (
+          <ul
+            aria-label="Legend"
+            className="pointer-events-none absolute bottom-2 left-3 right-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-micro text-fg-3"
+          >
+            <li>
+              <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-danger" />
+              system · brighter = higher risk
+            </li>
+            <li>rows = weekly waves</li>
+            <li>
+              <span aria-hidden className="mr-1 inline-block h-2 w-2 rotate-45 bg-kem" />
+              ML-KEM <span aria-hidden className="mx-1 inline-block h-2 w-2 rotate-45 bg-sig" />
+              ML-DSA · dim planned, bright gate passed
+            </li>
+            <li>
+              <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-ok" />
+              ledger sealed
+            </li>
+          </ul>
         )}
       </div>
       <ol
@@ -144,8 +175,8 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
           <span>rows = waves (planned week), left to right = tie-break order</span>
           <span>
             <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-kem" /> ML-KEM ·{" "}
-            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-sig" /> ML-DSA, shown once the
-            lab gates pass
+            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-sig" /> ML-DSA, dim once
+            Tie-break has chosen them, bright where the lab gates passed
           </span>
           <span>
             <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-ok" /> ledger sealed and

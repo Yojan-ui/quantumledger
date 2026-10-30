@@ -4,6 +4,7 @@ import type { AtlasResults, Stage } from "@/lib/client/atlas";
 import {
   buildFlowModel,
   frontier,
+  nowLine,
   stationDone,
   recordedStatuses,
 } from "@/lib/client/atlas-flowviz";
@@ -151,5 +152,29 @@ describe("recorded stage status", () => {
       "idle",
     ]);
     expect(recordedStatuses(null, stages).every((s) => s === "idle")).toBe(true);
+  });
+});
+
+describe("nowLine", () => {
+  const plain = stages.map((s) => ({ ...s, plain: `does ${s.id}` }));
+  it("names the running stage in Atlas's words, then the sealed ledger, never before a run", () => {
+    const st = (n: number, cur: "running" | "failed" | "done" = "running") =>
+      plain.map((_, i) => (i < n ? "done" : i === n ? cur : "idle"));
+    expect(
+      nowLine(
+        buildFlowModel(
+          results,
+          plain,
+          plain.map(() => "idle"),
+        ),
+      ),
+    ).toBeNull();
+    expect(nowLine(buildFlowModel(results, plain, st(3)))).toBe("Now: tiebreak. does tiebreak");
+    expect(nowLine(buildFlowModel(results, plain, st(5, "failed")))).toBe(
+      "Failed: gates. does gates",
+    );
+    expect(nowLine(buildFlowModel(results, plain, st(9)))).toBe(
+      "Sealed: 7 ledger entries signed (ML-DSA-65) and verified.",
+    );
   });
 });

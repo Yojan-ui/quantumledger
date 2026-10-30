@@ -3,8 +3,9 @@
 /**
  * The Q-Shield pipeline in 3D: Atlas's stages as stations in a row, one small block per batch (system)
  * glowing by its risk weight, moving to the stage the run has reached. Once the plan exists the blocks line up
- * in wave rows (planned week), in tie-break order; once the lab gates pass for a wave, its blocks gain their
- * ML-KEM / ML-DSA markers one by one, in that order; at Seal the ledger column lights up. Every change follows
+ * in wave rows (planned week), in tie-break order; once Tie-break has run, every block gains its ML-KEM / ML-DSA
+ * markers one by one in that order (dim = planned), which turn bright where the lab gates passed ("applied");
+ * at Seal the ledger entries stack up one by one and light up. Every change follows
  * the model (lib/client/atlas-flowviz: real SSE events and Atlas JSON); the frames only ease between states.
  * Few objects, a fixed camera, no drift. Rendered through LazyView (the site's single canvas).
  */
@@ -30,7 +31,14 @@ export default function PipelineFlow({ model, active }: { model: FlowModel; acti
   const col = useMemo(() => new THREE.Color(), []);
   const cur = useRef(new Float32Array(MAX_BATCH * 3));
   const placed = useRef(false);
-  const gatesAt = useRef<number | null>(null);
+  const at = useRef<Record<string, number | null>>({});
+  /** Clock time at which stage `id` was first seen done (from the model: SSE events or recorded results). */
+  const since = (id: string, t: number) => {
+    const done = stationDone(model, id);
+    if (!done) at.current[id] = null;
+    else if (at.current[id] == null) at.current[id] = t;
+    return done ? t - at.current[id]! : -1;
+  };
 
   const n = model.stations.length;
   const xOf = (i: number) => (i - (n - 1) / 2) * SP;
@@ -41,11 +49,11 @@ export default function PipelineFlow({ model, active }: { model: FlowModel; acti
     const t = clock.elapsedTime;
     const f = Math.max(0, frontier(model));
     const planned = stationDone(model, "schedule");
-    const gatesDone = stationDone(model, "gates");
-    if (gatesDone && gatesAt.current === null) gatesAt.current = t;
-    if (!gatesDone) gatesAt.current = null;
-    const sealed = stationDone(model, "seal");
-    const k = Math.min(1, dt * 4); // ease towards the target (~250 ms)
+    const tTie = since("tiebreak", t);
+    const tGates = since("gates", t);
+    const tSeal = since("seal", t);
+    const sealed = tSeal >= 0;
+    const k = Math.min(1, dt * 2.5); // ease towards the target (~400 ms): calm, readable moves
 
     // stations: hairline plates coloured by status (running breathes softly)
     model.stations.forEach((s, i) => {
@@ -91,21 +99,25 @@ export default function PipelineFlow({ model, active }: { model: FlowModel; acti
       col.copy(c.danger).lerp(c.bg, 0.7 * (1 - b.risk));
       if (frontier(model) < 0) col.lerp(c.bg, 0.5);
       bt.current?.setColorAt(i, col);
-      // patch markers: in tie-break order, 90 ms apart, once the lab gates passed for this batch's wave
+      // patch markers in tie-break order (batches are sorted by wave, then rank), 120 ms apart: dim once
+      // Tie-break has chosen them (planned), bright once the lab gates passed for this batch ("applied")
       b.patches.forEach((kind, j) => {
         if (p >= MAX_BATCH * 2) return;
-        const due =
-          gatesAt.current !== null && b.applied && t - gatesAt.current > i * 0.09 + j * 0.05;
+        const step = i * 0.12 + j * 0.06;
+        const planned_ = tTie > step;
+        const applied = b.applied && tGates > step;
         o.position.set(
           c3[i * 3]! + (j === 0 ? -1 : 1) * BOX * 0.55,
           c3[i * 3 + 1]! + BOX * 0.75,
           0.05,
         );
         o.rotation.set(0, 0, Math.PI / 4);
-        o.scale.setScalar(due ? BOX * 0.5 : 0);
+        o.scale.setScalar(applied ? BOX * 0.55 : planned_ ? BOX * 0.38 : 0);
         o.updateMatrix();
         pt.current?.setMatrixAt(p, o.matrix);
-        pt.current?.setColorAt(p, kind === "kem" ? c.kem : c.sig);
+        col.copy(kind === "kem" ? c.kem : c.sig);
+        if (!applied) col.lerp(c.bg, 0.55);
+        pt.current?.setColorAt(p, col);
         p++;
       });
     });
@@ -113,13 +125,14 @@ export default function PipelineFlow({ model, active }: { model: FlowModel; acti
     if (bt.current) bt.current.count = Math.min(MAX_BATCH, model.batches.length);
     if (pt.current) pt.current.count = p;
 
-    // ledger: a column of blocks at Seal, lit once the chain is sealed
+    // ledger: a column of blocks at Seal; when the chain is sealed they stack up one by one (80 ms apart) and light
     const si = iOf("seal");
     const L = Math.min(MAX_LEDGER, model.ledger.entries);
     for (let i = 0; i < L; i++) {
-      o.position.set(xOf(si >= 0 ? si : n - 1) + 0.75, -2.35 + i * 0.22, 0);
+      const up = sealed ? Math.min(1, Math.max(0, (tSeal - i * 0.08) * 4)) : 1;
+      o.position.set(xOf(si >= 0 ? si : n - 1) + 0.75, -2.35 + i * 0.22 + (1 - up) * 0.6, 0);
       o.rotation.set(0, 0.5, 0);
-      o.scale.set(0.34, 0.16, 0.34);
+      o.scale.set(0.34 * up, 0.16 * up, 0.34 * up);
       o.updateMatrix();
       lg.current?.setMatrixAt(i, o.matrix);
       lg.current?.setColorAt(

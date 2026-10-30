@@ -22,7 +22,8 @@ export type FlowBatch = {
   applied: boolean;
 };
 export type FlowModel = {
-  stations: { id: string; label: string; status: StageStatus }[];
+  /** plain: Atlas's one-line description of the stage (contracts/stages.json), shown as "Now: …". */
+  stations: { id: string; label: string; plain: string; status: StageStatus }[];
   batches: FlowBatch[];
   waves: number;
   ledger: { entries: number; verified: boolean };
@@ -49,6 +50,7 @@ export function buildFlowModel(
   const stations = stages.map((s, i) => ({
     id: s.id,
     label: s.label,
+    plain: s.plain,
     status: status[i] ?? "idle",
   }));
   if (!results) return { stations, batches: [], waves: 0, ledger: { entries: 0, verified: false } };
@@ -135,4 +137,18 @@ export function recordedStatuses(
     report: (r?.ledger?.entries ?? []).some((e: { type: string }) => e.type === "report.html"),
   };
   return stages.map((s) => (present[s.id] ? "done" : "idle"));
+}
+
+/** The overlay line: the running stage (live SSE), else the last finished one, in Atlas's own words. */
+export function nowLine(m: FlowModel): string | null {
+  const run = m.stations.find((s) => s.status === "running" || s.status === "failed");
+  if (run) return `${run.status === "failed" ? "Failed" : "Now"}: ${run.label}. ${run.plain}`;
+  const f = frontier(m);
+  if (f < 0) return null;
+  if (stationDone(m, "seal"))
+    return m.ledger.verified
+      ? `Sealed: ${m.ledger.entries} ledger entries signed (ML-DSA-65) and verified.`
+      : `Sealed: ${m.ledger.entries} ledger entries signed.`;
+  const s = m.stations[f]!;
+  return `${s.label}: ${s.plain}`;
 }
