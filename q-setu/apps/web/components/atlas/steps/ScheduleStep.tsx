@@ -16,6 +16,7 @@ import {
   Table,
 } from "../AtlasUI";
 import { fmt, useResults } from "../useResults";
+import { PlannerComparison } from "./PlannerComparison";
 
 type Scen = {
   scenario: string;
@@ -41,7 +42,7 @@ type Run = {
 };
 
 export function ScheduleStep() {
-  const { results, error, loading, reload } = useResults();
+  const { ws, results, error, loading, reload } = useResults();
   if (error) return <AtlasErrorPanel error={error} onRetry={reload} />;
   if (loading && results === undefined) return <Skeleton className="mt-10 h-console" />;
   if (!results) return <NotYetRun what="Plan" />;
@@ -126,42 +127,7 @@ export function ScheduleStep() {
           ))}
         </ol>
       </Part>
-      <Part
-        title="Optimised plan vs the simple orders"
-        label="exposure-years after Q-day · lower is better"
-      >
-        <Table
-          caption="Exposure per Q-day scenario for each plan"
-          head={["Plan", ...scen.map((s) => `Q-day ${by(r.exposure, s)?.year ?? s}`), "Makespan"]}
-          rows={plans.map(([name, p]) => [
-            <span key="n" className={name.startsWith("Optimised") ? "text-fg" : ""}>
-              {name}
-            </span>,
-            ...scen.map((s) => fmt(by(p, s)?.exposure_years, 3)),
-            `${fmt(p.makespan_weeks)} wk`,
-          ])}
-        />
-        <div className="mt-6">
-          <Table
-            caption="Exposure-years avoided by the optimised plan"
-            head={["Avoided by MILP", ...scen.map((s) => `Q-day ${by(r.exposure, s)?.year ?? s}`)]}
-            rows={[
-              [
-                "vs first-come-first-served",
-                ...scen.map((s) => fmt(av(r.avoided.vs_fcfs, s)?.exposure_years_avoided, 3)),
-              ],
-              [
-                "vs greedy",
-                ...scen.map((s) => fmt(av(r.avoided.vs_greedy, s)?.exposure_years_avoided, 3)),
-              ],
-            ]}
-          />
-        </div>
-        <p className="mt-3 text-small text-fg-3">
-          0 means that order already reached the same exposure on this inventory; the optimised plan
-          is never worse.
-        </p>
-      </Part>
+      <PlannerComparison ws={ws} results={results as unknown as Record<string, unknown>} />
       <Part title="Solver run" label={main?.run_id ? `run ${main.run_id.slice(0, 12)}` : undefined}>
         {main ? (
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">

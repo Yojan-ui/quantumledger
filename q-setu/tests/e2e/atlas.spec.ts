@@ -76,7 +76,7 @@ test.describe("with Atlas on :8100", () => {
     await page.goto("/atlas/demo/schedule");
     await expect(page.getByText(`${demo!.exposure.makespan_weeks} weeks`).first()).toBeVisible();
     for (const p of [
-      "Optimised (QpiAI Opt MILP)",
+      "QpiAI Opt MILP best",
       "First-come-first-served",
       "Greedy (highest risk first)",
     ])
