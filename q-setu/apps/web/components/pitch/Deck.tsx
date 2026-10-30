@@ -31,7 +31,7 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
       <>
         <Text className="max-w-text">
           Encrypted traffic recorded now can be decrypted once a large quantum computer exists.
-          Health records, identity and financial histories must stay secret for decades.
+          Payment records, account data and financial histories must stay secret for decades.
         </Text>
         <div className="max-w-text">
           <SinceArrival />
@@ -122,7 +122,7 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
     body: (
       <>
         <Text className="max-w-text">
-          A bank, a hospital and a university to run QuantumLedger in shadow mode. No customers yet,
+          A bank, a payment company and a fintech to run QuantumLedger in shadow mode. No customers yet,
           so no logos: just working code you can verify today.
         </Text>
         <p className="font-mono text-label uppercase text-fg-3">

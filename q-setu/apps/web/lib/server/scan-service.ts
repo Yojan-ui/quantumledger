@@ -29,8 +29,8 @@ export const SUGGESTED = [
   "onlinesbi.sbi",
   "www.hdfcbank.com",
   "www.icicibank.com",
-  "www.irctc.co.in",
-  "www.digilocker.gov.in",
+  "www.npci.org.in",
+  "www.axisbank.com",
 ];
 
 const cache = CACHE as unknown as Record<string, Omit<ScanRecord, "cached"> & { plan: Plan }>;

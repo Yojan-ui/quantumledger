@@ -50,7 +50,7 @@ const STEPS = [
     technical: (
       <>
         <Term id="hndl">Harvest now, decrypt later</Term>: encrypted traffic recorded today opens
-        after Q-Day. Health, tax and identity records must stay secret far longer than that.
+        after Q-Day. Account, payment and KYC records must stay secret far longer than that.
       </>
     ),
     label: "Copies of boxes flying into a vault",

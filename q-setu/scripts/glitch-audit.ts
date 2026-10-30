@@ -261,7 +261,7 @@ const pages = [
     "/diagnostics",
     "/join",
     "/pitch",
-    "/scan/www.irctc.co.in",
+    "/scan/www.npci.org.in",
     "/this-page-does-not-exist",
     // Q-Shield (Atlas) pages: need `pnpm dev:atlas` on :8100; the demo workspace is public.
     "/atlas/signin",

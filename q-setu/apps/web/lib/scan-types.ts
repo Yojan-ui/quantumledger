@@ -36,8 +36,8 @@ export const SUGGESTED_HOSTS = [
   "onlinesbi.sbi",
   "www.hdfcbank.com",
   "www.icicibank.com",
-  "www.irctc.co.in",
-  "www.digilocker.gov.in",
+  "www.npci.org.in",
+  "www.axisbank.com",
 ];
 
 export const scanDate = (iso: string) =>

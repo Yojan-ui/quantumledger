@@ -74,15 +74,15 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/#scan");
-  await page.getByRole("button", { name: "irctc.co.in" }).click();
+  await page.getByRole("button", { name: "npci.org.in" }).click();
   await expect(page.getByText(/Hybrid post-quantum key exchange|Harvestable today/)).toBeVisible();
   await expect(
     page.getByText("Fix this with QuantumLedger Shield, zero code change →"),
   ).toBeVisible();
   await page.getByRole("link", { name: "Open result page" }).click();
-  await expect(page).toHaveURL(/\/scan\/www\.irctc\.co\.in/);
+  await expect(page).toHaveURL(/\/scan\/www\.npci\.org\.in/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Is www.irctc.co.in quantum-safe?",
+    "Is www.npci.org.in quantum-safe?",
   );
   const og = await page.locator('meta[property="og:image"]').getAttribute("content");
   expect(og).toMatch(/opengraph-image/);
