@@ -11,7 +11,7 @@ git clone https://github.com/Yojan-ui/q-shield-atlas.git && cd q-shield-atlas
 conda create -y -n pqc -c conda-forge python=3.12 openssl=3.6.5 && conda activate pqc
 pip install -r requirements.txt
 python -m atlas_web create-user --role admin
-./run.sh                    # then open http://127.0.0.1:8000
+./run.sh                    # then open http://127.0.0.1:8100
 ```
 
 **Windows (Anaconda Prompt)**
@@ -21,7 +21,7 @@ git clone https://github.com/Yojan-ui/q-shield-atlas.git && cd q-shield-atlas
 conda create -y -n pqc -c conda-forge python=3.12 openssl=3.6.5 && conda activate pqc
 pip install -r requirements.txt
 python -m atlas_web create-user --role admin
-run.bat                     &:: then open http://127.0.0.1:8000
+run.bat                     &:: then open http://127.0.0.1:8100
 ```
 
 Tested on macOS. On Windows, use WSL if anything fails. Without QpiAI keys the app runs on the local simulator and shows
@@ -290,7 +290,7 @@ source .env.sh
 
 # 4. Web app: create the first user (no default user), then start the server
 python -m atlas_web create-user --role admin
-python -m atlas_web --port 8000 --no-browser      # open http://127.0.0.1:8000/
+python -m atlas_web --port 8100 --no-browser      # open http://127.0.0.1:8100/
 
 # 5. Real workspaces: clone the pinned repos and run them through the same API
 python tools/seed_real_workspaces.py --confirm    # online-boutique, otel-demo
