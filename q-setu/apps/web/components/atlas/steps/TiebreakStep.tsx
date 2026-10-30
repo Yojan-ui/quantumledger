@@ -110,6 +110,7 @@ export function TiebreakStep() {
       </Part>
       {t.waves.map((w) => (
         <Part
+          disclosure
           key={w.week}
           title={`Week ${w.week}`}
           label={`${w.batches.length} ${w.batches.length === 1 ? "batch" : "batches"}`}

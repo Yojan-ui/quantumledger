@@ -65,6 +65,10 @@ test.describe("with Atlas on :8100", () => {
   test("Detect shows file:line evidence from results.json", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto("/atlas/demo/detect");
+    await page
+      .locator("summary")
+      .filter({ hasText: /^Findings/ })
+      .click();
     const f = demo!.detect!.findings[0]!;
     await expect(page.getByText(`${f.file}:${f.line}`).first()).toBeVisible();
     await expect(page.getByText(`${demo!.detect!.findings.length} findings`)).toBeVisible();
@@ -94,7 +98,9 @@ test.describe("with Atlas on :8100", () => {
     await expect(table.locator("tbody tr")).toHaveCount(demo!.qaoa!.table.length);
     const notOk = demo!.qaoa!.table.find((r) => r.status !== "ok");
     if (notOk?.status_text) await expect(table.getByText(notOk.status_text).first()).toBeVisible();
-    await expect(page.getByText(/no quantum advantage/i).first()).toBeVisible(); // short label; the sentence is in its dropdown
+    await expect(
+      page.getByText("simulators; a cross-check, no quantum advantage", { exact: true }),
+    ).toBeVisible(); // short label; the sentence is in its dropdown
     expect(errors).toEqual([]);
   });
 
@@ -141,7 +147,7 @@ test.describe("with Atlas on :8100", () => {
   test("phone width: no horizontal scroll on the Plan page", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/atlas/demo/schedule");
-    await expect(page.getByText("Wave plan")).toBeVisible();
+    await expect(page.locator("summary").filter({ hasText: /^Wave plan/ })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

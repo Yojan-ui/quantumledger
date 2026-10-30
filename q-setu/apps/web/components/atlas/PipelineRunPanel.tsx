@@ -64,22 +64,24 @@ export function PipelineRunPanel({ ws, results }: { ws: string; results?: AtlasR
   return (
     <div className="space-y-4 py-6">
       <PipelineFlowView model={model} caption={caption} />
-      <ol
-        aria-label="Live execution steps"
-        className="grid grid-cols-3 gap-2 md:grid-cols-3 lg:grid-cols-9"
-      >
-        {model.stations.map((st) => (
-          <li
-            key={st.id}
-            data-stage={st.id}
-            data-status={st.status}
-            className="min-w-0 rounded-sm border border-line p-2 text-small text-fg-2"
-          >
-            <span className="block text-fg">{st.label}</span>
-            <span className="text-micro">{st.status === "done" ? "recorded" : st.status}</span>
-          </li>
-        ))}
-      </ol>
+      {live && (
+        <ol
+          aria-label="Live execution steps"
+          className="grid grid-cols-3 gap-2 md:grid-cols-3 lg:grid-cols-9"
+        >
+          {model.stations.map((st) => (
+            <li
+              key={st.id}
+              data-stage={st.id}
+              data-status={st.status}
+              className="min-w-0 rounded-sm border border-line p-2 text-small text-fg-2"
+            >
+              <span className="block text-fg">{st.label}</span>
+              <span className="text-micro">{st.status === "done" ? "recorded" : st.status}</span>
+            </li>
+          ))}
+        </ol>
+      )}
       {me.canOperate && ws !== "demo" && (
         <Button disabled={live || !s.stages.length} onClick={() => void atlasRun.start()}>
           {live ? "Running…" : "Run pipeline"}

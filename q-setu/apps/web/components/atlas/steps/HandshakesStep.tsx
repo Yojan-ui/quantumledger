@@ -135,7 +135,7 @@ export function HandshakesStep() {
           </Honesty>
         </div>
       </Part>
-      <Part title="Lab services" label={`${labRows.length} TLS 1.3 sessions`}>
+      <Part disclosure title="Lab services" label={`${labRows.length} TLS 1.3 sessions`}>
         <Table
           caption="TLS 1.3 handshake sessions"
           head={["Service", "Key exchange", "PQ gate", "Downgrade", "Server auth"]}
@@ -162,7 +162,7 @@ export function HandshakesStep() {
           </Details>
         )}
       </Part>
-      <Part title="Compatibility" label="modes by client">
+      <Part disclosure title="Compatibility" label="modes by client">
         {clients.length ? (
           <Table
             caption="Modes by client"
@@ -185,7 +185,7 @@ export function HandshakesStep() {
           <p className="text-body text-fg-2">Compatibility matrix: not yet run.</p>
         )}
       </Part>
-      <Part title="Tested rollback">
+      <Part disclosure title="Tested rollback">
         {fr ? (
           <Table
             caption="Tested rollback"
@@ -207,7 +207,7 @@ export function HandshakesStep() {
           <p className="text-body text-fg-2">Rollback: not yet run.</p>
         )}
       </Part>
-      <Part title="Live endpoints">
+      <Part disclosure title="Live endpoints">
         {rows.some((x) => x.live) ? (
           <Table
             caption="Live TLS probes"

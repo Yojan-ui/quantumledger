@@ -109,7 +109,7 @@ export function ScheduleStep() {
           ])}
         />
       </Part>
-      <Part title="Wave plan" label={`${fmt(r.exposure.makespan_weeks)} weeks`}>
+      <Part disclosure title="Wave plan" label={`${fmt(r.exposure.makespan_weeks)} weeks`}>
         <ol className="grid gap-2 md:grid-cols-2">
           {(r.exposure.waves ?? []).map((w) => (
             <li key={w.week} className="rounded-lg border border-line px-4 py-3">
@@ -123,7 +123,11 @@ export function ScheduleStep() {
         </ol>
       </Part>
       <PlannerComparison ws={ws} results={results as unknown as Record<string, unknown>} />
-      <Part title="Solver run" label={main?.run_id ? `run ${main.run_id.slice(0, 12)}` : undefined}>
+      <Part
+        disclosure
+        title="Solver run"
+        label={main?.run_id ? `run ${main.run_id.slice(0, 12)}` : undefined}
+      >
         {main ? (
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             <MiniStat value={main.solver ?? "–"} label="solver" />

@@ -44,7 +44,7 @@ export function InventoryStep() {
           ]}
         />
       </Part>
-      <Part title="Systems to migrate" label={`${assets.length} systems`}>
+      <Part disclosure title="Systems to migrate" label={`${assets.length} systems`}>
         {assets.length === 0 ? (
           <p className="text-body text-fg-2">Nothing to migrate: no RSA / ECC / DH found.</p>
         ) : (
@@ -82,6 +82,7 @@ export function InventoryStep() {
         </div>
       </Part>
       <Part
+        disclosure
         title="Drift: live handshake vs configuration"
         label={`${fmt(results.detect?.drift_count)} alerts`}
       >

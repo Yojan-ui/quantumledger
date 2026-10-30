@@ -141,12 +141,22 @@ export function Part({
   label,
   children,
   aside,
+  disclosure = false,
 }: {
   title: string;
   label?: string;
   children: ReactNode;
   aside?: ReactNode;
+  disclosure?: boolean;
 }) {
+  if (disclosure)
+    return (
+      <Details summary={title}>
+        {label && <Label>{label}</Label>}
+        {aside}
+        {children}
+      </Details>
+    );
   return (
     <section className="border-t border-line py-10">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -204,9 +214,12 @@ export function KeyStats({ items }: { items: KeyStat[] }) {
   return (
     <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
       {items.map((s) => (
-        <li key={s.label} className="flex h-full flex-col gap-1 rounded-lg border border-line p-4">
+        <li
+          key={s.label}
+          className="flex h-full min-w-0 flex-col gap-1 rounded-lg border border-line p-4"
+        >
           <span className="font-mono text-micro uppercase text-fg-3">{s.label}</span>
-          <span className="tabular text-h2 font-medium text-fg">{s.value}</span>
+          <span className="break-words tabular text-h2 font-medium text-fg">{s.value}</span>
           {s.unit && <span className="text-small text-fg-2">{s.unit}</span>}
         </li>
       ))}

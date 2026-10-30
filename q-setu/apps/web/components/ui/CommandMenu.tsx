@@ -12,6 +12,7 @@ const GROUPS: { heading: string; items: [string, string][] }[] = [
   {
     heading: "Pages",
     items: [
+      ["Pipeline", "/atlas/demo"],
       ["Home", "/"],
       ["Platform", "/platform"],
       ["Solutions", "/solutions"],
@@ -32,8 +33,8 @@ const GROUPS: { heading: string; items: [string, string][] }[] = [
       ["Demo 3 · Q-Day time machine", "/demo/qday"],
       ["Demo 4 · Proof Chain", "/demo/ledger"],
       ["Readiness scanner", "/demo/scanner"],
-      ["Q-Shield pipeline", "/atlas"],
-      ["Q-Shield demo workspace", "/atlas/demo/detect"],
+      ["Workspaces", "/atlas"],
+      ["Bank demo", "/atlas/demo"],
       ["Pitch (7 slides)", "/pitch"],
     ],
   },

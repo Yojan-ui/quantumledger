@@ -81,11 +81,8 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <AboutPipeline ws={ws} />
-      <nav
-        aria-label="Pipeline steps"
-        className="mt-8 max-w-full overflow-x-auto border-b border-line"
-      >
-        <ol className="flex min-w-max gap-1 lg:min-w-0 lg:flex-wrap">
+      <nav aria-label="Pipeline steps" className="mt-6 max-w-full border-b border-line">
+        <ol className="grid grid-cols-2 gap-1 md:grid-cols-5">
           {TABS.map((t) => {
             const [page, query] = t.href.split("?");
             const href = `/atlas/${encodeURIComponent(ws)}${page ? `/${page}` : ""}${query ? `?${query}` : ""}`;
@@ -99,7 +96,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
                   prefetch={false}
                   href={href}
                   aria-current={on ? "page" : undefined}
-                  className={`block border-b px-3 py-3 font-mono text-micro uppercase ${on ? "border-fg text-fg" : "border-transparent text-fg-3 hover:text-fg"}`}
+                  className={`block h-full border-b px-3 py-3 font-mono text-micro uppercase ${on ? "border-fg text-fg" : "border-transparent text-fg-3 hover:text-fg"}`}
                 >
                   {t.n ? `${t.n} ` : ""}
                   {t.label}

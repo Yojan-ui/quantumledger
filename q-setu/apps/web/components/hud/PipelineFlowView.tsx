@@ -7,6 +7,7 @@
  */
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { Details } from "@/components/atlas/AtlasUI";
 import { LazyView } from "@/components/scenes/LazyView";
 import { frontier, stationDone, type FlowModel } from "@/lib/client/atlas-flowviz";
 
@@ -119,7 +120,7 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
         )}
       </div>
       <ol
-        className="grid gap-1 font-mono text-micro uppercase"
+        className="hidden gap-1 font-mono text-micro uppercase md:grid"
         style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
         aria-label="Stations"
       >
@@ -133,23 +134,25 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
           </li>
         ))}
       </ol>
-      <figcaption className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-micro text-fg-3">
-        <span>{caption}</span>
-        <span>
-          <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-danger" /> batch, brighter =
-          higher risk weight (assumption)
-        </span>
-        <span>rows = waves (planned week), left to right = tie-break order</span>
-        <span>
-          <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-kem" /> ML-KEM ·{" "}
-          <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-sig" /> ML-DSA, shown once the
-          lab gates pass
-        </span>
-        <span>
-          <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-ok" /> ledger sealed and
-          verified
-        </span>
-      </figcaption>
+      <figcaption className="text-small text-fg-2">{caption}</figcaption>
+      <Details summary="How to read this view">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-small text-fg-3">
+          <span>
+            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-danger" /> batch, brighter =
+            higher risk weight (assumption)
+          </span>
+          <span>rows = waves (planned week), left to right = tie-break order</span>
+          <span>
+            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-kem" /> ML-KEM ·{" "}
+            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-sig" /> ML-DSA, shown once the
+            lab gates pass
+          </span>
+          <span>
+            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-ok" /> ledger sealed and
+            verified
+          </span>
+        </div>
+      </Details>
     </figure>
   );
 }

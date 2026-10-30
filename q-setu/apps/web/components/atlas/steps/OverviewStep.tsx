@@ -17,6 +17,7 @@ import { fmt, useResults } from "../useResults";
 export function OverviewStep() {
   const { ws, results, error, loading, reload } = useResults();
   const me = useAtlasMe();
+  const failed = useAtlasRun((s) => s.ws === ws && s.result === "FAIL");
   const live = useAtlasRun((s) => s.ws === ws && s.running);
   const reviews = useAtlas(me.user ? `reviews:${ws}:${me.user.username}` : null, (signal) =>
     atlas.reviews(ws, { signal }),
@@ -37,12 +38,12 @@ export function OverviewStep() {
         <Skeleton className="mt-10 h-console" />
       </>
     );
-  if (!results || live)
+  if (!results || live || failed)
     return (
       <>
         <GitHubScan />
         <PipelineRunPanel ws={ws} results={results} />
-        {!live && (
+        {!live && !failed && (
           <NotYetRun
             what="Pipeline"
             hint="Clone a public repository above, or start this workspace’s pipeline."

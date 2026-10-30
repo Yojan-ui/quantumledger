@@ -168,7 +168,7 @@ const STEPS: TourStep[] = [
   {
     id: "cta",
     title: "Pilot partners",
-    caption: "Banks, hospitals, universities and departments: pilot QuantumLedger with us.",
+    caption: "Banks and fintech teams: pilot QuantumLedger with us.",
     ms: 8000,
     run: async (c) => {
       await c.go("/", "early-access");

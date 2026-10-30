@@ -59,7 +59,7 @@ export function DetectStep() {
           ]}
         />
       </Part>
-      <Part title="Findings" label={`${findings.length} findings`}>
+      <Part disclosure title="Findings" label={`${findings.length} findings`}>
         <Table
           caption="Static findings"
           head={["File:line", "Family", "Use", "Confidence", "Rule", "Evidence"]}
@@ -94,7 +94,7 @@ export function DetectStep() {
           </button>
         )}
       </Part>
-      <Part title="Live connections" label={`${probes.length} probed`}>
+      <Part disclosure title="Live connections" label={`${probes.length} probed`}>
         {probes.length === 0 ? (
           <p className="text-body text-fg-2">No live probe in this run.</p>
         ) : (

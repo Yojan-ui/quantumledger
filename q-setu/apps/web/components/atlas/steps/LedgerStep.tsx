@@ -126,7 +126,7 @@ export function LedgerStep() {
       </Part>
       <section id="section-2" className="scroll-mt-20">
         <Part
-          title="2 · Proof: findings signed"
+          title="Findings signed"
           aside={<Chip status={e0 ? "PASS" : "pending"}>{e0 ? "signed" : "not yet run"}</Chip>}
         >
           <p className="text-body text-fg-2">
@@ -146,7 +146,7 @@ export function LedgerStep() {
       </section>
       <section id="section-6" className="scroll-mt-20">
         <Part
-          title="6 · Proof: post-quantum verified"
+          title="Ledger sealed and verified"
           aside={
             <Chip status={okLive ? "PASS" : live?.ok === false ? "FAIL" : "pending"}>
               {okLive ? "verified" : live?.ok === false ? "failed" : "not verified"}

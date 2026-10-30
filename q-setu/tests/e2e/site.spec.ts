@@ -64,11 +64,11 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   const labels = await page.locator("main > section [class*=uppercase]").allInnerTexts();
   const nums = labels.map((t) => /^(\d{2}) —/.exec(t)?.[1]).filter(Boolean);
   expect([...new Set(nums)]).toEqual(["02", "03", "04", "05", "06", "07", "08", "09", "10"]);
-  await expect(page.getByRole("button", { name: "Take the 3-minute tour" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Explore the pipeline" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Open full diagnostics" })).toBeVisible();
-  await expect(page.locator("#top [data-hud]")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Scan a GitHub repo" })).toBeVisible();
+  await expect(page.locator("#top [data-hud-stage]")).toBeVisible();
 });
 
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {
