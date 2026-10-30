@@ -104,7 +104,7 @@ export const ADAPTERS = [
     id: "vault",
     name: "Vault",
     desc: "Per-record keys wrapped with ML-KEM; records signed with ML-DSA.",
-    code: "await vault.put(labReport)",
+    code: "await vault.put(paymentRecord)",
   },
 ] as const;
 
@@ -113,9 +113,4 @@ export const SECTOR_NOTES: Record<string, { kem: string; dsa: string }> = {
     kem: "bank-to-switch links and app-to-bank APIs",
     dsa: "transaction signing and mandates",
   },
-  healthcare: {
-    kem: "hospital-to-exchange transfers and records at rest",
-    dsa: "signed lab reports and prescriptions",
-  },
-  education: { kem: "student-data transfers", dsa: "university-signed certificates" },
 };

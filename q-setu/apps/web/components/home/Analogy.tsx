@@ -19,7 +19,7 @@ const STEPS = [
   {
     title: { simple: "Everything has a lock", technical: "Today: classical key exchange" },
     simple:
-      "What you send to your bank, hospital or a government site is locked on the way. Only they can open it.",
+      "What you send to your bank or payment provider is locked on the way. Only they can open it.",
     technical: (
       <>
         <Term id="tls">TLS</Term> agrees a key with <Term id="x25519">X25519</Term> or P-256, proves

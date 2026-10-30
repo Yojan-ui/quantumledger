@@ -14,7 +14,7 @@ import { pageMeta } from "@/lib/meta";
 export const metadata = pageMeta({
   title: "Pricing",
   description:
-    "Community (free, self-hosted), Pro (managed Shield and Proof Chain) and Government & Enterprise (on-prem, HSM).",
+    "Community (free, self-hosted), Pro (managed Shield and Proof Chain) and Banking & Enterprise (on-prem, HSM).",
   path: "/pricing",
 });
 
@@ -42,7 +42,7 @@ const TIERS = [
     cta: ["Talk to us", "/contact"],
   },
   {
-    name: "Government & Enterprise",
+    name: "Banking & Enterprise",
     price: "Contact",
     note: "For regulated and critical systems",
     items: ["On-prem deployment", "HSM-backed keys (PKCS#11)", "Compliance and audit support"],

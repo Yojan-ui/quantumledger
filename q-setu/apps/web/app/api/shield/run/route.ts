@@ -8,8 +8,6 @@ export const dynamic = "force-dynamic";
 
 const ROUTE = {
   fintech: "/api/transfer",
-  healthcare: "/api/lab-reports",
-  education: "/api/certificates",
 } as const;
 
 /**

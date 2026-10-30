@@ -7,7 +7,7 @@ description: Per-record keys wrapped with ML-KEM and records signed with ML-DSA,
 import { createVault, generateVaultKeys } from "@qsetu/vault";
 
 const vault = createVault({ keys: generateVaultKeys("standard"), store }); // store: get/set by id
-const { id } = await vault.put(labReport, { meta: { type: "lab report" } });
+const { id } = await vault.put(paymentRecord, { meta: { type: "payment record" } });
 const { data } = await vault.get(id); // verifies the signature, unwraps the key, decrypts
 ```
 

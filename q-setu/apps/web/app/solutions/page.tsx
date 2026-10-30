@@ -5,7 +5,7 @@ import { pageMeta } from "@/lib/meta";
 
 export const metadata = pageMeta({
   title: "Solutions",
-  description: "Where QuantumLedger fits in Indian fintech, healthcare, education and government.",
+  description: "Where QuantumLedger fits in Indian banking and fintech.",
   path: "/solutions",
 });
 

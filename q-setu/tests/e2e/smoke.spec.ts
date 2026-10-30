@@ -22,7 +22,7 @@ test("landing: headline, live ticker and sourced facts", async ({ page }) => {
     /SEAL|VERIFY|LEDGER|HANDSHAKE|KEYGEN|REJECT|ROTATE/,
   );
   // The Readiness Index headline is computed from the measured totals.
-  await expect(page.locator("#index")).toContainText(/\d+% of the Indian sites we checked/);
+  await expect(page.locator("#index")).toContainText(/\d+% of the Indian banking sites we checked/);
   await expect(page.locator("#analogy")).toContainText("Everything has a lock");
   expect(errors).toEqual([]);
 });
@@ -43,7 +43,7 @@ test("Demo 1: real handshake, then an attack is rejected by ML-DSA", async ({ pa
   expect(errors).toEqual([]);
 });
 
-test("Demo 2: Web, Database and IoT adapters deploy for real; forged certificate rejected", async ({
+test("Demo 2: Web, Database and IoT adapters deploy for real; tampering rejected", async ({
   page,
 }) => {
   const errors = trackErrors(page);
@@ -62,12 +62,6 @@ test("Demo 2: Web, Database and IoT adapters deploy for real; forged certificate
   await page.getByRole("radio", { name: /IoT device/ }).click();
   await page.getByRole("button", { name: "Deploy QuantumLedger Edge" }).click();
   await expect(page.getByText(/readings delivered, 3 batch signatures verified/)).toBeVisible();
-  await page.getByRole("radio", { name: "Education" }).click();
-  await page.getByRole("button", { name: /University issues/ }).click();
-  await page.getByRole("button", { name: /Employer scans/ }).click();
-  await expect(page.locator("li", { hasText: "Genuine certificate" })).toContainText("✓ Verified");
-  await page.getByRole("button", { name: /Forge the grade/ }).click();
-  await expect(page.locator("li", { hasText: "Forged grade" })).toContainText("✕ Rejected");
   // Reading the tampered Vault record correctly answers 409 Conflict; Chrome logs that response.
   expect(errors.filter((e) => !e.includes("status of 409"))).toEqual([]);
 });

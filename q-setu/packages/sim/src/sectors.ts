@@ -1,9 +1,9 @@
 /**
- * The three demo sectors. Each has a three-node path and a payload generator. All names, IDs and
- * institutions are fictional; ID formats only resemble UPI / ABHA / APAAR.
+ * The banking demo sector. Each has a three-node path and a payload generator. All names, IDs and
+ * institutions are fictional; ID formats only resemble UPI.
  */
 
-export type SectorId = "fintech" | "healthcare" | "education";
+export type SectorId = "fintech";
 
 export interface Sector {
   id: SectorId;
@@ -17,8 +17,6 @@ export interface Sector {
 }
 
 const pick = <T>(xs: readonly T[]): T => xs[Math.floor(Math.random() * xs.length)]!;
-const digits = (n: number) =>
-  Array.from({ length: n }, () => Math.floor(Math.random() * 10)).join("");
 let seq = 0;
 const id = (prefix: string) =>
   `${prefix}${Date.now().toString().slice(-6)}${String(++seq % 1000).padStart(3, "0")}`;
@@ -93,60 +91,6 @@ export const SECTORS: Record<SectorId, Sector> = {
     reveal: (p) => ({
       headline: `${inr(Number(p.amountINR))}  ${p.payerVPA} → ${p.payeeVPA}`,
       detail: p.note ?? "",
-    }),
-  },
-  healthcare: {
-    id: "healthcare",
-    label: "Healthcare",
-    nodes: ["Pune General Hospital", "Health Exchange", "Sahyadri Clinic"],
-    noun: "lab report",
-    generate() {
-      const [test, result, diagnosis] = pick([
-        ["HbA1c", "7.9 %", "Type 2 diabetes"],
-        ["HIV-1/2 antibody", "Reactive", "HIV positive"],
-        ["TSH", "8.4 mIU/L", "Hypothyroidism"],
-        ["Hepatitis B sAg", "Positive", "Chronic hepatitis B"],
-        ["Lipid panel", "LDL 182 mg/dL", "Hyperlipidaemia"],
-      ] as const);
-      return {
-        recordId: id("LAB"),
-        patientName: name(),
-        healthId: `91-${digits(4)}-${digits(4)}-${digits(4)}`,
-        test,
-        result,
-        diagnosis,
-        orderedBy: `Dr. ${name()}`,
-      };
-    },
-    reveal: (p) => ({
-      headline: `${p.patientName} · ${p.diagnosis}`,
-      detail: `${p.test}: ${p.result} · ID ${p.healthId}`,
-    }),
-  },
-  education: {
-    id: "education",
-    label: "Education",
-    nodes: ["Deccan University", "Credential Registry", "Employer"],
-    noun: "certificate",
-    generate() {
-      return {
-        recordId: id("CERT"),
-        studentName: name(),
-        studentId: `APR${digits(9)}`,
-        degree: pick([
-          "B.Tech Computer Science",
-          "B.Com",
-          "M.Sc Physics",
-          "MBBS",
-          "B.A. Economics",
-        ]),
-        grade: pick(["CGPA 9.1", "CGPA 7.4", "First Class", "CGPA 6.2", "Distinction"]),
-        year: String(2020 + Math.floor(Math.random() * 6)),
-      };
-    },
-    reveal: (p) => ({
-      headline: `${p.studentName} · ${p.grade}`,
-      detail: `${p.degree}, ${p.year} · ${p.studentId}`,
     }),
   },
 };

@@ -103,7 +103,7 @@ const SLIDES: { label: string; title: string; body: ReactNode }[] = [
         {[
           ["Community", "Free", "Self-hosted core, five adapters, scanner"],
           ["Pro", "Pricing not set", "Managed Shield, hosted Proof Chain, support"],
-          ["Government & Enterprise", "Contract", "On-prem, HSM keys, compliance support"],
+          ["Banking & Enterprise", "Contract", "On-prem, HSM keys, compliance support"],
         ].map(([n, p, d]) => (
           <div key={n} className="border-t border-line pt-6">
             <p className="text-h3 font-medium text-fg">{n}</p>

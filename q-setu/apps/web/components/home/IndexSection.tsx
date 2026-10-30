@@ -14,7 +14,7 @@ export function IndexSection({ index }: { index: string }) {
         <SectionLabel index={index} label="India Quantum Readiness Index" role="ok" />
         <div data-copy="simple">
           <MaskHeading
-            text={`${classical} of the Indian sites we checked still use a lock a quantum computer could open.`}
+            text={`${classical} of the Indian banking sites we checked still use a lock a quantum computer could open.`}
           />
         </div>
         <div data-copy="technical">

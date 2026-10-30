@@ -12,9 +12,6 @@ const PAGES: [string, RegExp][] = [
   ["/platform", /One core\. Five ways in\./],
   ["/solutions", /most sensitive rails/],
   ["/solutions/fintech", /Payment and banking traffic/],
-  ["/solutions/healthcare", /A diagnosis stays sensitive/],
-  ["/solutions/education", /A degree is verified/],
-  ["/solutions/government", /Identity, tax and land records/],
   ["/demos", /Real crypto\. No slides\./],
   ["/pricing", /Start free/],
   ["/security", /What we protect/],
@@ -107,7 +104,7 @@ test("early access: validated, stored, thanked", async ({ page, request }) => {
 });
 
 test("SEO: sitemap, robots, security.txt, OG image, 404", async ({ page, request }) => {
-  expect(await (await request.get("/sitemap.xml")).text()).toContain("/solutions/government");
+  expect(await (await request.get("/sitemap.xml")).text()).toContain("/solutions/fintech");
   expect(await (await request.get("/robots.txt")).text()).toContain("Sitemap:");
   expect(await (await request.get("/.well-known/security.txt")).text()).toMatch(/^Contact: /m);
   const og = await request.get("/og?title=Hello");

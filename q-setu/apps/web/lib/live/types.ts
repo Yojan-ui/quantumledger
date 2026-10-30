@@ -22,7 +22,6 @@ export type Source =
   | "sdk"
   | "edge"
   | "vault"
-  | "certs"
   | "ledger"
   | "kms"
   | "policy"

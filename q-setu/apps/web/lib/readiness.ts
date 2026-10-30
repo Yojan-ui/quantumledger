@@ -30,28 +30,6 @@ export const READINESS = INDEX as ReadinessIndex;
 
 export const SECTORS = [
   { id: "banking", short: "Banks", label: "Banking", simple: "Banks", at: [19.08, 72.88] },
-  {
-    id: "government",
-    short: "Govt",
-    label: "Government",
-    simple: "Government",
-    at: [28.61, 77.21],
-  },
-  {
-    id: "healthcare",
-    short: "Health",
-    label: "Healthcare",
-    simple: "Hospitals and health",
-    at: [22.57, 88.36],
-  },
-  {
-    id: "education",
-    short: "Edu",
-    label: "Education",
-    simple: "Universities and exams",
-    at: [12.97, 77.59],
-  },
-  { id: "telecom", short: "Telecom", label: "Telecom", simple: "Telecom", at: [17.39, 78.49] },
 ] as const;
 
 export type MetricId = "hybridPq" | "tls13" | "rsa2048";

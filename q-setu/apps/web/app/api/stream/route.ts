@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
  * GET /api/stream: Server-Sent Events.
  *  - no `sector`: the live bus. Each frame is one OpEvent (a real operation with its measured time);
  *    an `event: metrics` frame every second carries rolling counts and latency percentiles.
- *  - `sector=fintech|healthcare|education|all`: raw simulator hops (NetEvents), for Demo 3.
+ *  - `sector=fintech|all`: raw simulator hops (NetEvents), for Demo 3.
  */
 export async function GET(req: Request) {
   const q = parseQuery(req, StreamQuery);

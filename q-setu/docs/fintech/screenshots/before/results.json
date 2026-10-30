@@ -1,0 +1,146 @@
+[
+  {
+    "route": "/",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/home-1440.png"
+  },
+  {
+    "route": "/atlas/demo",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-1440.png"
+  },
+  {
+    "route": "/atlas/demo/detect",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-detect-1440.png"
+  },
+  {
+    "route": "/atlas/demo/inventory",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-inventory-1440.png"
+  },
+  {
+    "route": "/atlas/demo/schedule",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-schedule-1440.png"
+  },
+  {
+    "route": "/atlas/demo/tiebreak",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-tiebreak-1440.png"
+  },
+  {
+    "route": "/atlas/demo/qaoa",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-qaoa-1440.png"
+  },
+  {
+    "route": "/atlas/demo/handshakes",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-handshakes-1440.png"
+  },
+  {
+    "route": "/atlas/demo/ledger?section=2",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-ledger-section-2-1440.png"
+  },
+  {
+    "route": "/atlas/demo/ledger?section=6",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-ledger-section-6-1440.png"
+  },
+  {
+    "route": "/atlas/demo/review",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-review-1440.png"
+  },
+  {
+    "route": "/diagnostics?ws=demo",
+    "width": 1440,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/diagnostics-ws-demo-1440.png"
+  },
+  {
+    "route": "/",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/home-390.png"
+  },
+  {
+    "route": "/atlas/demo",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-390.png"
+  },
+  {
+    "route": "/atlas/demo/detect",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-detect-390.png"
+  },
+  {
+    "route": "/atlas/demo/inventory",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-inventory-390.png"
+  },
+  {
+    "route": "/atlas/demo/schedule",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-schedule-390.png"
+  },
+  {
+    "route": "/atlas/demo/tiebreak",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-tiebreak-390.png"
+  },
+  {
+    "route": "/atlas/demo/qaoa",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-qaoa-390.png"
+  },
+  {
+    "route": "/atlas/demo/handshakes",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-handshakes-390.png"
+  },
+  {
+    "route": "/atlas/demo/ledger?section=2",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-ledger-section-2-390.png"
+  },
+  {
+    "route": "/atlas/demo/ledger?section=6",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-ledger-section-6-390.png"
+  },
+  {
+    "route": "/atlas/demo/review",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/atlas-demo-review-390.png"
+  },
+  {
+    "route": "/diagnostics?ws=demo",
+    "width": 390,
+    "overflow": false,
+    "path": "/Users/yashas/quantumledger/q-setu/docs/fintech/screenshots/before/diagnostics-ws-demo-390.png"
+  }
+]

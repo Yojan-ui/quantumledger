@@ -5,7 +5,7 @@ test("readiness index: sector totals, methodology, no site names", async ({ page
   await page.goto("/index");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("[data-index-headline]")).toHaveText(/^\d+%$/);
-  await expect(page.locator("[data-sector]")).toHaveCount(5);
+  await expect(page.locator("[data-sector]")).toHaveCount(1);
   await page.getByRole("button", { name: "Old ID keys" }).click();
   await expect(page.getByRole("button", { name: "Old ID keys" })).toHaveAttribute(
     "aria-pressed",
@@ -43,6 +43,6 @@ test("impact calculator", async ({ page }) => {
   const y = new Date().getFullYear() + 30;
   await expect(page.locator("[data-impact-exposure]")).toHaveText(`${y - 2035}–${y - 2030} years`);
   await expect(page.locator("#impact")).toContainText("Estimate");
-  await page.goto("/solutions/healthcare");
-  await expect(page.locator("[data-impact]")).toContainText("decades of secrecy");
+  await page.goto("/solutions/fintech");
+  await expect(page.locator("[data-impact]")).toContainText("Payment records stay sensitive");
 });

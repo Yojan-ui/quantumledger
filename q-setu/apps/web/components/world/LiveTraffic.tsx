@@ -73,7 +73,7 @@ export function LiveTraffic() {
       world.cityOps = Object.fromEntries(Object.entries(m.byCity).map(([k, v]) => [k, v.sealed]));
     });
 
-    const sectors = ["fintech", "healthcare", "education"];
+    const sectors = ["fintech"];
     let n = 0;
     const tick = setInterval(() => {
       if (document.hidden || world.mode !== "story") return;

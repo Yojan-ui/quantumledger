@@ -33,7 +33,7 @@ export default function HarvestQDay({ progress }: { progress: number }) {
     let live = true;
     void (async () => {
       const all = await Promise.all(
-        (["fintech", "healthcare", "education"] as const).map(async (s) => {
+        (["fintech"] as const).map(async (s) => {
           let { records } = (await (await fetch(`/api/harvest?sector=${s}`)).json()) as {
             records: HarvestRecord[];
           };

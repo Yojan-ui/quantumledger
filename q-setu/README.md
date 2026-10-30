@@ -35,7 +35,7 @@ flowchart TB
     SITE["Landing: one persistent R3F scene<br/>morphing on scroll"]
     D1[Demo 1 · How it works] & D2[Demo 2 · Deploy anywhere] & D3[Demo 3 · Q-Day] & D4[Demo 4 · Proof Chain] & SCN[Scanner]
     BUS["lib/live: event bus · metrics · mesh · policy · KMS · Proof Chain (SQLite)"]
-    API["/api/*: stream (SSE) · metrics · ledger · policy · keys · plan · scan/url · simulate · qday · shield/run · sdk · vault · certs · docs"]
+    API["/api/*: stream (SSE) · metrics · ledger · policy · keys · plan · scan/url · simulate · qday · shield/run · sdk · vault · docs"]
   end
   SDK & WEB & EDGE & VAULT & SIM --> web
   API --> SH

@@ -183,13 +183,13 @@ function Measured({
 export function VaultProof() {
   const r = useRun(() =>
     post<{ put: { id: string }; stored?: { ct: string; wrappedKey?: string } }>("/api/vault", {
-      sector: "healthcare",
+      sector: "fintech",
     }),
   );
   return (
     <div className="space-y-3">
       <Button onClick={r.run} disabled={r.busy}>
-        {r.busy ? "Storing…" : "Store a lab report"}
+        {r.busy ? "Storing…" : "Store a payment record"}
       </Button>
       {r.out && (
         <Result>

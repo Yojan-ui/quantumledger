@@ -1,5 +1,5 @@
 /**
- * A deliberately ordinary Express app standing in for a legacy core-banking / hospital / university
+ * A deliberately ordinary Express app standing in for a legacy core-banking
  * API. It has no QuantumLedger code: Shield nodes in front of it make its traffic quantum-safe.
  */
 import express from "express";
@@ -26,16 +26,6 @@ export function createLegacyApp(log: (line: string) => void = console.log) {
       payeeVPA,
       amountINR,
     });
-  });
-
-  // Healthcare: lab report hand-off
-  app.post("/api/lab-reports", (req, res) => {
-    res.json({ status: "RECEIVED", reportId: req.body?.reportId, facility: "Sahyadri Clinic" });
-  });
-
-  // Education: certificate issuance record
-  app.post("/api/certificates", (req, res) => {
-    res.json({ status: "RECORDED", certificateId: req.body?.certificateId });
   });
 
   return app;

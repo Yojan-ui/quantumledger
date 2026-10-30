@@ -1,0 +1,5 @@
+# Fintech scope
+
+Removed healthcare, education and government solution records and their generated pages, footer links, command-menu entries and globe route poses. Removed healthcare and education simulator payloads, network routes, deployment nodes, edge-device presets, Shield targets and API sector options. Removed the university certificate demo, its three API routes, shared signing/registry code and OpenAPI entries. Removed the legacy hospital and university endpoints. Removed non-banking impact presets, early-access choices, readiness targets and aggregates (including telecom to keep the site fintech-only). Banking aggregates retain their original observation timestamps; totals now equal the recorded banking subset. Replaced cross-sector pilot, pricing, adapter and home copy with banking language. Updated route, index and adapter e2e assertions and added banking-scope regression tests.
+
+Before screenshots: `screenshots/before/` (home, overview, all stage pages, both ledger sections and diagnostics; 1440×900 and 390×844). No horizontal page overflow in the baseline.

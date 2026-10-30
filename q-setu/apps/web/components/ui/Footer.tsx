@@ -16,12 +16,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
   },
   {
     title: "Solutions",
-    links: [
-      ["Fintech", "/solutions/fintech"],
-      ["Healthcare", "/solutions/healthcare"],
-      ["Education", "/solutions/education"],
-      ["Government", "/solutions/government"],
-    ],
+    links: [["Fintech", "/solutions/fintech"]],
   },
   {
     title: "Developers",
