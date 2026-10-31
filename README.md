@@ -17,8 +17,8 @@ Then open **http://localhost:3000** (`start.sh` opens it for you and prints the 
 the demo. Ctrl-C stops everything; logs are in `.logs/`.
 
 `start.sh` installs the pnpm dependencies, builds the site once, picks the Python for the pipeline backend
-(conda env `pqc` if present, else `qshield/.venv`), builds the demo snapshot with `qshield/run_demo.sh` if
-`qshield/out/results.json` is missing, then starts Atlas on **:8100**, the website on **:3000** and the demo
+(conda env `pqc` if present, else `qshield/.venv`), restores the recorded demo snapshot (`qshield/demo-snapshot.tar.gz`: results, run evidence and
+the ledger's public key) if `qshield/out/results.json` is missing, then starts Atlas on **:8100**, the website on **:3000** and the demo
 backends (legacy bank :4000, Shield proxies :8443 / :8080). `./start.sh --rebuild` rebuilds the site.
 
 **Requirements:** macOS or Linux (Windows: WSL) · Node.js ≥ 20 (pnpm 10 via `corepack`) · Python 3.12, best as

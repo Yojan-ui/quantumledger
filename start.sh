@@ -59,8 +59,13 @@ if [ -z "$ATLAS_PY" ]; then
     [ -x "$ROOT/qshield/.venv/bin/python" ] && ATLAS_PY="$ROOT/qshield/.venv/bin/python"
   fi
 fi
-# The public demo workspace reads qshield/out/results.json: build it once if a fresh clone has none (local only:
-# no QpiAI platform or QCloud jobs; needs OpenSSL >= 3.5, which the conda env provides).
+# The public demo workspace reads qshield/out/results.json. A fresh clone has none: unpack the recorded snapshot
+# (qshield/demo-snapshot.tar.gz: out/, runs/ and the ledger's PUBLIC key only, so the chain verifies; no private
+# key). Without it, regenerate with run_demo.sh (local only; needs QPIAI_OPT_API_KEY in qshield/.env.sh).
+if [ ! -f "$ROOT/qshield/out/results.json" ] && [ -f "$ROOT/qshield/demo-snapshot.tar.gz" ]; then
+  say "restoring the recorded demo snapshot"
+  tar -xzf "$ROOT/qshield/demo-snapshot.tar.gz" -C "$ROOT/qshield"
+fi
 if [ -n "$ATLAS_PY" ] && [ ! -f "$ROOT/qshield/out/results.json" ]; then
   say "building the demo snapshot (qshield/run_demo.sh, local only, a few minutes)"
   (cd "$ROOT/qshield" && PYTHON="$ATLAS_PY" PATH="$(dirname "$ATLAS_PY"):$PATH" ./run_demo.sh --no-open) \
