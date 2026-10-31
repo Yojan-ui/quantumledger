@@ -5,6 +5,7 @@
 #   ./start.sh            start (build only if there is no build yet)
 #   ./start.sh --rebuild  rebuild the website first
 #
+# No sign-in is needed for the demo (scan, pipeline, diagnostics replay); operators only for live runs.
 # Starts: website :3000 (Next.js production build), Q-Shield Atlas pipeline backend :8100, and the demo
 # backends (legacy bank :4000, Shield proxies :8443 / :8080). Logs go to .logs/.
 set -euo pipefail
@@ -57,6 +58,13 @@ if [ -z "$ATLAS_PY" ]; then
     fi
     [ -x "$ROOT/qshield/.venv/bin/python" ] && ATLAS_PY="$ROOT/qshield/.venv/bin/python"
   fi
+fi
+# The public demo workspace reads qshield/out/results.json: build it once if a fresh clone has none (local only:
+# no QpiAI platform or QCloud jobs; needs OpenSSL >= 3.5, which the conda env provides).
+if [ -n "$ATLAS_PY" ] && [ ! -f "$ROOT/qshield/out/results.json" ]; then
+  say "building the demo snapshot (qshield/run_demo.sh, local only, a few minutes)"
+  (cd "$ROOT/qshield" && PYTHON="$ATLAS_PY" PATH="$(dirname "$ATLAS_PY"):$PATH" ./run_demo.sh --no-open) \
+    >"$LOGS/run_demo.log" 2>&1 || say "demo snapshot failed (see .logs/run_demo.log); pipeline pages will say 'not yet run'"
 fi
 if [ -n "$ATLAS_PY" ]; then
   (cd "$ROOT/qshield" && { [ -f .env.sh ] && source .env.sh; true; } && exec "$ATLAS_PY" -m atlas_web --port 8100 --no-browser) \
