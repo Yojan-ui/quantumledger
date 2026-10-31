@@ -6,7 +6,11 @@
  * run_end), never on a timer. A failed step marks its stage failed with the step's last log line.
  */
 import { useSyncExternalStore } from "react";
-import { AtlasError, atlas, type RunEvent, type Stage } from "./atlas";
+import { AtlasError, atlas, type AtlasResults, type RunEvent, type Stage } from "./atlas";
+import { recordedRunEvents } from "./atlas-recorded";
+
+/** `replay` value while the recorded demo run (results.json) plays, for visitors who are not signed in. */
+export const RECORDED = "results.json";
 
 export type StageStatus = "idle" | "running" | "done" | "failed";
 export type LogLine = { seq: number; step: string; text: string };
@@ -212,6 +216,20 @@ export const atlasRun = {
     } catch (e) {
       set({ error: msg(e), replay: null });
     }
+  },
+  /** Plays the recorded run from results.json into the terminal and the 3D view (no session needed). */
+  async replayRecorded(results: AtlasResults) {
+    if (state.running || state.replay || !state.stages.length) return;
+    const evs = recordedRunEvents(results, state.stages);
+    set({ replay: RECORDED, runId: null, error: null });
+    let prev = 0;
+    for (const ev of evs) {
+      await new Promise((r) => setTimeout(r, Math.max(0, (ev.ts - prev) * 1000)));
+      prev = ev.ts;
+      if (state.replay !== RECORDED) return; // reset or a live run took over
+      onEvent(ev);
+    }
+    set({ replay: null, running: false });
   },
   view(i: number) {
     if (i >= 0 && i < state.stages.length) set({ view: i });

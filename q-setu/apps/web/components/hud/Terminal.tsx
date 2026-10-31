@@ -45,7 +45,7 @@ export function Terminal({
   atlas,
 }: {
   className?: string;
-  atlas?: { lines: LogLine[]; step: string | null };
+  atlas?: { lines: LogLine[]; step: string | null; label?: string; intro?: string[] };
 }) {
   const bus = useLiveEvents(relevant, 80);
   const lines = atlas ? [] : bus;
@@ -68,7 +68,7 @@ export function Terminal({
       label="Terminal"
       right={
         <span className="font-mono text-micro uppercase text-fg-3">
-          {atlas ? "q-shield · run log" : "zsh · live bus"}
+          {atlas ? `q-shield · ${atlas.label ?? "run log"}` : "zsh · live bus"}
         </span>
       }
       className={className}
@@ -79,14 +79,22 @@ export function Terminal({
         aria-label="Pipeline terminal"
         className="h-full overflow-y-auto px-3 py-2 font-mono text-micro leading-5"
       >
+        {atlas &&
+          atlas.lines.length === 0 &&
+          atlas.intro?.map((t) => (
+            <p key={t} className="whitespace-pre-wrap break-words text-fg-2">
+              <span className="text-ok">➜ </span>
+              {t}
+            </p>
+          ))}
         {atlas?.lines.map((l) => (
           <p
             key={l.seq}
-            className={`whitespace-pre-wrap break-all ${l.step === atlas.step ? "bg-raised text-fg" : "text-fg-2"}`}
+            className={`whitespace-pre-wrap break-words ${l.step === atlas.step ? "bg-raised text-fg" : "text-fg-2"}`}
             data-term-stage={l.step}
           >
             <span className="text-ok">➜ </span>
-            <span className="text-fg-3">{l.step.padEnd(16)}</span>
+            <span className="text-fg-3">{`[${l.step}] `}</span>
             {shortPaths(l.text)}
           </p>
         ))}

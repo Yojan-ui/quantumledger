@@ -20,7 +20,7 @@ import { stationDone, type FlowModel } from "@/lib/client/atlas-flowviz";
 
 const MAX_BATCH = 160;
 const MAX_LEDGER = 16;
-const BOX = 0.26;
+const BOX = 0.34;
 const QUBITS = 4;
 const GATES = 12;
 
@@ -36,6 +36,22 @@ function haloTexture() {
     }
   const t = new THREE.DataTexture(px, N, N, THREE.RGBAFormat);
   t.needsUpdate = true;
+  return t;
+}
+
+/** A stage-name label as a sprite texture (the colour comes from the palette at runtime). */
+function labelTexture(text: string, color: string) {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 96;
+  const g = c.getContext("2d")!;
+  g.font = "600 44px ui-monospace, SFMono-Regular, Menlo, monospace";
+  g.fillStyle = color;
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillText(text, 256, 48);
+  const t = new THREE.CanvasTexture(c);
+  t.anisotropy = 4;
   return t;
 }
 
@@ -68,6 +84,22 @@ export default function PipelineFlow({
   }, [n]);
   const track = useMemo(() => new THREE.TubeGeometry(curve, 160, 0.025, 6, false), [curve]);
   const at = (i: number) => curve.getPoint(n > 1 ? Math.min(1, Math.max(0, i / (n - 1))) : 0);
+  const labels = useMemo(
+    () =>
+      model.stations.map((s, i) => ({
+        id: s.id,
+        tex: labelTexture(`${i + 1} ${s.label.toUpperCase()}`, c.text.getStyle()),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model.stations.map((s) => s.label).join("|"), c],
+  );
+  // the whole scene: track, stations, wave rows above them and the ledger tower beside Seal
+  const bounds = useMemo(() => {
+    const a = at(0),
+      b = at(n - 1);
+    return { x0: a.x - 1.2, x1: b.x + 1.8, y0: -3.1, y1: 2.5, z: -1.1 };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [curve, n]);
 
   const st = useRef<THREE.InstancedMesh>(null);
   const bt = useRef<THREE.InstancedMesh>(null);
@@ -118,12 +150,23 @@ export default function PipelineFlow({
     const sealed = stationDone(model, "seal");
     const k = Math.min(1, dt * 2.5);
 
-    // camera: eases towards the focused stage, a little above and in front; never cuts
+    // camera: fitted to the scene's bounds for the panel's aspect; while a stage runs it eases closer and
+    // follows that stage, otherwise it frames everything (track, wave rows, ledger tower). Never cuts.
     if (cam.current) {
-      v.set(P.x * 0.45, 1.4, P.z + 11.5);
-      cam.current.position.lerp(v, Math.min(1, dt * 1.5));
-      look.current.lerp(v.set(P.x * 0.6, -0.2, P.z - 0.5), Math.min(1, dt * 1.5));
-      cam.current.lookAt(look.current);
+      const C = cam.current;
+      const half = Math.tan((C.fov * Math.PI) / 180 / 2);
+      const W = bounds.x1 - bounds.x0,
+        H = bounds.y1 - bounds.y0;
+      const fit = Math.max(H / 2 / half, W / 2 / (half * Math.max(0.5, C.aspect))) * 1.04 + 1;
+      const running = model.stations.some((x) => x.status === "running");
+      const cx = (bounds.x0 + bounds.x1) / 2,
+        cy = (bounds.y0 + bounds.y1) / 2;
+      const tx = running ? cx + (P.x - cx) * 0.6 : cx;
+      const d = running ? fit * 0.72 : fit;
+      v.set(tx, cy + 0.8, bounds.z + d);
+      C.position.lerp(v, Math.min(1, dt * 1.8));
+      look.current.lerp(v.set(tx, cy, bounds.z), Math.min(1, dt * 1.8));
+      C.lookAt(look.current);
     }
 
     // stations on the track, coloured by status; the focused one breathes; halos give the glow
@@ -133,19 +176,19 @@ export default function PipelineFlow({
       const on = i === focus;
       o.position.copy(q);
       o.quaternion.identity();
-      o.scale.set(on ? 1.05 : 0.9, 0.06, on ? 1.05 : 0.9);
+      o.scale.set(on ? 1.5 : 1.25, 0.08, on ? 1.5 : 1.25);
       o.updateMatrix();
       st.current?.setMatrixAt(i, o.matrix);
       if (s.status === "done") col.copy(c.ok);
       else if (s.status === "failed") col.copy(c.danger);
       else if (s.status === "running") col.copy(c.warn);
-      else col.copy(c.text3).lerp(c.bg, on ? 0.2 : 0.5);
+      else col.copy(c.text3).lerp(c.text, on ? 0.5 : 0.25);
       st.current?.setColorAt(i, col);
       if (s.status !== "idle" && hl.current && cam.current) {
         const pulse = on ? 1 + 0.25 * Math.sin(t * 3) : 0.7;
         o.position.set(q.x, q.y + 0.05, q.z);
         o.quaternion.copy(cam.current.quaternion);
-        o.scale.setScalar(1.6 * pulse);
+        o.scale.setScalar(2.2 * pulse);
         o.updateMatrix();
         hl.current.setMatrixAt(h, o.matrix);
         hl.current.setColorAt(h, col.multiplyScalar(on ? 0.55 : 0.25));
@@ -156,7 +199,7 @@ export default function PipelineFlow({
 
     // batches: a cluster travelling along the track behind the focus, then wave rows above it
     const rows = Math.max(1, model.waves);
-    const rowH = Math.min(0.42, 3.6 / rows);
+    const rowH = Math.min(0.5, 3.8 / rows);
     const tie = model.tiePair;
     let p = 0;
     const B = Math.min(MAX_BATCH, model.batches.length);
@@ -199,7 +242,7 @@ export default function PipelineFlow({
       o.scale.setScalar(BOX);
       o.updateMatrix();
       bt.current?.setMatrixAt(i, o.matrix);
-      col.copy(c.danger).lerp(c.bg, 0.7 * (1 - b.risk));
+      col.copy(c.danger).lerp(c.bg, 0.45 * (1 - b.risk));
       // Detect: the sweep plane lights each block as it passes
       if (id === "detect" && Math.abs(X - (P.x - 1.6 + ((tf * 1.2) % 3.2))) < 0.25)
         col.lerp(c.text, 0.6);
@@ -245,7 +288,7 @@ export default function PipelineFlow({
       o.updateMatrix();
       lg.current?.setMatrixAt(i, o.matrix);
       if (sealed && up > 0.99) col.copy(model.ledger.verified ? c.ok : c.sig);
-      else col.copy(c.text3).lerp(c.bg, 0.4);
+      else col.copy(c.text3);
       lg.current?.setColorAt(i, col);
       if (i > 0 && lk.current) {
         // the hash link h_i -> h_(i-1): a short bar growing between consecutive entries
@@ -314,22 +357,39 @@ export default function PipelineFlow({
   return (
     <>
       <PerspectiveCamera ref={cam} makeDefault position={[0, 1.4, 11.5]} fov={42} />
-      <fog attach="fog" args={[c.bg.getStyle(), 9, 22]} />
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[3, 6, 5]} intensity={1.1} />
+      <fog attach="fog" args={[c.bg.getStyle(), 22, 48]} />
+      <ambientLight intensity={1.2} />
+      <hemisphereLight args={[c.text.getStyle(), c.bg.getStyle(), 0.9]} />
+      <directionalLight position={[3, 8, 6]} intensity={2} />
+      <directionalLight position={[-6, 3, 4]} intensity={0.8} />
+      {labels.map((l, i) => {
+        const q = at(i);
+        return (
+          <sprite key={l.id} position={[q.x, q.y - 0.75, q.z + 0.6]} scale={[2, 0.375, 1]}>
+            <spriteMaterial
+              map={l.tex}
+              transparent
+              depthWrite={false}
+              fog={false}
+              toneMapped={false}
+            />
+          </sprite>
+        );
+      })}
       <mesh geometry={track}>
         <meshBasicMaterial color={c.text3} transparent opacity={0.35} />
       </mesh>
       <instancedMesh
+        frustumCulled={false}
         ref={st}
         args={[undefined, undefined, Math.max(1, n)]}
         onPointerMove={hover}
         onPointerOut={() => onHover?.(null)}
       >
         <cylinderGeometry args={[0.55, 0.55, 1, 32]} />
-        <meshStandardMaterial roughness={0.6} metalness={0.1} />
+        <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
-      <instancedMesh ref={hl} args={[undefined, undefined, Math.max(1, n)]}>
+      <instancedMesh frustumCulled={false} ref={hl} args={[undefined, undefined, Math.max(1, n)]}>
         <planeGeometry args={[1, 1]} />
         <meshBasicMaterial
           map={halo}
@@ -339,27 +399,27 @@ export default function PipelineFlow({
           toneMapped={false}
         />
       </instancedMesh>
-      <instancedMesh ref={bt} args={[undefined, undefined, MAX_BATCH]}>
+      <instancedMesh frustumCulled={false} ref={bt} args={[undefined, undefined, MAX_BATCH]}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial roughness={0.45} metalness={0.15} />
+        <meshLambertMaterial emissive={c.danger} emissiveIntensity={0.25} />
       </instancedMesh>
-      <instancedMesh ref={pt} args={[undefined, undefined, MAX_BATCH * 2]}>
+      <instancedMesh frustumCulled={false} ref={pt} args={[undefined, undefined, MAX_BATCH * 2]}>
         <octahedronGeometry args={[1, 0]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
-      <instancedMesh ref={lg} args={[undefined, undefined, MAX_LEDGER]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial roughness={0.5} />
-      </instancedMesh>
-      <instancedMesh ref={lk} args={[undefined, undefined, MAX_LEDGER]}>
+      <instancedMesh frustumCulled={false} ref={lg} args={[undefined, undefined, MAX_LEDGER]}>
         <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
-      <instancedMesh ref={fx} args={[undefined, undefined, GATES]}>
+      <instancedMesh frustumCulled={false} ref={lk} args={[undefined, undefined, MAX_LEDGER]}>
         <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
-      <mesh ref={sweep} visible={false}>
+      <instancedMesh frustumCulled={false} ref={fx} args={[undefined, undefined, GATES]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial toneMapped={false} />
+      </instancedMesh>
+      <mesh ref={sweep} frustumCulled={false} visible={false}>
         <planeGeometry args={[0.06, 2.2]} />
         <meshBasicMaterial
           color={c.text}
@@ -369,7 +429,7 @@ export default function PipelineFlow({
           blending={THREE.AdditiveBlending}
         />
       </mesh>
-      <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+      <mesh ref={ring} frustumCulled={false} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
         <ringGeometry args={[0.48, 0.52, 48]} />
         <meshBasicMaterial transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>

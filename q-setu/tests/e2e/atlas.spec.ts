@@ -137,11 +137,22 @@ test.describe("with Atlas on :8100", () => {
       (await (await page.request.get("/atlas-api/stages")).json()) as { stages: unknown[] }
     ).stages.length;
     await expect(stages).toHaveCount(n);
-    // the pipeline view (3D, or its static SVG on phones / reduced motion) with its station labels
-    await expect(page.getByRole("list", { name: "Stations" }).locator("li")).toHaveCount(n);
-    await expect(page.getByRole("button", { name: /Run pipeline/ })).toBeDisabled(); // demo is read-only
+    // one numbered stepper only: no second stage-name row under the 3D view
+    await expect(page.getByRole("list", { name: "Stations" })).toHaveCount(0);
+    // the terminal is never blank: workspace, stages and the hint before anything runs
+    const term = page.getByRole("log", { name: "Pipeline terminal" });
+    await expect(term).toContainText("workspace demo");
+    await expect(term).toContainText("press Space to replay the recorded run");
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("heading", { level: 2, name: "Detect" })).toBeVisible();
+    // signed out, Space replays the recorded run (results.json) line by line, labelled as such
+    await page.keyboard.press("Space");
+    await expect(page.getByText("q-shield · recorded run")).toBeVisible();
+    await expect(term).toContainText("[detect]");
+    await expect(term).toContainText("quantum-vulnerable", { timeout: 15_000 });
+    await expect(stages.first()).toHaveAttribute("data-status", "done", { timeout: 15_000 });
+    await expect(stages.last()).toHaveAttribute("data-status", "done", { timeout: 60_000 });
+    await expect(term).toContainText("chain verified");
     await page.goto("/diagnostics");
     await expect(page.getByRole("list", { name: "Q-Shield pipeline stages" })).toHaveCount(0);
     await expect(page.getByLabel("Enter any domain")).toBeVisible();

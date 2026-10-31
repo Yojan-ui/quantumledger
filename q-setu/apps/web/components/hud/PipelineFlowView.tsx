@@ -106,8 +106,8 @@ const REPLAY_S = 3.5;
  * Which stage the 3D view focuses: during a live run the stage the SSE events say is running (or the last
  * reached); otherwise a replay that steps through the stages the recorded results contain, labelled as such.
  */
-function useFocus(m: FlowModel, still: boolean) {
-  const live = m.stations.some((s) => s.status === "running");
+function useFocus(m: FlowModel, still: boolean, following: boolean) {
+  const live = following || m.stations.some((s) => s.status === "running");
   const reached = m.stations.flatMap((s, i) => (s.status === "idle" ? [] : [i]));
   const [k, setK] = useState(0);
   const replay = !live && !still && reached.length > 1;
@@ -120,10 +120,25 @@ function useFocus(m: FlowModel, still: boolean) {
   return { focus: reached[k % reached.length]!, replay: true };
 }
 
-export function PipelineFlowView({ model, caption }: { model: FlowModel; caption: string }) {
+export function PipelineFlowView({
+  model,
+  caption,
+  stationRow = true,
+  tall = false,
+  follow = false,
+}: {
+  model: FlowModel;
+  caption: string;
+  /** the stage-name row under the canvas (the HUD has its own numbered stepper) */
+  stationRow?: boolean;
+  /** a taller stage (the diagnostics HUD) */
+  tall?: boolean;
+  /** a run (live or recorded) is playing: focus follows its frontier, no idle replay */
+  follow?: boolean;
+}) {
   const still = useStatic();
   const n = Math.max(1, model.stations.length);
-  const { focus, replay } = useFocus(model, still);
+  const { focus, replay } = useFocus(model, still, follow);
   const [hover, setHover] = useState<number | null>(null);
   const fs = model.stations[focus];
   const now =
@@ -133,10 +148,10 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
   const hs = hover !== null ? model.stations[hover] : undefined;
   const label = `${caption}. ${now ? `${now} ` : ""}${model.batches.length} batches; ${model.stations.map((s) => `${s.label} ${s.status}`).join(", ")}.`;
   return (
-    <figure className="flex flex-col gap-2">
+    <figure className={`flex flex-col gap-2 ${tall ? "min-h-0 flex-1" : ""}`}>
       {/* data-hud-stage: tells the site's single WebGL canvas to start at once (as the domain HUD does) */}
       <div
-        className="relative h-stage-sm w-full overflow-hidden rounded-lg border border-line"
+        className={`relative ${tall ? "min-h-panel flex-1" : "h-stage-sm"} w-full overflow-hidden rounded-lg border border-line`}
         data-hud-stage
       >
         {still ? (
@@ -188,40 +203,46 @@ export function PipelineFlowView({ model, caption }: { model: FlowModel; caption
           </ul>
         )}
       </div>
-      <ol
-        className="hidden gap-1 font-mono text-micro uppercase md:grid"
-        style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
-        aria-label="Stations"
-      >
-        {model.stations.map((s) => (
-          <li
-            key={s.id}
-            className={`truncate text-center ${s.status === "done" ? "text-ok" : s.status === "running" ? "text-warn" : s.status === "failed" ? "text-danger" : "text-fg-3"}`}
-            title={model.facts[s.id] ? `${s.label}: ${model.facts[s.id]}` : s.label}
-          >
-            {s.label}
-          </li>
-        ))}
-      </ol>
+      {stationRow && (
+        <ol
+          className="hidden gap-1 font-mono text-micro uppercase md:grid"
+          style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
+          aria-label="Stations"
+        >
+          {model.stations.map((s) => (
+            <li
+              key={s.id}
+              className={`truncate text-center ${s.status === "done" ? "text-ok" : s.status === "running" ? "text-warn" : s.status === "failed" ? "text-danger" : "text-fg-3"}`}
+              title={model.facts[s.id] ? `${s.label}: ${model.facts[s.id]}` : s.label}
+            >
+              {s.label}
+            </li>
+          ))}
+        </ol>
+      )}
       <figcaption className="text-small text-fg-2">{caption}</figcaption>
-      <Details summary="How to read this view">
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-small text-fg-3">
-          <span>
-            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-danger" /> batch, brighter =
-            higher risk weight (assumption)
-          </span>
-          <span>rows = waves (planned week), left to right = tie-break order</span>
-          <span>
-            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-kem" /> ML-KEM ·{" "}
-            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-sig" /> ML-DSA, dim once
-            Tie-break has chosen them, bright where the lab gates passed
-          </span>
-          <span>
-            <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-ok" /> ledger sealed and
-            verified
-          </span>
-        </div>
-      </Details>
+      {!tall && (
+        <>
+          <Details summary="How to read this view">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-small text-fg-3">
+              <span>
+                <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-danger" /> batch, brighter
+                = higher risk weight (assumption)
+              </span>
+              <span>rows = waves (planned week), left to right = tie-break order</span>
+              <span>
+                <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-kem" /> ML-KEM ·{" "}
+                <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-sig" /> ML-DSA, dim once
+                Tie-break has chosen them, bright where the lab gates passed
+              </span>
+              <span>
+                <span aria-hidden className="mr-1 inline-block h-2 w-2 bg-ok" /> ledger sealed and
+                verified
+              </span>
+            </div>
+          </Details>
+        </>
+      )}
     </figure>
   );
 }

@@ -8,9 +8,15 @@
  * (→ ← R, play) drives the same actions. No new 3D canvas: the domain HUD's stage stays its own.
  */
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePresent } from "@/lib/client/present";
-import { atlasRun, getAtlasRun, useAtlasRun, type StageStatus } from "@/lib/client/atlas-run";
+import {
+  RECORDED,
+  atlasRun,
+  getAtlasRun,
+  useAtlasRun,
+  type StageStatus,
+} from "@/lib/client/atlas-run";
 import { atlas, type AtlasResults } from "@/lib/client/atlas";
 import { buildFlowModel } from "@/lib/client/atlas-flowviz";
 import { useAtlas, useAtlasMe } from "@/lib/client/useAtlas";
@@ -86,7 +92,9 @@ export function AtlasHud({ ws }: { ws: string }) {
   // During a live run or a replay, results.json does not exist yet (or is the previous run's): the batches
   // come from the plan files the run writes (GET /progress), each used only once its own step has finished
   // in the run on screen; refetched on every step_end.
-  const live = s.running || !!s.replay;
+  // the recorded demo run (results.json) replays from the results already on screen; anything else is live
+  const recorded = s.replay === RECORDED;
+  const live = !recorded && (s.running || !!s.replay);
   const doneIds = s.stages.filter((_, i) => s.status[i] === "done").map((x) => x.id);
   const prog = useAtlas(
     live && me.user ? `progress:${ws}:${s.runId}:${doneIds.join(",")}` : null,
@@ -115,17 +123,39 @@ export function AtlasHud({ ws }: { ws: string }) {
         } as unknown as AtlasResults)
       : null;
   const model = buildFlowModel(live ? liveResults : res.data?.results, s.stages, shown);
-  const caption = s.replay
-    ? `replay of recorded run ${s.replay} (gaps over 2 s shortened)`
-    : s.running
-      ? `live run ${s.runId ?? ""}`
-      : ranOrReplaying
-        ? `last run ${s.result ?? ""}`
-        : res.data?.results
-          ? `recorded results (results.json)${s.view >= 0 ? ` up to ${s.stages[s.view]?.label}` : ""}; ← → to step`
-          : "not yet run";
+  const caption = recorded
+    ? "recorded run (results.json), replayed"
+    : s.replay
+      ? `replay of recorded run ${s.replay} (gaps over 2 s shortened)`
+      : s.running
+        ? `live run ${s.runId ?? ""}`
+        : ranOrReplaying
+          ? `last run ${s.result ?? ""}`
+          : res.data?.results
+            ? `recorded results (results.json)${s.view >= 0 ? ` up to ${s.stages[s.view]?.label}` : ""}; ← → to step`
+            : "not yet run";
   const viewStatus = s.view >= 0 ? (s.status[s.view] ?? "idle") : "idle";
   const canRun = me.canOperate && ws !== "demo";
+  const results = res.data?.results;
+  /**
+   * Space / Run: an operator runs a writable workspace live (SSE). On the read-only demo an operator replays
+   * Atlas's own log of the last run; signed out (or if that fails) the recorded run plays from results.json.
+   */
+  const run = () => {
+    const st = getAtlasRun();
+    if (st.running || st.replay) return;
+    if (canRun) return void atlasRun.start();
+    if (me.canOperate)
+      return void atlasRun.replayLast().then(() => {
+        if (getAtlasRun().error && results) {
+          atlasRun.reset();
+          void atlasRun.replayRecorded(results);
+        }
+      });
+    if (results) void atlasRun.replayRecorded(results);
+  };
+  const runRef = useRef(run);
+  runRef.current = run;
 
   const signedIn = !!me.user;
   useEffect(() => {
@@ -138,7 +168,7 @@ export function AtlasHud({ ws }: { ws: string }) {
     next: () => atlasRun.view(getAtlasRun().view + 1),
     prev: () => atlasRun.view(getAtlasRun().view - 1),
     reset: () => atlasRun.reset(),
-    play: () => canRun && void atlasRun.start(),
+    play: () => runRef.current(),
   });
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -147,12 +177,12 @@ export function AtlasHud({ ws }: { ws: string }) {
       else if (e.key === "ArrowLeft") atlasRun.view(getAtlasRun().view - 1);
       else if (e.key === " ") {
         e.preventDefault();
-        if (canRun) void atlasRun.start();
+        runRef.current();
       } else if (e.key === "r" || e.key === "R") atlasRun.reset();
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [canRun]);
+  }, []);
 
   const stepOfView = view
     ? ([...s.lines].reverse().find((l) => view.steps.includes(l.step))?.step ?? null)
@@ -188,21 +218,27 @@ export function AtlasHud({ ws }: { ws: string }) {
         </nav>
       </header>
       <div className="grid min-h-0 flex-1 gap-2 md:grid-cols-split">
-        <HudPanel label="Stage" className="min-h-panel">
-          <div className="flex h-full flex-col gap-3 overflow-y-auto p-4">
-            <PipelineFlowView model={model} caption={caption} />
+        <HudPanel label="Stage" className="min-h-panel" glass={false}>
+          <div className="flex h-full flex-col gap-2 overflow-hidden p-3">
+            <PipelineFlowView
+              model={model}
+              caption={caption}
+              stationRow={false}
+              tall
+              follow={s.running || !!s.replay}
+            />
             {view ? (
               <>
                 <p className={`font-mono text-micro uppercase ${TONE[viewStatus]}`}>
                   {MARK[viewStatus]} {String(s.view + 1).padStart(2, "0")} · {viewStatus}
                 </p>
-                <h2 className="text-h2 font-medium text-fg">{view.label}</h2>
-                <p className="max-w-text text-body text-fg-2">{view.plain}</p>
+                <h2 className="text-h3 font-medium text-fg">{view.label}</h2>
+                <p className="max-w-text text-small text-fg-2">{view.plain}</p>
                 <p className="font-mono text-micro text-fg-3">steps: {view.steps.join(" → ")}</p>
               </>
             ) : (
               <>
-                <h2 className="text-h2 font-medium text-fg">
+                <h2 className="text-h3 font-medium text-fg">
                   {s.stages.length
                     ? `${s.stages.length} stages, run by Atlas`
                     : "Loading the stages…"}
@@ -210,11 +246,7 @@ export function AtlasHud({ ws }: { ws: string }) {
                 <p className="max-w-text text-body text-fg-2">
                   {canRun
                     ? "Press Run (or Space). Each stage lights up only when Atlas reports it, from the live run log."
-                    : ws === "demo"
-                      ? "The demo workspace is a read-only snapshot: open its results, or pick a workspace you can run."
-                      : me.user
-                        ? "Viewers can watch runs; an operator starts them."
-                        : "Sign in as an operator to start a run."}
+                    : "Press Space (or Run) to replay the recorded run, stage by stage."}
                 </p>
               </>
             )}
@@ -225,18 +257,34 @@ export function AtlasHud({ ws }: { ws: string }) {
             )}
           </div>
         </HudPanel>
-        <Terminal className="min-h-panel" atlas={{ lines: s.lines, step: stepOfView }} />
+        <Terminal
+          className="min-h-panel"
+          atlas={{
+            lines: s.lines,
+            step: stepOfView,
+            label: recorded ? "recorded run" : s.running ? "live · SSE" : "run log",
+            intro: [
+              `workspace ${ws}${ws === "demo" ? " (read-only snapshot)" : ""}`,
+              `stages: ${s.stages.map((x, i) => `${i + 1} ${x.label}`).join(" · ") || "loading…"}`,
+              canRun
+                ? "press Space to run live (SSE)"
+                : results
+                  ? "press Space to replay the recorded run"
+                  : "no recorded results yet",
+            ],
+          }}
+        />
       </div>
       <div className="border border-line bg-glass" role="group" aria-label="Pipeline">
         <Stepper />
         <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
           <button
             type="button"
-            onClick={() => void atlasRun.start()}
-            disabled={!canRun || s.running || !s.stages.length}
+            onClick={run}
+            disabled={s.running || !!s.replay || !s.stages.length || (!canRun && !results)}
             className="h-8 rounded-sm border border-line-strong px-3 font-mono text-micro uppercase text-fg disabled:opacity-40"
           >
-            {s.running ? "Running…" : "Run pipeline · Space"}
+            {recorded ? "Replaying…" : s.running ? "Running…" : "Run pipeline · Space"}
           </button>
           <button
             type="button"
