@@ -74,3 +74,16 @@ test("send to pipeline: Atlas refusal is shown with the recorded fallback", asyn
     "/atlas/tls-check3",
   );
 });
+
+test("anonymous: the home scan works signed out; Send to pipeline asks for an operator sign-in", async ({
+  page,
+}) => {
+  await page.route("**/atlas-api/me", (r) =>
+    r.fulfill({ json: { user: null, kiosk: false, demo: false } }),
+  );
+  await scanSuggested(page); // no session cookie: the scan itself needs no sign-in
+  const send = page.locator("[data-send-pipeline]");
+  await send.getByRole("checkbox").check();
+  await send.getByRole("button", { name: "Send to pipeline" }).click();
+  await expect(page).toHaveURL(/\/atlas\/signin\?next=/);
+});

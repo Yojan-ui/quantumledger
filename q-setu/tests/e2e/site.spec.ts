@@ -89,7 +89,7 @@ test("scan: a site gets a score, plain findings and a share page", async ({ page
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Is www.npci.org.in quantum-safe?",
   );
-  const og = await page.locator('meta[property="og:image"]').getAttribute("content");
+  const og = await page.locator('meta[property="og:image"]').first().getAttribute("content");
   expect(og).toMatch(/opengraph-image/);
   expect(errors).toEqual([]);
 });
