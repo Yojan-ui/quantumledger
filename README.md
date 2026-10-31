@@ -1,15 +1,58 @@
 # QuantumLedger
 
-**Scan, upgrade and prove: post-quantum security for payments and trading, measured live, never quoted.**
+**Scan any site for quantum risk, then plan, test and prove the migration to post-quantum cryptography.**
 
-This repository holds two working systems built on NIST's post-quantum standards:
+![Live scan](docs/screenshots/scan.png)
 
-- **QuantumLedger** (`q-setu/`): a web platform and SDK family. It finds quantum-vulnerable
-  cryptography, swaps in hybrid ML-KEM / ML-DSA without a rewrite, and anchors the proof in a signed,
-  hash-chained ledger.
-- **AetherPool** (`engine/`, `backend/`, `frontend/`, `scripts/`): an institutional trading venue.
-  Every order must carry an ML-DSA signature before a C++ matching engine will accept it. It includes
-  the QuantumLedger auditor: a CBOM, hybrid remediation evidence and a Merkle proof log.
+## Run it (one command)
+
+```bash
+git clone https://github.com/Yojan-ui/quantumledger.git
+cd quantumledger
+./start.sh
+```
+
+That's it. `start.sh` installs what's missing, builds the site once (a few minutes the first time), starts
+everything and **opens http://localhost:3000** in your browser. Ctrl-C stops it all. Logs are in `.logs/`.
+
+| What starts | Port |
+| --- | --- |
+| QuantumLedger website (Next.js production build) | **3000** |
+| Q-Shield Atlas pipeline backend (`qshield/`) | 8100 |
+| Demo backends: legacy bank, Shield proxies | 4000, 8443, 8080 |
+
+**Needs:** Node.js 20+ (pnpm comes via corepack). For the pipeline backend: Python 3.12, ideally the conda env
+`pqc` (`conda env create -f qshield/environment.yml`, which brings OpenSSL 3.6.5 with ML-KEM / ML-DSA).
+Without Python the site still runs and the pipeline pages say the backend is not running.
+macOS or Linux (Windows: use WSL). `./start.sh --rebuild` rebuilds after you change the code.
+
+**Operator account** (only for "Send to pipeline" and running pipelines; scanning needs no sign-in):
+
+```bash
+cd qshield && conda activate pqc && python -m atlas_web create-user --username demo-op --role operator
+```
+
+## What you'll see
+
+1. **Scan** (home page, first). Type any public domain: one ordinary TLS handshake, no sign-in. You get a
+   0–100 readiness score and grade; the TLS version, key exchange (classical or hybrid X25519MLKEM768),
+   certificate algorithm and expiry; what a quantum computer breaks there; and the ML-KEM (FIPS 203) /
+   ML-DSA (FIPS 204) fixes. The score formula is in a dropdown. Private IPs and localhost are refused; scans
+   are rate limited (6/min and 30/h per client IP behind a trusted proxy, `QSETU_TRUST_PROXY=1`; 30/min and
+   300/h server-wide). Pre-scanned results answer if the network is down.
+2. **Send to pipeline** (operator sign-in). The host becomes real inventory in a new Atlas workspace.
+3. **Pipeline** (`/atlas/demo`, second in the nav). Detect → Proof Chain → Plan (QpiAI Opt MILP vs FCFS and
+   greedy) → Tie-break (ML-KEM / ML-DSA patch order) → Handshake gates on real TLS 1.3 → QAOA cross-check →
+   Seal (ML-DSA-65) → Report, as a 3D view driven by the run's events. Each stage's Details has the math
+   behind it; "Why banks need this now" cites NIST, RBI and CERT-In primary sources.
+
+| | |
+| --- | --- |
+| ![3D pipeline](docs/screenshots/pipeline-3d.png) | ![Math behind a stage](docs/screenshots/pipeline-math.png) |
+| *The pipeline in 3D (replay of a recorded run)* | *The math behind each stage, with recorded numbers* |
+
+This repository also holds **AetherPool** (`engine/`, `backend/`, `frontend/`), a PQC-gated trading venue,
+started separately with `scripts/dev.sh` (see below).
 
 ## What problem it solves
 
@@ -156,7 +199,7 @@ starting them: `set -a; . ./.env; set +a`. Next.js reads `q-setu/apps/web/.env` 
 production, set `QSETU_KMS_KEK` (`openssl rand -hex 32`) so the key-encryption key isn't kept in a
 file on the server.
 
-### Run the QuantumLedger web platform
+### Run the QuantumLedger web platform by hand
 
 ```bash
 cd q-setu
@@ -272,6 +315,7 @@ blocker text); local QpiAI Opt solves and the QpiAI QSV-Local simulator are used
 ```text
 .
 ├── README.md                  # this file
+├── start.sh                   # one command: install, build, start everything, open :3000
 ├── .env.example               # AetherPool environment variables (all optional)
 ├── docs/
 │   └── AETHERPOOL.md          # AetherPool reference: benchmarks, attack table, real vs simulated
@@ -307,14 +351,3 @@ blocker text); local QpiAI Opt solves and the QpiAI QSV-Local simulator are used
     ├── scripts/               # benchmarks, design lint, audits, recorders
     └── docs/                  # reviews, audits, before/after recordings
 ```
-
-## Screenshots
-
-> Placeholders. Add images to `docs/screenshots/` and replace the lines below.
-
-| | |
-| --- | --- |
-| ![Home page](docs/screenshots/home.png) | ![Diagnostics pipeline](docs/screenshots/diagnostics.png) |
-| *Home: scan any site and watch the globe* | *Diagnostics: the five-stage pipeline* |
-| ![Proof Chain demo](docs/screenshots/proof-chain.png) | ![AetherPool terminal](docs/screenshots/aetherpool.png) |
-| *Proof Chain: tamper, then verify* | *AetherPool: the PQC-gated trading terminal* |
