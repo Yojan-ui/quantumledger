@@ -143,7 +143,7 @@ async function measureInp(browser, key) {
     await y.fill("45");
   });
   await page.locator("#scan").scrollIntoViewIfNeeded();
-  await act("scan suggestion", () => tap(page.getByRole("button", { name: "irctc.co.in" })));
+  await act("scan suggestion", () => tap(page.getByRole("button", { name: "npci.org.in" })));
   await wait(3000);
   await flush("home");
 

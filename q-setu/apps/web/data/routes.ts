@@ -43,8 +43,6 @@ export const CITY_LABEL: Record<City, string> = {
 /** The three-node path each simulated sector uses (matches packages/sim sector nodes). */
 export const SECTOR_PATHS: Record<string, [City, City, City]> = {
   fintech: ["mumbai", "hyderabad", "pune"],
-  healthcare: ["pune", "delhi", "kolkata"],
-  education: ["hyderabad", "bhopal", "gurugram"],
 };
 
 export interface RouteDef {
@@ -52,17 +50,15 @@ export interface RouteDef {
   to: City;
   /** "india" routes carry sector traffic; "world" routes carry it abroad. */
   kind: "india" | "world";
-  sector: "fintech" | "healthcare" | "education";
+  sector: "fintech";
   key: string;
 }
 
 const ABROAD: [City, City, RouteDef["sector"]][] = [
   ["mumbai", "london", "fintech"],
-  ["delhi", "newyork", "education"],
   ["chennai", "singapore", "fintech"],
   ["bengaluru", "dubai", "fintech"],
   ["mumbai", "frankfurt", "fintech"],
-  ["delhi", "tokyo", "healthcare"],
 ];
 
 /** Exactly 12 routes: the six domestic sector links and six links abroad. */

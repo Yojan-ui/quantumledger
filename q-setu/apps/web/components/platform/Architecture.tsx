@@ -42,10 +42,14 @@ export function Architecture() {
                 fill="var(--bg-raised)"
                 stroke="var(--line-strong)"
               />
-              <text x={x + 16} y={44} fill="var(--text)" fontSize={18} fontWeight={500}>
-                QuantumLedger {a.name}
+              {/* SVG text can't wrap: the name gets its own line so it stays inside the card */}
+              <text x={x + 16} y={36} fill="var(--text)" fontSize={16} fontWeight={500}>
+                <tspan x={x + 16}>QuantumLedger</tspan>
+                <tspan x={x + 16} dy={20}>
+                  {a.name}
+                </tspan>
               </text>
-              <text x={x + 16} y={72} fill="var(--text-3)" fontSize={13}>
+              <text x={x + 16} y={84} fill="var(--text-3)" fontSize={13}>
                 {a.where}
               </text>
               <line
@@ -94,7 +98,16 @@ export function Architecture() {
                 stroke="var(--line)"
               />
               <text x={x + 14} y={252} fill="var(--text)" fontSize={14}>
-                {c.split(" (")[0]}
+                {c.includes(" · ") ? (
+                  <>
+                    <tspan x={x + 14}>{c.split(" · ")[0]} ·</tspan>
+                    <tspan x={x + 14} dy={20}>
+                      {c.split(" · ")[1]}
+                    </tspan>
+                  </>
+                ) : (
+                  c.split(" (")[0]
+                )}
               </text>
               {c.includes("(") && (
                 <text x={x + 14} y={276} fill="var(--text-3)" fontSize={12}>

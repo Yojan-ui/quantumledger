@@ -14,8 +14,8 @@ export function EarlyAccess() {
           />
           <Text className="mt-4 max-w-text">
             <Copy
-              simple="We’re looking for pilot partners: banks, hospitals, universities and government teams ready to try QuantumLedger alongside their systems, without risk."
-              technical="We’re looking for design partners: banks, hospitals, universities and departments ready to pilot QuantumLedger in shadow mode."
+              simple="We’re looking for pilot partners: banks and fintech teams ready to try QuantumLedger alongside their systems, without risk."
+              technical="We’re looking for design partners: banks and fintech teams ready to pilot QuantumLedger in shadow mode."
             />
           </Text>
         </div>

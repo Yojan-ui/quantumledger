@@ -4,6 +4,7 @@ import { EarlyAccess } from "@/components/home/EarlyAccess";
 import { Hero, JoinLive } from "@/components/home/Hero";
 import { Impact } from "@/components/home/Impact";
 import { IndexSection } from "@/components/home/IndexSection";
+import { PipelineSection } from "@/components/home/PipelineSection";
 import { ScanSite } from "@/components/home/ScanSite";
 import { Adapters, Solutions, WhyQSetu } from "@/components/home/Sections";
 import { Story } from "@/components/home/Story";
@@ -21,7 +22,7 @@ export const metadata: Metadata = pageMeta({
 });
 
 /**
- * Ten sections for a first-time visitor: hero, the analogy, the Readiness Index (with the scan box),
+ * First the live scan (hero + scanner), second the pipeline; then the analogy, the Readiness Index,
  * how it works, deploy anywhere, solutions, impact, what's new, why QuantumLedger, early access.
  */
 export default function Home() {
@@ -30,10 +31,11 @@ export default function Home() {
       <Nav />
       <main id="main">
         <Hero />
+        <ScanSite />
+        <PipelineSection />
         <JoinLive />
         <Analogy index="02" />
         <IndexSection index="03" />
-        <ScanSite />
         <Story />
         <Adapters />
         <Solutions />

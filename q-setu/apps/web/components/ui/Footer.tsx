@@ -9,19 +9,13 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
     title: "Product",
     links: [
       ["Platform", "/platform"],
-      ["Pricing", "/pricing"],
       ["Readiness scanner", "/demo/scanner"],
       ["Changelog", "/changelog"],
     ],
   },
   {
     title: "Solutions",
-    links: [
-      ["Fintech", "/solutions/fintech"],
-      ["Healthcare", "/solutions/healthcare"],
-      ["Education", "/solutions/education"],
-      ["Government", "/solutions/government"],
-    ],
+    links: [["Fintech", "/solutions/fintech"]],
   },
   {
     title: "Developers",

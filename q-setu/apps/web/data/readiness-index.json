@@ -19,86 +19,21 @@
         "X25519MLKEM768": 13,
         "prime256v1": 5
       }
-    },
-    "government": {
-      "targets": 25,
-      "reachable": 25,
-      "hybridPq": 15,
-      "tls13": 21,
-      "tls12OrOlder": 4,
-      "rsa2048": 20,
-      "rsaAny": 20,
-      "ecdsa": 5,
-      "groups": {
-        "X25519MLKEM768": 15,
-        "X25519": 4,
-        "prime256v1": 6
-      }
-    },
-    "healthcare": {
-      "targets": 18,
-      "reachable": 17,
-      "hybridPq": 9,
-      "tls13": 15,
-      "tls12OrOlder": 2,
-      "rsa2048": 14,
-      "rsaAny": 14,
-      "ecdsa": 3,
-      "groups": {
-        "prime256v1": 4,
-        "X25519": 4,
-        "X25519MLKEM768": 9
-      }
-    },
-    "education": {
-      "targets": 18,
-      "reachable": 15,
-      "hybridPq": 3,
-      "tls13": 9,
-      "tls12OrOlder": 6,
-      "rsa2048": 14,
-      "rsaAny": 15,
-      "ecdsa": 0,
-      "groups": {
-        "X25519MLKEM768": 3,
-        "X25519": 8,
-        "unknown": 1,
-        "secp384r1": 1,
-        "prime256v1": 2
-      }
-    },
-    "telecom": {
-      "targets": 12,
-      "reachable": 11,
-      "hybridPq": 5,
-      "tls13": 10,
-      "tls12OrOlder": 1,
-      "rsa2048": 8,
-      "rsaAny": 8,
-      "ecdsa": 3,
-      "groups": {
-        "X25519MLKEM768": 5,
-        "unknown": 1,
-        "prime256v1": 3,
-        "X25519": 2
-      }
     }
   },
   "all": {
-    "targets": 100,
-    "reachable": 91,
-    "hybridPq": 45,
-    "tls13": 76,
-    "tls12OrOlder": 15,
-    "rsa2048": 75,
-    "rsaAny": 76,
-    "ecdsa": 15,
+    "targets": 27,
+    "reachable": 23,
+    "hybridPq": 13,
+    "tls13": 21,
+    "tls12OrOlder": 2,
+    "rsa2048": 19,
+    "rsaAny": 19,
+    "ecdsa": 4,
     "groups": {
-      "X25519": 23,
-      "X25519MLKEM768": 45,
-      "prime256v1": 20,
-      "unknown": 2,
-      "secp384r1": 1
+      "X25519": 5,
+      "X25519MLKEM768": 13,
+      "prime256v1": 5
     }
   }
 }

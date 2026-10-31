@@ -12,11 +12,7 @@ const PAGES: [string, RegExp][] = [
   ["/platform", /One core\. Five ways in\./],
   ["/solutions", /most sensitive rails/],
   ["/solutions/fintech", /Payment and banking traffic/],
-  ["/solutions/healthcare", /A diagnosis stays sensitive/],
-  ["/solutions/education", /A degree is verified/],
-  ["/solutions/government", /Identity, tax and land records/],
   ["/demos", /Real crypto\. No slides\./],
-  ["/pricing", /Start free/],
   ["/security", /What we protect/],
   ["/about", /Quantum-safe India before Q-Day/],
   ["/changelog", /release by release/],
@@ -46,15 +42,16 @@ for (const [path, h1] of PAGES) {
   });
 }
 
-test("home: ten sections in order for a first-time visitor", async ({ page }) => {
+test("home: live scan first, pipeline second, then the story", async ({ page }) => {
   await page.goto("/");
   const ids = await page.locator("main > section[id]").evaluateAll((s) => s.map((x) => x.id));
   expect(ids).toEqual([
     "top",
+    "scan",
+    "pipeline",
     "join-live",
     "analogy",
     "index",
-    "scan",
     "how-it-works",
     "adapters",
     "solutions",
@@ -67,27 +64,32 @@ test("home: ten sections in order for a first-time visitor", async ({ page }) =>
   const labels = await page.locator("main > section [class*=uppercase]").allInnerTexts();
   const nums = labels.map((t) => /^(\d{2}) —/.exec(t)?.[1]).filter(Boolean);
   expect([...new Set(nums)]).toEqual(["02", "03", "04", "05", "06", "07", "08", "09", "10"]);
-  await expect(page.getByRole("button", { name: "Take the 3-minute tour" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Explore the pipeline" })).toBeVisible();
   // No raw escape sequences leak into rendered copy (JSX attributes don't process "\u2011").
   expect(await page.locator("main").innerText()).not.toMatch(/\\u[0-9a-f]{4}/i);
-  await expect(page.getByRole("link", { name: "Open full diagnostics" })).toBeVisible();
-  await expect(page.locator("#top [data-hud]")).toBeVisible();
+  await expect(
+    page.locator("#top").getByRole("link", { name: "Scan a site", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("#pipeline [data-hud-stage]")).toBeVisible();
+  // the live scan comes first, the pipeline second
+  const top = (id: string) => page.locator(id).evaluate((e) => e.getBoundingClientRect().top);
+  expect(await top("#scan")).toBeLessThan(await top("#pipeline"));
 });
 
 test("scan: a site gets a score, plain findings and a share page", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/#scan");
-  await page.getByRole("button", { name: "irctc.co.in" }).click();
+  await page.getByRole("button", { name: "npci.org.in" }).click();
   await expect(page.getByText(/Hybrid post-quantum key exchange|Harvestable today/)).toBeVisible();
   await expect(
     page.getByText("Fix this with QuantumLedger Shield, zero code change →"),
   ).toBeVisible();
   await page.getByRole("link", { name: "Open result page" }).click();
-  await expect(page).toHaveURL(/\/scan\/www\.irctc\.co\.in/);
+  await expect(page).toHaveURL(/\/scan\/www\.npci\.org\.in/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Is www.irctc.co.in quantum-safe?",
+    "Is www.npci.org.in quantum-safe?",
   );
-  const og = await page.locator('meta[property="og:image"]').getAttribute("content");
+  const og = await page.locator('meta[property="og:image"]').first().getAttribute("content");
   expect(og).toMatch(/opengraph-image/);
   expect(errors).toEqual([]);
 });
@@ -107,7 +109,7 @@ test("early access: validated, stored, thanked", async ({ page, request }) => {
 });
 
 test("SEO: sitemap, robots, security.txt, OG image, 404", async ({ page, request }) => {
-  expect(await (await request.get("/sitemap.xml")).text()).toContain("/solutions/government");
+  expect(await (await request.get("/sitemap.xml")).text()).toContain("/solutions/fintech");
   expect(await (await request.get("/robots.txt")).text()).toContain("Sitemap:");
   expect(await (await request.get("/.well-known/security.txt")).text()).toMatch(/^Contact: /m);
   const og = await request.get("/og?title=Hello");
@@ -124,9 +126,9 @@ test("⌘K jumps to any page", async ({ page }) => {
     await page.keyboard.press("ControlOrMeta+k");
     await expect(page.getByPlaceholder(/Search pages/)).toBeVisible({ timeout: 1000 });
   }).toPass();
-  await page.getByPlaceholder(/Search pages/).fill("pricing");
+  await page.getByPlaceholder(/Search pages/).fill("contact");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/pricing$/);
+  await expect(page).toHaveURL(/\/contact$/);
 });
 
 test("presenter mode: keyboard drives the demos, R resets everything", async ({ page }) => {

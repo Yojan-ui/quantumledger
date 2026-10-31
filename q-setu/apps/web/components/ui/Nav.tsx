@@ -10,11 +10,12 @@ import { Container } from "./layout";
 import { Logo } from "./Logo";
 
 export const NAV_LINKS = [
+  { href: "/#scan", label: "Scan" },
+  { href: "/atlas/demo", label: "Pipeline" },
   { href: "/platform", label: "Platform" },
   { href: "/solutions", label: "Solutions" },
   { href: "/demos", label: "Demos" },
   { href: "/docs", label: "Docs" },
-  { href: "/pricing", label: "Pricing" },
 ];
 
 /**
@@ -112,7 +113,8 @@ export function Nav() {
             </ul>
           </nav>
           <div className="flex items-center gap-3">
-            <CopyToggle />
+            {/* Phones: the toggle moves into the menu (the bar was 434px wide at 390px: horizontal scroll). */}
+            <CopyToggle className="hidden md:flex" />
             <button
               type="button"
               onClick={openCommandMenu}
@@ -126,8 +128,8 @@ export function Nav() {
               aria-hidden={heroVisible}
               inert={heroVisible || undefined}
             >
-              <ButtonLink href="/#early-access" className="hidden md:inline-flex">
-                Get early access
+              <ButtonLink href="/atlas/demo" className="hidden md:inline-flex">
+                Open pipeline
               </ButtonLink>
             </div>
             <button
@@ -153,8 +155,9 @@ export function Nav() {
                   {l.label}
                 </Link>
               ))}
-              <div className="pt-3">
-                <ButtonLink href="/#early-access">Get early access</ButtonLink>
+              <div className="flex flex-wrap items-center gap-3 pt-3">
+                <CopyToggle />
+                <ButtonLink href="/atlas/demo">Open pipeline</ButtonLink>
               </div>
             </Container>
           </nav>

@@ -157,8 +157,7 @@ const ROWS_SIMPLE: Record<string, string> = {
   "Low-power device profile": "Works on small, low-power devices",
   "Tamper-evident, quantum-safe audit trail":
     "A record of every action that can’t be quietly edited",
-  "Built around Indian sector workflows (UPI, ABDM, APAAR / DigiLocker)":
-    "Built around how India pays, treats patients and issues degrees",
+  "Built around Indian banking workflows (UPI)": "Built around how India banks and pays",
 };
 
 const ROWS: { k: string; cells: [Cell, Cell, Cell, Cell]; note?: string }[] = [
@@ -190,7 +189,7 @@ const ROWS: { k: string; cells: [Cell, Cell, Cell, Cell]; note?: string }[] = [
     note: "Hash and signature primitives only.",
   },
   {
-    k: "Built around Indian sector workflows (UPI, ABDM, APAAR / DigiLocker)",
+    k: "Built around Indian banking workflows (UPI)",
     cells: ["yes", "no", "no", "no"],
     note: "QuantumLedger’s are prototype flows modelled on these systems.",
   },

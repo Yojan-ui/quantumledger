@@ -5,13 +5,7 @@ import { Button, Label, Text } from "@/components/ui";
 import { track } from "@/lib/client/analytics";
 import { errText } from "@/lib/client/api";
 
-const SECTORS = [
-  ["fintech", "Fintech / banking"],
-  ["healthcare", "Healthcare"],
-  ["education", "Education"],
-  ["government", "Government"],
-  ["other", "Something else"],
-] as const;
+const SECTORS = [["fintech", "Fintech / banking"]] as const;
 
 const field =
   "h-10 w-full rounded-sm border border-line bg-inset px-3 text-small text-fg outline-none transition-colors duration-150 placeholder:text-fg-3 focus:border-line-strong";

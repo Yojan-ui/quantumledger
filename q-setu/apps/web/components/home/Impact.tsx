@@ -29,34 +29,6 @@ const SECTORS = {
     how: "a sidecar proxy in front of each core or API, no code change",
     plain: "one small program placed in front of each system, with no changes to the system itself",
   },
-  healthcare: {
-    label: "Healthcare",
-    years: 30,
-    adapter: "Vault",
-    how: "a per-record key wrapped with ML-KEM, one call where records are stored",
-    plain: "every record gets its own quantum-safe lock where it is stored, with one line of code",
-  },
-  government: {
-    label: "Government services",
-    years: 25,
-    adapter: "Web",
-    how: "one script tag per citizen-facing site",
-    plain: "one line added to each public website",
-  },
-  education: {
-    label: "Education",
-    years: 40,
-    adapter: "SDK",
-    how: "signed certificates through the SDK, in the issuing app",
-    plain: "certificates signed with a quantum-safe signature by the app that issues them",
-  },
-  telecom: {
-    label: "Telecom",
-    years: 5,
-    adapter: "Edge",
-    how: "the Edge profile on gateways and devices",
-    plain: "a lightweight version for small devices and network gateways",
-  },
 } as const;
 type SectorId = keyof typeof SECTORS;
 
@@ -103,9 +75,9 @@ function NumberField({
 }
 
 export function Impact({ index }: { index: string }) {
-  const [sector, setSector] = useState<SectorId>("healthcare");
+  const [sector, setSector] = useState<SectorId>("banking");
   const [records, setRecords] = useState(1_000_000);
-  const [years, setYears] = useState<number>(SECTORS.healthcare.years);
+  const [years, setYears] = useState<number>(SECTORS.banking.years);
   const [systems, setSystems] = useState(12);
   // Assumptions (engineer-weeks): migrating one system's crypto in code vs deploying an adapter.
   const [codeWeeks, setCodeWeeks] = useState(8);

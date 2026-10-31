@@ -10,18 +10,21 @@ export function HudPanel({
   children,
   className = "",
   id,
+  glass = true,
 }: {
   label: string;
   right?: ReactNode;
   children: ReactNode;
   className?: string;
   id?: string;
+  /** false: no glass tint over the stage (a panel that holds the 3D view) */
+  glass?: boolean;
 }) {
   return (
     <section
       id={id}
       aria-label={label}
-      className={`relative flex min-h-0 flex-col border border-line bg-glass ${className}`}
+      className={`relative flex min-h-0 flex-col border border-line ${glass ? "bg-glass" : ""} ${className}`}
     >
       {/* Bracket marks: 12px L-shapes at each corner, a shade brighter than the hairline. */}
       <span

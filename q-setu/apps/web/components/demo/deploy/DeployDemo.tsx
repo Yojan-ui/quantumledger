@@ -1,7 +1,6 @@
 "use client";
 
 import type { SectorId } from "@qsetu/sim";
-import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ComputeMeter, type MeterReading } from "@/components/demo/shell/ComputeMeter";
@@ -25,14 +24,10 @@ import { notify, world, type NodeState } from "@/components/world/store";
 import { burst } from "@/lib/client/burst";
 
 // The certificate scenario (QR encode + scan) sits below the film: its code loads on demand.
-const CertificateFlow = dynamic(() => import("./CertificateFlow").then((m) => m.CertificateFlow), {
-  ssr: false,
-  loading: () => null,
-});
 
 /** Adapter work on the server, deployed-node traffic, and anything this tab did. */
 const consoleFilter = (e: OpEvent) =>
-  !!e.site || ["web", "shield", "sdk", "vault", "certs", "edge", "browser"].includes(e.source);
+  !!e.site || ["web", "shield", "sdk", "vault", "edge", "browser"].includes(e.source);
 
 const STEP_BAR: Step[] = [
   { label: "Survey", role: "warn" },
@@ -484,8 +479,6 @@ export function DeployDemo() {
               )}
             </div>
           )}
-
-          {sector === "education" && <CertificateFlow />}
         </section>
       </div>
     </DemoShell>

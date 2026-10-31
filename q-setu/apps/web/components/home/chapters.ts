@@ -11,11 +11,11 @@ export interface Chapter {
 }
 
 export const HERO = {
-  title: "See your quantum risk. Fix it. Prove it.",
+  title: "Bank migration, backed by evidence.",
   /** The brief's subline, shown in both copy modes (its one acronym, NIST, is deliberate). */
-  body: "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography.",
+  body: "Find vulnerable cryptography, compare migration plans and verify the evidence. Follow the banking pipeline from scan to signed review.",
   technical:
-    "QuantumLedger scans, upgrades and signs your systems with NIST post-quantum cryptography.",
+    "Find vulnerable cryptography, compare migration plans and verify the evidence. Follow the banking pipeline from scan to signed review.",
 };
 
 /** "How it works": three pinned steps. `chapter` is the director pose each step uses on the globe. */
@@ -104,7 +104,7 @@ export const ADAPTERS = [
     id: "vault",
     name: "Vault",
     desc: "Per-record keys wrapped with ML-KEM; records signed with ML-DSA.",
-    code: "await vault.put(labReport)",
+    code: "await vault.put(paymentRecord)",
   },
 ] as const;
 
@@ -113,9 +113,4 @@ export const SECTOR_NOTES: Record<string, { kem: string; dsa: string }> = {
     kem: "bank-to-switch links and app-to-bank APIs",
     dsa: "transaction signing and mandates",
   },
-  healthcare: {
-    kem: "hospital-to-exchange transfers and records at rest",
-    dsa: "signed lab reports and prescriptions",
-  },
-  education: { kem: "student-data transfers", dsa: "university-signed certificates" },
 };

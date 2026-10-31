@@ -21,6 +21,26 @@ export default tseslint.config(
     },
   },
   {
+    // tools/*.mjs are Node scripts that also pass functions into the page (page.evaluate / addInitScript).
+    files: ["tools/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        Buffer: "readonly",
+        URL: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+        performance: "readonly",
+        window: "readonly",
+        document: "readonly",
+        location: "readonly",
+        localStorage: "readonly",
+        innerWidth: "readonly",
+      },
+    },
+  },
+  {
     // record-demo.mjs passes functions into the page with page.evaluate (browser globals).
     files: ["scripts/record-demo.mjs"],
     languageOptions: {

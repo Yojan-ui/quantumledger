@@ -176,25 +176,6 @@ const OPS: Op[] = [
   },
   {
     method: "post",
-    path: "/api/certs/issue",
-    tag: "Adapters",
-    summary: "Issue an ML-DSA-65-signed degree certificate",
-  },
-  {
-    method: "get",
-    path: "/api/certs/{id}",
-    tag: "Adapters",
-    summary: "Public certificate registry lookup",
-    params: S.IdParams,
-  },
-  {
-    method: "get",
-    path: "/api/certs/issuer",
-    tag: "Adapters",
-    summary: "The issuer's ML-DSA-65 public key",
-  },
-  {
-    method: "post",
     path: "/api/web-shield/submit",
     tag: "Adapters",
     summary: "Form endpoint: accepts plain or QuantumLedger-sealed posts",

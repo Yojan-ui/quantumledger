@@ -6,8 +6,6 @@ import type { SectorId } from "@qsetu/sim";
 
 const DEVICE: Record<SectorId, { id: string; unit: string; base: number }> = {
   fintech: { id: "pos-patna-07", unit: "INR", base: 240 },
-  healthcare: { id: "icu-monitor-3", unit: "bpm", base: 78 },
-  education: { id: "exam-bio-12", unit: "scans/min", base: 14 },
 };
 
 export interface EdgeRun {

@@ -76,7 +76,7 @@ await page.keyboard.type("onlinesbi.sbi", { delay: 90 });
 await page.getByRole("button", { name: "Scan", exact: true }).click();
 await wait(9000);
 await page.getByLabel("Enter any website").fill("");
-await page.getByRole("button", { name: "irctc.co.in" }).click();
+await page.getByRole("button", { name: "npci.org.in" }).click();
 await wait(9000);
 
 // 3. Why now, then the Harvest → Q-Day scrub (30 s).

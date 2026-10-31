@@ -4,8 +4,6 @@ import type { SectorId } from "@qsetu/sim";
 
 const LABELS: Record<SectorId, string> = {
   fintech: "Fintech",
-  healthcare: "Healthcare",
-  education: "Education",
 };
 
 /** Segmented control. Selected: raised fill; others muted. */

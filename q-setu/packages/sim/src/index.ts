@@ -1,4 +1,4 @@
-/** @qsetu/sim: sector simulators (fintech, healthcare, education) and the Q-Day adversary. */
+/** @qsetu/sim: banking simulator (fintech) and the Q-Day adversary. */
 export * from "./types";
 export * from "./sectors";
 export * from "./network";

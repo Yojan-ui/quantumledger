@@ -1,161 +1,158 @@
 # Glitch audit (after)
 
-`pnpm audit:glitch after` against the production build at http://localhost:3000, 2026-10-12T18:08 UTC.
+`pnpm audit:glitch after` against the production build at http://localhost:3000, 2026-10-30T17:38 UTC.
 Every page at 1440×900, and at 390×844 with 4× CPU throttling. Each run: load, scroll to the end, the
 page's main action (Play, Verify, Tamper, Scan… or hover across it), 10 s in all. Videos are in
 `docs/smooth/videos-after/` (not committed).
 
 ## Totals
 
-| | 1440 | 390 (4× CPU) |
-| --- | --- | --- |
-| Console errors + page errors | 1 | 1 |
-| Console warnings | 0 | 0 |
-| Hydration warnings | 0 | 0 |
-| WebGL driver messages | 0 | 0 |
-| WebGL contexts lost | 0 | 0 |
-| Long tasks > 50 ms | 15 | 71 |
-| Worst frame while scrolling (ms) | 233 | 50 |
-| Worst frame in a transition (ms) | 283 | 33 |
-| Worst page CLS | 0.0131 | 0.0364 |
-| Failed requests | 1 | 1 |
+|                                  | 1440   | 390 (4× CPU) |
+| -------------------------------- | ------ | ------------ |
+| Console errors + page errors     | 1      | 1            |
+| Console warnings                 | 0      | 0            |
+| Hydration warnings               | 0      | 0            |
+| WebGL driver messages            | 0      | 0            |
+| WebGL contexts lost              | 0      | 0            |
+| Long tasks > 50 ms               | 16     | 76           |
+| Worst frame while scrolling (ms) | 33     | 50           |
+| Worst frame in a transition (ms) | 34     | 34           |
+| Worst page CLS                   | 0.0738 | 0.0364       |
+| Failed requests                  | 2      | 1            |
 
-## Against the targets
+## Before → after
 
-Same audit and method as `audit-before.md`: 78 runs, every page at 1440 and at 390 with 4× CPU.
+`audit-before.md` (2026-10-30T11:23 UTC, before the Q-Shield integration: 39 pages) against this run
+(49 pages: the same 39 plus 10 new Q-Shield routes, `/atlas/demo/*` and `/diagnostics?ws=demo`). Counts
+are totals over all pages, so the after column covers more pages.
 
-| Target | Before | After | Met? |
-| --- | --- | --- | --- |
-| Zero console errors | 1 per width: the 404 page's own status, logged by the browser | Same, and nothing else | Yes (the 404 is the audit requesting a missing page on purpose) |
-| Zero hydration warnings | 0 | 0 | Yes |
-| No WebGL context loss | 0 | 0 (and loss is now handled: poster, then rebuild) | Yes |
-| No frame over 50 ms in transitions | 100 ms (390), 33 ms (1440) | 33 ms (390), 17 ms (1440, re-measured, see below) | Yes |
-| 60 fps while scrolling | p95 16.8 ms; worst 300 ms (390) and 50 ms (1440) | p95 16.8 ms; worst 50 ms (390: one frame on the homepage), 17 ms (1440) | Yes at p95. At 390 with 4× CPU, one 50 ms frame remains on the homepage |
-| CLS under 0.05 | 1.209 (390), 0.726 (1440) | 0.036 (390, `/diagnostics`), 0.013 (1440, `/join`) | Yes, on every page |
-| INP under 100 ms | not measured | 32 ms worst at 1440; 64 ms worst at 390 with 4× CPU (see below) | Yes |
+|                                  | Before 1440 | After 1440 | Before 390 | After 390 |
+| -------------------------------- | ----------- | ---------- | ---------- | --------- |
+| Console errors + page errors     | 1           | 1          | 1          | 1         |
+| Hydration warnings               | 0           | 0          | 0          | 0         |
+| WebGL contexts lost              | 0           | 0          | 0          | 0         |
+| Long tasks > 50 ms               | 15          | 16         | 68         | 76        |
+| Worst frame while scrolling (ms) | 33          | 33         | 167        | 50        |
+| Worst frame in a transition (ms) | 83          | 34         | 183        | 34        |
+| Worst page CLS                   | 0.0131      | 0.0738     | 0.0367     | 0.0364    |
+| Failed requests                  | 1           | 2          | 1          | 1         |
 
-**The 1440 re-measurement.** In this run, `/demo/deploy`, `/solutions` and `/diagnostics` at 1440 each
-logged one 233–283 ms frame. These were taken while the site was open in a second browser on the same
-machine. Re-run alone (`ONLY=/demo/deploy,/solutions,/diagnostics,/demo/ledger pnpm audit:glitch check`),
-all four pages measured a 17 ms worst frame in both scrolling and transitions.
-
-**INP.** Event Timing (`PerformanceObserver` type `event`, max duration per interaction) on each page's
-main action, measured 3 s after load: the homepage tour button, each demo's Try it, the scanner's Scan,
-and the HUD's → plus five slider steps.
-
-| | `/` | how-it-works | deploy | qday | ledger | scanner | diagnostics |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1440 | 32 ms | 32 ms | 32 ms | 32 ms | 32 ms | 32 ms | 16 ms |
-| 390, 4× CPU | 64 ms | 32 ms | 24 ms | 40 ms | 40 ms | 32 ms | 24 ms |
-
-**What's left.** At 390 with 4× CPU, most pages log three long tasks shortly after load (profiled on `/docs` and `/demo/ledger`: at about 0.3 s and 0.8 s):
-hydration of the root layout (~60–90 ms) and the 3D boot (~200 ms), which runs in idle time once a 3D
-area is near. They no longer land on scrolling or on a transition (above). Splitting the 3D boot
-further would mean compiling shaders lazily, which brings back the first-frame hitch that `<Preload>`
-removes.
+- The one console error at each width is the deliberate 404 page (`/this-page-does-not-exist`), before and after.
+- The extra failed request at 1440 is a Next.js prefetch of `/diagnostics` from `/`, aborted when the
+  10-second run closed the page (`net::ERR_ABORTED`), not a server error.
+- Worst CLS at 1440 is `/diagnostics?ws=demo` (0.0738, under the 0.1 "good" threshold): the Atlas HUD's
+  panels fill in once the workspace's results load. `/atlas/demo/review` is 0.0122 (0.1886 in an interim run before the fix).
+- `/demos` on the phone: worst frames 167 / 183 ms before, 33 / 34 ms after.
 
 ## Ranked (worst first)
 
-| # | Page | Width | Score | Errors | Hydration | Lost | Long tasks | Scroll worst / p95 (ms) | Transition worst / p95 (ms) | CLS | Failed |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `/demo/deploy` | 1440 | 48 | 0 | 0 | 0 | 1 (max 71) | 17 / 16.7 | 283 / 283.3 | 0 | 0 |
-| 2 | `/solutions` | 1440 | 38 | 0 | 0 | 0 | 1 (max 69) | 17 / 16.8 | 233 / 16.8 | 0 | 0 |
-| 3 | `/diagnostics` | 1440 | 38 | 0 | 0 | 0 | 1 (max 73) | 233 / 16.7 | 17 / 16.7 | 0.0033 | 0 |
-| 4 | `/this-page-does-not-exist` | 390 | 26 | 1 | 0 | 0 | 1 (max 57) | 17 / 16.7 | 17 / 16.8 | 0 | 1 |
-| 5 | `/this-page-does-not-exist` | 1440 | 25 | 1 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 1 |
-| 6 | `/demo/ledger` | 1440 | 11 | 0 | 0 | 0 | 1 (max 73) | 17 / 16.8 | 100 / 16.7 | 0.0016 | 0 |
-| 7 | `/` | 390 | 6 | 0 | 0 | 0 | 6 (max 318) | 50 / 16.8 | 33 / 16.7 | 0.0001 | 0 |
-| 8 | `/platform` | 390 | 4 | 0 | 0 | 0 | 4 (max 205) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 9 | `/solutions` | 390 | 3 | 0 | 0 | 0 | 3 (max 212) | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 10 | `/solutions/fintech` | 390 | 3 | 0 | 0 | 0 | 3 (max 203) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 11 | `/solutions/healthcare` | 390 | 3 | 0 | 0 | 0 | 3 (max 196) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 12 | `/solutions/education` | 390 | 3 | 0 | 0 | 0 | 3 (max 195) | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 13 | `/solutions/government` | 390 | 3 | 0 | 0 | 0 | 3 (max 201) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 14 | `/diagnostics` | 390 | 3 | 0 | 0 | 0 | 3 (max 215) | 17 / 16.7 | 17 / 16.7 | 0.0364 | 0 |
-| 15 | `/index` | 390 | 3 | 0 | 0 | 0 | 3 (max 200) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 16 | `/demo/how-it-works` | 390 | 3 | 0 | 0 | 0 | 3 (max 206) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 17 | `/demo/deploy` | 390 | 3 | 0 | 0 | 0 | 3 (max 269) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 18 | `/demo/qday` | 390 | 3 | 0 | 0 | 0 | 3 (max 209) | 17 / 16.8 | 17 / 16.8 | 0.0099 | 0 |
-| 19 | `/demo/ledger` | 390 | 3 | 0 | 0 | 0 | 3 (max 231) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 20 | `/about` | 390 | 3 | 0 | 0 | 0 | 3 (max 190) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 21 | `/` | 1440 | 1 | 0 | 0 | 0 | 1 (max 82) | 17 / 16.8 | 17 / 16.8 | 0.0067 | 0 |
-| 22 | `/platform` | 1440 | 1 | 0 | 0 | 0 | 1 (max 69) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 23 | `/solutions/fintech` | 1440 | 1 | 0 | 0 | 0 | 1 (max 69) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 24 | `/solutions/healthcare` | 1440 | 1 | 0 | 0 | 0 | 1 (max 69) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 25 | `/solutions/education` | 1440 | 1 | 0 | 0 | 0 | 1 (max 71) | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 26 | `/solutions/government` | 1440 | 1 | 0 | 0 | 0 | 1 (max 69) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 27 | `/index` | 1440 | 1 | 0 | 0 | 0 | 1 (max 70) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 28 | `/demo/how-it-works` | 1440 | 1 | 0 | 0 | 0 | 1 (max 72) | 17 / 16.8 | 17 / 16.7 | 0.0013 | 0 |
-| 29 | `/demo/qday` | 1440 | 1 | 0 | 0 | 0 | 1 (max 73) | 17 / 16.7 | 17 / 16.8 | 0.002 | 0 |
-| 30 | `/about` | 1440 | 1 | 0 | 0 | 0 | 1 (max 74) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 31 | `/pitch` | 1440 | 1 | 0 | 0 | 0 | 1 (max 80) | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 32 | `/demos` | 390 | 1 | 0 | 0 | 0 | 1 (max 88) | 33 / 16.8 | 33 / 33.4 | 0 | 0 |
-| 33 | `/demo/scanner` | 390 | 1 | 0 | 0 | 0 | 1 (max 61) | 17 / 16.7 | 17 / 16.8 | 0.0234 | 0 |
-| 34 | `/pricing` | 390 | 1 | 0 | 0 | 0 | 1 (max 57) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 35 | `/security` | 390 | 1 | 0 | 0 | 0 | 1 (max 57) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 36 | `/changelog` | 390 | 1 | 0 | 0 | 0 | 1 (max 81) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 37 | `/contact` | 390 | 1 | 0 | 0 | 0 | 1 (max 57) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 38 | `/privacy` | 390 | 1 | 0 | 0 | 0 | 1 (max 55) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 39 | `/terms` | 390 | 1 | 0 | 0 | 0 | 1 (max 90) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 40 | `/docs/api` | 390 | 1 | 0 | 0 | 0 | 1 (max 58) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 41 | `/docs` | 390 | 1 | 0 | 0 | 0 | 1 (max 58) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 42 | `/docs/security-model` | 390 | 1 | 0 | 0 | 0 | 1 (max 58) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 43 | `/docs/adapters/edge` | 390 | 1 | 0 | 0 | 0 | 1 (max 87) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 44 | `/docs/adapters/sdk` | 390 | 1 | 0 | 0 | 0 | 1 (max 90) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 45 | `/docs/adapters/shield` | 390 | 1 | 0 | 0 | 0 | 1 (max 87) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 46 | `/docs/adapters/vault` | 390 | 1 | 0 | 0 | 0 | 1 (max 60) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 47 | `/docs/adapters/web` | 390 | 1 | 0 | 0 | 0 | 1 (max 59) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 48 | `/docs/concepts/hybrid-kem` | 390 | 1 | 0 | 0 | 0 | 1 (max 57) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 49 | `/docs/concepts` | 390 | 1 | 0 | 0 | 0 | 1 (max 61) | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 50 | `/docs/concepts/key-rotation` | 390 | 1 | 0 | 0 | 0 | 1 (max 61) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 51 | `/docs/concepts/sessions` | 390 | 1 | 0 | 0 | 0 | 1 (max 62) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 52 | `/docs/concepts/signatures` | 390 | 1 | 0 | 0 | 0 | 1 (max 58) | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 53 | `/join` | 390 | 1 | 0 | 0 | 0 | 1 (max 57) | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 54 | `/pitch` | 390 | 1 | 0 | 0 | 0 | 1 (max 58) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 55 | `/scan/www.irctc.co.in` | 390 | 1 | 0 | 0 | 0 | 1 (max 59) | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 56 | `/demos` | 1440 | 0 | 0 | 0 | 0 | 0 | 33 / 16.8 | 33 / 33.4 | 0 | 0 |
-| 57 | `/demo/scanner` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0.0003 | 0 |
-| 58 | `/pricing` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 59 | `/security` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.8 | 17 / 16.7 | 0 | 0 |
-| 60 | `/changelog` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 61 | `/contact` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 62 | `/privacy` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 63 | `/terms` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 64 | `/docs/api` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 65 | `/docs` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 66 | `/docs/security-model` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 67 | `/docs/adapters/edge` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 68 | `/docs/adapters/sdk` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 69 | `/docs/adapters/shield` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 70 | `/docs/adapters/vault` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 71 | `/docs/adapters/web` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 72 | `/docs/concepts/hybrid-kem` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 73 | `/docs/concepts` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 74 | `/docs/concepts/key-rotation` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
-| 75 | `/docs/concepts/sessions` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.8 | 0 | 0 |
-| 76 | `/docs/concepts/signatures` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.8 | 17 / 16.8 | 0 | 0 |
-| 77 | `/join` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0.0131 | 0 |
-| 78 | `/scan/www.irctc.co.in` | 1440 | 0 | 0 | 0 | 0 | 0 | 17 / 16.7 | 17 / 16.7 | 0 | 0 |
+| #   | Page                          | Width | Score | Errors | Hydration | Lost | Long tasks  | Scroll worst / p95 (ms) | Transition worst / p95 (ms) | CLS    | Failed |
+| --- | ----------------------------- | ----- | ----- | ------ | --------- | ---- | ----------- | ----------------------- | --------------------------- | ------ | ------ |
+| 1   | `/this-page-does-not-exist`   | 390   | 26    | 1      | 0         | 0    | 1 (max 52)  | 17 / 16.7               | 17 / 16.7                   | 0      | 1      |
+| 2   | `/this-page-does-not-exist`   | 1440  | 25    | 1      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.8                   | 0      | 1      |
+| 3   | `/`                           | 1440  | 11    | 0      | 0         | 0    | 1 (max 83)  | 17 / 16.7               | 17 / 16.8                   | 0.0067 | 1      |
+| 4   | `/diagnostics?ws=demo`        | 1440  | 6     | 0      | 0         | 0    | 1 (max 68)  | 17 / 16.8               | 17 / 16.7                   | 0.0738 | 0      |
+| 5   | `/`                           | 390   | 4     | 0      | 0         | 0    | 4 (max 188) | 33 / 16.7               | 17 / 16.7                   | 0.0002 | 0      |
+| 6   | `/diagnostics`                | 390   | 4     | 0      | 0         | 0    | 4 (max 186) | 17 / 16.8               | 17 / 16.7                   | 0.0364 | 0      |
+| 7   | `/solutions`                  | 390   | 3     | 0      | 0         | 0    | 3 (max 169) | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 8   | `/solutions/fintech`          | 390   | 3     | 0      | 0         | 0    | 3 (max 176) | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 9   | `/solutions/healthcare`       | 390   | 3     | 0      | 0         | 0    | 3 (max 164) | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 10  | `/solutions/education`        | 390   | 3     | 0      | 0         | 0    | 3 (max 165) | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
+| 11  | `/solutions/government`       | 390   | 3     | 0      | 0         | 0    | 3 (max 167) | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
+| 12  | `/index`                      | 390   | 3     | 0      | 0         | 0    | 3 (max 184) | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 13  | `/demo/how-it-works`          | 390   | 3     | 0      | 0         | 0    | 3 (max 181) | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 14  | `/demo/deploy`                | 390   | 3     | 0      | 0         | 0    | 3 (max 166) | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 15  | `/demo/qday`                  | 390   | 3     | 0      | 0         | 0    | 3 (max 177) | 17 / 16.8               | 17 / 16.7                   | 0.0098 | 0      |
+| 16  | `/demo/ledger`                | 390   | 3     | 0      | 0         | 0    | 3 (max 179) | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 17  | `/about`                      | 390   | 3     | 0      | 0         | 0    | 3 (max 163) | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 18  | `/diagnostics?ws=demo`        | 390   | 3     | 0      | 0         | 0    | 3 (max 170) | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 19  | `/platform`                   | 390   | 2     | 0      | 0         | 0    | 2 (max 195) | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 20  | `/atlas/demo/ledger`          | 390   | 2     | 0      | 0         | 0    | 2 (max 64)  | 50 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 21  | `/platform`                   | 1440  | 1     | 0      | 0         | 0    | 1 (max 65)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 22  | `/solutions`                  | 1440  | 1     | 0      | 0         | 0    | 1 (max 84)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 23  | `/solutions/fintech`          | 1440  | 1     | 0      | 0         | 0    | 1 (max 72)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 24  | `/solutions/healthcare`       | 1440  | 1     | 0      | 0         | 0    | 1 (max 86)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 25  | `/solutions/education`        | 1440  | 1     | 0      | 0         | 0    | 1 (max 68)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 26  | `/solutions/government`       | 1440  | 1     | 0      | 0         | 0    | 1 (max 65)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 27  | `/diagnostics`                | 1440  | 1     | 0      | 0         | 0    | 1 (max 70)  | 17 / 16.7               | 17 / 16.8                   | 0.004  | 0      |
+| 28  | `/index`                      | 1440  | 1     | 0      | 0         | 0    | 1 (max 81)  | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 29  | `/demo/how-it-works`          | 1440  | 1     | 0      | 0         | 0    | 1 (max 72)  | 17 / 16.8               | 17 / 16.7                   | 0.0013 | 0      |
+| 30  | `/demo/deploy`                | 1440  | 1     | 0      | 0         | 0    | 1 (max 70)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 31  | `/demo/qday`                  | 1440  | 1     | 0      | 0         | 0    | 1 (max 72)  | 17 / 16.8               | 17 / 16.7                   | 0.002  | 0      |
+| 32  | `/demo/ledger`                | 1440  | 1     | 0      | 0         | 0    | 1 (max 72)  | 17 / 16.7               | 17 / 16.7                   | 0.0016 | 0      |
+| 33  | `/about`                      | 1440  | 1     | 0      | 0         | 0    | 1 (max 78)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 34  | `/pitch`                      | 1440  | 1     | 0      | 0         | 0    | 1 (max 63)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 35  | `/demos`                      | 390   | 1     | 0      | 0         | 0    | 1 (max 54)  | 33 / 16.8               | 34 / 33.4                   | 0      | 0      |
+| 36  | `/demo/scanner`               | 390   | 1     | 0      | 0         | 0    | 1 (max 77)  | 17 / 16.7               | 17 / 16.7                   | 0.0234 | 0      |
+| 37  | `/atlas`                      | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 38  | `/pricing`                    | 390   | 1     | 0      | 0         | 0    | 1 (max 51)  | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
+| 39  | `/contact`                    | 390   | 1     | 0      | 0         | 0    | 1 (max 52)  | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
+| 40  | `/terms`                      | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 41  | `/docs/api`                   | 390   | 1     | 0      | 0         | 0    | 1 (max 52)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 42  | `/docs`                       | 390   | 1     | 0      | 0         | 0    | 1 (max 52)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 43  | `/docs/security-model`        | 390   | 1     | 0      | 0         | 0    | 1 (max 52)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 44  | `/docs/adapters/edge`         | 390   | 1     | 0      | 0         | 0    | 1 (max 51)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 45  | `/docs/adapters/sdk`          | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 46  | `/docs/adapters/shield`       | 390   | 1     | 0      | 0         | 0    | 1 (max 51)  | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
+| 47  | `/docs/adapters/vault`        | 390   | 1     | 0      | 0         | 0    | 1 (max 54)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 48  | `/docs/adapters/web`          | 390   | 1     | 0      | 0         | 0    | 1 (max 51)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 49  | `/docs/concepts`              | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 50  | `/docs/concepts/sessions`     | 390   | 1     | 0      | 0         | 0    | 1 (max 55)  | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 51  | `/docs/concepts/signatures`   | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 52  | `/join`                       | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 53  | `/pitch`                      | 390   | 1     | 0      | 0         | 0    | 1 (max 63)  | 17 / 16.7               | 17 / 16.7                   | 0.005  | 0      |
+| 54  | `/scan/www.irctc.co.in`       | 390   | 1     | 0      | 0         | 0    | 1 (max 52)  | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 55  | `/atlas/signin`               | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 56  | `/atlas/demo/detect`          | 390   | 1     | 0      | 0         | 0    | 1 (max 53)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 57  | `/atlas/demo/inventory`       | 390   | 1     | 0      | 0         | 0    | 1 (max 56)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 58  | `/atlas/demo/schedule`        | 390   | 1     | 0      | 0         | 0    | 1 (max 55)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 59  | `/atlas/demo/handshakes`      | 390   | 1     | 0      | 0         | 0    | 1 (max 55)  | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 60  | `/atlas/demo/qaoa`            | 390   | 1     | 0      | 0         | 0    | 1 (max 56)  | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 61  | `/atlas/demo/review`          | 390   | 1     | 0      | 0         | 0    | 1 (max 55)  | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 62  | `/demos`                      | 1440  | 0     | 0      | 0         | 0    | 0           | 33 / 16.8               | 34 / 33.4                   | 0      | 0      |
+| 63  | `/demo/scanner`               | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0.0006 | 0      |
+| 64  | `/atlas`                      | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 65  | `/pricing`                    | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 66  | `/security`                   | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 67  | `/changelog`                  | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 68  | `/contact`                    | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 69  | `/privacy`                    | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 70  | `/terms`                      | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 71  | `/docs/api`                   | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 72  | `/docs`                       | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 73  | `/docs/security-model`        | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 74  | `/docs/adapters/edge`         | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 75  | `/docs/adapters/sdk`          | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 76  | `/docs/adapters/shield`       | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 77  | `/docs/adapters/vault`        | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 78  | `/docs/adapters/web`          | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 79  | `/docs/concepts/hybrid-kem`   | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 80  | `/docs/concepts`              | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 81  | `/docs/concepts/key-rotation` | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 82  | `/docs/concepts/sessions`     | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 83  | `/docs/concepts/signatures`   | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0      | 0      |
+| 84  | `/join`                       | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0.0131 | 0      |
+| 85  | `/scan/www.irctc.co.in`       | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
+| 86  | `/atlas/signin`               | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0.0102 | 0      |
+| 87  | `/atlas/demo/detect`          | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0.0111 | 0      |
+| 88  | `/atlas/demo/inventory`       | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0.0111 | 0      |
+| 89  | `/atlas/demo/schedule`        | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0.0111 | 0      |
+| 90  | `/atlas/demo/handshakes`      | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0.0111 | 0      |
+| 91  | `/atlas/demo/qaoa`            | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0.0111 | 0      |
+| 92  | `/atlas/demo/ledger`          | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.8                   | 0.0111 | 0      |
+| 93  | `/atlas/demo/review`          | 1440  | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.7                   | 0.0122 | 0      |
+| 94  | `/security`                   | 390   | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 95  | `/changelog`                  | 390   | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 96  | `/privacy`                    | 390   | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.8                   | 0      | 0      |
+| 97  | `/docs/concepts/hybrid-kem`   | 390   | 0     | 0      | 0         | 0    | 0           | 17 / 16.7               | 17 / 16.7                   | 0      | 0      |
+| 98  | `/docs/concepts/key-rotation` | 390   | 0     | 0      | 0         | 0    | 0           | 17 / 16.8               | 17 / 16.8                   | 0      | 0      |
 
 ## Details
-
-### `/demo/deploy` at 1440 (score 48)
-
-- long tasks: 71 ms
-
-### `/solutions` at 1440 (score 38)
-
-- long tasks: 69 ms
-
-### `/diagnostics` at 1440 (score 38)
-
-- long tasks: 73 ms
-- layout shift 0.0011: button.hidden.h-8.rounded-sm, button.h-8.rounded-sm.border, (text), dd.min-w-0.truncate.text-right, dd.min-w-0.truncate.text-right
 
 ### `/this-page-does-not-exist` at 390 (score 26)
 
 - console error: Failed to load resource: the server responded with a status of 404 (Not Found)
-- long tasks: 57 ms
+- long tasks: 52 ms
 - failed: /this-page-does-not-exist (HTTP 404)
 
 ### `/this-page-does-not-exist` at 1440 (score 25)
@@ -163,213 +160,252 @@ removes.
 - console error: Failed to load resource: the server responded with a status of 404 (Not Found)
 - failed: /this-page-does-not-exist (HTTP 404)
 
-### `/demo/ledger` at 1440 (score 11)
+### `/` at 1440 (score 11)
 
-- long tasks: 73 ms
-- layout shift 0.0015: div.ml-auto.flex.flex-wrap, div.pr-6.md:border-l.md:border-line, div.pr-6.md:border-l.md:border-line, div.pr-6., div.pr-6.md:border-l.md:border-line
+- long tasks: 83 ms
+- layout shift 0.0067: div.mt-8
+- failed: /diagnostics?_rsc=1p-R_iEY6bj0jY31 (net::ERR_ABORTED)
 
-### `/` at 390 (score 6)
+### `/diagnostics?ws=demo` at 1440 (score 6)
 
-- long tasks: 150, 62, 60, 85, 318, 58 ms
+- long tasks: 68 ms
+- layout shift 0.0738: div.border.border-line.bg-glass, figcaption.flex.flex-wrap.gap-x-4, h2.text-h2.font-medium.text-fg, p.max-w-text.text-body.text-fg-2, span.absolute.-bottom-px.-right-px
 
-### `/platform` at 390 (score 4)
+### `/` at 390 (score 4)
 
-- long tasks: 52, 56, 88, 205 ms
+- long tasks: 115, 51, 65, 188 ms
 
-### `/solutions` at 390 (score 3)
+### `/diagnostics` at 390 (score 4)
 
-- long tasks: 86, 89, 212 ms
-
-### `/solutions/fintech` at 390 (score 3)
-
-- long tasks: 60, 91, 203 ms
-
-### `/solutions/healthcare` at 390 (score 3)
-
-- long tasks: 61, 92, 196 ms
-
-### `/solutions/education` at 390 (score 3)
-
-- long tasks: 62, 84, 195 ms
-
-### `/solutions/government` at 390 (score 3)
-
-- long tasks: 60, 89, 201 ms
-
-### `/diagnostics` at 390 (score 3)
-
-- long tasks: 61, 76, 215 ms
+- long tasks: 53, 67, 186, 59 ms
 - layout shift 0.0077: div.absolute.bottom-3.left-3, dd.min-w-0.truncate.text-right
 - layout shift 0.0073: div.flex.snap-x.snap-mandatory, div.absolute.bottom-3.left-3
 - layout shift 0.0069: button.h-8.rounded-sm.border, (text), dd.min-w-0.truncate.text-right
 - layout shift 0.0053: button.h-8.rounded-sm.border, button.h-8.rounded-sm.border, dd.min-w-0.truncate.text-right, dd.min-w-0.truncate.text-right, dd.min-w-0.truncate.text-right
 - layout shift 0.0045: div.flex.snap-x.snap-mandatory, div.absolute.bottom-3.left-3
 
+### `/solutions` at 390 (score 3)
+
+- long tasks: 75, 73, 169 ms
+
+### `/solutions/fintech` at 390 (score 3)
+
+- long tasks: 62, 85, 176 ms
+
+### `/solutions/healthcare` at 390 (score 3)
+
+- long tasks: 52, 75, 164 ms
+
+### `/solutions/education` at 390 (score 3)
+
+- long tasks: 54, 77, 165 ms
+
+### `/solutions/government` at 390 (score 3)
+
+- long tasks: 54, 78, 167 ms
+
 ### `/index` at 390 (score 3)
 
-- long tasks: 62, 91, 200 ms
+- long tasks: 52, 78, 184 ms
 
 ### `/demo/how-it-works` at 390 (score 3)
 
-- long tasks: 60, 74, 206 ms
+- long tasks: 53, 68, 181 ms
 
 ### `/demo/deploy` at 390 (score 3)
 
-- long tasks: 64, 93, 269 ms
+- long tasks: 54, 78, 166 ms
 
 ### `/demo/qday` at 390 (score 3)
 
-- long tasks: 60, 77, 209 ms
+- long tasks: 52, 67, 177 ms
 - layout shift 0.0096: li.flex.items-center.gap-3, li.flex.items-center.gap-3, li.flex.items-center.gap-3, li.flex.items-center.gap-3
 
 ### `/demo/ledger` at 390 (score 3)
 
-- long tasks: 73, 79, 231 ms
+- long tasks: 53, 65, 179 ms
 
 ### `/about` at 390 (score 3)
 
-- long tasks: 85, 88, 190 ms
+- long tasks: 52, 75, 163 ms
 
-### `/` at 1440 (score 1)
+### `/diagnostics?ws=demo` at 390 (score 3)
 
-- long tasks: 82 ms
-- layout shift 0.0067: div.mt-8
+- long tasks: 54, 79, 170 ms
+
+### `/platform` at 390 (score 2)
+
+- long tasks: 73, 195 ms
+
+### `/atlas/demo/ledger` at 390 (score 2)
+
+- long tasks: 54, 64 ms
 
 ### `/platform` at 1440 (score 1)
 
-- long tasks: 69 ms
+- long tasks: 65 ms
+
+### `/solutions` at 1440 (score 1)
+
+- long tasks: 84 ms
 
 ### `/solutions/fintech` at 1440 (score 1)
 
-- long tasks: 69 ms
+- long tasks: 72 ms
 
 ### `/solutions/healthcare` at 1440 (score 1)
 
-- long tasks: 69 ms
+- long tasks: 86 ms
 
 ### `/solutions/education` at 1440 (score 1)
 
-- long tasks: 71 ms
+- long tasks: 68 ms
 
 ### `/solutions/government` at 1440 (score 1)
 
-- long tasks: 69 ms
+- long tasks: 65 ms
+
+### `/diagnostics` at 1440 (score 1)
+
+- long tasks: 70 ms
+- layout shift 0.0017: p.text-fg-2, button.hidden.h-8.rounded-sm, button.h-8.rounded-sm.border, (text), dd.min-w-0.truncate.text-right
 
 ### `/index` at 1440 (score 1)
 
-- long tasks: 70 ms
+- long tasks: 81 ms
 
 ### `/demo/how-it-works` at 1440 (score 1)
 
 - long tasks: 72 ms
 
+### `/demo/deploy` at 1440 (score 1)
+
+- long tasks: 70 ms
+
 ### `/demo/qday` at 1440 (score 1)
 
-- long tasks: 73 ms
+- long tasks: 72 ms
 - layout shift 0.002: li.flex.items-center.gap-3, li.flex.items-center.gap-3, li.flex.items-center.gap-3, li.flex.items-center.gap-3, li.flex.items-center.gap-3
+
+### `/demo/ledger` at 1440 (score 1)
+
+- long tasks: 72 ms
+- layout shift 0.0015: div.ml-auto.flex.flex-wrap, div.pr-6.md:border-l.md:border-line, div.pr-6.md:border-l.md:border-line, div.pr-6., div.pr-6.md:border-l.md:border-line
 
 ### `/about` at 1440 (score 1)
 
-- long tasks: 74 ms
+- long tasks: 78 ms
 
 ### `/pitch` at 1440 (score 1)
 
-- long tasks: 80 ms
+- long tasks: 63 ms
 
 ### `/demos` at 390 (score 1)
 
-- long tasks: 88 ms
+- long tasks: 54 ms
 
 ### `/demo/scanner` at 390 (score 1)
 
-- long tasks: 61 ms
+- long tasks: 77 ms
 - layout shift 0.0234: textarea#scan-input.h-stage-sm.w-full.resize-y, div.inline-flex.flex-wrap.rounded-sm
+
+### `/atlas` at 390 (score 1)
+
+- long tasks: 53 ms
 
 ### `/pricing` at 390 (score 1)
 
-- long tasks: 57 ms
-
-### `/security` at 390 (score 1)
-
-- long tasks: 57 ms
-
-### `/changelog` at 390 (score 1)
-
-- long tasks: 81 ms
+- long tasks: 51 ms
 
 ### `/contact` at 390 (score 1)
 
-- long tasks: 57 ms
-
-### `/privacy` at 390 (score 1)
-
-- long tasks: 55 ms
+- long tasks: 52 ms
 
 ### `/terms` at 390 (score 1)
 
-- long tasks: 90 ms
+- long tasks: 53 ms
 
 ### `/docs/api` at 390 (score 1)
 
-- long tasks: 58 ms
+- long tasks: 52 ms
 
 ### `/docs` at 390 (score 1)
 
-- long tasks: 58 ms
+- long tasks: 52 ms
 
 ### `/docs/security-model` at 390 (score 1)
 
-- long tasks: 58 ms
+- long tasks: 52 ms
 
 ### `/docs/adapters/edge` at 390 (score 1)
 
-- long tasks: 87 ms
+- long tasks: 51 ms
 
 ### `/docs/adapters/sdk` at 390 (score 1)
 
-- long tasks: 90 ms
+- long tasks: 53 ms
 
 ### `/docs/adapters/shield` at 390 (score 1)
 
-- long tasks: 87 ms
+- long tasks: 51 ms
 
 ### `/docs/adapters/vault` at 390 (score 1)
 
-- long tasks: 60 ms
+- long tasks: 54 ms
 
 ### `/docs/adapters/web` at 390 (score 1)
 
-- long tasks: 59 ms
-
-### `/docs/concepts/hybrid-kem` at 390 (score 1)
-
-- long tasks: 57 ms
+- long tasks: 51 ms
 
 ### `/docs/concepts` at 390 (score 1)
 
-- long tasks: 61 ms
-
-### `/docs/concepts/key-rotation` at 390 (score 1)
-
-- long tasks: 61 ms
+- long tasks: 53 ms
 
 ### `/docs/concepts/sessions` at 390 (score 1)
 
-- long tasks: 62 ms
+- long tasks: 55 ms
 
 ### `/docs/concepts/signatures` at 390 (score 1)
 
-- long tasks: 58 ms
+- long tasks: 53 ms
 
 ### `/join` at 390 (score 1)
 
-- long tasks: 57 ms
+- long tasks: 53 ms
 
 ### `/pitch` at 390 (score 1)
 
-- long tasks: 58 ms
+- long tasks: 63 ms
+- layout shift 0.005: div.col-span-12.animate-reveal.space-y-10
 
 ### `/scan/www.irctc.co.in` at 390 (score 1)
 
-- long tasks: 59 ms
+- long tasks: 52 ms
 
+### `/atlas/signin` at 390 (score 1)
+
+- long tasks: 53 ms
+
+### `/atlas/demo/detect` at 390 (score 1)
+
+- long tasks: 53 ms
+
+### `/atlas/demo/inventory` at 390 (score 1)
+
+- long tasks: 56 ms
+
+### `/atlas/demo/schedule` at 390 (score 1)
+
+- long tasks: 55 ms
+
+### `/atlas/demo/handshakes` at 390 (score 1)
+
+- long tasks: 55 ms
+
+### `/atlas/demo/qaoa` at 390 (score 1)
+
+- long tasks: 56 ms
+
+### `/atlas/demo/review` at 390 (score 1)
+
+- long tasks: 55 ms

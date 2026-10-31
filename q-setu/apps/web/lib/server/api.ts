@@ -61,7 +61,7 @@ export function parseParams<S extends z.ZodType>(params: unknown, schema: S): Pa
 // ── shared schemas ──────────────────────────────────────────────────────────────────────────
 
 export const Sector = z
-  .enum(["fintech", "healthcare", "education"])
+  .enum(["fintech"])
   .meta({ description: "Demo sector", examples: ["fintech"] });
 
 export const SectorBody = z.object({ sector: Sector.default("fintech") });

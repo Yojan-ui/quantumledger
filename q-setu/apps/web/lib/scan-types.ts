@@ -10,6 +10,8 @@ export interface ScanView {
     certKey: string;
     certSigAlg: string;
     issuer: string;
+    /** Certificate expiry as the server's leaf certificate states it ("" if not read). */
+    validTo: string;
   };
   score: number;
   grade: string;
@@ -36,8 +38,8 @@ export const SUGGESTED_HOSTS = [
   "onlinesbi.sbi",
   "www.hdfcbank.com",
   "www.icicibank.com",
-  "www.irctc.co.in",
-  "www.digilocker.gov.in",
+  "www.npci.org.in",
+  "www.axisbank.com",
 ];
 
 export const scanDate = (iso: string) =>

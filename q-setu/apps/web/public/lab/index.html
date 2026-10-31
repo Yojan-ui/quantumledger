@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QuantumLedger Lab</title>
+    <meta
+      name="description"
+      content="Scan code, configs, certificates or a host for quantum-vulnerable cryptography, get a migration plan and an ML-DSA-65-signed Proof Chain entry."
+    />
+    <link
+      rel="preload"
+      href="/lab/fonts/inter-tight-latin-700-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/lab/fonts/jetbrains-mono-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="icon" href="/icon" />
+    <link rel="stylesheet" href="/lab/css/tokens.css" />
+    <link rel="stylesheet" href="/lab/css/app.css" />
+    <script type="importmap">
+      { "imports": { "three": "/lab/vendor/three-0.180.0/three.module.min.js" } }
+    </script>
+    <script>
+      // theme before first paint (no flash); dark is the default
+      try {
+        if (localStorage.getItem("qlab.theme") === "light")
+          document.documentElement.dataset.theme = "light";
+      } catch (e) {}
+    </script>
+    <link rel="modulepreload" href="/lab/js/main.js" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="strip">
+      <a class="wordmark" href="/lab" data-link>QuantumLedger<span>Lab</span></a>
+      <nav class="crumbs" id="crumbs" aria-label="Location"></nav>
+      <span class="chip" id="ws-chip" title="Workspace"></span>
+      <div class="controls">
+        <button
+          class="ctl"
+          id="palette-btn"
+          type="button"
+          aria-haspopup="dialog"
+          aria-label="Command palette (Command or Control + K)"
+        >
+          <span class="ctl-label">Commands</span><kbd>⌘K</kbd>
+        </button>
+        <button class="ctl" id="theme-btn" type="button">Light</button>
+        <button class="ctl" id="sound-btn" type="button" aria-pressed="false">Sound off</button>
+      </div>
+    </header>
+    <main id="main" tabindex="-1"></main>
+    <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+    <div class="sr" id="announce" aria-live="assertive"></div>
+    <noscript
+      ><p class="page">
+        The Lab needs JavaScript. The same scanner is available as a JSON API at /api/scan.
+      </p></noscript
+    >
+    <script type="module" src="/lab/js/main.js"></script>
+  </body>
+</html>

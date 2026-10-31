@@ -12,7 +12,7 @@ mkdirSync(out, { recursive: true });
 const xml = await (await fetch(`${BASE}/sitemap.xml`)).text();
 const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
 const extra = (
-  process.env.EXTRA ?? "/join,/pitch,/scan/www.irctc.co.in,/this-page-does-not-exist"
+  process.env.EXTRA ?? "/join,/pitch,/scan/www.npci.org.in,/this-page-does-not-exist"
 ).split(",");
 const all = [...new Set([...paths, ...extra])];
 const browser = await chromium.launch({ channel: "chrome" });

@@ -1,5 +1,5 @@
 import { fail, parseBody } from "@/lib/server/api";
-import { clientKey } from "@/lib/live/rate-limit";
+import { ScanLimits, scanClientKey } from "@/lib/live/rate-limit";
 import { live } from "@/lib/server/runtime";
 import { cachedScan, scanHost } from "@/lib/server/scan-service";
 import { hostFromInput } from "@/lib/live/tls";
@@ -12,22 +12,25 @@ function cachedOnlyScan(url: string) {
 import { ScanUrlBody } from "@/lib/server/schemas";
 
 export const runtime = "nodejs";
+
+/** Anonymous home-page scans: no sign-in, strict per-client and server-wide limits (lib/live/rate-limit). */
+const limits = new ScanLimits();
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/scan/url { url }: connects to the host on 443 offering X25519MLKEM768 first, reports the
  * negotiated TLS version, cipher, key-exchange group and certificate, then scores it, builds a CBOM, a
  * migration plan, three plain-language findings and the server's approximate location. Public
- * hostnames only; 6 scans per minute per client. Offline, it answers from pre-cached real scans.
+ * hostnames only, no sign-in; 6/min and 30/h per client IP behind a trusted proxy, 30/min and 300/h in total. Offline, it answers from pre-cached real scans.
  */
 export async function POST(req: Request) {
-  const { scanLimiter, bus } = await live();
+  const { bus } = await live();
   const peek = (await req
     .clone()
     .json()
     .catch(() => ({}))) as { cachedOnly?: boolean };
   // A cached answer costs nothing and touches no network, so it isn't rate-limited.
-  const wait = peek.cachedOnly ? 0 : scanLimiter.take(clientKey(req));
+  const wait = peek.cachedOnly ? 0 : limits.take(scanClientKey(req));
   if (wait)
     return fail("rate_limited", `Too many scans. Try again in ${wait} s.`, 429, {
       retryAfter: wait,

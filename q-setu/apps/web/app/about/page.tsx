@@ -20,9 +20,9 @@ export default function About() {
       <Block label="Why us" title="Deployment is the hard part.">
         <p>
           The algorithms are standardised and open-source libraries implement them. What stops a
-          bank, a hospital or a department is everything around them: legacy cores nobody can touch,
-          data at rest, devices in the field, and no inventory of where RSA and elliptic curves are
-          used. QuantumLedger is built for that gap.
+          bank, a payment company or a fintech is everything around them: legacy cores nobody can
+          touch, data at rest, devices in the field, and no inventory of where RSA and elliptic
+          curves are used. QuantumLedger is built for that gap.
         </p>
       </Block>
       <Block label="Team" title="Who’s building it.">
@@ -39,8 +39,7 @@ export default function About() {
         <Lines
           items={[
             "Banks and payment companies (Shield in front of core and switch links)",
-            "Hospitals and health-data exchanges (Vault for records, Edge for devices)",
-            "Universities and credential registries (ML-DSA-signed certificates)",
+            "Fintechs and lenders (Vault for records, Edge for POS devices, ML-DSA-signed statements)",
           ]}
         />
         <p>

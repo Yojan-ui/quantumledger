@@ -77,7 +77,7 @@ export function ScanSite() {
   }
 
   return (
-    <Section id="scan" label="Scan any site" role="warn">
+    <Section id="scan" label="Live scan" role="warn" className="!pt-8 md:!pt-12">
       <div ref={ref}>
         <Grid className="gap-y-12">
           <div className="col-span-12 lg:col-span-7">

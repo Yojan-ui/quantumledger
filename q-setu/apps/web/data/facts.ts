@@ -109,33 +109,6 @@ export const FACTS: Fact[] = [
     check:
       "Reported by The Quantum Insider and ORF; the DST page and PDF could not be opened. Only show it after reading the official document, and quote its own timelines.",
   },
-
-  // ── Sector scale (kept from the earlier site; all need primary checks) ────────────────────
-  {
-    id: "health",
-    claim: "Over 100 crore health records are linked to ABHA accounts.",
-    source: "Ayushman Bharat Digital Mission, via PIB / GKToday",
-    url: "https://abdm.gov.in/",
-    asOf: "2026-07",
-    verified: false,
-    check: "Only seen in secondary reporting. Confirm the current figure on the ABDM dashboard.",
-    stat: {
-      num: 105,
-      decimals: 0,
-      unit: " crore",
-      label: "health records linked to ABHA accounts",
-    },
-  },
-  {
-    id: "certificates",
-    claim: "DigiLocker has issued over 5 billion documents.",
-    source: "DigiLocker, as reported by Outlook Business",
-    url: "https://www.digilocker.gov.in/",
-    asOf: "2026-06",
-    verified: false,
-    check: "Only seen in secondary reporting. Confirm on digilocker.gov.in.",
-    stat: { num: 5.62, decimals: 2, unit: " bn", label: "documents issued through DigiLocker" },
-  },
 ];
 
 /** The facts the site may show, in order. Footnote numbers follow this list. */

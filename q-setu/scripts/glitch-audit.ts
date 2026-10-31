@@ -11,7 +11,6 @@
  *   - a 10-second video of the scroll and clicks (docs/smooth/videos-<label>/, not committed)
  * and writes docs/smooth/audit-<label>.md (ranked) and audit-<label>.json.
  */
-/* eslint-disable no-console */
 import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { chromium, devices, type BrowserContext, type Page } from "@playwright/test";
 
@@ -31,6 +30,7 @@ const ACTIONS: Record<string, string[]> = {
   "/demo/qday": ["Try it"],
   "/demo/ledger": ["Verify the chain", "Tamper with entry #42", "Verify the chain"],
   "/demo/scanner": ["Scan", "Scan live TLS"],
+  "/atlas/demo/ledger": ["#3"],
 };
 
 interface Metrics {
@@ -220,6 +220,14 @@ async function audit(ctx: BrowserContext, path: string, throttle: boolean, tag: 
   m.contextLost = a.lost;
   m.scroll = stats(a.frames.filter(([p]) => p === "scroll").map(([, d]) => d));
   m.transition = stats(a.frames.filter(([p]) => p === "transition").map(([, d]) => d));
+  if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+    m.pageErrors.push("Horizontal page overflow");
+  const shotDir = `${root}screenshots-${label}`;
+  mkdirSync(shotDir, { recursive: true });
+  await page.screenshot({
+    path: `${shotDir}/${path === "/" ? "home" : path.slice(1).replace(/[^a-z0-9]/gi, "-")}-${tag}.png`,
+    fullPage: true,
+  });
   const video = page.video();
   await page.close();
   if (video) {
@@ -253,8 +261,22 @@ const pages = [
     "/diagnostics",
     "/join",
     "/pitch",
-    "/scan/www.irctc.co.in",
+    "/scan/www.npci.org.in",
     "/this-page-does-not-exist",
+    // Q-Shield (Atlas) pages: need `pnpm dev:atlas` on :8100; the demo workspace is public.
+    "/atlas/signin",
+    "/atlas/demo",
+    "/atlas/demo/tiebreak",
+    "/atlas/demo/ledger?section=2",
+    "/atlas/demo/ledger?section=6",
+    "/atlas/demo/detect",
+    "/atlas/demo/inventory",
+    "/atlas/demo/schedule",
+    "/atlas/demo/handshakes",
+    "/atlas/demo/qaoa",
+    "/atlas/demo/ledger",
+    "/atlas/demo/review",
+    "/diagnostics?ws=demo",
   ]),
 ].filter((p) => !ONLY || ONLY.includes(p));
 

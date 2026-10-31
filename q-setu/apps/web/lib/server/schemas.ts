@@ -14,7 +14,7 @@ export const SimulateBody = z.object({
 export const SectorQuery = z.object({ sector: Sector.default("fintech") });
 
 export const StreamQuery = z.object({
-  sector: z.enum(["fintech", "healthcare", "education", "all"]).optional().meta({
+  sector: z.enum(["fintech", "all"]).optional().meta({
     description: "Omit for the live bus (OpEvents); set for raw simulator hops (NetEvents).",
   }),
 });
@@ -75,7 +75,7 @@ export const KeysRotateBody = z.object({
 });
 
 export const TrafficBody = z.object({
-  site: z.string().regex(/^(fintech|healthcare|education)-(web|shield|sdk|edge|vault)$/),
+  site: z.string().regex(/^(fintech)-(web|shield|sdk|edge|vault)$/),
 });
 
 export const IdParams = z.object({ id: z.string().min(1).max(120) });
@@ -89,7 +89,7 @@ export const EarlyAccessBody = z.object({
   name: z.string().trim().min(1, "Please tell us your name").max(120),
   email: z.string().trim().email("That email doesn't look right").max(200),
   organisation: z.string().trim().min(1, "Which organisation are you with?").max(160),
-  sector: z.enum(["fintech", "healthcare", "education", "government", "other"]),
+  sector: z.enum(["fintech"]),
   useCase: z.string().trim().min(1, "Tell us what you'd protect first").max(2000),
   /** Honeypot: must stay empty. */
   website: z.string().max(0).optional().or(z.literal("")),

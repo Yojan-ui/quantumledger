@@ -9,7 +9,7 @@ import { READINESS } from "@/lib/readiness";
 export const metadata: Metadata = pageMeta({
   title: "India Quantum Readiness Index",
   description:
-    "How many public Indian banking, government, healthcare, education and telecom sites already negotiate post-quantum key exchange. Sector totals from one public TLS handshake per site.",
+    "How many public Indian banking sites already negotiate post-quantum key exchange. Sector totals from one public TLS handshake per site.",
   path: "/index",
 });
 
@@ -31,12 +31,11 @@ export default function IndexPage() {
             </Heading>
             <Text className="mt-6 max-w-text">
               <span data-copy="simple">
-                We connected once to {all.targets} public websites of Indian banks, government
-                services, hospitals, universities and telecom companies, and noted which lock each
-                one used. Here is the picture by sector.
+                We connected once to {all.targets} public websites of Indian banks, and noted which
+                lock each one used. Here is the banking snapshot.
               </span>
               <span data-copy="technical">
-                One TLS handshake to each of {all.targets} public Indian domains in five sectors,
+                One TLS handshake to each of {all.targets} public Indian domains in banking,
                 recording the negotiated key-exchange group, TLS version and certificate key.
                 Aggregated by sector.
               </span>
