@@ -9,6 +9,8 @@ export type ClientFamily =
  * query strings, no headers beyond the client family, and the IP only as a keyed hash.
  */
 export interface AttackEvent {
+  /** The protected site (customer) the request was sent to. */
+  site: string;
   at: number;
   source: {
     /** HMAC-SHA256 of the IP under the lab's own salt, 16 hex characters. */
@@ -62,6 +64,7 @@ export type EventRecord = SignedRecord<AttackEvent & { id: string; incidentId: s
 /** Events that share a source or session, close together in time. */
 export interface Incident {
   id: string;
+  site: string;
   opened: number;
   lastSeen: number;
   ipHashes: string[];

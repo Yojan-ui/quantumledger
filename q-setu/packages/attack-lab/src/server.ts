@@ -10,8 +10,17 @@
  *   POST /api/replay            { incidentId } → { id }: replays in a fresh sandbox pair
  *   GET  /api/replays[/:id]     replay jobs and their results so far
  *   POST /api/simulate          sends labelled test traffic to the live protected sandbox
+ *   GET  /api/customers         customers (site, members, the team's note and readiness)
+ *   PUT  /api/customers/:id     { note?, readiness?, shieldSiteId?, by }: the team's edit
+ *
+ * `?site=` on overview and patterns limits them to one customer's site. This API has no users:
+ * whoever calls it (the dashboard, the website's /lab) decides who may see what, and must pass
+ * only the site the signed-in user is allowed. With ATTACK_LAB_TOKEN set, every call needs
+ * `Authorization: Bearer <token>`.
  */
+import { timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { CustomerPatch, CustomerRegistry } from "./customers";
 import { classify, groupPatterns } from "./patterns";
 import { replay, stepsFromTimeline, type ReplayReport, type ReplayStepResult } from "./replay";
 import { startSandbox, type Sandbox } from "./sandbox";
@@ -22,6 +31,7 @@ import { buildTimeline } from "./timeline";
 interface ReplayJob {
   id: string;
   incidentId: string;
+  site: string;
   pattern: string;
   startedAt: number;
   finishedAt?: number;
@@ -37,6 +47,9 @@ export interface LabServerOptions {
   /** The live sandbox the recorder watches. */
   sandbox: Sandbox;
   port: number;
+  customers?: CustomerRegistry;
+  /** Require this bearer token on every call. */
+  token?: string;
 }
 
 const MAX_JOBS = 20;
@@ -49,8 +62,8 @@ export function startLabServer(o: LabServerOptions) {
   const timelineOf = (id: string) =>
     buildTimeline(id, store.eventsOf(id), { trapPath: sandbox.trapPath });
 
-  function overview() {
-    const incidents = store.listIncidents().map((inc) => {
+  function overview(site?: string) {
+    const incidents = store.listIncidents(site).map((inc) => {
       const t = timelineOf(inc.id);
       const rule = classify(inc, store.eventsOf(inc.id));
       return {
@@ -127,6 +140,7 @@ export function startLabServer(o: LabServerOptions) {
     const job: ReplayJob = {
       id: `rp_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
       incidentId,
+      site: inc.site,
       pattern: classify(inc, store.eventsOf(incidentId)).name,
       startedAt: Date.now(),
       status: "running",
@@ -163,12 +177,27 @@ export function startLabServer(o: LabServerOptions) {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://lab");
     const p = url.pathname;
+    const site = url.searchParams.get("site") ?? undefined;
+    if (o.token) {
+      const got = Buffer.from(String(req.headers.authorization ?? ""));
+      const want = Buffer.from(`Bearer ${o.token}`);
+      if (got.length !== want.length || !timingSafeEqual(got, want))
+        return send(res, 401, { error: "Unauthorised" });
+    }
     try {
-      if (req.method === "GET" && p === "/api/overview") return send(res, 200, overview());
+      if (req.method === "GET" && p === "/api/overview") return send(res, 200, overview(site));
       if (req.method === "GET" && p === "/api/patterns")
         return send(res, 200, {
-          patterns: groupPatterns(store.listIncidents(), (id) => store.eventsOf(id)),
+          patterns: groupPatterns(store.listIncidents(site), (id) => store.eventsOf(id)),
         });
+      if (req.method === "GET" && p === "/api/customers")
+        return send(res, 200, { customers: o.customers?.list() ?? [] });
+      const c = p.match(/^\/api\/customers\/([a-z0-9-]{1,40})$/);
+      if (req.method === "PUT" && c && o.customers) {
+        const { by, ...patch } = await readJson(req);
+        const r = o.customers.update(c[1]!, patch as CustomerPatch, String(by ?? "unknown"));
+        return typeof r === "string" ? send(res, 400, { error: r }) : send(res, 200, r);
+      }
       if (req.method === "GET" && p === "/api/verify") return send(res, 200, store.verify());
       let m = p.match(/^\/api\/incidents\/(inc_\d+)$/);
       if (req.method === "GET" && m) {
@@ -200,12 +229,14 @@ export function startLabServer(o: LabServerOptions) {
       }
       if (req.method === "POST" && p === "/api/simulate") {
         if (simulating) return send(res, 409, { error: "Test traffic is already running" });
-        const { scenarios } = await readJson(req);
+        const { scenarios, site: one } = await readJson(req);
+        const sites = o.customers?.sites() ?? [];
         simulating = true;
         void simulate(
           sandbox.protected,
           sandbox,
           Array.isArray(scenarios) ? scenarios.map(String) : undefined,
+          typeof one === "string" && sites.includes(one) ? [one] : sites,
         ).finally(() => {
           simulating = false;
           store.sealDirty();

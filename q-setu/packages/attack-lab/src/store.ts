@@ -43,6 +43,9 @@ function freeze<T>(o: T): T {
   return o;
 }
 
+/** Site for records written before events carried one. */
+export const DEFAULT_SITE = "default";
+
 const uniq = <T>(a: T[], v: T | undefined) => (v === undefined || a.includes(v) ? a : [...a, v]);
 
 export class EvidenceStore {
@@ -94,9 +97,10 @@ export class EvidenceStore {
   }
 
   /** The open incident this event belongs to, if any. */
-  openIncidentFor(ev: Pick<AttackEvent, "at" | "source">): string | undefined {
-    const ids = [this.byIp.get(ev.source.ipHash)];
-    if (ev.source.sessionHash) ids.push(this.bySession.get(ev.source.sessionHash));
+  openIncidentFor(ev: Pick<AttackEvent, "at" | "source" | "site">): string | undefined {
+    const site = ev.site ?? DEFAULT_SITE;
+    const ids = [this.byIp.get(`${site}|${ev.source.ipHash}`)];
+    if (ev.source.sessionHash) ids.push(this.bySession.get(`${site}|${ev.source.sessionHash}`));
     let best: Incident | undefined;
     for (const id of ids) {
       const inc = id ? this.incidents.get(id) : undefined;
@@ -122,8 +126,10 @@ export class EvidenceStore {
     const e = rec.body;
     this.events.set(e.id, rec);
     const prev = this.incidents.get(e.incidentId);
+    const site = e.site ?? DEFAULT_SITE;
     const inc: Incident = prev ?? {
       id: e.incidentId,
+      site,
       opened: e.at,
       lastSeen: e.at,
       ipHashes: [],
@@ -151,8 +157,8 @@ export class EvidenceStore {
     for (const t of e.types) inc.types = uniq(inc.types, t);
     inc.synthetic = inc.synthetic && e.synthetic;
     this.incidents.set(inc.id, inc);
-    this.byIp.set(e.source.ipHash, inc.id);
-    if (e.source.sessionHash) this.bySession.set(e.source.sessionHash, inc.id);
+    this.byIp.set(`${site}|${e.source.ipHash}`, inc.id);
+    if (e.source.sessionHash) this.bySession.set(`${site}|${e.source.sessionHash}`, inc.id);
   }
 
   private scheduleSeal() {
@@ -181,9 +187,10 @@ export class EvidenceStore {
     return () => this.listeners.delete(fn);
   }
 
-  /** Incidents, newest activity first. Copies: the store's own state can't be changed through them. */
-  listIncidents(): Incident[] {
+  /** Incidents (of one site, if given), newest activity first. Copies: the store's own state can't be changed through them. */
+  listIncidents(site?: string): Incident[] {
     return [...this.incidents.values()]
+      .filter((i) => site === undefined || i.site === site)
       .sort((a, b) => b.lastSeen - a.lastSeen)
       .map((i) => structuredClone(i));
   }

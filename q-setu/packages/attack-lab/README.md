@@ -76,6 +76,18 @@ ATTACK_LAB_SEED=1 …                      # on an empty store, send labelled te
 | Storage                                                                                                      | One local JSONL file. No rotation, retention or export yet                                                                                                                 |
 | Fake-Googlebot test traffic                                                                                  | Shield checks the claim with a reverse-DNS lookup of a documentation address through the system resolver. That is the only lookup that leaves the machine                  |
 
+## Customers and the website's /lab
+
+Every event carries a `site`, the protected customer site it was sent to. Incidents never mix sites.
+`customers.json` (in the lab's data directory) maps each customer to their site, the addresses that
+may sign in as them, and the team's note and readiness score for them. Two fictional demo customers
+are seeded. The sandbox stands in for both: test traffic names its site in `x-attack-lab-site`. That
+is sandbox only, and a real install records one fixed site.
+
+The website's signed-in `/lab` area (apps/web) reads this API. The API has no users of its own, so
+the website decides on the server who may see which site. Set `ATTACK_LAB_TOKEN` on both sides so
+that only the website can call it.
+
 ## Configuration
 
 | env                                                       | default                                                                                                                                     |

@@ -15,7 +15,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { shield, type ShieldOptions } from "@qsetu/shield";
 import { PASS_COOKIE, type Action, type GuardEvent } from "@qsetu/shield-guard";
 import { clientFamily, hashOf, ipHash, netHash, safeRoute } from "./privacy";
-import type { EvidenceStore } from "./store";
+import { DEFAULT_SITE, type EvidenceStore } from "./store";
 import type { AttackEvent } from "./types";
 
 /** Requests carrying this header are labelled synthetic: the lab's own test traffic. */
@@ -33,6 +33,11 @@ const ATTACK_TYPES = new Set<GuardEvent["type"]>([
 
 export interface RecorderOptions {
   store: EvidenceStore;
+  /**
+   * The protected site (customer) these requests belong to. A fixed string for a real install; a
+   * function only where one server stands in for several sites, as the sandbox does.
+   */
+  site?: string | ((req: IncomingMessage) => string);
   /** Salt for the IP and session hashes (≥ 16 characters). Keep it with the lab, never in the records. */
   salt: string;
   canaryKeys?: string[];
@@ -84,11 +89,13 @@ export function createRecorder(o: RecorderOptions) {
   const max = o.contextMax ?? 20;
   const windowMs = o.contextWindowMs ?? 5 * 60_000;
 
+  const srcKey = (e: AttackEvent) => `${e.site}|${e.source.ipHash}`;
+
   function remember(e: AttackEvent) {
-    const list = (context.get(e.source.ipHash) ?? []).filter((x) => e.at - x.at <= windowMs);
+    const list = (context.get(srcKey(e)) ?? []).filter((x) => e.at - x.at <= windowMs);
     list.push(e);
-    context.delete(e.source.ipHash);
-    context.set(e.source.ipHash, list.slice(-max));
+    context.delete(srcKey(e));
+    context.set(srcKey(e), list.slice(-max));
     // Bounded: drop the oldest sources first.
     if (context.size > 10_000) context.delete(context.keys().next().value!);
   }
@@ -110,6 +117,7 @@ export function createRecorder(o: RecorderOptions) {
       const asn = o.asnOf?.(ip);
       const ja4 = o.trustEdgeHeaders ? one(req.headers["x-qsetu-ja4"]) : "";
       return {
+        site: (typeof o.site === "function" ? o.site(req) : o.site) || DEFAULT_SITE,
         at: c.at,
         source: {
           ipHash: ipHash(o.salt, ip),
@@ -136,8 +144,8 @@ export function createRecorder(o: RecorderOptions) {
     keep(e: AttackEvent) {
       if (o.store.openIncidentFor(e)) return void o.store.append(e);
       if (!e.flagged) return remember(e);
-      for (const x of context.get(e.source.ipHash) ?? []) o.store.append(x);
-      context.delete(e.source.ipHash);
+      for (const x of context.get(srcKey(e)) ?? []) o.store.append(x);
+      context.delete(srcKey(e));
       o.store.append(e);
     },
 
