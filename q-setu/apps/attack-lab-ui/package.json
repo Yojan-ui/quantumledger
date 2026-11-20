@@ -1,0 +1,26 @@
+{
+  "name": "@qsetu/attack-lab-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Attack Lab dashboard: live incidents, timelines, patterns and bare-vs-protected replays.",
+  "scripts": {
+    "dev": "concurrently -k -n lab,ui -c magenta,cyan \"pnpm --filter @qsetu/attack-lab dev\" \"next dev -p 3100 -H 127.0.0.1\"",
+    "dev:ui": "next dev -p 3100 -H 127.0.0.1",
+    "build": "next build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@qsetu/attack-lab": "workspace:*",
+    "geist": "1.7.2",
+    "next": "15.5.27",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "concurrently": "9.2.5",
+    "typescript": "5.9.3"
+  }
+}
